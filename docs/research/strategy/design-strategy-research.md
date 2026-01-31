@@ -137,26 +137,28 @@ endpoint.csapi() → returns CSAPIQueryBuilder
 
 ---
 
-### 3. Navigator Pattern Analysis
+### 3. ✅ QueryBuilder Pattern Analysis (COMPLETED)
 
-**⚠️ NOTE: "Navigator" may not be the correct term - verify with PR #114 first!**
+**Terminology confirmed: "QueryBuilder" (not "navigator")**
 
-**Critical architectural decision: How does the [CORRECT_TERM] pattern work?**
+**Critical architectural decision: How does the QueryBuilder pattern work?**
 
-**Questions to answer:**
-- [ ] **What is the correct terminology?** (navigator? client? accessor? endpoint?)
-- [ ] What is a "[TERM]" in ogc-client context?
-- [ ] What's the lifecycle of a navigator instance?
-- [ ] How is `endpoint.csapi(collectionId)` supposed to work?
-- [ ] What does a navigator expose? (methods, properties?)
-- [ ] How is per-collection state managed?
-- [ ] How is caching implemented?
-- [ ] What's the interface vs implementation separation?
-- [ ] How do navigators handle resource availability checking?
-- [ ] How do navigators construct base URLs?
-- [ ] What's the pattern for URL builder methods?
+**Analysis:** [docs/research/upstream/querybuilder-pattern-analysis.md](../upstream/querybuilder-pattern-analysis.md)
 
-**Action:** Study existing navigator implementations in detail
+**Answers:**
+- [x] **What is the correct terminology?** → **QueryBuilder (not "navigator" - that was invented term from previous attempt)** (Analysis Section 1)
+- [x] What is a "QueryBuilder" in ogc-client context? → **Standalone class that encapsulates collection metadata and provides query methods** (Section 2)
+- [x] What's the lifecycle of a QueryBuilder instance? → **4 phases: instantiation (via endpoint) → configuration (constructor) → usage (method calls) → reuse (caching)** (Section 3)
+- [x] How is `endpoint.csapi(collectionId)` supposed to work? → **Check conformance → check cache → fetch collection info → instantiate QueryBuilder → cache → return** (Section 3.1)
+- [x] What does a QueryBuilder expose? → **Public properties (capabilities, links) + query methods (build URL or execute query)** (Section 4)
+- [x] How is per-collection state managed? → **Immutable state stored in QueryBuilder instance, set in constructor from OgcApiCollectionInfo** (Section 5)
+- [x] How is caching implemented? → **Map<collection_id, QueryBuilder> in endpoint class, checked before instantiation** (Section 6)
+- [x] What's the interface vs implementation separation? → **No formal interface - concrete class with public/private members** (Section 7)
+- [x] How do QueryBuilders handle resource availability checking? → **Constructor validation + runtime checks + exposed capability properties** (Section 8)
+- [x] How do QueryBuilders construct base URLs? → **From collection.links, never manual construction** (Section 9)
+- [x] What's the pattern for URL builder methods? → **Validate capability → get URL from links → add params via searchParams → return string** (Section 10)
+
+**Status:** Comprehensive 1135-line QueryBuilder analysis completed. CSAPI design documented in Section 11.
 
 ---
 
