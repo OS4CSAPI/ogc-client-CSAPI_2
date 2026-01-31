@@ -110,7 +110,9 @@ The ogc-client library already supports multiple OGC API standards (WFS, STAC, E
 
 **Primary:**
 - [OGC API – Connected Systems Part 1: Feature Resources (23-001) v1.0](https://docs.ogc.org/is/23-001/23-001.html)
+  - [OpenAPI Specification](../research/ogcapi-connectedsystems-1.bundled.oas31.yaml) (local reference)
 - [OGC API – Connected Systems Part 2: Dynamic Data (23-002) v1.0](https://docs.ogc.org/is/23-002/23-002.html)
+  - [OpenAPI Specification](../research/ogcapi-connectedsystems-2.bundled.oas31.yaml) (local reference)
 
 **Supporting:**
 - [OGC SWE Common Data Model (23-000) v3.0](https://docs.ogc.org/is/23-000/23-000.html) - Data component structure
