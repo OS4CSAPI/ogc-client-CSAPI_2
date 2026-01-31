@@ -130,6 +130,21 @@ The ogc-client library already supports multiple OGC API standards (WFS, STAC, E
 - Cleaned repo: [OS4CSAPI/ogc-client](https://github.com/OS4CSAPI/ogc-client) (14 commits - rebased)
 - Draft PR: [camptocamp/ogc-client#131](https://github.com/camptocamp/ogc-client/pull/131)
 
+**CSAPI Ecosystem - Related Implementations:**
+
+*Client Applications:*
+- [osh-viewer](https://github.com/Botts-Innovative-Research/osh-viewer) - JavaScript webapp CSAPI client
+- [oscar-viewer](https://github.com/Botts-Innovative-Research/oscar-viewer) - TypeScript webapp CSAPI client
+
+*Client Libraries:*
+- [OWSLib](https://github.com/geopython/OWSLib) - Python library for OGC web services (including CSAPI)
+- [OSHConnect-Python](https://github.com/Botts-Innovative-Research/OSHConnect-Python) - Python client for CSAPI
+- [ConnectedSystemsAPI-CPP](https://github.com/Botts-Innovative-Research/ConnectedSystemsAPI-CPP) - C++ CSAPI library
+
+*Server Implementations:*
+- [OpenSensorHub](https://github.com/opensensorhub) - Reference CSAPI server implementation
+- [52°North OGC API Connected Systems](https://52north.org/software/software-components/ogc-api-connected-systems/) - Alternative CSAPI server
+
 ### 2.6 Success Criteria
 
 **Complete when:**
