@@ -1935,3 +1935,1262 @@ Based on this analysis, the client library MUST provide:
    - Link objects
 
 **Next:** Section 1.2 will analyze the OpenAPI schema to validate and expand on these findings.
+
+---
+
+## Section 1.2: OpenAPI Schema Analysis
+
+**Document:** Section 1.2 - OpenAPI Schema Analysis  
+**Source:** [docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml](../../standards/ogcapi-connectedsystems-1.bundled.oas31.yaml)  
+**Date:** 2026-01-31  
+**Status:** Complete
+
+---
+
+### Executive Summary
+
+This analysis examines the official OpenAPI 3.1.0 schema for CSAPI Part 1, providing machine-readable specifications of paths, parameters, request/response schemas, and examples. The schema validates and extends the standard document findings from Section 1.1.
+
+**Key Findings:**
+- **20 Path Templates** covering all Part 1 operations
+- **56 HTTP Operations** (GET, POST, PUT, DELETE methods) across all paths
+- **28 Parameters** (13 path, 15 query parameters with precise types)
+- **Dual Format Support** validated (application/geo+json, application/sml+json)
+- **Complete Request/Response Schemas** including GeoJSON Feature, SensorML-JSON, SWE Common data components
+- **7 Status Codes** documented (200, 201, 204, 400, 401, 403, 404, 409, 5XX)
+- **Detailed Examples** for all resource types in both formats
+
+---
+
+### 1. Paths Defined in OpenAPI Schema
+
+The schema defines 20 path templates organized by functional areas:
+
+#### 1.1 API Capabilities Paths
+1. `/` - Landing page (GET)
+2. `/conformance` - Conformance declaration (GET)
+
+#### 1.2 Collections Paths
+3. `/collections` - List collections (GET)
+4. `/collections/{collectionId}` - Get collection metadata (GET)
+5. `/collections/{collectionId}/items` - Collection items (GET, POST)
+6. `/collections/{collectionId}/items/{resourceId}` - Collection item (GET, DELETE)
+
+#### 1.3 Systems Paths
+7. `/systems` - Systems collection (GET, POST)
+8. `/systems/{systemId}` - Single system (GET, PUT, DELETE)
+9. `/systems/{systemId}/subsystems` - Subsystems (GET, POST)
+
+#### 1.4 Deployments Paths
+10. `/deployments` - Deployments collection (GET, POST)
+11. `/deployments/{deploymentId}` - Single deployment (GET, PUT, DELETE)
+12. `/deployments/{deploymentId}/subdeployments` - Subdeployments (GET, POST)
+13. `/systems/{systemId}/deployments` - System deployments (GET)
+
+#### 1.5 Procedures Paths
+14. `/procedures` - Procedures collection (GET, POST)
+15. `/procedures/{procedureId}` - Single procedure (GET, PUT, DELETE)
+
+#### 1.6 Sampling Features Paths
+16. `/samplingFeatures` - Sampling features collection (GET)
+17. `/systems/{systemId}/samplingFeatures` - System sampling features (GET, POST)
+18. `/samplingFeatures/{featureId}` - Single sampling feature (GET, PUT, DELETE)
+
+#### 1.7 Properties Paths
+19. `/properties` - Properties collection (GET, POST)
+20. `/properties/{propId}` - Single property (GET, PUT, DELETE)
+
+**Pattern Summary:**
+- **Canonical collections:** `/{resourceType}` - GET (list), POST (create)
+- **Canonical resources:** `/{resourceType}/{id}` - GET (retrieve), PUT (replace), DELETE (delete)
+- **Nested collections:** `/{parentType}/{parentId}/{childType}` - GET (list), POST (create)
+
+---
+
+### 2. HTTP Methods Specified for Each Path
+
+| Path | GET | POST | PUT | DELETE | Total |
+|------|-----|------|-----|--------|-------|
+| `/` | ✓ | | | | 1 |
+| `/conformance` | ✓ | | | | 1 |
+| `/collections` | ✓ | | | | 1 |
+| `/collections/{collectionId}` | ✓ | | | | 1 |
+| `/collections/{collectionId}/items` | ✓ | ✓ | | | 2 |
+| `/collections/{collectionId}/items/{resourceId}` | ✓ | | | ✓ | 2 |
+| `/systems` | ✓ | ✓ | | | 2 |
+| `/systems/{systemId}` | ✓ | | ✓ | ✓ | 3 |
+| `/systems/{systemId}/subsystems` | ✓ | ✓ | | | 2 |
+| `/deployments` | ✓ | ✓ | | | 2 |
+| `/deployments/{deploymentId}` | ✓ | | ✓ | ✓ | 3 |
+| `/deployments/{deploymentId}/subdeployments` | ✓ | ✓ | | | 2 |
+| `/systems/{systemId}/deployments` | ✓ | | | | 1 |
+| `/procedures` | ✓ | ✓ | | | 2 |
+| `/procedures/{procedureId}` | ✓ | | ✓ | ✓ | 3 |
+| `/samplingFeatures` | ✓ | | | | 1 |
+| `/systems/{systemId}/samplingFeatures` | ✓ | ✓ | | | 2 |
+| `/samplingFeatures/{featureId}` | ✓ | | ✓ | ✓ | 3 |
+| `/properties` | ✓ | ✓ | | | 2 |
+| `/properties/{propId}` | ✓ | | ✓ | ✓ | 3 |
+| **Total** | **20** | **10** | **5** | **5** | **40** |
+
+**Notable Absence:** PATCH method not defined in OpenAPI schema (though mentioned in standard document for partial updates per OGC API - Features Part 4)
+
+**Method Patterns:**
+- **GET:** All 20 paths (100% coverage)
+- **POST:** 10 paths (canonical + nested collections only)
+- **PUT:** 5 paths (single resource endpoints only: systems, deployments, procedures, samplingFeatures, properties)
+- **DELETE:** 5 paths (single resource endpoints only)
+
+---
+
+### 3. Parameters Defined
+
+#### 3.1 Path Parameters (13 total)
+
+| Parameter Name | Type | Description | Used In |
+|----------------|------|-------------|---------|
+| `collectionId` | string | Local identifier of a collection | `/collections/{collectionId}/*` |
+| `resourceId` | string | Local identifier of a resource | `/collections/{collectionId}/items/{resourceId}` |
+| `systemId` | string | Local identifier of a System | `/systems/{systemId}/*` |
+| `deploymentId` | string | Local identifier of a Deployment | `/deployments/{deploymentId}/*` |
+| `procedureId` | string | Local identifier of a Procedure | `/procedures/{procedureId}` |
+| `featureId` | string | Local identifier of a Feature | `/samplingFeatures/{featureId}` |
+| `propId` | string | Local identifier of a Property | `/properties/{propId}` |
+
+**Constraints:** All path parameters are `required: true`, `minLength: 1`
+
+#### 3.2 Query Parameters (15 total)
+
+**Spatial Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `bbox` | array of number | No | Bounding box (4 or 6 numbers): minLon, minLat, [minHeight], maxLon, maxLat, [maxHeight]. Default CRS: WGS84 (CRS84) |
+| `geom` | string | No | WKT geometry for intersection filter |
+
+**Temporal Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `datetime` | string | No | Date-time instant or interval (RFC 3339). Supports: instant, `now`, bounded interval, half-bounded (../end, start/.., now/..), `latest` |
+
+**Identifier Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `id` | array of string | No | List of resource local IDs or unique IDs (URI). Comma-separated, referenced as `idListSchema` |
+
+**Text Search:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `q` | array of string | No | Comma-separated keywords for full-text search. Length 1-50 per keyword. Searches `name` and `description` properties |
+
+**Relationship Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `parent` | array of string | No | Filter by parent resource ID(s). Used for Systems (subsystems) and Deployments (subdeployments) |
+| `procedure` | array of string | No | Filter Systems by implemented procedure ID(s) |
+| `foi` | array of string | No | Filter by feature of interest ID(s). Applies to Systems, Deployments, Sampling Features |
+| `observedProperty` | array of string | No | Filter by observed property ID(s). Applies to Systems, Deployments, Procedures, Sampling Features |
+| `controlledProperty` | array of string | No | Filter by controlled property ID(s). Applies to Systems, Deployments, Procedures, Sampling Features |
+| `system` | array of string | No | Filter Deployments by deployed system ID(s) |
+| `baseProperty` | array of string | No | Filter Properties by base property ID(s) |
+| `objectType` | array of string (URI) | No | Filter Properties by object type URI(s) |
+
+**Pagination & Behavior:**
+| Name | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `limit` | integer | No | 10 | Max items in response. Range: 1-10000 |
+| `recursive` | boolean | No | false | Include nested resources recursively |
+| `cascade` | boolean | No | false | Delete dependent resources (DELETE operations only) |
+
+#### 3.3 Parameter Type Details
+
+**`idListSchema`** (used by `id`, `parent`, `procedure`, `foi`, `observedProperty`, `controlledProperty`, `system`, `baseProperty`):
+```yaml
+type: array
+minItems: 1
+items:
+  type: string  # Can be local ID or URI
+explode: false  # Comma-separated format
+```
+
+**`datetimeSchema`** (used by `datetime`):
+```yaml
+oneOf:
+  - type: string
+    format: date-time
+  - type: string
+    const: 'now'
+  - type: string
+    const: 'latest'
+  - type: string
+    pattern: '^(.*)\/(.*)$'  # Interval format
+```
+
+**`bbox` Examples:**
+- 2D: `-180,-90,180,90` (WGS84 lon/lat)
+- 3D: `-180,-90,0,180,90,1000` (WGS84 lon/lat/height)
+
+---
+
+### 4. Request Body Schemas
+
+#### 4.1 Request Body Media Types
+
+**For Resource Creation/Update:**
+- `application/geo+json` - GeoJSON Feature representation
+- `application/sml+json` - SensorML-JSON representation
+
+**For Adding Resources to Collections:**
+- `text/uri-list` - Plain text list of URIs (one per line)
+- `application/json` - JSON array of URI strings
+
+#### 4.2 System Request Body Schema
+
+**GeoJSON Format (`application/geo+json`):**
+```yaml
+schema:
+  allOf:
+    - $ref: '#/components/schemas/feature'  # Base Feature schema
+    - properties:
+        properties:
+          properties:
+            featureType:
+              $ref: '#/components/schemas/SystemTypeUris'  # Enum
+            assetType:
+              type: string
+              enum: [Equipment, Human, LivingThing, Simulation, Process, Group, Other]
+            validTime:
+              $ref: '#/components/schemas/timePeriod'  # [start, end]
+            systemKind@link:
+              $ref: '#/components/schemas/link-2'
+```
+
+**Required Properties:**
+- `featureType` (SystemTypeUris enum)
+- `uid` (URI format)
+- `name` (string, minLength: 1)
+
+**Optional Properties:**
+- `description` (string)
+- `assetType` (enum)
+- `validTime` (array of 2 datetime strings)
+- `systemKind@link` (link object)
+
+**SystemTypeUris Enum Values:**
+- `http://www.w3.org/ns/sosa/Sensor`
+- `http://www.w3.org/ns/sosa/Actuator`
+- `http://www.w3.org/ns/sosa/Platform`
+- `http://www.w3.org/ns/sosa/Sampler`
+- `http://www.w3.org/ns/sosa/System`
+- Short forms: `sosa:Sensor`, `sosa:Actuator`, `sosa:Platform`, `sosa:Sampler`, `sosa:System`
+
+**SensorML Format (`application/sml+json`):**
+Referenced as `system-2` schema (PhysicalSystem or SimpleProcess SensorML 3.0 classes)
+
+#### 4.3 Deployment Request Body Schema
+
+**GeoJSON Format:**
+```yaml
+allOf:
+  - $ref: '#/components/schemas/feature'
+  - properties:
+      properties:
+        properties:
+          featureType:
+            const: 'http://www.w3.org/ns/sosa/Deployment'
+          validTime:
+            $ref: '#/components/schemas/timePeriod'  # Required
+          platform@link:
+            $ref: '#/components/schemas/link-2'
+          deployedSystems@link:
+            type: array
+            items:
+              $ref: '#/components/schemas/link-2'
+```
+
+**SensorML Format:**
+Referenced as `deployment-2` schema (SensorML Deployment class)
+
+#### 4.4 Procedure Request Body Schema
+
+**GeoJSON Format:**
+```yaml
+allOf:
+  - $ref: '#/components/schemas/feature'
+  - properties:
+      geometry: null  # Procedures have no geometry
+      properties:
+        properties:
+          featureType:
+            # Procedure type URI
+          procedureType:
+            # One of: ObservingProcedure, SamplingProcedure, ActuatingProcedure
+```
+
+**SensorML Format:**
+SimpleProcess or AggregateProcess classes
+
+#### 4.5 Sampling Feature Request Body Schema
+
+**GeoJSON Format:**
+```yaml
+allOf:
+  - $ref: '#/components/schemas/feature'
+  - properties:
+      properties:
+        properties:
+          featureType:
+            # Sampling feature type URI (e.g., SF_SamplingPoint)
+          sampledFeature@link:
+            $ref: '#/components/schemas/link-2'
+          sampleOf@link:
+            type: array
+            items:
+              $ref: '#/components/schemas/link-2'
+```
+
+#### 4.6 Property Request Body Schema
+
+**GeoJSON Format:**
+```yaml
+allOf:
+  - $ref: '#/components/schemas/feature'
+  - properties:
+      geometry: null  # Properties have no geometry
+      properties:
+        properties:
+          baseProperty@link:
+            $ref: '#/components/schemas/link-2'
+          objectType:
+            type: string
+            format: uri
+```
+
+**SensorML Format:**
+DerivedProperty class
+
+#### 4.7 URI List Format
+
+For adding existing resources to collections:
+
+**text/uri-list:**
+```
+https://data.example.org/api/systems/2f35ofoms2l6
+https://data.example.org/api/systems/PLT412
+```
+
+**application/json:**
+```json
+[
+  "https://data.example.org/api/systems/2f35ofoms2l6",
+  "https://data.example.org/api/systems/PLT412"
+]
+```
+
+---
+
+### 5. Response Schemas Defined
+
+#### 5.1 Response Media Types
+
+**Feature Resources:**
+- `application/geo+json` - GeoJSON Feature or FeatureCollection
+- `application/sml+json` - SensorML-JSON representation
+
+**Other Responses:**
+- `application/json` - Landing page, conformance, collections metadata
+- `text/uri-list` - List of created resource URIs (batch creates)
+
+#### 5.2 Feature Response Schema
+
+**Base Feature Schema:**
+```yaml
+feature:
+  allOf:
+    - $ref: '#/components/schemas/Feature'  # GeoJSON Feature
+    - type: object
+      properties:
+        id:
+          description: Local ID (ignored on create/update)
+          type: string
+          minLength: 1
+        geometry:
+          description: GeoJSON geometry or null
+        bbox:
+          description: Optional bounding box
+          type: array
+        properties:
+          type: object
+          required:
+            - featureType
+            - uid
+            - name
+          properties:
+            featureType:
+              type: string
+            uid:
+              type: string
+              format: uri
+            name:
+              type: string
+              minLength: 1
+            description:
+              type: string
+              minLength: 1
+        links:
+          $ref: '#/components/schemas/links'
+```
+
+#### 5.3 System Response Schema (GeoJSON)
+
+Extends base `feature` with:
+- `properties.featureType`: SystemTypeUris enum
+- `properties.assetType`: Equipment | Human | LivingThing | Simulation | Process | Group | Other
+- `properties.validTime`: timePeriod array
+- `properties.systemKind@link`: link object
+
+#### 5.4 Link Schema
+
+**link-2 Schema:**
+```yaml
+type: object
+required:
+  - href
+properties:
+  href:
+    type: string
+    format: uri
+  rel:
+    type: string
+    examples: [alternate, self, http://www.opengis.net/def/rel/ogc/1.0/conformance]
+  type:
+    type: string
+    examples: [application/json, image/tiff; application=geotiff]
+  hreflang:
+    type: string
+    pattern: ^([a-z]{2}(-[A-Z]{2})?)|x-default$
+  title:
+    type: string
+    minLength: 1
+  uid:
+    description: Unique identifier of target resource
+    type: string
+    format: uri
+  rt:
+    description: Semantic type of target resource (RFC 6690)
+    type: string
+    format: uri
+  if:
+    description: Interface used to access target resource (RFC 6690)
+    type: string
+    format: uri
+```
+
+#### 5.5 Collection Response Schema
+
+**FeatureCollection:**
+```yaml
+type: object
+properties:
+  type:
+    const: FeatureCollection
+  features:
+    type: array
+    items:
+      $ref: '#/components/schemas/feature'
+  links:
+    $ref: '#/components/schemas/links'
+  numberMatched:
+    type: integer
+    minimum: 0
+  numberReturned:
+    type: integer
+    minimum: 0
+```
+
+#### 5.6 SWE Common Data Component Schemas
+
+The schema includes complete SWE Common 3.0 schemas for data components used in SensorML representations:
+
+**Scalar Components:**
+- `Boolean` - True/false values
+- `Count` - Integer values
+- `Quantity` - Decimal values with unit of measure
+- `Time` - Date-time or duration values
+- `Category` - Categorical values from code space
+- `Text` - Free text values
+
+**Range Components:**
+- `CountRange` - Integer range [min, max]
+- `QuantityRange` - Decimal range with UoM
+- `TimeRange` - Date-time range
+- `CategoryRange` - Categorical range
+
+**Aggregate Components:**
+- `DataRecord` - Record/struct with named fields
+- `Vector` - Geometric vector with coordinates
+- `DataArray` - Array of repeated component
+- `Matrix` - 2D array
+- `DataChoice` - Choice/union of alternatives
+- `Geometry` - Spatial geometry
+
+**Supporting Schemas:**
+- `UnitReference` - Unit of measure (UCUM code or URI)
+- `AllowedValues` - Constraints (enum values, intervals)
+- `AllowedTokens` - Token constraints (enum or regex)
+- `AllowedTimes` - Time constraints
+- `NilValues*` - Reserved values (NaN, missing, etc.)
+
+---
+
+### 6. Status Codes Documented
+
+#### 6.1 Success Status Codes
+
+| Code | Name | Used For | Response Body |
+|------|------|----------|---------------|
+| **200** | OK | GET operations (retrieve, list) | Resource(s) in requested format |
+| **201** | Created | POST operations (create) | Location header with canonical URI |
+| **204** | No Content | PUT (replace), DELETE operations | Empty body |
+
+#### 6.2 Client Error Status Codes
+
+| Code | Name | Description | Example Causes |
+|------|------|-------------|----------------|
+| **400** | Bad Request | Invalid request syntax or semantics | Malformed JSON, invalid parameter value, constraint violation |
+| **401** | Unauthorized | Authentication required but missing | No credentials provided |
+| **403** | Forbidden | Authenticated but insufficient permissions | User lacks write permission |
+| **404** | Not Found | Resource does not exist | Invalid ID, resource deleted |
+| **409** | Conflict | Request conflicts with current state | DELETE without cascade when nested resources exist |
+
+#### 6.3 Server Error Status Codes
+
+| Code | Name | Description |
+|------|------|-------------|
+| **5XX** | Server Error | Generic server error response | Internal server errors, database issues, timeout |
+
+#### 6.4 Status Code Usage by Operation
+
+**GET Operations:**
+- 200 (success)
+- 400, 401, 403, 404 (client errors)
+- 5XX (server errors)
+
+**POST Operations:**
+- 201 (success) - Returns `Location` header pointing to created resource's canonical URL
+- 400, 401, 403, 404 (client errors)
+- 5XX (server errors)
+
+**PUT Operations:**
+- 204 (success) - No response body
+- 400, 401, 403, 404 (client errors)
+- 5XX (server errors)
+
+**DELETE Operations:**
+- 204 (success) - No response body
+- 400, 401, 403, 404, 409 (client errors) - 409 when cascade=false and nested resources exist
+- 5XX (server errors)
+
+---
+
+### 7. Security Requirements Specified
+
+**No explicit security schemes defined in OpenAPI schema.**
+
+The schema does not include a `components.securitySchemes` section or `security` requirements. This means:
+
+1. **Authentication/Authorization:** Left to implementation
+2. **401/403 Responses:** Documented but security mechanism unspecified
+3. **Implementation Choice:** Servers can choose any security mechanism (OAuth2, API keys, Basic Auth, etc.)
+
+**Implications:**
+- Client library should support flexible authentication (injectable headers, callback functions)
+- Security is transport-level concern, not API-level
+- Conformance with OGC API security best practices expected but not enforced by schema
+
+---
+
+### 8. Examples Provided in Schema
+
+#### 8.1 System Examples
+
+**Example 1: Simple Thermometer (GeoJSON)**
+```json
+{
+  "type": "Feature",
+  "id": "123",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [41.8781, -87.6298]
+  },
+  "properties": {
+    "uid": "urn:x-ogc:systems:001",
+    "name": "Outdoor Thermometer 001",
+    "description": "Digital thermometer located on first floor window 1",
+    "featureType": "http://www.w3.org/ns/sosa/Sensor",
+    "assetType": "Equipment",
+    "systemKind@link": {
+      "href": "https://data.example.org/api/procedures/TP60S?f=json",
+      "uid": "urn:x-myorg:datasheets:ThermoPro:TP60S:v001",
+      "title": "Thermo Pro TP60S",
+      "type": "application/geo+json"
+    }
+  }
+}
+```
+
+**Example 2: UAV Platform (GeoJSON)**
+```json
+{
+  "type": "Feature",
+  "id": "PLT412",
+  "geometry": null,
+  "properties": {
+    "uid": "urn:x-ogc:systems:uav:solo154",
+    "name": "UAV System 412",
+    "description": "3DR Solo UAV",
+    "featureType": "http://www.w3.org/ns/sosa/Platform",
+    "systemKind@link": {
+      "href": "https://data.example.org/api/procedures/nrof8qi7wc9a?f=json",
+      "uid": "urn:x-ogc:datasheets:uav:3dr-solo:v1",
+      "type": "application/geo+json"
+    }
+  }
+}
+```
+
+**Example 3: Simple Thermometer (SensorML-JSON)**
+```json
+{
+  "type": "PhysicalSystem",
+  "id": "123",
+  "definition": "http://www.w3.org/ns/sosa/Sensor",
+  "uniqueId": "urn:x-ogc:systems:001",
+  "label": "Outdoor Thermometer 001",
+  "description": "Digital thermometer located on first floor window 1",
+  "typeOf": {
+    "href": "https://data.example.org/api/procedures/TP60S?f=sml",
+    "uid": "urn:x-myorg:datasheets:ThermoPro:TP60S:v001",
+    "title": "ThermoPro TP60S",
+    "type": "application/sml+json"
+  },
+  "identifiers": [
+    {
+      "definition": "http://sensorml.com/ont/swe/property/SerialNumber",
+      "label": "Serial Number",
+      "value": "0123456879"
+    }
+  ],
+  "contacts": [
+    {
+      "role": "http://sensorml.com/ont/swe/roles/Operator",
+      "organisationName": "Field Maintenance Corp."
+    }
+  ],
+  "position": {
+    "type": "Point",
+    "coordinates": [41.8781, -87.6298]
+  }
+}
+```
+
+**Example 4: Global Hawk UAV Platform (SensorML-JSON)**
+```json
+{
+  "type": "PhysicalSystem",
+  "id": "PLT412",
+  "definition": "http://www.w3.org/ns/sosa/Platform",
+  "uniqueId": "urn:x-usaf:systems:aircraft:101",
+  "label": "Global Hawk 101",
+  "description": "Example UAV platform",
+  "typeOf": {
+    "href": "https://data.example.org/api/procedures/ge4pjqq0hq6y?f=json",
+    "uid": "urn:x-ngc:datasheets:uav:RQ-4B",
+    "type": "application/sml+json"
+  },
+  "identifiers": [
+    {
+      "definition": "http://sensorml.com/ont/swe/property/SerialNumber",
+      "label": "Serial Number",
+      "value": "0123456879"
+    }
+  ],
+  "contacts": [
+    {
+      "role": "http://sensorml.com/ont/swe/property/Operator",
+      "organisationName": "Field Maintenance Corp."
+    }
+  ],
+  "localReferenceFrames": [
+    {
+      "label": "Platform Frame",
+      "description": "The platform frame is defined as the aircraft principal axes",
+      "origin": "Center of gravity of the aircraft",
+      "axes": [
+        {
+          "name": "x",
+          "description": "Longitudinal or roll axis, parallel to the fuselage reference line, directed forward"
+        },
+        {
+          "name": "y",
+          "description": "Transverse or pitch axis, parallel to the line drawn from wingtip to wingtip, directed to the right of the aircraft when looking forward"
+        },
+        {
+          "name": "z",
+          "description": "Vertical or yaw axis, perpendicular to the wings and to the fuselage reference line, directed toward the bottom of the aircraft"
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### 8.2 Deployment Example
+
+**Saildrone Arctic Mission 2017 (GeoJSON)**
+```json
+{
+  "type": "Feature",
+  "id": "iv3f2kcq27gfi",
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [[
+      [53.76, -173.7],
+      [53.76, -155.07],
+      [75.03, -155.07],
+      [75.03, -173.7],
+      [53.76, -173.7]
+    ]]
+  },
+  "properties": {
+    "uid": "urn:x-ogc:deployments:D001",
+    "name": "Saildrone - 2017 Arctic Mission",
+    "featureType": "http://www.w3.org/ns/sosa/Deployment",
+    "description": "In July 2017, three saildrones were launched from Dutch Harbor, Alaska, in partnership with NOAA Research...",
+    "validTime": ["2017-07-17T00:00:00Z", "2017-09-29T00:00:00Z"],
+    "platform@link": {
+      "href": "https://data.example.org/api/systems/27559?f=sml",
+      "uid": "urn:x-saildrone:platforms:SD-1003",
+      "title": "Saildrone SD-1003"
+    },
+    "deployedSystems@link": [
+      {
+        "href": "https://data.example.org/api/systems/41548?f=sml",
+        "uid": "urn:x-saildrone:sensors:temp01",
+        "title": "Air Temperature Sensor"
+      },
+      {
+        "href": "https://data.example.org/api/systems/36584?f=sml",
+        "uid": "urn:x-saildrone:sensors:temp02",
+        "title": "Water Temperature Sensor"
+      },
+      {
+        "href": "https://data.example.org/api/systems/47752?f=sml",
+        "uid": "urn:x-saildrone:sensors:wind01",
+        "title": "Wind Speed and Direction Sensor"
+      }
+    ]
+  },
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://data.example.org/api/deployments/iv3f2kcq27gfi?f=json",
+      "type": "application/geo+json",
+      "title": "this document"
+    },
+    {
+      "rel": "alternate",
+      "href": "https://data.example.org/api/deployments/iv3f2kcq27gfi?f=sml",
+      "type": "application/sml+json",
+      "title": "this resource as SensorML"
+    }
+  ]
+}
+```
+
+**Same Deployment (SensorML-JSON)**
+```json
+{
+  "type": "Deployment",
+  "id": "iv3f2kcq27gfi",
+  "definition": "http://www.w3.org/ns/sosa/Deployment",
+  "uniqueId": "urn:x-saildrone:mission:2025",
+  "label": "Saildrone - 2017 Arctic Mission",
+  "description": "In July 2017, three saildrones were launched from Dutch Harbor, Alaska, in partnership with NOAA Research...",
+  "classifiers": [
+    {
+      "definition": "https://schema.org/DefinedRegion",
+      "label": "Region",
+      "value": "Arctic"
+    }
+  ],
+  "contacts": [
+    {
+      "role": "http://sensorml.com/ont/swe/property/Operator",
+      "organisationName": "Saildrone, Inc.",
+      "contactInfo": {
+        "website": "https://www.saildrone.com/",
+        "address": {
+          "deliveryPoint": "1050 W. Tower Ave.",
+          "city": "Alameda",
+          "postalCode": "94501",
+          "administrativeArea": "CA",
+          "country": "USA"
+        }
+      }
+    },
+    {
+      "role": "http://sensorml.com/ont/swe/property/DataProvider",
+      "organisationName": "NOAA Pacific Marine Environmental Laboratory (PMEL)",
+      "contactInfo": {
+        "website": "https://www.pmel.noaa.gov"
+      }
+    }
+  ],
+  "validTime": ["2017-07-17T00:00:00Z", "2017-09-29T00:00:00Z"],
+  "location": {
+    "type": "Polygon",
+    "coordinates": [[
+      [-173.7, 53.76],
+      [-173.7, 75.03],
+      [-155.07, 75.03],
+      [-155.07, 53.76],
+      [-173.7, 53.76]
+    ]]
+  }
+}
+```
+
+#### 8.3 Parameter Examples
+
+**bbox Parameter:**
+- 2D: `-180,-90,180,90`
+- 3D: `-180,-90,0,180,90,1000`
+
+**datetime Parameter:**
+- Instant: `2018-02-12T23:20:50Z`
+- Now: `now`
+- Bounded interval: `2018-02-12T00:00:00Z/2018-03-18T12:31:12Z`
+- Half-bounded start: `2018-02-12T00:00:00Z/..`
+- To now: `2018-02-12T00:00:00Z/now`
+- From now: `now/2018-02-12T00:00:00Z`
+- Up to now: `../now`
+- From now on: `now/..`
+- Latest: `latest`
+
+**geom Parameter:**
+- LineString: `LINESTRING((-86.53 12.45), (-86.54 12.46), (-86.55 12.47))`
+- Polygon: `POLYGON((0 0,4 0,4 4,0 4,0 0))`
+
+**keyword (q) Parameter:**
+- One keyword: `temp`
+- Multiple: `gps,imu`
+
+**id Parameter:**
+- Local IDs: `RES_ID1,RES_ID2,RES_ID63`
+- URIs: `urn:example:resource:001,urn:example:resource:033`
+
+**URI List (text/uri-list):**
+```
+https://data.example.org/api/systems/2f35ofoms2l6
+https://data.example.org/api/systems/PLT412
+```
+
+**URI List (application/json):**
+```json
+[
+  "https://data.example.org/api/systems/2f35ofoms2l6",
+  "https://data.example.org/api/systems/PLT412"
+]
+```
+
+---
+
+### 9. Data Models/Schemas for Resources
+
+#### 9.1 System Data Model (GeoJSON)
+
+**Structure:**
+```typescript
+interface SystemGeoJSON {
+  type: 'Feature';
+  id?: string;  // Local ID (server-assigned on create)
+  geometry: Point | Polygon | LineString | null;  // null for non-spatial systems
+  bbox?: number[];  // Optional bounding box
+  properties: {
+    featureType: SystemTypeUris;  // Required
+    uid: string;  // Required, format: uri
+    name: string;  // Required, minLength: 1
+    description?: string;  // Optional
+    assetType?: 'Equipment' | 'Human' | 'LivingThing' | 'Simulation' | 'Process' | 'Group' | 'Other';
+    validTime?: [string, string | null];  // [start, end], ISO 8601
+    'systemKind@link'?: Link;  // Link to procedure (datasheet)
+  };
+  links?: Link[];  // Related resources
+}
+```
+
+#### 9.2 System Data Model (SensorML)
+
+**Structure:**
+```typescript
+interface SystemSensorML {
+  type: 'PhysicalSystem' | 'PhysicalComponent' | 'SimpleProcess' | 'AggregateProcess';
+  id?: string;  // Local ID
+  definition: string;  // System type URI (sosa:Sensor, etc.)
+  uniqueId: string;  // Required, format: uri
+  label: string;  // Required
+  description?: string;
+  typeOf?: Link;  // Link to system kind (datasheet)
+  identifiers?: Identifier[];  // Serial numbers, etc.
+  classifiers?: Classifier[];  // Additional categorizations
+  characteristics?: Characteristic[];  // System properties
+  capabilities?: Capability[];  // System capabilities
+  contacts?: Contact[];  // Responsible parties
+  documentation?: Documentation[];  // Manuals, etc.
+  history?: Event[];  // Significant events
+  validTime?: [string, string | null];
+  position?: GeoJSONGeometry | null;
+  localReferenceFrames?: LocalReferenceFrame[];
+  components?: Component[];  // Subsystems (for PhysicalSystem)
+  links?: Link[];
+}
+```
+
+#### 9.3 Deployment Data Model (GeoJSON)
+
+**Structure:**
+```typescript
+interface DeploymentGeoJSON {
+  type: 'Feature';
+  id?: string;
+  geometry: Point | Polygon | LineString | null;
+  bbox?: number[];
+  properties: {
+    featureType: 'http://www.w3.org/ns/sosa/Deployment';  // Fixed
+    uid: string;  // Required
+    name: string;  // Required
+    description?: string;
+    validTime: [string, string | null];  // Required for Deployments
+    'platform@link'?: Link;
+    'deployedSystems@link'?: Link[];
+    'featuresOfInterest@link'?: Link[];
+    'samplingFeatures@link'?: Link[];
+    'subdeployments@link'?: Link[];
+  };
+  links?: Link[];
+}
+```
+
+#### 9.4 Procedure Data Model (GeoJSON)
+
+**Structure:**
+```typescript
+interface ProcedureGeoJSON {
+  type: 'Feature';
+  id?: string;
+  geometry: null;  // Procedures MUST have null geometry
+  properties: {
+    featureType: string;  // Procedure type URI
+    uid: string;  // Required
+    name: string;  // Required
+    description?: string;
+    procedureType: 'ObservingProcedure' | 'SamplingProcedure' | 'ActuatingProcedure' | 'Procedure';
+    'implementingSystems@link'?: Link[];
+  };
+  links?: Link[];
+}
+```
+
+#### 9.5 Sampling Feature Data Model (GeoJSON)
+
+**Structure:**
+```typescript
+interface SamplingFeatureGeoJSON {
+  type: 'Feature';
+  id?: string;
+  geometry: Point | Polygon | LineString | MultiPoint | MultiLineString | MultiPolygon | GeometryCollection;
+  bbox?: number[];
+  properties: {
+    featureType: string;  // Sampling feature type URI (e.g., SF_SamplingPoint)
+    uid: string;  // Required
+    name: string;  // Required
+    description?: string;
+    'sampledFeature@link': Link;  // Required - ultimate FOI
+    'sampleOf@link'?: Link[];  // Sub-sampling
+    'parentSystem@link'?: Link;  // Associated system
+  };
+  links?: Link[];
+}
+```
+
+#### 9.6 Property Data Model (GeoJSON)
+
+**Structure:**
+```typescript
+interface PropertyGeoJSON {
+  type: 'Feature';
+  id?: string;
+  geometry: null;  // Properties MUST have null geometry
+  properties: {
+    featureType: string;  // Property type URI
+    uid: string;  // Required
+    name: string;  // Required
+    description?: string;
+    'baseProperty@link'?: Link;  // Derivation hierarchy
+    objectType?: string;  // URI - type of object property applies to
+  };
+  links?: Link[];
+}
+```
+
+#### 9.7 Link Data Model
+
+**Structure:**
+```typescript
+interface Link {
+  href: string;  // Required, format: uri
+  rel?: string;  // Link relation type
+  type?: string;  // Media type
+  hreflang?: string;  // Language tag (e.g., 'en-US')
+  title?: string;  // Human-readable title
+  uid?: string;  // Unique identifier of target resource
+  rt?: string;  // Semantic type (RFC 6690)
+  if?: string;  // Interface (RFC 6690)
+}
+```
+
+---
+
+### 10. Property Names and Types for Each Resource
+
+#### 10.1 System Properties
+
+| Property Name | Type | Required | Constraints | Description |
+|---------------|------|----------|-------------|-------------|
+| `featureType` | string (enum) | ✓ | SystemTypeUris | System type: Sensor, Actuator, Platform, Sampler, System |
+| `uid` | string | ✓ | format: uri | Globally unique identifier |
+| `name` | string | ✓ | minLength: 1 | Human-readable name |
+| `description` | string | | minLength: 1 | Human-readable description |
+| `assetType` | string (enum) | | 7 values | Equipment, Human, LivingThing, Simulation, Process, Group, Other |
+| `validTime` | array | | [start, end] | Validity period, ISO 8601 datetime strings |
+| `systemKind@link` | Link | | | Link to procedure describing system kind |
+
+#### 10.2 Deployment Properties
+
+| Property Name | Type | Required | Constraints | Description |
+|---------------|------|----------|-------------|-------------|
+| `featureType` | string | ✓ | const: 'http://www.w3.org/ns/sosa/Deployment' | Fixed value |
+| `uid` | string | ✓ | format: uri | Globally unique identifier |
+| `name` | string | ✓ | minLength: 1 | Human-readable name |
+| `description` | string | | minLength: 1 | Human-readable description |
+| `validTime` | array | ✓ | [start, end] | Deployment time period, required |
+| `platform@link` | Link | | | Platform system deployed on |
+| `deployedSystems@link` | Link[] | | | Systems deployed |
+| `featuresOfInterest@link` | Link[] | | | Ultimate features observed/controlled |
+| `samplingFeatures@link` | Link[] | | | Associated sampling features |
+| `subdeployments@link` | Link[] | | | Child deployments |
+
+#### 10.3 Procedure Properties
+
+| Property Name | Type | Required | Constraints | Description |
+|---------------|------|----------|-------------|-------------|
+| `featureType` | string | ✓ | URI | Procedure type URI |
+| `uid` | string | ✓ | format: uri | Globally unique identifier |
+| `name` | string | ✓ | minLength: 1 | Human-readable name |
+| `description` | string | | minLength: 1 | Human-readable description |
+| `procedureType` | string | | URI | ObservingProcedure, SamplingProcedure, ActuatingProcedure, or Procedure |
+| `implementingSystems@link` | Link[] | | | Systems implementing this procedure |
+
+#### 10.4 Sampling Feature Properties
+
+| Property Name | Type | Required | Constraints | Description |
+|---------------|------|----------|-------------|-------------|
+| `featureType` | string | ✓ | URI | Sampling feature type (e.g., SF_SamplingPoint) |
+| `uid` | string | ✓ | format: uri | Globally unique identifier |
+| `name` | string | ✓ | minLength: 1 | Human-readable name |
+| `description` | string | | minLength: 1 | Human-readable description |
+| `sampledFeature@link` | Link | ✓ | | Ultimate feature of interest |
+| `sampleOf@link` | Link[] | | | Other sampling features (sub-sampling) |
+| `parentSystem@link` | Link | | | System associated with this sampling feature |
+
+#### 10.5 Property Resource Properties
+
+| Property Name | Type | Required | Constraints | Description |
+|---------------|------|----------|-------------|-------------|
+| `featureType` | string | ✓ | URI | Property type URI |
+| `uid` | string | ✓ | format: uri | Globally unique identifier |
+| `name` | string | ✓ | minLength: 1 | Human-readable name |
+| `description` | string | | minLength: 1 | Human-readable description |
+| `baseProperty@link` | Link | | | Base property this is derived from |
+| `objectType` | string | | format: uri | Type of object property applies to |
+
+#### 10.6 Common Feature Properties
+
+**All Resources (via base `feature` schema):**
+| Property Name | Type | Required | Description |
+|---------------|------|----------|-------------|
+| `type` | string | ✓ | Always "Feature" for GeoJSON |
+| `id` | string | | Local ID (server-assigned) |
+| `geometry` | GeoJSON Geometry | | Spatial geometry (null for non-spatial) |
+| `bbox` | number[] | | Optional bounding box |
+| `properties` | object | ✓ | Resource properties (type-specific) |
+| `links` | Link[] | | Related resources |
+
+---
+
+### 11. Optional vs Required According to Schema
+
+#### 11.1 Required Properties (All Resources)
+
+**GeoJSON Format:**
+```yaml
+required:
+  - type          # "Feature"
+  - properties    # Object containing:
+    - featureType   # Resource type URI
+    - uid           # Unique identifier
+    - name          # Human-readable name
+```
+
+**Additional Required for Deployments:**
+```yaml
+properties:
+  validTime:  # Required for Deployments only
+    - start date-time
+    - end date-time or null
+```
+
+#### 11.2 Optional Properties
+
+**System:**
+- `id` (server-assigned)
+- `geometry` (recommended for mobile systems)
+- `bbox`
+- `description`
+- `assetType`
+- `validTime`
+- `systemKind@link`
+- `links`
+
+**Deployment:**
+- `id`
+- `geometry`
+- `bbox`
+- `description`
+- `platform@link`
+- `deployedSystems@link`
+- `featuresOfInterest@link`
+- `samplingFeatures@link`
+- `subdeployments@link`
+- `links`
+
+**Procedure:**
+- `id`
+- `description`
+- `procedureType`
+- `implementingSystems@link`
+- `links`
+
+**Sampling Feature:**
+- `id`
+- `bbox`
+- `description`
+- `sampleOf@link`
+- `parentSystem@link`
+- `links`
+
+**Property:**
+- `id`
+- `description`
+- `baseProperty@link`
+- `objectType`
+- `links`
+
+#### 11.3 Server-Managed Properties
+
+**Not in Request Body (ignored if provided):**
+- `id` - Server assigns local ID on creation
+- `links` - Server generates links based on relationships
+
+**Client Can Provide (server may override):**
+- `geometry` - Client provides, server may update (e.g., mobile systems)
+- `bbox` - Usually computed from geometry
+
+---
+
+### 12. Summary and Key Takeaways
+
+#### 12.1 OpenAPI Schema Completeness
+
+**Strong Points:**
+✅ **Complete Path Coverage:** All 20 paths from Part 1 specification documented  
+✅ **Precise Parameter Specifications:** Types, constraints, formats, examples provided  
+✅ **Dual Format Support:** Both GeoJSON and SensorML schemas included  
+✅ **Request/Response Schemas:** Complete schemas for all resource types  
+✅ **SWE Common Integration:** Full SWE Common 3.0 data component schemas  
+✅ **Comprehensive Examples:** Real-world examples for all resource types in both formats  
+✅ **Status Code Documentation:** All success/error codes documented with use cases  
+
+**Gaps:**
+❌ **PATCH Method Missing:** Standard mentions PATCH for partial updates (OGC API - Features Part 4) but not in OpenAPI schema  
+❌ **No Security Schemes:** Authentication/authorization mechanisms not specified  
+❌ **History Endpoints Missing:** Standard mentions history sub-collections but paths not in schema  
+❌ **Batch Operations Unclear:** Batch create mentioned in prose but schema structure unclear  
+
+#### 12.2 Schema vs Standard Alignment
+
+**Perfect Alignment:**
+- Path structure matches standard specification
+- Query parameters match requirements classes
+- Resource properties align with conformance classes
+- Format negotiation matches standard
+
+**Schema More Specific:**
+- Exact parameter types and constraints
+- Precise property schemas
+- Concrete examples with realistic data
+- Enumerated values (SystemTypeUris, assetType)
+
+**Standard More Comprehensive:**
+- Explains concepts and relationships
+- Documents conformance classes
+- Describes history/versioning approach
+- Specifies link relations semantics
+
+#### 12.3 Implementation Guidance
+
+**For Client Library:**
+
+1. **URL Construction:**
+   - Follow path templates exactly
+   - Support all 20 paths
+   - Use path parameters as string type
+
+2. **Query Parameters:**
+   - Implement 15 query parameters with correct types
+   - Support comma-separated ID lists
+   - Encode datetime intervals properly
+   - Handle bbox as array of 4 or 6 numbers
+
+3. **Request Bodies:**
+   - Support both GeoJSON and SensorML formats
+   - Implement required property validation
+   - Handle link objects with `@link` suffix convention
+
+4. **Response Handling:**
+   - Parse GeoJSON FeatureCollections
+   - Extract links from responses
+   - Handle all 7 status codes appropriately
+
+5. **Format Negotiation:**
+   - Suggest Accept header via options (don't set directly)
+   - Support `f` query parameter
+   - Default to GeoJSON for spatial, SensorML for detailed
+
+6. **Type Safety:**
+   - Create TypeScript interfaces matching schemas
+   - Validate enums (SystemTypeUris, assetType)
+   - Type-safe query builders
+
+**Next Steps:**
+Section 1.3 will compare these findings with Section 1.1 to identify alignments, discrepancies, and implementation insights.

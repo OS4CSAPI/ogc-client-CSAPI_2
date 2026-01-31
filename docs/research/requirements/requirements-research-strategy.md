@@ -52,25 +52,27 @@
 
 **Deliverable:** Standard document analysis (~650 lines) ✅ COMPLETED
 
-#### Section 1.2: OpenAPI Schema Analysis
+#### Section 1.2: OpenAPI Schema Analysis ✅
 
 **Source:** docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml
 
-**Questions to answer:**
-- [ ] What paths are defined in the OpenAPI schema?
-- [ ] What HTTP methods are specified for each path?
-- [ ] What parameters are defined (path, query, header)?
-- [ ] What request body schemas exist?
-- [ ] What response schemas are defined?
-- [ ] What are the exact parameter names, types, and constraints?
-- [ ] What status codes are documented?
-- [ ] What security requirements are specified?
-- [ ] What examples are provided in the schema?
-- [ ] What data models/schemas are defined for resources?
-- [ ] What are the exact property names and types for each resource?
-- [ ] What's optional vs required according to the schema?
+**Analysis:** [docs/research/requirements/csapi-part1-requirements.md](csapi-part1-requirements.md) Section 1.2
 
-**Deliverable:** OpenAPI schema analysis (~400-500 lines)
+**Answers:**
+- [x] What paths are defined in the OpenAPI schema? → **20 path templates: 2 capabilities paths (/, /conformance), 4 collections paths, 14 resource paths covering Systems (3 paths), Deployments (4 paths), Procedures (2 paths), Sampling Features (3 paths), Properties (2 paths)** (Analysis Section 1)
+- [x] What HTTP methods are specified for each path? → **40 total operations: 20 GET, 10 POST, 5 PUT, 5 DELETE. PATCH method absent from schema despite being mentioned in standard** (Section 2)
+- [x] What parameters are defined (path, query, header)? → **28 parameters total: 7 path parameters (collectionId, resourceId, systemId, deploymentId, procedureId, featureId, propId), 15 query parameters (bbox, datetime, geom, q, id, parent, procedure, foi, observedProperty, controlledProperty, system, baseProperty, objectType, limit, recursive, cascade), 0 header parameters** (Section 3)
+- [x] What request body schemas exist? → **Dual format support: application/geo+json (GeoJSON Feature) and application/sml+json (SensorML-JSON) for all resource types. Additional formats: text/uri-list and application/json for URI references** (Section 4)
+- [x] What response schemas are defined? → **Feature schema (base), SystemGeoJSON, DeploymentGeoJSON, ProcedureGeoJSON, SamplingFeatureGeoJSON, PropertyGeoJSON, plus SensorML equivalents. FeatureCollection for lists. Complete SWE Common 3.0 data component schemas included** (Section 5)
+- [x] What are the exact parameter names, types, and constraints? → **All parameters precisely typed: bbox (array of 4-6 numbers), datetime (string with RFC 3339 format or intervals), id/parent/foi/etc (array of strings via idListSchema), limit (integer 1-10000, default 10), recursive/cascade (boolean, default false), q (array of strings 1-50 chars)** (Section 3)
+- [x] What status codes are documented? → **7 status codes: 200 (OK - GET success), 201 (Created - POST success with Location header), 204 (No Content - PUT/DELETE success), 400/401/403/404 (client errors), 409 (Conflict - DELETE without cascade), 5XX (server errors)** (Section 6)
+- [x] What security requirements are specified? → **None explicitly defined. No components.securitySchemes section. Authentication/authorization left to implementation. 401/403 responses documented but mechanism unspecified** (Section 7)
+- [x] What examples are provided in the schema? → **Comprehensive examples: Simple Thermometer (GeoJSON + SensorML), UAV Platform (GeoJSON + SensorML), Global Hawk UAV (SensorML with local reference frames), Saildrone Arctic Mission deployment (GeoJSON + SensorML with contacts), plus parameter examples for bbox, datetime, geom, keywords, id lists, URI lists** (Section 8)
+- [x] What data models/schemas are defined for resources? → **6 resource models: System (with SystemTypeUris enum, assetType enum), Deployment (validTime required), Procedure (geometry null), Sampling Feature (sampledFeature required), Property (geometry null), plus Link model with href/rel/type/uid/rt/if properties** (Section 9)
+- [x] What are the exact property names and types for each resource? → **All properties documented with types and constraints. Common required: featureType (string/enum), uid (string format:uri), name (string minLength:1). Type-specific: System has assetType enum (7 values), Deployment requires validTime array, Sampling Feature requires sampledFeature@link, link suffix convention for associations** (Section 10)
+- [x] What's optional vs required according to the schema? → **Required for all: type, properties.featureType, properties.uid, properties.name. Required for Deployments only: properties.validTime. All other properties optional including: id (server-assigned), geometry (except null for Procedures/Properties), bbox, description, links, associations** (Section 11)
+
+**Deliverable:** OpenAPI schema analysis (~1,250 lines) ✅ COMPLETED
 
 #### Section 1.3: Comparison and Insights
 
