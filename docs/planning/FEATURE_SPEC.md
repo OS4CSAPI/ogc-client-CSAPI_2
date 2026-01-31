@@ -109,16 +109,16 @@ The ogc-client library already supports multiple OGC API standards (WFS, STAC, E
 ### 2.5 Standards & Specifications
 
 **Primary:**
-- OGC API – Connected Systems Part 1: Feature Resources (23-001) v1.0
-- OGC API – Connected Systems Part 2: Dynamic Data (23-002) v1.0
+- [OGC API – Connected Systems Part 1: Feature Resources (23-001) v1.0](https://docs.ogc.org/is/23-001/23-001.html)
+- [OGC API – Connected Systems Part 2: Dynamic Data (23-002) v1.0](https://docs.ogc.org/is/23-002/23-002.html)
 
 **Supporting:**
-- OGC SWE Common Data Model (23-000) v3.0 - Data component structure
-- OGC SensorML (24-014) v3.0 - System description format
-- GeoJSON (RFC 7946) - Alternative feature encoding
+- [OGC SWE Common Data Model (23-000) v3.0](https://docs.ogc.org/is/23-000/23-000.html) - Data component structure
+- [OGC SensorML (24-014) v3.0](https://docs.ogc.org/is/24-014/24-014.html) - System description format
+- [GeoJSON (RFC 7946)](https://tools.ietf.org/html/rfc7946) - Alternative feature encoding
 
 **Reference Implementation:**
-- PR #114 (EDR implementation) - Direct pattern template for architecture
+- [PR #114 (EDR implementation)](https://github.com/camptocamp/ogc-client/pull/114) - Direct pattern template for architecture
 
 ### 2.6 Success Criteria
 
