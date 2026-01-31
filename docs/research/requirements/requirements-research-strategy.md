@@ -129,18 +129,18 @@
 **Source:** docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
 
 **Questions to answer:**
-- [ ] What paths are defined for Datastreams, Observations, Control Streams, and Commands?
-- [ ] What HTTP methods are specified for each dynamic data path?
-- [ ] What parameters are defined for dynamic data endpoints?
-- [ ] What request body schemas exist for observations and commands?
-- [ ] What response schemas are defined for dynamic data?
-- [ ] What are the schema operation endpoints and their definitions?
-- [ ] What are the status/result endpoint definitions?
-- [ ] What pagination/temporal query parameters are defined?
-- [ ] What data models exist for Observation, DataStream, ControlStream, Command?
-- [ ] What property names and types are specified?
-- [ ] What's required vs optional in the schemas?
-- [ ] What format media types are specified in responses?
+- [x] What paths are defined for Datastreams, Observations, Control Streams, and Commands? **48 endpoints: Datastreams (8), Observations (6), ControlStreams (8), Commands (15), SystemEvents (6), SystemHistory (5)**
+- [x] What HTTP methods are specified for each dynamic data path? **GET (all 48), POST (15), PUT (19), DELETE (14); PATCH absent**
+- [x] What parameters are defined for dynamic data endpoints? **23 parameters: id/q/system/dataStream/controlStream/foi/observedProperty/controlledProperty/phenomenonTime/resultTime/issueTime/executionTime/reportTime/validTime/datetime/statusCode/sender/eventType/limit/obsFormat/cmdFormat/cascade + path params (systemId/dataStreamId/obsId/controlStreamId/cmdId/statusId/resultId/eventId/revId)**
+- [x] What request body schemas exist for observations and commands? **8 schemas: DataStream, Observation, ControlStream, Command, CommandStatus, CommandResult, SystemEvent, ObservationSchema/CommandSchema**
+- [x] What response schemas are defined for dynamic data? **200 OK (collection with items/links), 201 Created (Location header), 204 No Content, 400/401/403/404/409/5XX errors**
+- [x] What are the schema operation endpoints and their definitions? **GET/PUT /datastreams/{id}/schema?obsFormat, GET/PUT /controlstreams/{id}/schema?cmdFormat; formats: JSON/SWE Common/Protobuf**
+- [x] What are the status/result endpoint definitions? **10 endpoints: /commands/{cmdId}/status, /commands/{cmdId}/status/{statusId}, /commands/{cmdId}/result, /commands/{cmdId}/result/{resultId} with GET/POST/PUT/DELETE**
+- [x] What pagination/temporal query parameters are defined? **Pagination: limit (1-10000 default 10) with cursor-based links; Temporal: 7 params with ISO 8601 instants/periods, special values now/latest, intersection logic**
+- [x] What data models exist for Observation, DataStream, ControlStream, Command? **6 models: DataStream (15 props, 9 required), Observation (8 props, 3+oneOf required), ControlStream (17 props, 10 required), Command (9 props, 4 required), CommandStatus (8 props, 4 required), CommandResult (7 props, 2+oneOf required)**
+- [x] What property names and types are specified? **Common: id/name/description/validTime/formats; Link: href/rel/type/hreflang/title/uid/rt/if; Time: phenomenonTime/resultTime/issueTime/executionTime/reportTime; Observable/Controllable: definition/label/description**
+- [x] What's required vs optional in the schemas? **All 6 models documented with required arrays: DataStream (9 required), Observation (3+oneOf), ControlStream (10 required), Command (4 required), CommandStatus (4 required), CommandResult (2+oneOf)**
+- [x] What format media types are specified in responses? **13 types: JSON-based (application/json, application/swe+json, application/geo+json, application/sml+json, application/schema+json), Text (application/swe+text, application/swe+csv, text/plain), Binary (application/swe+binary, application/x-protobuf), Image (image/png, image/tiff;application=geotiff), Data URIs**
 
 **Deliverable:** OpenAPI schema analysis (~400-500 lines)
 

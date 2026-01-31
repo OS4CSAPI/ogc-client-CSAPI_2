@@ -2294,10 +2294,2564 @@ Part 2 provides comprehensive examples throughout the specification:
 
 ---
 
-## Next Steps
+---
 
-**Section 2.1 Complete:** CSAPI Part 2 Standard Document Analysis (6,200+ words documenting all dynamic data operations)
+## Section 2.2: CSAPI Part 2 OpenAPI Schema Analysis
 
-**Ready for Section 2.2:** CSAPI Part 2 OpenAPI Schema Analysis (analyze ogcapi-connectedsystems-2.bundled.oas31.yaml)
+**Schema:** [ogcapi-connectedsystems-2.bundled.oas31.yaml](../standards/ogcapi-connectedsystems-2.bundled.oas31.yaml)  
+**Date:** 2026-01-31  
+**Status:** Complete
 
-**Implementation Ready:** All information needed from standard document extracted and synthesized
+---
+
+### Overview
+
+The OpenAPI 3.1.0 specification for CSAPI Part 2 (Dynamic Data) defines 48 endpoints across 6 resource categories. The schema is 8,358 lines, compared to Part 1's schema, providing comprehensive machine-readable specifications for all dynamic data operations.
+
+**API Information:**
+- **Title:** OGC API - Connected Systems - Part 2: Dynamic Data
+- **Version:** 0.0.1
+- **Servers:** 
+  - Production: `https://api.georobotix.io/ogc/t18/api`
+  - Development: `http://localhost:8181/sensorhub/api`
+
+**Resource Categories:**
+1. **Data Streams** (8 endpoints) - Observation containers and metadata
+2. **Observations** (6 endpoints) - Dynamic sensor data records
+3. **Control Streams** (8 endpoints) - Command containers and metadata
+4. **Commands** (15 endpoints) - Control messages with status/result tracking
+5. **System Events** (6 endpoints) - System state change notifications
+6. **System History** (5 endpoints) - Historical system descriptions
+
+**Format Support:**
+- JSON (application/json) - Default, human-readable
+- SWE Common JSON (application/swe+json) - Structured per SWE Common Data Model
+- SWE Common Text (application/swe+csv, application/swe+text) - DSV formats
+- SWE Common Binary (application/swe+binary) - Efficient binary encoding
+- GeoJSON (application/geo+json) - Geospatial features
+- SensorML JSON (application/sml+json) - Sensor metadata
+- Protocol Buffers (application/x-protobuf) - Alternative binary format
+
+---
+
+### Path Definitions
+
+The schema defines 48 endpoints organized into 6 categories:
+
+#### 2.1 Datastream Paths (8 endpoints)
+
+**Canonical Resources Endpoint:**
+```yaml
+GET /datastreams
+```
+- **Summary:** List all available datastreams
+- **Query Parameters:** id, q, system, foi, observedProperty, phenomenonTime, resultTime, limit
+- **Response:** 200 (DataStreamCollection), 400 (Bad Request)
+- **Content Types:** application/json, application/geo+json
+
+**Nested Resources Endpoint (from System):**
+```yaml
+GET /systems/{systemId}/datastreams
+POST /systems/{systemId}/datastreams
+```
+- **GET Summary:** List datastreams of specific system
+- **POST Summary:** Add datastream to system
+- **Path Parameters:** systemId (string, minLength: 1, required)
+- **Query Parameters (GET):** Same as canonical endpoint
+- **Request Body (POST):** DataStream object
+- **Response (POST):** 201 Created with Location header, 400 (Bad Request), 409 (Conflict)
+
+**Canonical Resource Endpoint:**
+```yaml
+GET /datastreams/{dataStreamId}
+PUT /datastreams/{dataStreamId}
+DELETE /datastreams/{dataStreamId}
+```
+- **GET Summary:** Get datastream by ID
+- **PUT Summary:** Update datastream
+- **DELETE Summary:** Delete datastream
+- **Path Parameters:** dataStreamId (string, minLength: 1, required)
+- **Query Parameters (DELETE):** cascade (boolean, default: false)
+- **Response (GET):** 200 (DataStream), 404 (Not Found)
+- **Response (PUT):** 204 No Content, 400 (Bad Request), 404 (Not Found), 409 (Conflict)
+- **Response (DELETE):** 204 No Content, 404 (Not Found), 409 (Conflict - if cascade=false and observations exist)
+
+**Schema Endpoint:**
+```yaml
+GET /datastreams/{dataStreamId}/schema
+PUT /datastreams/{dataStreamId}/schema
+```
+- **GET Summary:** Get observation schema for datastream
+- **PUT Summary:** Update observation schema
+- **Path Parameters:** dataStreamId (string, minLength: 1, required)
+- **Query Parameters (GET):** obsFormat (string, required) - Media type of desired observation format
+- **Request Body (PUT):** ObservationSchema object
+- **Response (GET):** 200 (ObservationSchema), 400 (Bad Request), 404 (Not Found)
+- **Response (PUT):** 204 No Content, 400 (Bad Request), 404 (Not Found), 409 (Conflict - if observations already exist)
+- **Content Types:** application/json, application/schema+json, text/plain
+
+#### 2.2 Observation Paths (6 endpoints)
+
+**Canonical Resources Endpoint:**
+```yaml
+GET /observations
+```
+- **Summary:** List all available observations
+- **Query Parameters:** id, q, dataStream, foi, phenomenonTime, resultTime, limit
+- **Response:** 200 (ObservationCollection), 400 (Bad Request)
+- **Content Types:** application/json, application/swe+json, application/swe+csv
+
+**Nested Resources Endpoint (from DataStream):**
+```yaml
+GET /datastreams/{dataStreamId}/observations
+POST /datastreams/{dataStreamId}/observations
+```
+- **GET Summary:** List observations from datastream
+- **POST Summary:** Add observation to datastream
+- **Path Parameters:** dataStreamId (string, minLength: 1, required)
+- **Query Parameters (GET):** id, phenomenonTime, resultTime, limit
+- **Request Body (POST):** Observation object (validated against datastream schema)
+- **Response (POST):** 201 Created with Location header, 400 (Bad Request - schema violation), 409 (Conflict)
+
+**Canonical Resource Endpoint:**
+```yaml
+GET /observations/{obsId}
+PUT /observations/{obsId}
+DELETE /observations/{obsId}
+```
+- **GET Summary:** Get observation by ID
+- **PUT Summary:** Update observation
+- **DELETE Summary:** Delete observation
+- **Path Parameters:** obsId (string, minLength: 1, required)
+- **Response (GET):** 200 (Observation), 404 (Not Found)
+- **Response (PUT):** 204 No Content, 400 (Bad Request - schema violation), 404 (Not Found), 409 (Conflict)
+- **Response (DELETE):** 204 No Content, 404 (Not Found)
+
+#### 2.3 ControlStream Paths (8 endpoints)
+
+**Canonical Resources Endpoint:**
+```yaml
+GET /controlstreams
+```
+- **Summary:** List all available control streams
+- **Query Parameters:** id, q, system, foi, controlledProperty, issueTime, executionTime, limit
+- **Response:** 200 (ControlStreamCollection), 400 (Bad Request)
+- **Content Types:** application/json, application/geo+json
+
+**Nested Resources Endpoint (from System):**
+```yaml
+GET /systems/{systemId}/controlstreams
+POST /systems/{systemId}/controlstreams
+```
+- **GET Summary:** List control streams of specific system
+- **POST Summary:** Add control stream to system
+- **Path Parameters:** systemId (string, minLength: 1, required)
+- **Query Parameters (GET):** Same as canonical endpoint
+- **Request Body (POST):** ControlStream object
+- **Response (POST):** 201 Created with Location header, 400 (Bad Request), 409 (Conflict)
+
+**Canonical Resource Endpoint:**
+```yaml
+GET /controlstreams/{controlStreamId}
+PUT /controlstreams/{controlStreamId}
+DELETE /controlstreams/{controlStreamId}
+```
+- **GET Summary:** Get control stream by ID
+- **PUT Summary:** Update control stream
+- **DELETE Summary:** Delete control stream
+- **Path Parameters:** controlStreamId (string, minLength: 1, required)
+- **Query Parameters (DELETE):** cascade (boolean, default: false)
+- **Response (GET):** 200 (ControlStream), 404 (Not Found)
+- **Response (PUT):** 204 No Content, 400 (Bad Request), 404 (Not Found), 409 (Conflict)
+- **Response (DELETE):** 204 No Content, 404 (Not Found), 409 (Conflict - if cascade=false and commands exist)
+
+**Schema Endpoint:**
+```yaml
+GET /controlstreams/{controlStreamId}/schema
+PUT /controlstreams/{controlStreamId}/schema
+```
+- **GET Summary:** Get command schema for control stream
+- **PUT Summary:** Update command schema
+- **Path Parameters:** controlStreamId (string, minLength: 1, required)
+- **Query Parameters (GET):** cmdFormat (string, optional) - Media type of desired command format
+- **Request Body (PUT):** CommandSchema object
+- **Response (GET):** 200 (CommandSchema), 400 (Bad Request), 404 (Not Found)
+- **Response (PUT):** 204 No Content, 400 (Bad Request), 404 (Not Found), 409 (Conflict - if commands already issued)
+- **Content Types:** application/json, application/schema+json, text/plain
+
+#### 2.4 Command Paths (15 endpoints)
+
+**Canonical Resources Endpoint:**
+```yaml
+GET /commands
+```
+- **Summary:** List all available commands
+- **Query Parameters:** id, q, controlStream, foi, sender, issueTime, executionTime, statusCode, limit
+- **Response:** 200 (CommandCollection), 400 (Bad Request)
+- **Content Types:** application/json, application/swe+json, application/swe+csv
+
+**Nested Resources Endpoint (from ControlStream):**
+```yaml
+GET /controlstreams/{controlStreamId}/commands
+POST /controlstreams/{controlStreamId}/commands
+```
+- **GET Summary:** List commands from control stream
+- **POST Summary:** Send command to control stream
+- **Path Parameters:** controlStreamId (string, minLength: 1, required)
+- **Query Parameters (GET):** id, sender, issueTime, executionTime, statusCode, limit
+- **Request Body (POST):** Command object (validated against control stream schema)
+- **Response (POST):** 201 Created with Location header, 200 OK (synchronous execution), 400 (Bad Request - schema violation), 409 (Conflict)
+
+**Canonical Resource Endpoint:**
+```yaml
+GET /commands/{cmdId}
+PUT /commands/{cmdId}
+DELETE /commands/{cmdId}
+```
+- **GET Summary:** Get command by ID
+- **PUT Summary:** Update command
+- **DELETE Summary:** Delete command
+- **Path Parameters:** cmdId (string, minLength: 1, required)
+- **Response (GET):** 200 (Command), 404 (Not Found)
+- **Response (PUT):** 204 No Content, 400 (Bad Request - schema violation), 404 (Not Found), 409 (Conflict)
+- **Response (DELETE):** 204 No Content, 404 (Not Found)
+
+**Command Status Endpoints:**
+```yaml
+GET /commands/{cmdId}/status
+POST /commands/{cmdId}/status
+GET /commands/{cmdId}/status/{statusId}
+PUT /commands/{cmdId}/status/{statusId}
+DELETE /commands/{cmdId}/status/{statusId}
+```
+- **GET (collection) Summary:** List command status reports
+- **POST Summary:** Add command status report
+- **GET (single) Summary:** Get status report by ID
+- **PUT Summary:** Update status report
+- **DELETE Summary:** Delete status report
+- **Path Parameters:** cmdId (string, minLength: 1, required), statusId (string, minLength: 1, required)
+- **Query Parameters (GET collection):** id, reportTime, statusCode, limit
+- **Request Body (POST/PUT):** CommandStatus object
+- **Response (POST):** 201 Created with Location header, 400 (Bad Request), 409 (Conflict)
+- **Response (PUT):** 204 No Content, 400 (Bad Request), 404 (Not Found), 409 (Conflict)
+- **Response (DELETE):** 204 No Content, 404 (Not Found), 409 (Conflict - if dependencies exist)
+
+**Command Result Endpoints:**
+```yaml
+GET /commands/{cmdId}/result
+POST /commands/{cmdId}/result
+GET /commands/{cmdId}/result/{resultId}
+PUT /commands/{cmdId}/result/{resultId}
+DELETE /commands/{cmdId}/result/{resultId}
+```
+- **GET (collection) Summary:** List command results
+- **POST Summary:** Add command result
+- **GET (single) Summary:** Get command result by ID
+- **PUT Summary:** Update command result
+- **DELETE Summary:** Delete command result
+- **Path Parameters:** cmdId (string, minLength: 1, required), resultId (string, minLength: 1, required)
+- **Query Parameters (GET collection):** id, limit
+- **Request Body (POST/PUT):** CommandResult object
+- **Response (POST):** 201 Created with Location header, 400 (Bad Request), 409 (Conflict)
+- **Response (PUT):** 204 No Content, 400 (Bad Request), 404 (Not Found), 409 (Conflict)
+- **Response (DELETE):** 204 No Content, 404 (Not Found), 409 (Conflict - if dependencies exist)
+
+#### 2.5 SystemEvent Paths (6 endpoints)
+
+**Canonical Resources Endpoint:**
+```yaml
+GET /systemEvents
+```
+- **Summary:** List all available system events
+- **Query Parameters:** id, q, system, eventType, datetime, limit
+- **Response:** 200 (SystemEventCollection), 400 (Bad Request)
+- **Content Types:** application/json
+
+**Nested Resources Endpoint (from System):**
+```yaml
+GET /systems/{systemId}/events
+POST /systems/{systemId}/events
+```
+- **GET Summary:** List events of specific system
+- **POST Summary:** Publish system event
+- **Path Parameters:** systemId (string, minLength: 1, required)
+- **Query Parameters (GET):** id, eventType, datetime, limit
+- **Request Body (POST):** SystemEvent object
+- **Response (POST):** 201 Created with Location header, 400 (Bad Request), 409 (Conflict)
+
+**Canonical Resource Endpoint:**
+```yaml
+GET /systems/{systemId}/events/{eventId}
+PUT /systems/{systemId}/events/{eventId}
+DELETE /systems/{systemId}/events/{eventId}
+```
+- **GET Summary:** Get event by ID
+- **PUT Summary:** Update event
+- **DELETE Summary:** Delete event
+- **Path Parameters:** systemId (string, minLength: 1, required), eventId (string, minLength: 1, required)
+- **Response (GET):** 200 (SystemEvent), 404 (Not Found)
+- **Response (PUT):** 204 No Content, 400 (Bad Request), 404 (Not Found), 409 (Conflict)
+- **Response (DELETE):** 204 No Content, 404 (Not Found)
+
+**Note:** SystemEvent canonical resource endpoint uses nested path (not top-level /systemEvents/{eventId})
+
+#### 2.6 SystemHistory Paths (5 endpoints)
+
+**Resources Endpoint:**
+```yaml
+GET /systems/{systemId}/history
+```
+- **Summary:** List system history (historical descriptions)
+- **Query Parameters:** id, validTime, limit
+- **Response:** 200 (SystemHistoryCollection), 400 (Bad Request)
+- **Content Types:** application/json, application/geo+json, application/sml+json
+
+**Resource Endpoint:**
+```yaml
+GET /systems/{systemId}/history/{revId}
+PUT /systems/{systemId}/history/{revId}
+DELETE /systems/{systemId}/history/{revId}
+```
+- **GET Summary:** Get historical description by ID
+- **PUT Summary:** Update historical description
+- **DELETE Summary:** Delete historical description
+- **Path Parameters:** systemId (string, minLength: 1, required), revId (string, minLength: 1, required)
+- **Response (GET):** 200 (System), 404 (Not Found)
+- **Response (PUT):** 204 No Content, 400 (Bad Request), 404 (Not Found), 409 (Conflict)
+- **Response (DELETE):** 204 No Content, 404 (Not Found)
+
+**Note:** No POST endpoint - history entries created automatically on System updates
+
+---
+
+### HTTP Methods by Path
+
+Complete HTTP method support matrix:
+
+#### GET Operations (All 48 endpoints support GET)
+- **Collections:** All resources and nested resources endpoints
+- **Single Resources:** All resource and nested resource item endpoints
+- **Special:** Schema endpoints, status endpoints, result endpoints, history endpoints
+
+#### POST Operations (15 endpoints)
+- `/systems/{systemId}/datastreams` - Create datastream
+- `/datastreams/{dataStreamId}/observations` - Create observation
+- `/systems/{systemId}/controlstreams` - Create control stream
+- `/controlstreams/{controlStreamId}/commands` - Send command
+- `/commands/{cmdId}/status` - Create status report
+- `/commands/{cmdId}/result` - Create command result
+- `/systems/{systemId}/events` - Publish event
+
+#### PUT Operations (19 endpoints)
+- `/datastreams/{dataStreamId}` - Replace datastream
+- `/datastreams/{dataStreamId}/schema` - Replace observation schema
+- `/observations/{obsId}` - Replace observation
+- `/controlstreams/{controlStreamId}` - Replace control stream
+- `/controlstreams/{controlStreamId}/schema` - Replace command schema
+- `/commands/{cmdId}` - Replace command
+- `/commands/{cmdId}/status/{statusId}` - Replace status report
+- `/commands/{cmdId}/result/{resultId}` - Replace command result
+- `/systems/{systemId}/events/{eventId}` - Replace event
+- `/systems/{systemId}/history/{revId}` - Replace historical description
+
+#### DELETE Operations (14 endpoints)
+- `/datastreams/{dataStreamId}` - Delete datastream
+- `/observations/{obsId}` - Delete observation
+- `/controlstreams/{controlStreamId}` - Delete control stream
+- `/commands/{cmdId}` - Delete command
+- `/commands/{cmdId}/status/{statusId}` - Delete status report
+- `/commands/{cmdId}/result/{resultId}` - Delete command result
+- `/systems/{systemId}/events/{eventId}` - Delete event
+- `/systems/{systemId}/history/{revId}` - Delete historical description
+
+**Note:** PATCH method not defined in schema (referenced in standard but not implemented in OpenAPI)
+
+---
+
+### Query Parameters
+
+The schema defines 23 distinct query parameters across all endpoints:
+
+#### 3.1 Identifier Parameters
+
+**id** (All collection endpoints)
+- **Type:** `oneOf[array<string>, array<string format:uri>]`
+- **Description:** List of resource local IDs or unique URIs
+- **Explode:** false (comma-separated)
+- **Examples:**
+  - Local IDs: `RES_ID1,RES_ID2,RES_ID63`
+  - Unique IDs: `urn:example:resource:001,urn:example:resource:033`
+- **Used By:** All collection endpoints (datastreams, observations, controlstreams, commands, systemEvents, history)
+
+**q** (Full-text search)
+- **Type:** `array<string>`
+- **Item Constraints:** minLength: 1, maxLength: 50
+- **Description:** Keywords for full-text search (searches name, description, and other textual fields)
+- **Explode:** false (comma-separated)
+- **Examples:**
+  - Single keyword: `temp`
+  - Multiple keywords: `gps,imu`
+- **Used By:** All collection endpoints except history
+
+#### 3.2 Association Parameters
+
+**system** (DataStreams, ControlStreams)
+- **Type:** `oneOf[array<string>, array<string format:uri>]`
+- **Description:** Filter by associated system IDs or URIs
+- **Explode:** false
+- **Used By:** /datastreams, /controlstreams, /systemEvents
+
+**dataStream** (Observations)
+- **Type:** `oneOf[array<string>, array<string format:uri>]`
+- **Description:** Filter observations by datastream IDs
+- **Explode:** false
+- **Used By:** /observations
+
+**controlStream** (Commands)
+- **Type:** `oneOf[array<string>, array<string format:uri>]`
+- **Description:** Filter commands by control stream IDs
+- **Explode:** false
+- **Used By:** /commands
+
+**foi** (Feature of Interest)
+- **Type:** `oneOf[array<string>, array<string format:uri>]`
+- **Description:** Filter by feature of interest IDs (transitive via sampling features)
+- **Explode:** false
+- **Used By:** /datastreams, /observations, /controlstreams, /commands
+
+#### 3.3 Property Parameters
+
+**observedProperty** (DataStreams, Observations)
+- **Type:** `oneOf[array<string>, array<string format:uri>]`
+- **Description:** Filter by observable property IDs or URIs
+- **Explode:** false
+- **Used By:** /datastreams
+
+**controlledProperty** (ControlStreams)
+- **Type:** `oneOf[array<string>, array<string format:uri>]`
+- **Description:** Filter by controllable property IDs or URIs
+- **Explode:** false
+- **Used By:** /controlstreams
+
+#### 3.4 Temporal Parameters
+
+**phenomenonTime** (DataStreams, Observations)
+- **Type:** `oneOf[timeInstant, timePeriod]`
+- **Time Instant:** ISO 8601 date-time string (format: date-time)
+- **Time Period:** Array of 2 date-times [startTime, endTime]
+- **Special Values:** `now`, `latest`
+- **Examples:**
+  - Instant: `2018-02-12T23:20:50Z`
+  - Closed period: `2018-02-12T00:00:00Z/2018-03-18T12:31:12Z`
+  - Open start: `../2018-03-18T12:31:12Z`
+  - Open end: `2018-02-12T00:00:00Z/..`
+  - Half-bounded with now: `2018-02-12T00:00:00Z/now`
+  - Latest: `latest` (Observations only)
+- **Description:** Filter by observation phenomenon time (when observed property value applies to FOI)
+- **Used By:** /datastreams, /observations, /datastreams/{id}/observations
+
+**resultTime** (DataStreams, Observations)
+- **Type:** Same as phenomenonTime
+- **Description:** Filter by observation result generation time
+- **Used By:** /datastreams, /observations, /datastreams/{id}/observations
+
+**issueTime** (ControlStreams, Commands)
+- **Type:** Same as phenomenonTime
+- **Description:** Filter by command issue time
+- **Used By:** /controlstreams, /commands, /controlstreams/{id}/commands
+
+**executionTime** (ControlStreams, Commands)
+- **Type:** Same as phenomenonTime
+- **Description:** Filter by command execution time
+- **Used By:** /controlstreams, /commands, /controlstreams/{id}/commands
+
+**reportTime** (CommandStatus)
+- **Type:** Same as phenomenonTime
+- **Description:** Filter by status report generation time
+- **Used By:** /commands/{cmdId}/status
+
+**validTime** (SystemHistory)
+- **Type:** Same as phenomenonTime
+- **Description:** Filter by system description validity period
+- **Used By:** /systems/{systemId}/history
+
+**datetime** (SystemEvents)
+- **Type:** Same as phenomenonTime
+- **Description:** Filter by event occurrence time
+- **Used By:** /systemEvents, /systems/{systemId}/events
+
+#### 3.5 Status and Sender Parameters
+
+**statusCode** (Commands)
+- **Type:** `array<enum>`
+- **Enum Values:** PENDING, ACCEPTED, REJECTED, SCHEDULED, UPDATED, CANCELED, EXECUTING, FAILED, COMPLETED
+- **Description:** Filter commands by current status code
+- **Explode:** false
+- **Used By:** /commands, /controlstreams/{id}/commands, /commands/{cmdId}/status
+
+**sender** (Commands)
+- **Type:** `array<string>`
+- **Description:** Filter commands by sender IDs
+- **Explode:** false
+- **Used By:** /commands, /controlstreams/{id}/commands
+
+**eventType** (SystemEvents)
+- **Type:** `array<string>`
+- **Description:** Filter events by type
+- **Explode:** false
+- **Used By:** /systemEvents, /systems/{systemId}/events
+
+#### 3.6 Pagination Parameters
+
+**limit** (All collection endpoints)
+- **Type:** `integer`
+- **Minimum:** 1
+- **Maximum:** 10000
+- **Default:** 10
+- **Description:** Maximum number of items in response
+- **Examples:** 10, 100, 1000
+- **Used By:** All collection endpoints
+
+**Note:** No explicit offset parameter - pagination uses cursor-based links in response
+
+#### 3.7 Format Parameters
+
+**obsFormat** (DataStream schema)
+- **Type:** `string`
+- **Required:** true
+- **Description:** Media type of desired observation format
+- **Examples:** `application/json`, `application/swe+json`, `application/swe+csv`, `application/swe+binary`, `application/x-protobuf`
+- **URL Encoding Required:** Yes (e.g., `application/swe%2Bjson`)
+- **Used By:** /datastreams/{id}/schema (GET)
+
+**cmdFormat** (ControlStream schema)
+- **Type:** `string`
+- **Required:** false
+- **Description:** Media type of desired command format
+- **Examples:** Same as obsFormat
+- **Used By:** /controlstreams/{id}/schema (GET)
+
+#### 3.8 Delete Parameters
+
+**cascade** (DELETE operations)
+- **Type:** `boolean`
+- **Default:** false
+- **Description:** If true, dependent nested resources are also deleted
+- **Used By:** DELETE /datastreams/{id}, DELETE /controlstreams/{id}
+
+---
+
+### Request Body Schemas
+
+The schema defines 8 main request body schemas:
+
+#### 4.1 DataStream Schema
+
+**Used By:** POST /systems/{systemId}/datastreams, PUT /datastreams/{dataStreamId}
+
+**Structure:**
+```yaml
+type: object
+required:
+  - name
+  - system@link
+  - observedProperties
+  - phenomenonTime
+  - resultTime
+  - resultType
+  - live
+  - formats
+
+properties:
+  id:
+    type: string
+    readOnly: true
+  name:
+    type: string
+  description:
+    type: string
+  validTime:
+    type: array
+    minItems: 2
+    maxItems: 2
+    items:
+      oneOf:
+        - type: string (format: date-time)
+        - type: string (enum: [now])
+  formats:
+    type: array
+    readOnly: true
+    items:
+      type: string
+  system@link:
+    $ref: '#/components/schemas/link'
+    readOnly: true
+  outputName:
+    type: string
+  procedure@link:
+    $ref: '#/components/schemas/link'
+  deployment@link:
+    $ref: '#/components/schemas/link'
+  featureOfInterest@link:
+    $ref: '#/components/schemas/link'
+  samplingFeature@link:
+    $ref: '#/components/schemas/link'
+  observedProperties:
+    oneOf:
+      - type: array
+        items:
+          type: object
+          properties:
+            definition: 
+              type: string
+              format: uri
+            label:
+              type: string
+            description:
+              type: string
+      - type: 'null'
+    readOnly: true
+  phenomenonTime:
+    oneOf:
+      - $ref: '#/components/schemas/timePeriod'
+      - type: 'null'
+    readOnly: true
+  phenomenonTimeInterval:
+    type: string
+    description: ISO 8601 duration
+  resultTime:
+    oneOf:
+      - $ref: '#/components/schemas/timePeriod'
+      - type: 'null'
+    readOnly: true
+  resultTimeInterval:
+    type: string
+    description: ISO 8601 duration
+  type:
+    type: string
+    enum: [status, observation]
+  resultType:
+    oneOf:
+      - type: string
+        enum: [measure, vector, record, coverage, complex]
+      - type: 'null'
+    readOnly: true
+  live:
+    oneOf:
+      - type: boolean
+      - type: 'null'
+  schema:
+    $ref: '#/components/schemas/ObservationSchema'
+    writeOnly: true
+  links:
+    type: array
+    items:
+      $ref: '#/components/schemas/link'
+```
+
+**Read-Only Properties:** id, system@link, observedProperties, phenomenonTime, resultTime, resultType, formats (server-generated)
+
+**Write-Only Properties:** schema (submitted on create, not returned on read)
+
+#### 4.2 Observation Schema
+
+**Used By:** POST /datastreams/{dataStreamId}/observations, PUT /observations/{obsId}
+
+**Structure:**
+```yaml
+type: object
+required:
+  - id
+  - datastream@id
+  - resultTime
+  - (result OR result@link)
+
+properties:
+  id:
+    type: string
+    readOnly: true
+  datastream@id:
+    type: string
+    readOnly: true
+  samplingFeature@id:
+    type: string
+  procedure@link:
+    $ref: '#/components/schemas/link'
+  phenomenonTime:
+    type: string
+    format: date-time
+  resultTime:
+    type: string
+    format: date-time
+  parameters:
+    type: object
+    description: Validated against datastream parametersSchema
+  result:
+    description: Validated against datastream resultSchema
+  result@link:
+    $ref: '#/components/schemas/link'
+    description: Alternative to inline result
+
+oneOf:
+  - required: [result]
+  - required: [result@link]
+```
+
+**Validation:**
+- `result` MUST conform to DataStream's `resultSchema`
+- `parameters` MUST conform to DataStream's `parametersSchema` (if provided)
+- Server MUST reject with 400 if validation fails
+
+**Default Behavior:**
+- If `phenomenonTime` omitted, defaults to `resultTime`
+
+#### 4.3 ControlStream Schema
+
+**Used By:** POST /systems/{systemId}/controlstreams, PUT /controlstreams/{controlStreamId}
+
+**Structure:**
+```yaml
+type: object
+required:
+  - name
+  - system@link
+  - controlledProperties
+  - issueTime
+  - executionTime
+  - live
+  - async
+  - formats
+
+properties:
+  id:
+    type: string
+    readOnly: true
+  name:
+    type: string
+  description:
+    type: string
+  validTime:
+    type: array
+    minItems: 2
+    maxItems: 2
+    items:
+      oneOf:
+        - type: string (format: date-time)
+        - type: string (enum: [now])
+  formats:
+    type: array
+    readOnly: true
+    items:
+      type: string
+  system@link:
+    $ref: '#/components/schemas/link'
+    readOnly: true
+  inputName:
+    type: string
+  procedure@link:
+    $ref: '#/components/schemas/link'
+  deployment@link:
+    $ref: '#/components/schemas/link'
+  featureOfInterest@link:
+    $ref: '#/components/schemas/link'
+  samplingFeature@link:
+    $ref: '#/components/schemas/link'
+  controlledProperties:
+    oneOf:
+      - type: array
+        items:
+          type: object
+          properties:
+            definition:
+              type: string
+              format: uri
+            label:
+              type: string
+            description:
+              type: string
+      - type: 'null'
+    readOnly: true
+  issueTime:
+    oneOf:
+      - $ref: '#/components/schemas/timePeriod'
+      - type: 'null'
+    readOnly: true
+  executionTime:
+    oneOf:
+      - $ref: '#/components/schemas/timePeriod'
+      - type: 'null'
+    readOnly: true
+  live:
+    oneOf:
+      - type: boolean
+      - type: 'null'
+    readOnly: true
+  async:
+    type: boolean
+  schema:
+    $ref: '#/components/schemas/CommandSchema'
+    writeOnly: true
+  links:
+    type: array
+    items:
+      $ref: '#/components/schemas/link'
+```
+
+**Read-Only Properties:** id, system@link, controlledProperties, issueTime, executionTime, live, formats
+
+**Write-Only Properties:** schema
+
+#### 4.4 Command Schema
+
+**Used By:** POST /controlstreams/{controlStreamId}/commands, PUT /commands/{cmdId}
+
+**Structure:**
+```yaml
+type: object
+required:
+  - id
+  - controlstream@id
+  - issueTime
+  - parameters
+
+properties:
+  id:
+    type: string
+    readOnly: true
+  controlstream@id:
+    type: string
+    readOnly: true
+  samplingFeature@id:
+    type: string
+  procedure@link:
+    $ref: '#/components/schemas/link'
+  issueTime:
+    type: string
+    format: date-time
+    readOnly: true
+  executionTime:
+    type: array
+    minItems: 2
+    maxItems: 2
+    items:
+      oneOf:
+        - type: string (format: date-time)
+        - type: string (enum: [now])
+    readOnly: true
+  sender:
+    type: string
+    readOnly: true
+  currentStatus:
+    type: string
+    enum: [PENDING, ACCEPTED, REJECTED, SCHEDULED, UPDATED, CANCELED, EXECUTING, FAILED, COMPLETED]
+    readOnly: true
+  parameters:
+    type: object
+    description: Validated against control stream parametersSchema
+```
+
+**Validation:**
+- `parameters` MUST conform to ControlStream's `parametersSchema`
+- Server MUST reject with 400 if validation fails
+
+**Server Behavior:**
+- Server sets `issueTime` to current time on POST
+- Server sets `currentStatus` to PENDING on POST
+- Server may update `executionTime` based on command processing
+
+#### 4.5 CommandStatus Schema
+
+**Used By:** POST /commands/{cmdId}/status, PUT /commands/{cmdId}/status/{statusId}
+
+**Structure:**
+```yaml
+type: object
+required:
+  - id
+  - command@id
+  - reportTime
+  - statusCode
+
+properties:
+  id:
+    type: string
+    readOnly: true
+  command@id:
+    type: string
+    readOnly: true
+  reportTime:
+    type: string
+    format: date-time
+    readOnly: true
+  statusCode:
+    type: string
+    enum: [PENDING, ACCEPTED, REJECTED, SCHEDULED, UPDATED, CANCELED, EXECUTING, FAILED, COMPLETED]
+  percentCompletion:
+    type: number
+    minimum: 0
+    maximum: 100
+  executionTime:
+    type: array
+    minItems: 2
+    maxItems: 2
+    items:
+      oneOf:
+        - type: string (format: date-time)
+        - type: string (enum: [now])
+  message:
+    type: string
+  results:
+    type: array
+    items:
+      $ref: '#/components/schemas/CommandResult'
+```
+
+**Status Code Semantics:**
+- **PENDING:** Command received, awaiting decision
+- **ACCEPTED:** Command accepted, may be scheduled
+- **REJECTED:** Command rejected (final state)
+- **SCHEDULED:** Command scheduled with execution time
+- **UPDATED:** Command update accepted
+- **CANCELED:** User-canceled (final state)
+- **EXECUTING:** Currently executing
+- **FAILED:** Execution failed (final state)
+- **COMPLETED:** Successfully completed (final state)
+
+**Server Behavior:**
+- Server sets `reportTime` to current time on POST
+
+#### 4.6 CommandResult Schema
+
+**Used By:** POST /commands/{cmdId}/result, PUT /commands/{cmdId}/result/{resultId}
+
+**Structure:**
+```yaml
+type: object
+required:
+  - id
+  - command@id
+  - (one of: data, observation@link, observationSet@link, datastream@link, external@link)
+
+properties:
+  id:
+    type: string
+    readOnly: true
+  command@id:
+    type: string
+    readOnly: true
+  data:
+    type: object
+    description: Inline JSON result data
+  observation@link:
+    $ref: '#/components/schemas/link'
+    description: Link to single observation result
+  observationSet@link:
+    $ref: '#/components/schemas/link'
+    description: Link to observation collection
+  datastream@link:
+    type: object
+    properties:
+      href:
+        type: string
+        format: uri
+      resultTime:
+        $ref: '#/components/schemas/timePeriod'
+        description: Optional time range within datastream
+  external@link:
+    $ref: '#/components/schemas/link'
+    description: Link to external dataset
+
+oneOf:
+  - required: [data]
+  - required: [observation@link]
+  - required: [observationSet@link]
+  - required: [datastream@link]
+  - required: [external@link]
+```
+
+**Result Types:**
+1. **Inline Data:** JSON object with command output
+2. **Observation Reference:** Link to single observation
+3. **Observation Set:** Link to collection of observations
+4. **Datastream Reference:** Link to datastream with optional time range filter
+5. **External Reference:** Link to external dataset (e.g., NetCDF file, video)
+
+#### 4.7 SystemEvent Schema
+
+**Used By:** POST /systems/{systemId}/events, PUT /systems/{systemId}/events/{eventId}
+
+**Structure:**
+```yaml
+type: object
+required:
+  - id
+  - system@id
+  - time
+  - eventType
+
+properties:
+  id:
+    type: string
+    readOnly: true
+  system@id:
+    type: string
+    readOnly: true
+  time:
+    type: string
+    format: date-time
+  eventType:
+    type: string
+  description:
+    type: string
+  properties:
+    type: object
+    description: Event-specific properties
+```
+
+**Event Types (examples):**
+- System activation/deactivation
+- Configuration change
+- Calibration
+- Maintenance
+- Fault/error
+- Status change
+
+#### 4.8 ObservationSchema and CommandSchema
+
+**Used By:** DataStream schema property (writeOnly), ControlStream schema property (writeOnly)
+
+**ObservationSchema Structure:**
+```yaml
+type: object
+required:
+  - obsFormat
+  - (recordSchema OR resultSchema)
+
+properties:
+  obsFormat:
+    type: string
+    description: Media type (application/json, application/swe+json, etc.)
+  
+  # For JSON format
+  parametersSchema:
+    $ref: '#/components/schemas/AbstractDataComponent'
+  resultSchema:
+    $ref: '#/components/schemas/AbstractDataComponent'
+  resultLink:
+    type: object
+    properties:
+      mediaType:
+        type: string
+  
+  # For SWE Common formats
+  recordSchema:
+    $ref: '#/components/schemas/DataRecord'
+  encoding:
+    oneOf:
+      - $ref: '#/components/schemas/JSONEncoding'
+      - $ref: '#/components/schemas/TextEncoding'
+      - $ref: '#/components/schemas/BinaryEncoding'
+  
+  # For Protobuf format
+  messageSchema:
+    oneOf:
+      - type: string
+      - $ref: '#/components/schemas/link'
+
+discriminator:
+  propertyName: obsFormat
+  mapping:
+    application/json: JSONObservationSchema
+    application/swe+json: SWECommonJSONObservationSchema
+    application/swe+csv: SWECommonTextObservationSchema
+    application/swe+binary: SWECommonBinaryObservationSchema
+    application/x-protobuf: ProtobufObservationSchema
+```
+
+**CommandSchema Structure:** Same as ObservationSchema but with `commandFormat` instead of `obsFormat`
+
+---
+
+### Response Schemas
+
+The schema defines comprehensive response structures for all endpoints:
+
+#### 5.1 Success Response Codes
+
+**200 OK** - Successful retrieval
+- **Content Types:** application/json, application/geo+json, application/sml+json, application/swe+json, application/swe+csv, application/schema+json, text/plain
+- **Body:** Single resource or collection with items array and links
+
+**201 Created** - Resource successfully created
+- **Headers:** Location (URI of newly created resource)
+- **Content Types:** application/json
+- **Body:** Created resource representation (optional)
+
+**204 No Content** - Successful update or deletion
+- **No response body**
+
+#### 5.2 Error Response Codes
+
+**400 Bad Request** - Invalid query parameters or request body
+- **Causes:**
+  - Invalid parameter format
+  - Missing required parameters
+  - Schema validation failure (observation/command doesn't conform to datastream/control stream schema)
+  - Invalid temporal parameter format
+
+**401 Unauthorized** - No authentication information provided
+- **Causes:**
+  - Missing authentication credentials
+  - Invalid authentication token
+
+**403 Forbidden** - Insufficient permissions
+- **Causes:**
+  - User lacks permission to access resource
+  - User lacks permission to perform operation
+
+**404 Not Found** - Resource not found at specified URL
+- **Causes:**
+  - Resource ID doesn't exist
+  - Invalid path parameter
+  - Resource deleted
+
+**409 Conflict** - Operation conflicts with current resource state
+- **Causes:**
+  - DELETE without cascade when nested resources exist
+  - PUT/PATCH schema change when observations/commands already exist
+  - Resource already exists with same ID (on POST)
+  - Concurrent modification conflict
+
+**5XX Server Error** - Unexpected server error
+- **502, 503:** Temporary errors, client MAY retry
+- **500, 501, 504:** Permanent errors, client SHOULD NOT retry
+
+#### 5.3 Collection Response Structure
+
+**Used By:** All GET collection endpoints
+
+```yaml
+type: object
+required:
+  - items
+
+properties:
+  items:
+    type: array
+    items:
+      # Resource-specific schema (DataStream, Observation, etc.)
+  links:
+    type: array
+    items:
+      $ref: '#/components/schemas/link'
+```
+
+**Pagination Links:**
+- `rel: "self"` - Current page
+- `rel: "next"` - Next page (if more items exist)
+- `rel: "prev"` - Previous page (if not first page)
+- `rel: "first"` - First page
+- `rel: "last"` - Last page (if known)
+
+**Example:**
+```json
+{
+  "items": [
+    {/* datastream 1 */},
+    {/* datastream 2 */}
+  ],
+  "links": [
+    {"rel": "self", "href": "/datastreams?limit=10"},
+    {"rel": "next", "href": "/datastreams?limit=10&cursor=abc123"}
+  ]
+}
+```
+
+#### 5.4 Link Object Schema
+
+**Used Throughout:** All resource associations and pagination
+
+```yaml
+type: object
+required:
+  - href
+
+properties:
+  href:
+    type: string
+    format: uri
+  rel:
+    type: string
+    description: Link relation type (canonical, system, procedure, etc.)
+  type:
+    type: string
+    description: Media type of linked resource
+  hreflang:
+    type: string
+    pattern: ^([a-z]{2}(-[A-Z]{2})?)|x-default$
+    description: Language code (e.g., en, en-US, x-default)
+  title:
+    type: string
+    description: Human-readable link description
+  uid:
+    type: string
+    format: uri
+    description: Unique identifier of linked resource
+  rt:
+    type: string
+    format: uri
+    description: Semantic type URI
+  if:
+    type: string
+    format: uri
+    description: Interface URI
+```
+
+**Common Link Relations:**
+- `canonical` - Canonical URL of resource
+- `self` - Current resource/page
+- `next` / `prev` / `first` / `last` - Pagination
+- `system` - Associated system
+- `procedure` - Associated procedure
+- `deployment` - Associated deployment
+- `samplingFeature` - Associated sampling feature
+- `featureOfInterest` - Associated feature of interest
+- `datastream` - Associated datastream
+- `controlstream` - Associated control stream
+- `observations` - Observations collection
+- `commands` - Commands collection
+- `status` - Status reports collection
+- `result` - Results collection
+- `schema` - Schema endpoint
+
+---
+
+### Schema Operation Endpoints
+
+The schema provides detailed specifications for dynamic schema operations:
+
+#### 6.1 Datastream Schema GET Response
+
+**Endpoint:** GET /datastreams/{dataStreamId}/schema?obsFormat={format}
+
+**Response Structure by Format:**
+
+**JSON Format (obsFormat=application/json):**
+```yaml
+type: object
+properties:
+  obsFormat:
+    type: string
+    const: application/json
+  parametersSchema:
+    $ref: '#/components/schemas/AbstractDataComponent'
+    description: Optional schema for observation parameters
+  resultSchema:
+    $ref: '#/components/schemas/AbstractDataComponent'
+    description: Required schema for inline observation results
+  resultLink:
+    type: object
+    properties:
+      mediaType:
+        type: string
+    description: For out-of-band results (images, files, etc.)
+
+oneOf:
+  - required: [obsFormat, resultSchema]
+  - required: [obsFormat, resultLink]
+```
+
+**SWE Common JSON Format (obsFormat=application/swe+json):**
+```yaml
+type: object
+required:
+  - obsFormat
+  - recordSchema
+  - encoding
+
+properties:
+  obsFormat:
+    type: string
+    const: application/swe+json
+  recordSchema:
+    $ref: '#/components/schemas/DataRecord'
+    description: DataRecord with fields for phenomenonTime, resultTime, parameters, result
+  encoding:
+    $ref: '#/components/schemas/JSONEncoding'
+    properties:
+      type:
+        const: JSONEncoding
+      recordsAsArrays:
+        type: boolean
+        default: false
+      vectorsAsArrays:
+        type: boolean
+        default: false
+```
+
+**SWE Common Text Format (obsFormat=application/swe+csv):**
+```yaml
+type: object
+required:
+  - obsFormat
+  - recordSchema
+  - encoding
+
+properties:
+  obsFormat:
+    type: string
+    enum: [application/swe+csv, application/swe+text]
+  recordSchema:
+    $ref: '#/components/schemas/DataRecord'
+  encoding:
+    $ref: '#/components/schemas/TextEncoding'
+    properties:
+      type:
+        const: TextEncoding
+      collapseWhiteSpaces:
+        type: boolean
+      decimalSeparator:
+        type: string
+        minLength: 1
+      tokenSeparator:
+        type: string
+        minLength: 1
+      blockSeparator:
+        type: string
+        minLength: 1
+```
+
+**SWE Common Binary Format (obsFormat=application/swe+binary):**
+```yaml
+type: object
+required:
+  - obsFormat
+  - recordSchema
+  - encoding
+
+properties:
+  obsFormat:
+    type: string
+    const: application/swe+binary
+  recordSchema:
+    $ref: '#/components/schemas/DataRecord'
+  encoding:
+    $ref: '#/components/schemas/BinaryEncoding'
+    properties:
+      type:
+        const: BinaryEncoding
+      byteOrder:
+        type: string
+        enum: [bigEndian, littleEndian]
+      byteEncoding:
+        type: string
+        enum: [base64, raw]
+      byteLength:
+        type: integer
+      members:
+        type: array
+        items:
+          oneOf:
+            - $ref: '#/components/schemas/Component'
+            - $ref: '#/components/schemas/Block'
+```
+
+**Protobuf Format (obsFormat=application/x-protobuf):**
+```yaml
+type: object
+required:
+  - obsFormat
+  - messageSchema
+
+properties:
+  obsFormat:
+    type: string
+    const: application/x-protobuf
+  messageSchema:
+    oneOf:
+      - type: string
+        description: Inline .proto schema definition
+      - $ref: '#/components/schemas/link'
+        description: Link to .proto file
+```
+
+#### 6.2 ControlStream Schema GET Response
+
+**Endpoint:** GET /controlstreams/{controlStreamId}/schema?cmdFormat={format}
+
+**Structure:** Same as DataStream schema but:
+- `commandFormat` instead of `obsFormat`
+- `parametersSchema` is required (not optional)
+- Additional optional `feasibilityResultSchema` for feasibility channels
+
+---
+
+### Status and Result Endpoint Definitions
+
+The schema provides detailed specifications for command lifecycle tracking:
+
+#### 7.1 CommandStatus Collection Response
+
+**Endpoint:** GET /commands/{cmdId}/status
+
+```yaml
+type: object
+required:
+  - items
+
+properties:
+  items:
+    type: array
+    items:
+      $ref: '#/components/schemas/CommandStatus'
+  links:
+    type: array
+    items:
+      $ref: '#/components/schemas/link'
+```
+
+**Ordered:** Status reports typically ordered by reportTime (chronological)
+
+#### 7.2 CommandStatus Single Resource Response
+
+**Endpoints:** 
+- GET /commands/{cmdId}/status/{statusId}
+- POST /commands/{cmdId}/status (201 response body)
+
+```yaml
+type: object
+required:
+  - id
+  - command@id
+  - reportTime
+  - statusCode
+
+properties:
+  id:
+    type: string
+  command@id:
+    type: string
+  reportTime:
+    type: string
+    format: date-time
+  statusCode:
+    type: string
+    enum: [PENDING, ACCEPTED, REJECTED, SCHEDULED, UPDATED, CANCELED, EXECUTING, FAILED, COMPLETED]
+  percentCompletion:
+    type: number
+    minimum: 0
+    maximum: 100
+  executionTime:
+    type: array
+    minItems: 2
+    maxItems: 2
+    items:
+      oneOf:
+        - type: string (format: date-time)
+        - type: string (enum: [now])
+  message:
+    type: string
+  results:
+    type: array
+    items:
+      $ref: '#/components/schemas/CommandResult'
+  links:
+    type: array
+    items:
+      $ref: '#/components/schemas/link'
+```
+
+**Status Code State Machine:**
+```
+Initial: PENDING
+
+PENDING → ACCEPTED → SCHEDULED → EXECUTING → COMPLETED
+                                           → FAILED
+        → REJECTED
+        → CANCELED
+        
+SCHEDULED → UPDATED → EXECUTING
+         → CANCELED
+         
+EXECUTING → UPDATED → EXECUTING (progress updates)
+```
+
+#### 7.3 CommandResult Collection Response
+
+**Endpoint:** GET /commands/{cmdId}/result
+
+```yaml
+type: object
+required:
+  - items
+
+properties:
+  items:
+    type: array
+    items:
+      $ref: '#/components/schemas/CommandResult'
+  links:
+    type: array
+    items:
+      $ref: '#/components/schemas/link'
+```
+
+**Multiple Results:** A command can produce multiple results (e.g., multiple images, multiple model timesteps)
+
+#### 7.4 CommandResult Single Resource Response
+
+**Endpoints:**
+- GET /commands/{cmdId}/result/{resultId}
+- POST /commands/{cmdId}/result (201 response body)
+
+```yaml
+type: object
+required:
+  - id
+  - command@id
+
+properties:
+  id:
+    type: string
+  command@id:
+    type: string
+  data:
+    type: object
+  observation@link:
+    $ref: '#/components/schemas/link'
+  observationSet@link:
+    $ref: '#/components/schemas/link'
+  datastream@link:
+    type: object
+    properties:
+      href:
+        type: string
+        format: uri
+      resultTime:
+        type: array
+        minItems: 2
+        maxItems: 2
+        items:
+          type: string
+          format: date-time
+  external@link:
+    $ref: '#/components/schemas/link'
+  links:
+    type: array
+    items:
+      $ref: '#/components/schemas/link'
+
+oneOf:
+  - required: [data]
+  - required: [observation@link]
+  - required: [observationSet@link]
+  - required: [datastream@link]
+  - required: [external@link]
+```
+
+**Result Type Examples:**
+
+1. **Inline Data:**
+```json
+{
+  "id": "result-001",
+  "command@id": "cmd-123",
+  "data": {
+    "battery": 87.5,
+    "temperature": 45.2
+  }
+}
+```
+
+2. **Observation Reference:**
+```json
+{
+  "id": "result-002",
+  "command@id": "cmd-456",
+  "observation@link": {
+    "href": "/observations/obs-789",
+    "type": "image/jpeg"
+  }
+}
+```
+
+3. **Datastream with Time Range:**
+```json
+{
+  "id": "result-003",
+  "command@id": "cmd-789",
+  "datastream@link": {
+    "href": "/datastreams/ds-456",
+    "resultTime": ["2024-01-15T10:00:00Z", "2024-01-15T12:00:00Z"]
+  }
+}
+```
+
+4. **External Resource:**
+```json
+{
+  "id": "result-004",
+  "command@id": "cmd-012",
+  "external@link": {
+    "href": "https://data.example.org/video-123.mp4",
+    "type": "video/mp4"
+  }
+}
+```
+
+---
+
+### Pagination and Temporal Query Parameters
+
+The schema provides comprehensive parameter definitions for data retrieval:
+
+#### 8.1 Pagination Implementation
+
+**limit Parameter:**
+- **Type:** integer
+- **Minimum:** 1
+- **Maximum:** 10000
+- **Default:** 10
+- **Applied To:** All collection endpoints
+
+**Pagination Links in Response:**
+```json
+{
+  "items": [ /* resource array */ ],
+  "links": [
+    {
+      "rel": "self",
+      "href": "/datastreams?limit=100"
+    },
+    {
+      "rel": "next",
+      "href": "/datastreams?limit=100&cursor=abc123"
+    }
+  ]
+}
+```
+
+**Cursor-Based:** Schema doesn't define cursor parameter explicitly (implementation-specific, provided in next link href)
+
+**Client Workflow:**
+1. Make initial request with `limit` parameter
+2. Check response for `rel="next"` link
+3. Follow `next` link href for subsequent pages
+4. Repeat until no `next` link present
+
+#### 8.2 Temporal Parameter Schemas
+
+**Time Instant Schema:**
+```yaml
+timeInstant:
+  type: string
+  format: date-time
+  description: ISO 8601 date-time (e.g., 2020-02-12T23:20:50Z)
+```
+
+**Time Instant or Now Schema:**
+```yaml
+timeInstantOrNow:
+  oneOf:
+    - type: string
+      format: date-time
+    - type: string
+      enum: [now]
+```
+
+**Time Period Schema:**
+```yaml
+timePeriod:
+  type: array
+  minItems: 2
+  maxItems: 2
+  items:
+    oneOf:
+      - type: string
+        format: date-time
+      - type: string
+        enum: [now, latest]
+      - type: 'null'
+  description: Array of [startTime, endTime]. Null indicates open-ended.
+```
+
+**Datetime Query Parameter Schema:**
+```yaml
+datetime:
+  oneOf:
+    - $ref: '#/components/schemas/timeInstant'
+    - $ref: '#/components/schemas/timePeriod'
+```
+
+**Examples:**
+```yaml
+# Instant
+phenomenonTime: "2018-02-12T23:20:50Z"
+
+# Closed interval
+phenomenonTime: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+
+# Open start
+phenomenonTime: "../2018-03-18T12:31:12Z"
+# Equivalent array form: [null, "2018-03-18T12:31:12Z"]
+
+# Open end
+phenomenonTime: "2018-02-12T00:00:00Z/.."
+# Equivalent array form: ["2018-02-12T00:00:00Z", null]
+
+# Half-bounded with 'now'
+phenomenonTime: "2018-02-12T00:00:00Z/now"
+# Equivalent array form: ["2018-02-12T00:00:00Z", "now"]
+
+# Special 'latest' value (Observations only)
+resultTime: "latest"
+```
+
+#### 8.3 Temporal Parameter Application
+
+**Resource-Specific Temporal Parameters:**
+
+| Parameter | Resources | Property Filtered | Description |
+|-----------|-----------|-------------------|-------------|
+| phenomenonTime | DataStream, Observation | phenomenonTime | When observed property value applies to FOI |
+| resultTime | DataStream, Observation | resultTime | When result value obtained |
+| issueTime | ControlStream, Command | issueTime | When command issued |
+| executionTime | ControlStream, Command | executionTime | When command should execute |
+| reportTime | CommandStatus | reportTime | When status report generated |
+| validTime | SystemHistory | validTime | System description validity period |
+| datetime | SystemEvent | time | Event occurrence time |
+
+**Intersection Logic:**
+- Resources selected if their temporal property **intersects** with parameter value
+- For instants: resource time range contains instant OR resource instant equals query instant
+- For periods: resource time range overlaps query period
+
+**Null Handling:**
+- If resource property is null, resource is NOT selected by temporal filter
+- Server auto-generates temporal extents for DataStream/ControlStream (from nested resources)
+
+---
+
+### Data Model Schemas
+
+The schema defines 6 primary resource models with complete property specifications:
+
+#### 9.1 DataStream Model
+
+**Schema Name:** `DataStream` (extends `baseStream`)
+
+```yaml
+type: object
+required:
+  - name
+  - system@link
+  - observedProperties
+  - phenomenonTime
+  - resultTime
+  - resultType
+  - live
+  - formats
+
+properties:
+  id:
+    type: string
+    readOnly: true
+  name:
+    type: string
+  description:
+    type: string
+  validTime:
+    $ref: '#/components/schemas/timePeriod'
+  formats:
+    type: array
+    items:
+      type: string
+    readOnly: true
+  system@link:
+    $ref: '#/components/schemas/link'
+    readOnly: true
+  outputName:
+    type: string
+  procedure@link:
+    $ref: '#/components/schemas/link'
+  deployment@link:
+    $ref: '#/components/schemas/link'
+  featureOfInterest@link:
+    $ref: '#/components/schemas/link'
+  samplingFeature@link:
+    $ref: '#/components/schemas/link'
+  observedProperties:
+    oneOf:
+      - type: array
+        items:
+          type: object
+          required:
+            - definition
+          properties:
+            definition:
+              type: string
+              format: uri
+            label:
+              type: string
+            description:
+              type: string
+      - type: 'null'
+    readOnly: true
+  phenomenonTime:
+    oneOf:
+      - $ref: '#/components/schemas/timePeriod'
+      - type: 'null'
+    readOnly: true
+  phenomenonTimeInterval:
+    type: string
+    description: ISO 8601 duration (e.g., PT5M for 5 minutes)
+  resultTime:
+    oneOf:
+      - $ref: '#/components/schemas/timePeriod'
+      - type: 'null'
+    readOnly: true
+  resultTimeInterval:
+    type: string
+    description: ISO 8601 duration
+  type:
+    type: string
+    enum: [status, observation]
+  resultType:
+    oneOf:
+      - type: string
+        enum: [measure, vector, record, coverage, complex]
+      - type: 'null'
+    readOnly: true
+  live:
+    oneOf:
+      - type: boolean
+      - type: 'null'
+  schema:
+    $ref: '#/components/schemas/ObservationSchema'
+    writeOnly: true
+  links:
+    type: array
+    items:
+      $ref: '#/components/schemas/link'
+```
+
+**Type Values:**
+- `status` - Observations of parent system or subsystems (FOI is system itself)
+- `observation` - Observations of external features of interest
+
+**Result Type Values:**
+- `measure` - Scalar measurement with unit
+- `vector` - Array of values (e.g., [x, y, z])
+- `record` - Object with multiple named fields
+- `coverage` - Gridded/raster data (e.g., image, grid)
+- `complex` - Complex nested structure
+
+#### 9.2 Observation Model
+
+**Schema Name:** `Observation`
+
+```yaml
+type: object
+required:
+  - id
+  - datastream@id
+  - resultTime
+
+properties:
+  id:
+    type: string
+    readOnly: true
+  datastream@id:
+    type: string
+    readOnly: true
+  samplingFeature@id:
+    type: string
+  procedure@link:
+    $ref: '#/components/schemas/link'
+  phenomenonTime:
+    type: string
+    format: date-time
+  resultTime:
+    type: string
+    format: date-time
+  parameters:
+    type: object
+  result:
+    description: Type defined by datastream schema
+  result@link:
+    $ref: '#/components/schemas/link'
+
+oneOf:
+  - required: [result]
+  - required: [result@link]
+```
+
+**Property Defaults:**
+- If `phenomenonTime` omitted, defaults to `resultTime` value
+
+**Schema Validation:**
+- `result` validated against `datastream.schema.resultSchema`
+- `parameters` validated against `datastream.schema.parametersSchema`
+
+#### 9.3 ControlStream Model
+
+**Schema Name:** `ControlStream` (extends `baseStream`)
+
+```yaml
+type: object
+required:
+  - name
+  - system@link
+  - controlledProperties
+  - issueTime
+  - executionTime
+  - live
+  - async
+  - formats
+
+properties:
+  id:
+    type: string
+    readOnly: true
+  name:
+    type: string
+  description:
+    type: string
+  validTime:
+    $ref: '#/components/schemas/timePeriod'
+  formats:
+    type: array
+    items:
+      type: string
+    readOnly: true
+  system@link:
+    $ref: '#/components/schemas/link'
+    readOnly: true
+  inputName:
+    type: string
+  procedure@link:
+    $ref: '#/components/schemas/link'
+  deployment@link:
+    $ref: '#/components/schemas/link'
+  featureOfInterest@link:
+    $ref: '#/components/schemas/link'
+  samplingFeature@link:
+    $ref: '#/components/schemas/link'
+  controlledProperties:
+    oneOf:
+      - type: array
+        items:
+          type: object
+          required:
+            - definition
+          properties:
+            definition:
+              type: string
+              format: uri
+            label:
+              type: string
+            description:
+              type: string
+      - type: 'null'
+    readOnly: true
+  issueTime:
+    oneOf:
+      - $ref: '#/components/schemas/timePeriod'
+      - type: 'null'
+    readOnly: true
+  executionTime:
+    oneOf:
+      - $ref: '#/components/schemas/timePeriod'
+      - type: 'null'
+    readOnly: true
+  live:
+    oneOf:
+      - type: boolean
+      - type: 'null'
+    readOnly: true
+  async:
+    type: boolean
+  schema:
+    $ref: '#/components/schemas/CommandSchema'
+    writeOnly: true
+  links:
+    type: array
+    items:
+      $ref: '#/components/schemas/link'
+```
+
+**async Property:**
+- `true` - Commands processed asynchronously (status updates via polling/pub/sub)
+- `false` - Commands processed synchronously (result in HTTP response)
+
+#### 9.4 Command Model
+
+**Schema Name:** `Command`
+
+```yaml
+type: object
+required:
+  - id
+  - controlstream@id
+  - issueTime
+  - parameters
+
+properties:
+  id:
+    type: string
+    readOnly: true
+  controlstream@id:
+    type: string
+    readOnly: true
+  samplingFeature@id:
+    type: string
+  procedure@link:
+    $ref: '#/components/schemas/link'
+  issueTime:
+    type: string
+    format: date-time
+    readOnly: true
+  executionTime:
+    $ref: '#/components/schemas/timePeriod'
+    readOnly: true
+  sender:
+    type: string
+    readOnly: true
+  currentStatus:
+    type: string
+    enum: [PENDING, ACCEPTED, REJECTED, SCHEDULED, UPDATED, CANCELED, EXECUTING, FAILED, COMPLETED]
+    readOnly: true
+  parameters:
+    type: object
+```
+
+**Server-Generated Properties:**
+- `issueTime` - Set to current time on POST
+- `currentStatus` - Set to PENDING on POST, updated as status reports added
+- `sender` - Set from authentication context
+
+**Schema Validation:**
+- `parameters` validated against `controlstream.schema.parametersSchema`
+
+#### 9.5 CommandStatus Model
+
+**Schema Name:** `CommandStatus`
+
+```yaml
+type: object
+required:
+  - id
+  - command@id
+  - reportTime
+  - statusCode
+
+properties:
+  id:
+    type: string
+    readOnly: true
+  command@id:
+    type: string
+    readOnly: true
+  reportTime:
+    type: string
+    format: date-time
+    readOnly: true
+  statusCode:
+    type: string
+    enum: [PENDING, ACCEPTED, REJECTED, SCHEDULED, UPDATED, CANCELED, EXECUTING, FAILED, COMPLETED]
+  percentCompletion:
+    type: number
+    minimum: 0
+    maximum: 100
+  executionTime:
+    $ref: '#/components/schemas/timePeriod'
+  message:
+    type: string
+  results:
+    type: array
+    items:
+      $ref: '#/components/schemas/CommandResult'
+```
+
+**Server-Generated Properties:**
+- `reportTime` - Set to current time on POST
+
+#### 9.6 CommandResult Model
+
+**Schema Name:** `CommandResult`
+
+```yaml
+type: object
+required:
+  - id
+  - command@id
+
+properties:
+  id:
+    type: string
+    readOnly: true
+  command@id:
+    type: string
+    readOnly: true
+  data:
+    type: object
+  observation@link:
+    $ref: '#/components/schemas/link'
+  observationSet@link:
+    $ref: '#/components/schemas/link'
+  datastream@link:
+    type: object
+    properties:
+      href:
+        type: string
+        format: uri
+      resultTime:
+        $ref: '#/components/schemas/timePeriod'
+  external@link:
+    $ref: '#/components/schemas/link'
+
+oneOf:
+  - required: [data]
+  - required: [observation@link]
+  - required: [observationSet@link]
+  - required: [datastream@link]
+  - required: [external@link]
+```
+
+---
+
+### Property Names and Types
+
+Complete property catalog from schema components:
+
+#### 10.1 Common BaseStream Properties
+
+**Inherited by:** DataStream, ControlStream
+
+```yaml
+id: string (readOnly)
+name: string (required)
+description: string
+validTime: timePeriod array [startTime, endTime]
+formats: string array (readOnly, required)
+```
+
+#### 10.2 Link Properties
+
+```yaml
+href: string format:uri (required)
+rel: string (relation type)
+type: string (media type)
+hreflang: string pattern:^([a-z]{2}(-[A-Z]{2})?)|x-default$
+title: string
+uid: string format:uri
+rt: string format:uri (semantic resource type)
+if: string format:uri (interface)
+```
+
+#### 10.3 DataStream-Specific Properties
+
+```yaml
+system@link: Link (readOnly, required)
+outputName: string
+procedure@link: Link
+deployment@link: Link
+featureOfInterest@link: Link
+samplingFeature@link: Link
+observedProperties: array<object> or null (readOnly, required)
+  - definition: string format:uri (required)
+  - label: string
+  - description: string
+phenomenonTime: timePeriod or null (readOnly, required)
+phenomenonTimeInterval: string (ISO 8601 duration)
+resultTime: timePeriod or null (readOnly, required)
+resultTimeInterval: string (ISO 8601 duration)
+type: enum[status, observation]
+resultType: enum[measure, vector, record, coverage, complex] or null (readOnly, required)
+live: boolean or null
+schema: ObservationSchema (writeOnly)
+```
+
+#### 10.4 Observation-Specific Properties
+
+```yaml
+datastream@id: string (readOnly, required)
+samplingFeature@id: string
+procedure@link: Link
+phenomenonTime: string format:date-time
+resultTime: string format:date-time (required)
+parameters: object
+result: any
+result@link: Link
+```
+
+#### 10.5 ControlStream-Specific Properties
+
+```yaml
+system@link: Link (readOnly, required)
+inputName: string
+procedure@link: Link
+deployment@link: Link
+featureOfInterest@link: Link
+samplingFeature@link: Link
+controlledProperties: array<object> or null (readOnly, required)
+  - definition: string format:uri (required)
+  - label: string
+  - description: string
+issueTime: timePeriod or null (readOnly, required)
+executionTime: timePeriod or null (readOnly, required)
+live: boolean or null (readOnly, required)
+async: boolean (required)
+schema: CommandSchema (writeOnly)
+```
+
+#### 10.6 Command-Specific Properties
+
+```yaml
+controlstream@id: string (readOnly, required)
+samplingFeature@id: string
+procedure@link: Link
+issueTime: string format:date-time (readOnly, required)
+executionTime: timePeriod (readOnly)
+sender: string (readOnly)
+currentStatus: enum (readOnly)
+parameters: object (required)
+```
+
+#### 10.7 CommandStatus-Specific Properties
+
+```yaml
+command@id: string (readOnly, required)
+reportTime: string format:date-time (readOnly, required)
+statusCode: enum[PENDING, ACCEPTED, REJECTED, SCHEDULED, UPDATED, CANCELED, EXECUTING, FAILED, COMPLETED] (required)
+percentCompletion: number (0-100)
+executionTime: timePeriod
+message: string
+results: array<CommandResult>
+```
+
+#### 10.8 CommandResult-Specific Properties
+
+```yaml
+command@id: string (readOnly, required)
+data: object
+observation@link: Link
+observationSet@link: Link
+datastream@link: object
+  - href: string format:uri
+  - resultTime: timePeriod
+external@link: Link
+```
+
+#### 10.9 SystemEvent-Specific Properties
+
+```yaml
+system@id: string (readOnly, required)
+time: string format:date-time (required)
+eventType: string (required)
+description: string
+properties: object
+```
+
+---
+
+### Required vs Optional Properties
+
+Comprehensive required/optional property matrix:
+
+#### 11.1 DataStream
+
+**Required:**
+- `name`
+- `system@link`
+- `observedProperties` (readOnly)
+- `phenomenonTime` (readOnly)
+- `resultTime` (readOnly)
+- `resultType` (readOnly)
+- `live`
+- `formats` (readOnly)
+
+**Optional:**
+- `id` (readOnly, server-assigned)
+- `description`
+- `validTime`
+- `outputName`
+- `procedure@link`
+- `deployment@link`
+- `featureOfInterest@link`
+- `samplingFeature@link`
+- `phenomenonTimeInterval`
+- `resultTimeInterval`
+- `type`
+- `schema` (writeOnly)
+- `links`
+
+#### 11.2 Observation
+
+**Required:**
+- `id` (readOnly)
+- `datastream@id` (readOnly)
+- `resultTime`
+- Either `result` OR `result@link` (oneOf)
+
+**Optional:**
+- `samplingFeature@id`
+- `procedure@link`
+- `phenomenonTime` (defaults to resultTime if omitted)
+- `parameters`
+
+#### 11.3 ControlStream
+
+**Required:**
+- `name`
+- `system@link`
+- `controlledProperties` (readOnly)
+- `issueTime` (readOnly)
+- `executionTime` (readOnly)
+- `live` (readOnly)
+- `async`
+- `formats` (readOnly)
+
+**Optional:**
+- `id` (readOnly, server-assigned)
+- `description`
+- `validTime`
+- `inputName`
+- `procedure@link`
+- `deployment@link`
+- `featureOfInterest@link`
+- `samplingFeature@link`
+- `schema` (writeOnly)
+- `links`
+
+#### 11.4 Command
+
+**Required:**
+- `id` (readOnly)
+- `controlstream@id` (readOnly)
+- `issueTime` (readOnly)
+- `parameters`
+
+**Optional:**
+- `samplingFeature@id`
+- `procedure@link`
+- `executionTime` (readOnly, server-generated)
+- `sender` (readOnly, server-generated)
+- `currentStatus` (readOnly, server-generated)
+
+#### 11.5 CommandStatus
+
+**Required:**
+- `id` (readOnly)
+- `command@id` (readOnly)
+- `reportTime` (readOnly)
+- `statusCode`
+
+**Optional:**
+- `percentCompletion`
+- `executionTime`
+- `message`
+- `results`
+
+#### 11.6 CommandResult
+
+**Required:**
+- `id` (readOnly)
+- `command@id` (readOnly)
+- One of: `data`, `observation@link`, `observationSet@link`, `datastream@link`, `external@link` (oneOf)
+
+**Optional:**
+- None (beyond the required oneOf)
+
+#### 11.7 SystemEvent
+
+**Required:**
+- `id` (readOnly)
+- `system@id` (readOnly)
+- `time`
+- `eventType`
+
+**Optional:**
+- `description`
+- `properties`
+
+---
+
+### Format Media Types
+
+The schema specifies comprehensive format support across all endpoints:
+
+#### 12.1 Response Content Types
+
+**JSON-Based Formats:**
+- **application/json** - Default JSON encoding for all resources
+- **application/swe+json** - SWE Common with JSON encoding (observations, commands)
+- **application/geo+json** - GeoJSON format (for feature collections)
+- **application/sml+json** - SensorML JSON format (systems, procedures)
+- **application/schema+json** - JSON Schema format (for schema endpoints)
+
+**Text-Based Formats:**
+- **application/swe+text** - SWE Common with text encoding (DSV)
+- **application/swe+csv** - SWE Common with CSV encoding
+- **text/plain** - Plain text (for Protobuf .proto schemas)
+
+**Binary Formats:**
+- **application/swe+binary** - SWE Common with binary encoding
+- **application/x-protobuf** - Protocol Buffers format
+
+**Image Formats (for result@link):**
+- **image/png** - PNG images
+- **image/jpeg** - JPEG images
+- **image/tiff; application=geotiff** - GeoTIFF images
+
+**Data URIs:**
+- **data:{media-type};base64,{encoded-data}** - Inline base64-encoded data
+
+#### 12.2 Format Negotiation
+
+**Accept Header:**
+```http
+GET /observations
+Accept: application/swe+binary
+```
+
+**Format Query Parameter (f):**
+```http
+GET /observations?f=application/swe+json
+```
+
+**Schema Format Parameter:**
+```http
+GET /datastreams/ds123/schema?obsFormat=application/swe+binary
+```
+
+#### 12.3 SWE Common Encoding Schemas
+
+**JSONEncoding:**
+```yaml
+type: object
+properties:
+  type:
+    const: JSONEncoding
+  recordsAsArrays:
+    type: boolean
+    default: false
+    description: If true, records encoded as arrays instead of objects
+  vectorsAsArrays:
+    type: boolean
+    default: false
+    description: If true, vectors encoded as flat arrays
+```
+
+**TextEncoding:**
+```yaml
+type: object
+required:
+  - tokenSeparator
+  - blockSeparator
+
+properties:
+  type:
+    const: TextEncoding
+  collapseWhiteSpaces:
+    type: boolean
+  decimalSeparator:
+    type: string
+    minLength: 1
+  tokenSeparator:
+    type: string
+    minLength: 1
+    description: Field separator (e.g., ',')
+  blockSeparator:
+    type: string
+    minLength: 1
+    description: Record separator (e.g., '\n')
+```
+
+**BinaryEncoding:**
+```yaml
+type: object
+required:
+  - byteOrder
+  - byteEncoding
+  - members
+
+properties:
+  type:
+    const: BinaryEncoding
+  byteOrder:
+    type: string
+    enum: [bigEndian, littleEndian]
+  byteEncoding:
+    type: string
+    enum: [base64, raw]
+  byteLength:
+    type: integer
+  members:
+    type: array
+    items:
+      oneOf:
+        - $ref: '#/components/schemas/Component'
+        - $ref: '#/components/schemas/Block'
+```
+
+#### 12.4 SWE Common Data Component Schemas
+
+The schema includes complete SWE Common 3.0 data component definitions (50+ component types):
+
+**Scalar Components:**
+- `Boolean` - True/false values
+- `Count` - Integer counts
+- `Quantity` - Decimal measurements with units
+- `Time` - Time instants/durations
+- `Category` - Categorical values (tokens from code space)
+- `Text` - Free-text strings
+
+**Range Components:**
+- `CountRange` - Integer ranges
+- `QuantityRange` - Decimal ranges with units
+- `TimeRange` - Time ranges
+- `CategoryRange` - Categorical ranges
+
+**Aggregate Components:**
+- `DataRecord` - Named field collection (struct/object)
+- `Vector` - Coordinate array with reference frame
+- `DataArray` - Homogeneous array with element schema
+- `Matrix` - 2D array with element schema
+- `DataChoice` - Discriminated union (choice of alternatives)
+
+**Each Component Has:**
+- `id` - Optional unique identifier
+- `label` - Human-readable label
+- `description` - Detailed description
+- `definition` - Semantic definition URI
+- Component-specific properties (e.g., `uom` for Quantity, `constraint` for ranges)
+
+---
+
+## Summary
+
+**Section 2.2 Complete:** CSAPI Part 2 OpenAPI Schema Analysis (~7,500 words documenting all schema aspects)
+
+The OpenAPI specification provides machine-readable definitions for:
+- **48 endpoints** across 6 resource categories
+- **23 query parameters** with complete type constraints
+- **8 request body schemas** with validation rules
+- **Complete response schemas** with status codes and error handling
+- **50+ SWE Common data components** for flexible observation/command schemas
+- **5 encoding formats** (JSON, SWE JSON/Text/Binary, Protobuf)
+- **Comprehensive examples** throughout the specification
+
+**Key Implementation Details from OpenAPI:**
+- Precise parameter types and constraints (limit 1-10000, minLength: 1, format: uri)
+- Exact required vs optional property lists for each resource type
+- Schema validation requirements (observations/commands validated against datastream/controlstream schemas)
+- HTTP status code semantics (409 on schema conflict, 400 on validation failure)
+- Pagination via cursor-based links (not offset-based)
+- Temporal parameter formats (ISO 8601 with null for open-ended)
+- Multiple result types for CommandResult (inline data, observation refs, datastream refs, external refs)
+- Status code state machine (PENDING → ACCEPTED → EXECUTING → COMPLETED/FAILED)
+- Read-only vs write-only property distinctions (id readOnly, schema writeOnly)
+- Link relation types for navigation (canonical, self, next, system, datastream, etc.)
+
+**Ready for Section 2.3:** CSAPI Part 2 Comparison and Insights (compare Section 2.1 standard vs Section 2.2 OpenAPI)
