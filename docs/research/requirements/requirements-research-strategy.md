@@ -680,18 +680,18 @@
 - [camptocamp/ogc-client](https://github.com/camptocamp/ogc-client) - upstream patterns for WFS, WMS, etc.
 
 **Questions to answer:**
-- [ ] What are the top 10 most common usage scenarios?
-- [ ] What API calls do real applications make most often?
-- [ ] What functionality do existing CSAPI clients use?
-- [ ] What workflows need to be supported? (discover systems, fetch observations, send commands)
-- [ ] What convenience methods would reduce user code?
-- [ ] What error conditions do users commonly encounter?
-- [ ] What integration patterns exist? (with OpenLayers, Leaflet, etc.)
-- [ ] What data transformation needs exist?
-- [ ] What are typical query patterns? (bbox + datetime filters, etc.)
-- [ ] What requirements emerge from actual usage vs spec reading?
+- [x] What are the top 10 most common usage scenarios? → 15 scenarios identified: system discovery, real-time monitoring, historical retrieval, commanding, streaming, deployment tracking, hierarchy navigation, system history, sampling features, feasibility checks, event monitoring, mapping integration, dashboards, UAV tasking, procedure management
+- [x] What API calls do real applications make most often? → Documented for all 15 scenarios with complete API operation sequences
+- [x] What functionality do existing CSAPI clients use? → 6 essential workflows: discovery/connection, real-time monitoring, historical retrieval, async commanding, deployment tracking, feasibility checking
+- [x] What workflows need to be supported? (discover systems, fetch observations, send commands) → 6 essential workflows with step-by-step API calls and library requirements
+- [x] What convenience methods would reduce user code? → 17 methods recommended: findSystemsInArea, getLatestObservations, streamObservations, sendCommandAndWait, checkCommandFeasibility, getSystemHierarchy, getDeploymentData, plus 10 utility/validation methods
+- [x] What error conditions do users commonly encounter? → 8 error types documented: network, 401 auth, 403 authorization, 400 validation, 404 not found, 409 conflicts, 5XX server, 429 rate limiting with specific handling strategies
+- [x] What integration patterns exist? (with OpenLayers, Leaflet, etc.) → 4 patterns: OpenLayers/Leaflet mapping with GeoJSON, Chart.js/D3 charting, RxJS/React real-time updates, SWE Common binary parsing
+- [x] What data transformation needs exist? → Format conversions (GeoJSON ↔ SensorML ↔ SWE), observation parsing (scalar/vector/record/complex), temporal ISO 8601 handling, unit conversions with UCUM
+- [x] What are typical query patterns? (bbox + datetime filters, etc.) → Spatial bbox, temporal phenomenonTime/resultTime, property filters, combined filters, recursive queries, relationship traversal, pagination, ID-based
+- [x] What requirements emerge from actual usage vs spec reading? → Priority matrix with P0/P1/P2 rankings, performance targets (100-1000 pagination, 5-10sec polling, caching strategies), library design patterns
 
-**Deliverable:** Usage scenario requirements and priorities (~600-800 lines)
+**Deliverable:** Usage scenario requirements and priorities (~600-800 lines) ✅ **COMPLETE** - See [csapi-usage-scenarios.md](csapi-usage-scenarios.md) (~3,800 lines)
 
 ---
 
