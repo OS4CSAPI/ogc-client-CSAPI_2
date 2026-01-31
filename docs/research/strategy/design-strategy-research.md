@@ -246,16 +246,22 @@ endpoint.csapi() → returns CSAPIQueryBuilder
 
 ---
 
-### 8. Format Negotiation Architecture
+### 8. ✅ Format Negotiation Architecture (COMPLETED)
 
-**Questions to answer:**
-- [ ] Where does format negotiation logic live?
-- [ ] How are Accept headers set?
-- [ ] How is Content-Type detected?
-- [ ] How are format-specific URLs built?
-- [ ] Should there be a format utility module?
-- [ ] How to model format enum/constants?
-- [ ] How do parsers/validators fit in?
+**Core functionality: How should format selection work?**
+
+**Analysis:** [docs/research/upstream/format-negotiation-analysis.md](../upstream/format-negotiation-analysis.md)
+
+**Answers:**
+- [x] Where does format negotiation logic live? → **Inline in url_builder.ts, no separate module** (Analysis Section 1)
+- [x] How are Accept headers set? → **Not used - CSAPI uses query parameter instead** (Section 3)
+- [x] How is Content-Type detected? → **Not validated - trust server compliance** (Section 6)
+- [x] How are format-specific URLs built? → **Single URL, format via 'f' query parameter** (Section 4)
+- [x] Should there be a format utility module? → **No - follow EDR inline pattern** (Section 1)
+- [x] How to model format enum/constants? → **Optional export for convenience, use string type for flexibility** (Section 7, 8)
+- [x] How do parsers/validators fit in? → **None - return URLs only, let users fetch** (Section 9)
+
+**Status:** Simple format handling via 'f' query parameter. Optional format constants (~10 lines). No validation, no Accept headers, no parsers. Total ~13 lines following EDR pattern.
 
 ---
 
