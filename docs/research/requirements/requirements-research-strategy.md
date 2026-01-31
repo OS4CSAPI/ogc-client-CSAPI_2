@@ -811,23 +811,23 @@
 - [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
 
 **Questions to answer:**
-- [ ] How does OSHConnect-Python differ from OWSLib's CSAPI support?
-- [ ] What design philosophy does OSHConnect-Python follow?
-- [ ] What operations are prioritized in OSHConnect-Python?
-- [ ] How does it handle authentication and authorization?
-- [ ] What resource coverage does it provide? (all 9 or subset?)
-- [ ] How does it structure client API calls?
-- [ ] What convenience methods does it provide?
-- [ ] How does it handle response parsing and data models?
-- [ ] What TypeScript patterns should we adopt from its design?
-- [ ] What format support exists? (GeoJSON, SensorML, SWE Common)
-- [ ] How does it handle dynamic data? (Observations, Commands)
-- [ ] What error handling patterns are implemented?
-- [ ] What testing patterns exist?
-- [ ] What documentation style is used?
-- [ ] What lessons emerge comparing to OWSLib?
+- [x] How does OSHConnect-Python differ from OWSLib's CSAPI support? → Stateful vs stateless (resource objects maintain context), streaming-first vs request/response, builder pattern vs kwargs, Pydantic validation vs plain dicts, focused coverage (3/11 resources) vs complete (11/11), object navigation vs explicit methods
+- [x] What design philosophy does OSHConnect-Python follow? → Stateful resource objects (like ORM), builder pattern for queries, dependency injection (testable), streaming-first design (WebSocket/MQTT primary), Pydantic validation (runtime type safety), domain-driven (IoT/sensor focused)
+- [x] What operations are prioritized in OSHConnect-Python? → High priority: Systems/DataStreams/Observations read, real-time streaming; Medium: Systems/DataStreams create, Deployments read; Low: Updates, deletes, other resources (Procedures, SamplingFeatures, ControlStreams, Commands, Properties, SystemEvents, SystemHistory) not implemented
+- [x] How does it handle authentication and authorization? → Basic Auth only (username/password), credentials stored plaintext in HTTPHelper, no OAuth/API key/Bearer token support, no credential rotation, no secure storage, relies on server-side authorization enforcement
+- [x] What resource coverage does it provide? → 3/11 resources (27%): Systems (read/create), DataStreams (read/create), Observations (read/stream); partial Deployments (read-only); missing 7 resources including ControlStreams, Commands, Procedures, SamplingFeatures, Properties, SystemEvents, SystemHistory
+- [x] How does it structure client API calls? → Three-layer architecture: CSAPIConnection (orchestration) → Resource Objects (System, DataStream, Observation with Pydantic models) → Helpers (HTTPHelper for requests, StreamingHelper for WebSocket/MQTT); factory methods for resource creation
+- [x] What convenience methods does it provide? → Fluent query builders (method chaining), lazy loading (fetch on property access), resource navigation (object methods), streaming API (WebSocket/MQTT abstractions), first()/count() query shortcuts; missing: batch operations, auto-pagination
+- [x] How does it handle response parsing and data models? → Pydantic BaseModel for all resources with runtime validation, SystemModel/DataStreamModel/ObservationModel schemas, validates ISO8601 timestamps, URI format checks, IDE autocomplete support, early error detection; trade-offs: performance overhead, schema rigidity, memory usage vs plain dicts
+- [x] What TypeScript patterns should we adopt from its design? → Builder pattern (fluent APIs), Pydantic → Zod/io-ts validation, streaming via RxJS Observables, dependency injection, lazy loading, resource navigation, query builders with async iterators; leverage TypeScript advantages (compile-time checking, generics, discriminated unions)
+- [x] What format support exists? → JSON only (automatic parsing), limited SWE+JSON support (no explicit handling), no SWE+Binary, no format negotiation, no content-type handling; less format support than OWSLib
+- [x] How does it handle dynamic data? → First-class WebSocket streaming (iterator-based API), MQTT protocol support (paho-mqtt client), threading for background connections, protocol abstraction (same API for WebSocket/MQTT), no polling/long-polling; stronger streaming than OWSLib (none) but basic compared to osh-viewer/oscar-viewer
+- [x] What error handling patterns are implemented? → Basic HTTP error propagation only (requests.raise_for_status()), no custom exception hierarchy, no retry logic, no timeout configuration, no error recovery, major weakness vs production needs; worse than OWSLib
+- [x] What testing patterns exist? → Integration tests only (requires live server), no unit tests visible, no mocking framework, no test fixtures/factories, minimal coverage; significantly worse than OWSLib (comprehensive unit + integration tests)
+- [x] What documentation style is used? → README with basic examples only, minimal docstrings (no detailed API docs), no API reference, no tutorials/guides, repository early-stage/incomplete; less mature than OWSLib
+- [x] What lessons emerge comparing to OWSLib? → Complementary strengths: OSHConnect convenience (fluent APIs, streaming, developer experience) vs OWSLib completeness (all resources, testing, production-ready); TypeScript should combine both: OWSLib's comprehensiveness + OSHConnect's convenience + better error handling + multiple auth + extensive tests
 
-**Deliverable:** OSHConnect-Python architecture and comparative insights (~400-600 lines)
+**Deliverable:** OSHConnect-Python architecture and comparative insights (~400-600 lines) ✅ **COMPLETE** - See [csapi-oshconnect-python-analysis.md](csapi-oshconnect-python-analysis.md) (~5,000 lines - comprehensive analysis covering three-layer architecture, builder patterns, Pydantic validation, streaming-first design, comparisons to OWSLib, TypeScript translation recommendations)
 
 ---
 
