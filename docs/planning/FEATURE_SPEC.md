@@ -14,7 +14,125 @@ This contribution adds comprehensive client support for OGC API – Connected Sy
 
 ## 2. Feature Overview
 
-_[To be completed]_
+### 2.1 Motivation & Context
+
+OGC API – Connected Systems (CSAPI) v1.0 was published in July 2025 as the modern successor to SOS (Sensor Observation Service). The standard defines RESTful access to sensor systems, observations, deployments, and control mechanisms. Despite its importance for IoT and sensor web applications, no TypeScript client library currently supports CSAPI. This creates a gap where developers must manually implement the specification to access CSAPI-compliant servers.
+
+The ogc-client library already supports multiple OGC API standards (WFS, STAC, EDR). Adding CSAPI support extends this coverage to sensor and observational data, enabling developers to access all major OGC API families through a single, consistent TypeScript interface.
+
+### 2.2 In Scope
+
+**Core Implementation (following PR #114 EDR pattern):**
+- URL building pattern: Library provides URL strings, users handle `fetch()`
+- `endpoint.csapi(collectionId)` navigator pattern
+- Per-collection navigator instances with caching
+
+**Resource Coverage (9 CSAPI resource types):**
+
+*Part 1: Feature Resources*
+- Systems (12 methods: CRUD + history + subsystems)
+- Procedures (8 methods: CRUD + history)
+- Deployments (8 methods: CRUD + history)
+- Sampling Features (8 methods: CRUD + history)
+- Properties (6 methods: CRUD)
+
+*Part 2: Dynamic Data*
+- Datastreams (11 methods: CRUD + observations + schema)
+- Observations (9 methods: Read/create + time filtering)
+- Control Streams (8 methods: CRUD + timing)
+- Commands (8 methods: CRUD + status)
+
+**Query Support:**
+- All CSAPI query parameters: bbox, datetime, limit, offset, filters
+- Pagination support (offset-based)
+- Format negotiation (GeoJSON and SensorML via Accept headers)
+- Proper URL encoding and parameter handling
+
+**Testing & Quality:**
+- Client-oriented tests (real-world usage scenarios)
+- Unit tests for all URL builder methods
+- Integration tests for endpoint conformance
+- Parser and validator test coverage
+- Target: 85%+ overall test coverage
+- OGC-conformant test fixtures
+
+**Integration:**
+- Extend `OgcApiEndpoint` following upstream patterns
+- Conformance class detection
+- Collection-level capability checking
+- TypeScript interfaces for all query options
+
+### 2.3 Out of Scope
+
+**Explicitly excluded (defer or not applicable):**
+- HTTP execution (users control fetch, auth, retries)
+- Response parsing into domain objects (users handle JSON)
+- Client-side validation of payloads before POST/PUT
+- Server-side pagination cursor support (CSAPI uses offset-based)
+- Advanced SWE Common encoding/decoding beyond format negotiation
+- WebSocket subscriptions (CSAPI doesn't define this)
+- Non-CSAPI OGC standards (separate concerns)
+
+**Deferred to future work:**
+- System Events resource (Part 3, not yet published)
+- System History detailed query support (if spec evolves)
+- Performance benchmarking suite
+- Browser-specific optimizations
+
+### 2.4 Upstream Alignment & Constraints
+
+**Non-Negotiable Principles:**
+
+**Minimal Impact on Existing Code:**
+- Modify existing upstream files **only when absolutely necessary** for CSAPI integration
+- Do NOT refactor, optimize, or "improve" existing upstream code
+- Do NOT fix existing upstream test failures or issues unrelated to CSAPI
+- Do NOT change existing patterns, conventions, or architectural choices
+- Preserve all existing functionality - zero regressions
+
+**Additive-Only Approach:**
+- New functionality lives in isolated `src/ogc-api/csapi/` directory
+- Changes to shared files (`endpoint.ts`, `info.ts`, `index.ts`) limited to:
+  - Adding CSAPI conformance checking
+  - Adding `csapi()` method to endpoint
+  - Exporting CSAPI types
+- Each modification to existing files must be justified as essential for CSAPI functionality
+
+**Diff Discipline:**
+- Every line changed in an existing file must directly support CSAPI integration
+- Prefer duplication over refactoring shared code
+- Follow existing code style exactly (no formatting changes)
+- Avoid "while we're here" improvements
+
+**Rationale:** Maintainers must review changes efficiently. Mixing CSAPI addition with unrelated changes creates review burden, increases merge conflict risk, and reduces approval likelihood.
+
+### 2.5 Standards & Specifications
+
+**Primary:**
+- OGC API – Connected Systems Part 1: Feature Resources (23-001) v1.0
+- OGC API – Connected Systems Part 2: Dynamic Data (23-002) v1.0
+
+**Supporting:**
+- OGC SWE Common Data Model (23-000) v3.0 - Data component structure
+- OGC SensorML (24-014) v3.0 - System description format
+- GeoJSON (RFC 7946) - Alternative feature encoding
+
+**Reference Implementation:**
+- PR #114 (EDR implementation) - Direct pattern template for architecture
+
+### 2.6 Success Criteria
+
+**Complete when:**
+- ✅ URL builder methods exist for all 70+ CRUD operations across 9 resources
+- ✅ Both GeoJSON and SensorML format negotiation supported via Accept headers
+- ✅ All query parameters from spec supported with proper encoding
+- ✅ Pagination (offset-based) fully functional
+- ✅ 85%+ test coverage with client-oriented tests
+- ✅ Integration tests validate conformance checking
+- ✅ TypeScript interfaces provide full type safety
+- ✅ JSDoc documentation for all public methods
+- ✅ Usage examples demonstrate common workflows
+- ✅ Upstream maintainers approve PR for merge
 
 ---
 
