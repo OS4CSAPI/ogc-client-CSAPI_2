@@ -184,16 +184,43 @@
 - docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
 
 **Questions to answer:**
-- [ ] What formats are REQUIRED by the standard for all implementations?
-- [ ] What formats are OPTIONAL but commonly used?
-- [ ] What media type identifiers are specified for each format?
-- [ ] What format negotiation mechanisms are required? (Accept headers, query params, precedence rules)
-- [ ] What are the minimum viable format support requirements for client library?
-- [ ] Does library need to parse formats or just request/pass-through them?
-- [ ] Does library need to serialize formats for POST/PUT operations?
-- [ ] Are there format validation requirements for client-side?
-- [ ] What format capabilities should be exposed in the client API?
-- [ ] How should format errors be handled (unsupported format, malformed content)?
+- [x] What formats are REQUIRED by the standard for all implementations?
+  - **Part 1:** application/json (all), application/geo+json (spatial), application/sml+json (systems/procedures)
+  - **Part 2:** application/json (all), application/swe+json/text/binary (observations/commands - optional)
+- [x] What formats are OPTIONAL but commonly used?
+  - **Part 1:** HTML, XML (not required)
+  - **Part 2:** SWE Common formats (swe+json, swe+text, swe+binary) - SHOULD support
+- [x] What media type identifiers are specified for each format?
+  - application/json, application/geo+json, application/sml+json, application/swe+json, application/swe+text, application/swe+binary, text/uri-list
+- [x] What format negotiation mechanisms are required? (Accept headers, query params, precedence rules)
+  - **Accept header:** Client specifies desired format
+  - **Query parameter:** f or format parameter (takes precedence over Accept)
+  - **Content-Type response:** Server indicates format
+  - **Precedence:** Query param > Accept > Default > 406
+- [x] What are the minimum viable format support requirements for client library?
+  - **MUST:** JSON, GeoJSON, SensorML
+  - **SHOULD:** SWE Common (JSON/CSV/Binary)
+  - **MAY:** Other formats (pass-through)
+- [x] Does library need to parse formats or just request/pass-through them?
+  - **Full parsing:** JSON, GeoJSON, SensorML, SWE Common (all formats)
+  - **Pass-through:** Unsupported formats only
+- [x] Does library need to serialize formats for POST/PUT operations?
+  - **Yes:** All supported formats must be serializable for write operations
+  - **Content-Type header:** Client must include in requests
+- [x] Are there format validation requirements for client-side?
+  - **Pre-send:** Validate structure before sending (prevent 400 errors)
+  - **Post-receive:** Validate structure after receiving (detect malformed responses)
+  - **Format-specific:** Each format has specific validation rules (see Sections 3.2-3.4)
+- [x] What format capabilities should be exposed in the client API?
+  - **Format selection:** Method-level format parameter
+  - **Convenience methods:** Format-specific methods (getAsGeoJSON, getAsSensorML)
+  - **Detection:** Automatic format detection from Content-Type
+  - **Capabilities:** getSupportedFormats, supportsFormat
+- [x] How should format errors be handled (unsupported format, malformed content)?
+  - **406 Not Acceptable:** Fall back to application/json
+  - **Parse errors:** Log and retry with different format
+  - **Validation errors:** Return detailed error messages
+  - **Fallback chain:** Preferred format → fallback formats → default (JSON)
 
 **Deliverable:** Common format requirements and negotiation analysis (~200-300 lines)
 
