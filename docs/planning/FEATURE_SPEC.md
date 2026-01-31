@@ -182,7 +182,54 @@ Before claiming tests are "complete," ask:
 
 **Rationale:** Maintainers must review changes efficiently. Mixing CSAPI addition with unrelated changes creates review burden, increases merge conflict risk, and reduces approval likelihood.
 
-### 2.6 Standards & Specifications
+### 2.6 Code Volume Considerations
+
+**Context:** Previous implementation (second iteration) resulted in ~2x the size of the entire upstream codebase. This raised concerns about contribution proportionality and maintainability.
+
+**Risk:** A disproportionately large contribution may:
+- Overwhelm maintainers during review
+- Suggest over-engineering or unnecessary complexity
+- Create long-term maintenance burden
+- Reduce likelihood of acceptance
+
+**Mitigation Strategy:**
+
+**1. Understand What Drives Code Volume:**
+- [ ] **9 resource types** - CSAPI has more resource types than other OGC APIs
+- [ ] **Dual formats** - GeoJSON + SensorML support doubles some code
+- [ ] **Complex schemas** - SWE Common data components, SensorML structures
+- [ ] **Comprehensive tests** - 85%+ coverage target means significant test code
+- [ ] **TypeScript interfaces** - Full type safety requires extensive type definitions
+
+**2. Justify vs Eliminate:**
+- **Necessary complexity:** If CSAPI genuinely requires more code due to standard scope, document why
+- **Over-engineering:** Identify and eliminate unnecessary abstractions, utilities, or features
+- **Comparison:** Compare code volume to PR #114 (EDR) proportionally - EDR has fewer resources, so some size difference is expected
+- **Test vs Implementation ratio:** Verify test code isn't artificially inflating size
+
+**3. Pre-Submission Analysis:**
+Before submitting PR, perform code volume audit:
+- [ ] Total lines of implementation code (exclude tests, fixtures, comments)
+- [ ] Compare to PR #114 on per-resource basis (EDR has X resources, CSAPI has 9)
+- [ ] Identify any bloat: duplicated code, unused utilities, over-abstraction
+- [ ] Prepare justification for volume if significantly larger than expected
+
+**4. Communication Strategy:**
+If volume remains high after optimization:
+- Document in PR description why CSAPI requires more code
+- Highlight that CSAPI Part 1 + Part 2 = ~2x the scope of typical OGC API
+- Show per-resource code is comparable to EDR
+- Emphasize test coverage quality, not just quantity
+- Offer to phase contribution if needed (Part 1 first, Part 2 later)
+
+**5. Red Lines:**
+- **Absolute maximum:** If implementation exceeds upstream size, must have compelling justification
+- **Comparison to EDR:** CSAPI code should be proportional (9 resources vs EDR's resource count)
+- **Tests:** Test code can be large if meaningful, but should be reviewed for bloat
+
+**Success Metric:** Maintainer doesn't question contribution size, or questions are easily answered with clear justification.
+
+### 2.7 Standards & Specifications
 
 **Primary:**
 - [OGC API – Connected Systems Part 1: Feature Resources (23-001) v1.0](https://docs.ogc.org/is/23-001/23-001.html)
@@ -222,7 +269,7 @@ Before claiming tests are "complete," ask:
 - [OpenSensorHub](https://github.com/opensensorhub) - Reference CSAPI server implementation
 - [52°North OGC API Connected Systems](https://52north.org/software/software-components/ogc-api-connected-systems/) - Alternative CSAPI server
 
-### 2.7 Success Criteria
+### 2.8 Success Criteria
 
 **Complete when:**
 - ✅ URL builder methods exist for all 70+ CRUD operations across 9 resources

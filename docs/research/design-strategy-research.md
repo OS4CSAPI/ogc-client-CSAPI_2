@@ -43,6 +43,30 @@ Everything else is secondary. This research answers that question definitively.
 
 ---
 
+## ⚠️ CODE VOLUME CONCERN (MUST ADDRESS)
+
+**Issue:** Previous implementation was ~2x the size of entire upstream repo. This is a red flag for maintainers.
+
+**Risk:**
+- Contribution appears over-engineered
+- Review burden too high
+- Reduces acceptance likelihood
+- Creates maintenance concerns
+
+**MUST INVESTIGATE:**
+- [ ] How large is PR #114? (lines of code, files added)
+- [ ] What's the typical size of an OGC API implementation in upstream?
+- [ ] How many resources does EDR have vs CSAPI's 9?
+- [ ] What's the code-per-resource ratio in EDR?
+- [ ] How much was test code vs implementation code in our second iteration?
+- [ ] Can we eliminate bloat before reaching 2x upstream size?
+
+**Design Principle:** Every line of code must justify its existence. If we can't explain why CSAPI needs more code than EDR proportionally, it's probably over-engineered.
+
+**Action:** Add code volume analysis to research. Compare CSAPI needs to EDR implementation on per-resource basis. Plan for lean implementation.
+
+---
+
 ## Research Questions
 
 ### 1. PR #114 Architecture Deep Dive (PRIMARY REFERENCE)
@@ -51,6 +75,7 @@ Everything else is secondary. This research answers that question definitively.
 
 **Questions to answer:**
 - [ ] **PRIORITY: What is the object returned by endpoint.edr() actually called?** (Class name? Type name?)
+- [ ] **PRIORITY: How many lines of code / files did PR #114 add?** (Need baseline for comparison)
 - [ ] What files were added? (list complete file structure)
 - [ ] Where were files placed? (`src/ogc-api/edr/` ?)
 - [ ] What existing files were modified? (endpoint.ts, info.ts, index.ts?)
