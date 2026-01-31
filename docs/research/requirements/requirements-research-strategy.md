@@ -529,18 +529,60 @@
 - docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
 
 **Questions to answer:**
-- [ ] What conformance classes exist?
-- [ ] What does each conformance class require?
-- [ ] How do we detect which conformance classes an endpoint supports?
-- [ ] What's the minimum conformance for a valid CSAPI endpoint?
-- [ ] What capabilities can vary by collection?
-- [ ] How do we detect resource availability per collection?
-- [ ] What's required vs optional at the endpoint level?
-- [ ] What's required vs optional at the collection level?
-- [ ] How do conformance classes relate to features?
-- [ ] What validation do we need for non-conformant endpoints?
+- [x] What conformance classes exist?
+  - **Part 1:** 13 classes (Common, System, Subsystem, Deployment, Subdeployment, Procedure, SamplingFeature, Property, AdvancedFiltering, Create/Replace/Delete, Update, GeoJSON, SensorML)
+  - **Part 2:** 12 classes (Common, DataStream, ControlStream, Feasibility, SystemEvent, AdvancedFiltering, Create/Replace/Delete, Update, JSON, SWE JSON/Text/Binary)
+  - **25 total conformance classes** across both parts
+- [x] What does each conformance class require?
+  - **Part 1 Common:** Resource IDs, UIDs, datetime parameter (3 requirements)
+  - **Part 1 System:** 5 requirements (canonical URL, endpoints, collections)
+  - **Part 1 Subsystem:** 5 requirements (nested endpoint, recursive parameter)
+  - **Part 2 DataStream:** 16 requirements (endpoints, collections, schema operation)
+  - **Part 2 ControlStream:** 18 requirements (endpoints, status, result, schema)
+  - **Detailed per class** - see conformance document for all 25 classes
+- [x] How do we detect which conformance classes an endpoint supports?
+  - **Conformance endpoint:** GET /conformance
+  - **Response:** JSON with conformsTo array of URIs
+  - **URI pattern:** http://www.opengis.net/spec/ogcapi-connected-systems-{1|2}/1.0/conf/{class}
+  - **Client:** Fetch at initialization, cache conformance set, check before operations
+- [x] What's the minimum conformance for a valid CSAPI endpoint?
+  - **Part 1 minimum:** Common + 1 resource type (System OR Deployment OR Procedure OR Property) + 1 encoding (GeoJSON OR SensorML)
+  - **Part 2 minimum:** Part 2 Common + 1 dynamic data type (DataStream OR ControlStream) + JSON encoding
+  - **No core class:** Standard explicitly states no core requirements class
+  - **6 viable minimum configs** documented (read-only registry, transactional registry, sensor data server, etc.)
+- [x] What capabilities can vary by collection?
+  - **itemType/featureType:** Resource type in collection
+  - **extent:** Spatial/temporal boundaries
+  - **crs:** Supported coordinate reference systems
+  - **links:** Available formats (media types)
+  - **writability:** Presence of create/update/delete links
+- [x] How do we detect resource availability per collection?
+  - **GET /collections:** Returns array of collection metadata
+  - **Check itemType/featureType:** Identifies resource type
+  - **Check links:** rel=create (POST), rel=items (GET), format alternatives
+  - **Check crs array:** Supported coordinate systems
+  - **Check extent:** Available spatial/temporal ranges
+- [x] What's required vs optional at the endpoint level?
+  - **Required always:** /conformance, /collections, / (landing page), /api (OpenAPI)
+  - **Required per conformance:** /{resourceType} and /{resourceType}/{id} for each implemented resource
+  - **Optional:** Nested endpoints (subsystems, subdeployments, datastreams, observations, etc. - depends on conformance)
+  - **Optional:** Advanced filtering, CRUD operations, Update operations
+- [x] What's required vs optional at the collection level?
+  - **Required:** id, links (at least rel=self and rel=items)
+  - **Optional:** title, description, extent, crs, itemType/featureType
+  - **Collections themselves optional:** Can implement canonical endpoints without collections
+- [x] How do conformance classes relate to features?
+  - **Part 1:** Resources ARE Features (implement OGC API - Features)
+  - **Part 2:** Resources are NOT Features (observations/commands are non-feature resources)
+  - **Collections:** Part 1 uses featureType, Part 2 uses itemType
+  - **Conformance enables features:** Each conformance class unlocks specific capabilities
+- [x] What validation do we need for non-conformant endpoints?
+  - **Client initialization:** Fetch /conformance, parse conformsTo array
+  - **Method checks:** Throw error if conformance missing (e.g., create without /conf/create-replace-delete)
+  - **Graceful degradation:** Fall back to alternatives (PATCH→PUT, server filter→client filter)
+  - **Clear errors:** "Server does not support X operations (missing /conf/Y)"
 
-**Deliverable:** Conformance requirements and detection strategy (~400-600 lines)
+**Deliverable:** Conformance requirements and detection strategy (~400-600 lines) ✅ **COMPLETE** - See [csapi-conformance-capabilities.md](csapi-conformance-capabilities.md)
 
 ---
 
