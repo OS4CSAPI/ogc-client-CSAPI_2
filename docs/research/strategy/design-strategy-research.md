@@ -206,20 +206,24 @@ endpoint.csapi() → returns CSAPIQueryBuilder
 
 ---
 
-### 6. File Organization Strategy
+### 6. ✅ File Organization Strategy (COMPLETED)
 
-**Questions to answer:**
-- [ ] What files go in `src/ogc-api/csapi/`?
-- [ ] Should there be subdirectories? (parsers/, validation/, models/?)
-- [ ] How to organize 9 resource types?
-- [ ] Should each resource be a separate file?
-- [ ] Where do format utilities go?
-- [ ] Where do validators/parsers go?
-- [ ] How to organize test files?
-- [ ] Where do fixtures go?
-- [ ] What gets exported publicly vs kept internal?
+**Core functionality: How should CSAPI files be organized?**
 
-**Constraint:** Must be organized for easy PR review
+**Analysis:** [docs/research/upstream/file-organization-analysis.md](../upstream/file-organization-analysis.md)
+
+**Answers:**
+- [x] What files go in `src/ogc-api/csapi/`? → **5 core files: model.ts, url_builder.ts, helpers.ts, + 2 test files** (Analysis Section 10)
+- [x] Should there be subdirectories? → **No - flat structure like EDR (5 files doesn't need subdirs)** (Section 10)
+- [x] How to organize 9 resource types? → **All in single model.ts file (~350-400 lines)** (Section 10)
+- [x] Should each resource be a separate file? → **No - consolidate all resources in model.ts** (Section 2)
+- [x] Where do format utilities go? → **helpers.ts for shared utilities** (Section 2)
+- [x] Where do validators/parsers go? → **helpers.ts or inline in url_builder.ts** (Section 2)
+- [x] How to organize test files? → **Colocated: {filename}.spec.ts next to implementation** (Section 4)
+- [x] Where do fixtures go? → **fixtures/ogc-api/csapi/ with collection + item samples** (Section 5, 10)
+- [x] What gets exported publicly vs kept internal? → **Export resource types via src/index.ts, QueryBuilder accessed via factory** (Section 9, 10)
+
+**Status:** Complete file organization design. 5 implementation files (model.ts, url_builder.ts, helpers.ts, 2 test files), flat structure, ~3150-3900 total lines. Integration requires ~40 lines in endpoint.ts + info.ts.
 
 ---
 
