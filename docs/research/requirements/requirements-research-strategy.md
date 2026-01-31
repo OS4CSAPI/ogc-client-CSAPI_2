@@ -375,14 +375,265 @@
 
 ---
 
-### Section 10: Gap Analysis - Previous Iteration Misses ⏳
+### Section 10: Client Application Analysis - osh-viewer ⏳
+
+**Resources:**
+
+#### Repository:
+- [osh-viewer Repository](https://github.com/Botts-Innovative-Research/osh-viewer) - JavaScript webapp CSAPI client
+
+#### Related Documentation:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html)
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
+
+**Questions to answer:**
+- [ ] What CSAPI operations does osh-viewer actually use in practice?
+- [ ] What resources does it query most frequently? (Systems, Datastreams, Observations, etc.)
+- [ ] What query parameters does it use? (bbox, datetime, limit patterns)
+- [ ] How does it handle pagination?
+- [ ] What format preferences does it have? (GeoJSON vs SensorML)
+- [ ] How does it navigate sub-resource relationships?
+- [ ] What error conditions does it handle?
+- [ ] What convenience patterns would have simplified its implementation?
+- [ ] What CSAPI features does it NOT use? (insights for MVP prioritization)
+- [ ] What performance considerations exist in its usage patterns?
+- [ ] How does it integrate with mapping libraries?
+- [ ] What API call sequences/workflows does it follow?
+- [ ] What UI/UX insights affect library design requirements?
+- [ ] What data transformation patterns does it implement?
+
+**Deliverable:** osh-viewer usage pattern analysis and insights (~400-600 lines)
+
+---
+
+### Section 11: Client Application Analysis - oscar-viewer ⏳
+
+**Resources:**
+
+#### Repository:
+- [oscar-viewer Repository](https://github.com/Botts-Innovative-Research/oscar-viewer) - TypeScript webapp CSAPI client
+
+#### Related Documentation:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html)
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
+
+**Questions to answer:**
+- [ ] How does oscar-viewer's TypeScript implementation differ from osh-viewer's JavaScript approach?
+- [ ] What CSAPI operations does oscar-viewer prioritize?
+- [ ] What type safety patterns does it employ?
+- [ ] How does it structure CSAPI API calls and responses?
+- [ ] What query patterns are most common in its codebase?
+- [ ] How does it handle dynamic data updates? (Observations, Datastreams)
+- [ ] What format handling does it implement?
+- [ ] How does it manage state for CSAPI resources?
+- [ ] What convenience methods would have reduced its implementation complexity?
+- [ ] What TypeScript interfaces would have helped its development?
+- [ ] How does it handle real-time or near-real-time data?
+- [ ] What error handling patterns does it use?
+- [ ] What API call sequences define its workflows?
+- [ ] What lessons emerge from comparing to osh-viewer?
+
+**Deliverable:** oscar-viewer usage pattern analysis and comparative insights (~400-600 lines)
+
+---
+
+### Section 12: Client Library Analysis - OWSLib Python ⏳
+
+**Resources:**
+
+#### Repository:
+- [OWSLib Repository](https://github.com/geopython/OWSLib) - Python library for OGC web services including CSAPI
+
+#### Code References:
+- OWSLib CSAPI implementation modules
+- API patterns and method signatures
+- Usage examples and tests
+
+#### Related Documentation:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html)
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
+
+**Questions to answer:**
+- [ ] What architectural pattern does OWSLib use for CSAPI? (similar to our QueryBuilder?)
+- [ ] What operations does OWSLib expose to users?
+- [ ] What scope decisions did OWSLib make? (what's included vs excluded)
+- [ ] How does OWSLib handle URL building vs request execution?
+- [ ] What format support does OWSLib provide?
+- [ ] How does OWSLib structure resource navigation? (similar to our sub-resource patterns?)
+- [ ] What query parameter support exists?
+- [ ] What TypeScript equivalent patterns should we adopt?
+- [ ] What did OWSLib do well that we should emulate?
+- [ ] What pain points exist that we should avoid?
+- [ ] How does Python's API design translate to TypeScript?
+- [ ] What method naming conventions does OWSLib use?
+- [ ] What error handling patterns exist?
+- [ ] What documentation patterns work well?
+- [ ] How comprehensive is OWSLib's CSAPI coverage? (all resources or subset?)
+
+**Deliverable:** OWSLib architecture and pattern analysis (~500-700 lines)
+
+---
+
+### Section 13: Client Library Analysis - OSHConnect-Python ⏳
+
+**Resources:**
+
+#### Repository:
+- [OSHConnect-Python Repository](https://github.com/Botts-Innovative-Research/OSHConnect-Python) - Python client for CSAPI
+
+#### Code References:
+- Client implementation structure
+- Method signatures and patterns
+- Usage examples and documentation
+
+#### Related Documentation:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html)
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
+
+**Questions to answer:**
+- [ ] How does OSHConnect-Python differ from OWSLib's CSAPI support?
+- [ ] What design philosophy does OSHConnect-Python follow?
+- [ ] What operations are prioritized in OSHConnect-Python?
+- [ ] How does it handle authentication and authorization?
+- [ ] What resource coverage does it provide? (all 9 or subset?)
+- [ ] How does it structure client API calls?
+- [ ] What convenience methods does it provide?
+- [ ] How does it handle response parsing and data models?
+- [ ] What TypeScript patterns should we adopt from its design?
+- [ ] What format support exists? (GeoJSON, SensorML, SWE Common)
+- [ ] How does it handle dynamic data? (Observations, Commands)
+- [ ] What error handling patterns are implemented?
+- [ ] What testing patterns exist?
+- [ ] What documentation style is used?
+- [ ] What lessons emerge comparing to OWSLib?
+
+**Deliverable:** OSHConnect-Python architecture and comparative insights (~400-600 lines)
+
+---
+
+### Section 14: Client Library Analysis - ConnectedSystemsAPI-CPP ⏳
+
+**Resources:**
+
+#### Repository:
+- [ConnectedSystemsAPI-CPP Repository](https://github.com/Botts-Innovative-Research/ConnectedSystemsAPI-CPP) - C++ CSAPI library
+
+#### Code References:
+- C++ client implementation structure
+- Header files and method definitions
+- Usage examples
+
+#### Related Documentation:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html)
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
+
+**Questions to answer:**
+- [ ] What architectural patterns does the C++ library use?
+- [ ] How does memory management affect design decisions? (insights for resource handling)
+- [ ] What scope does the C++ library cover? (Part 1 only, both parts?)
+- [ ] How does it structure URL building vs HTTP execution?
+- [ ] What format handling exists in C++? (GeoJSON, SensorML parsing)
+- [ ] How does it handle type safety? (lessons for TypeScript types)
+- [ ] What method naming conventions are used?
+- [ ] What resource coverage exists? (all 9 resources or subset?)
+- [ ] How does it handle dynamic data and streaming?
+- [ ] What error handling patterns are implemented?
+- [ ] What performance optimizations exist? (relevant for TypeScript?)
+- [ ] How does it compare to Python libraries' design approaches?
+- [ ] What lessons translate from C++ to TypeScript?
+- [ ] What pain points in C++ should we avoid in TypeScript?
+- [ ] What testing patterns are used?
+
+**Deliverable:** C++ library architecture analysis and cross-language insights (~400-600 lines)
+
+---
+
+### Section 15: Server Implementation Analysis - OpenSensorHub ⏳
+
+**Resources:**
+
+#### Repository:
+- [OpenSensorHub GitHub Organization](https://github.com/opensensorhub)
+- [osh-core Repository](https://github.com/opensensorhub/osh-core) - Core server implementation
+
+#### Code References:
+- CSAPI endpoint implementations
+- Resource handler patterns
+- OpenAPI schema definitions
+- Example data and fixtures
+
+#### Related Documentation:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html)
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
+- OpenSensorHub documentation
+
+**Questions to answer:**
+- [ ] What CSAPI operations does OpenSensorHub actually implement?
+- [ ] What conformance classes does it support?
+- [ ] What are the common query patterns servers expect from clients?
+- [ ] What validation does the server perform on requests?
+- [ ] What format options does OpenSensorHub provide?
+- [ ] What error responses does it generate? (insights for client error handling)
+- [ ] What pagination patterns does it support?
+- [ ] What sub-resource relationships are implemented?
+- [ ] What edge cases does the server handle that clients should know about?
+- [ ] What request/response examples exist that we can use as fixtures?
+- [ ] What behaviors are server-specific vs spec-defined?
+- [ ] What real-world data patterns exist in responses?
+- [ ] What performance characteristics should clients be aware of?
+- [ ] What authentication/authorization patterns are supported?
+- [ ] What SensorML/SWE Common structures does it use?
+
+**Deliverable:** OpenSensorHub server behavior analysis and client implications (~500-700 lines)
+
+---
+
+### Section 16: Server Implementation Analysis - 52°North CSAPI ⏳
+
+**Resources:**
+
+#### Documentation:
+- [52°North OGC API Connected Systems](https://52north.org/software/software-components/ogc-api-connected-systems/)
+- 52°North CSAPI documentation and examples
+
+#### Code References (if available):
+- GitHub repositories (if open source)
+- API documentation
+- Example endpoints and responses
+
+#### Related Documentation:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html)
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
+
+**Questions to answer:**
+- [ ] How does 52°North's implementation differ from OpenSensorHub?
+- [ ] What conformance classes does 52°North support?
+- [ ] What operations are prioritized in 52°North?
+- [ ] What format support exists? (GeoJSON, SensorML, others)
+- [ ] What query parameter support is implemented?
+- [ ] What pagination strategies are used?
+- [ ] What error response patterns exist?
+- [ ] What validation rules does 52°North enforce?
+- [ ] What resource coverage exists? (all 9 resources or subset?)
+- [ ] What are the behavioral differences between servers? (OpenSensorHub vs 52°North)
+- [ ] What client compatibility concerns exist?
+- [ ] What edge cases does 52°North handle differently?
+- [ ] What testing insights emerge from having two reference servers?
+- [ ] What real-world deployment patterns exist?
+- [ ] What client library requirements emerge from supporting both servers?
+
+**Deliverable:** 52°North server behavior analysis and multi-server compatibility insights (~400-600 lines)
+
+---
+
+### Section 17: Gap Analysis - Previous Iteration Misses ⏳
 
 **Resources:**
 
 #### Previous Implementation:
 - [OS4CSAPI/ogc-client-CSAPI Repository](https://github.com/OS4CSAPI/ogc-client-CSAPI) - first iteration
 - [Draft PR #131](https://github.com/camptocamp/ogc-client/pull/131) - review feedback
-- Design research documents (Sections 1-12) for lessons learned analysis
+- Design research documents (Sections 1-12 from design-strategy-research.md) for lessons learned analysis
 
 #### Standards Reference:
 - [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html)
@@ -404,7 +655,7 @@
 
 ---
 
-### Section 11: Upstream Library Expectations ⏳
+### Section 18: Upstream Library Expectations ⏳
 
 **Resources:**
 
@@ -438,12 +689,12 @@
 
 ---
 
-### Section 12: Minimum Viable vs Full Feature Set ⏳
+### Section 19: Minimum Viable vs Full Feature Set ⏳
 
 **Resources:**
 
 #### Analysis Synthesis:
-- All previous requirement sections (1-11)
+- All previous requirement sections (1-18)
 - Design research documents (docs/research/upstream/)
 
 #### Standards Reference:
@@ -454,8 +705,9 @@
 
 #### Priority References:
 - Real-world usage patterns (Section 9 findings)
-- Upstream expectations (Section 11 findings)
-- Previous iteration gaps (Section 10 findings)
+- Ecosystem implementation patterns (Sections 10-16 findings)
+- Previous iteration gaps (Section 17 findings)
+- Upstream expectations (Section 18 findings)
 
 **Questions to answer:**
 - [ ] What's the absolute minimum for a valid CSAPI client?
@@ -486,9 +738,12 @@ Requirements research is complete when we can answer:
 7. ✅ "What conformance/capability detection is needed?"
 8. ✅ "What TypeScript types must be exported?"
 9. ✅ "What do real-world applications actually need?"
-10. ✅ "What did previous iterations get wrong about requirements?"
-11. ✅ "What does upstream expect from the contribution?"
-12. ✅ "What's the MVP vs full feature set?"
+10. ✅ "What patterns do existing CSAPI client applications use?"
+11. ✅ "What design decisions did other CSAPI client libraries make?"
+12. ✅ "What behaviors do CSAPI servers implement that affect clients?"
+13. ✅ "What did previous iterations get wrong about requirements?"
+14. ✅ "What does upstream expect from the contribution?"
+15. ✅ "What's the MVP vs full feature set?"
 
 ---
 
@@ -505,11 +760,18 @@ Requirements research is complete when we can answer:
 7. **conformance-requirements.md** - Conformance detection strategy
 8. **type-system-requirements.md** - TypeScript type scope
 9. **usage-scenarios.md** - Real-world requirement validation
-10. **gap-analysis.md** - Previous iteration lessons
-11. **library-expectations.md** - Upstream contract
-12. **mvp-definition.md** - Prioritized feature matrix
+10. **osh-viewer-analysis.md** - Client app pattern analysis
+11. **oscar-viewer-analysis.md** - Client app comparative insights
+12. **owslib-analysis.md** - Python library architecture analysis
+13. **oshconnect-python-analysis.md** - Python client patterns
+14. **cpp-library-analysis.md** - C++ library cross-language insights
+15. **opensensorhub-analysis.md** - Reference server behavior
+16. **52north-analysis.md** - Multi-server compatibility insights
+17. **gap-analysis.md** - Previous iteration lessons
+18. **library-expectations.md** - Upstream contract
+19. **mvp-definition.md** - Prioritized feature matrix
 
-**Total Expected Output:** ~6,000-9,000 lines of requirements analysis
+**Total Expected Output:** ~9,000-13,000 lines of requirements analysis
 
 ### Synthesis Document (in docs/specification/)
 
@@ -578,18 +840,26 @@ Requirements research is complete when we can answer:
 7. ✅ **Section 7** - Conformance Requirements (defines detection)
 8. ✅ **Section 8** - Type System (defines exports)
 9. ✅ **Section 9** - Usage Scenarios (validates priorities)
-10. ✅ **Section 10** - Gap Analysis (prevents past mistakes)
-11. ✅ **Section 11** - Library Expectations (aligns with upstream)
-12. ✅ **Section 12** - MVP Definition (finalizes scope)
+10. ✅ **Section 10** - osh-viewer Analysis (real client patterns)
+11. ✅ **Section 11** - oscar-viewer Analysis (TypeScript client comparison)
+12. ✅ **Section 12** - OWSLib Analysis (Python library patterns)
+13. ✅ **Section 13** - OSHConnect-Python Analysis (Python client comparison)
+14. ✅ **Section 14** - C++ Library Analysis (cross-language insights)
+15. ✅ **Section 15** - OpenSensorHub Analysis (reference server behavior)
+16. ✅ **Section 16** - 52°North Analysis (multi-server compatibility)
+17. ✅ **Section 17** - Gap Analysis (prevents past mistakes)
+18. ✅ **Section 18** - Library Expectations (aligns with upstream)
+19. ✅ **Section 19** - MVP Definition (finalizes scope)
 
-**Rationale:** Start with spec analysis (1-2), then scope decisions (3-8), then validation (9-11), then prioritization (12).
+**Rationale:** Start with spec analysis (1-2), then scope decisions (3-8), then validation (9), then ecosystem analysis (10-16), then synthesis (17-19).
 
 ---
 
 ## Notes
 
-- This is similar effort to design research (~6,000-9,000 lines of analysis)
+- This is expanded from 12 to 19 sections to include ecosystem analysis (~9,000-13,000 lines of analysis)
 - Each section can be done independently (like design research)
 - User approval before proceeding to next section
-- Goal: Comprehensive requirement capture to avoid implementation gaps
-- Success = functional spec that covers 100% of needed functionality
+- Goal: Comprehensive requirement capture including real-world implementation insights
+- Sections 10-16: Learn from existing CSAPI implementations (clients, libraries, servers)
+- Success = functional spec that covers 100% of needed functionality with real-world validation
