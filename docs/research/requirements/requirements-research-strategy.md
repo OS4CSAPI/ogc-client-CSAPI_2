@@ -213,19 +213,19 @@
 - docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml (System, SamplingFeature schemas)
 
 **Questions to answer:**
-- [ ] Which CSAPI resources support GeoJSON format?
-- [ ] What GeoJSON geometry types are used in CSAPI? (Point, LineString, Polygon, GeometryCollection)
-- [ ] What is the structure of CSAPI GeoJSON Feature representations?
-- [ ] How are CSAPI-specific properties mapped to GeoJSON Feature properties?
-- [ ] What coordinate reference systems (CRS) are supported? (WGS84 required, others?)
-- [ ] Are GeoJSON FeatureCollections used for resource collections?
-- [ ] Does library need to parse GeoJSON geometries or treat them opaquely?
-- [ ] Does library need to validate GeoJSON structure?
-- [ ] Are there geometry operations needed? (bounding box calculation, validation)
-- [ ] How should library handle 3D coordinates (altitude/elevation)?
-- [ ] What are the client API implications for GeoJSON support?
+- [x] Which CSAPI resources support GeoJSON format? → Part 1: Systems, Deployments, Procedures (geometry:null), SamplingFeatures; Part 2: DataStreams, ControlStreams (optional)
+- [x] What GeoJSON geometry types are used in CSAPI? (Point, LineString, Polygon, GeometryCollection) → All 7 RFC 7946 types required: Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon, GeometryCollection
+- [x] What is the structure of CSAPI GeoJSON Feature representations? → Standard RFC 7946 Feature with type/id/geometry/properties/links; properties contain CSAPI-specific fields
+- [x] How are CSAPI-specific properties mapped to GeoJSON Feature properties? → Direct mapping to properties object; reference encoding with @id/@link suffixes; link relations use ogc-rel: prefix
+- [x] What coordinate reference systems (CRS) are supported? (WGS84 required, others?) → WGS84/CRS84 only (RFC 7946 requirement); no alternative CRS support
+- [x] Are GeoJSON FeatureCollections used for resource collections? → Yes, for GET collection endpoints with optional links/timeStamp/numberMatched
+- [x] Does library need to parse GeoJSON geometries or treat them opaquely? → Parse geometry for validation, bbox calculation, spatial operations; parse properties for resource access
+- [x] Does library need to validate GeoJSON structure? → Yes: geometry type/coordinates, coordinate ranges, polygon closure, null geometry constraints
+- [x] Are there geometry operations needed? (bounding box calculation, validation) → Required: bbox calculation, coordinate extraction, type detection; Optional: spatial predicates (use Turf.js)
+- [x] How should library handle 3D coordinates (altitude/elevation)? → Support [lon,lat,alt] positions; altitude = WGS84 ellipsoidal height; preserve in round-trip
+- [x] What are the client API implications for GeoJSON support? → TypeScript types for all geometry types, format negotiation (Accept header/query param), validation, convenience accessors, external lib integration (Turf.js)
 
-**Deliverable:** GeoJSON format requirements analysis (~150-250 lines)
+**Deliverable:** GeoJSON format requirements analysis (~500 lines) ✅ **COMPLETE** - See [csapi-format-requirements.md Section 3.2](csapi-format-requirements.md#section-32-geojson-format-requirements)
 
 ---
 
