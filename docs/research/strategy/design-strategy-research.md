@@ -184,21 +184,25 @@ endpoint.csapi() → returns CSAPIQueryBuilder
 
 ---
 
-### 5. TypeScript Type System Design
+### 5. ✅ TypeScript Type System Design (COMPLETED)
 
-**Questions to answer:**
-- [ ] How should query parameter types be defined?
-- [ ] Should each resource have its own query interface?
-- [ ] How to model shared parameters (bbox, datetime, limit)?
-- [ ] How to model resource-specific parameters?
-- [ ] How to ensure type safety for URL builders?
-- [ ] How to model CSAPI resources themselves?
-- [ ] How granular should types be?
-- [ ] Where should type definitions live?
-- [ ] How to handle format-specific types (GeoJSON vs SensorML)?
-- [ ] How to model optional properties?
+**Core functionality: How should types be structured for CSAPI?**
 
-**Action:** Study upstream TypeScript patterns
+**Analysis:** [docs/research/upstream/typescript-types-analysis.md](../upstream/typescript-types-analysis.md)
+
+**Answers:**
+- [x] How should query parameter types be defined? → **Optional parameters interface pattern with all fields optional** (Analysis Section 3)
+- [x] Should each resource have its own query interface? → **Base QueryOptions + extended interfaces for resource-specific params** (Section 3, Pattern 4)
+- [x] How to model shared parameters (bbox, datetime, limit)? → **Reuse from shared/models.ts - already defined** (Section 5)
+- [x] How to model resource-specific parameters? → **Extended interfaces: SystemQueryOptions extends QueryOptions** (Section 5)
+- [x] How to ensure type safety for URL builders? → **Discriminated unions, const assertions, strict null checks, type guards** (Section 6)
+- [x] How to model CSAPI resources themselves? → **GeoJSON-aligned interfaces with id, type, properties, geometry?, links** (Section 4)
+- [x] How granular should types be? → **Fine granularity for core resources, medium for nested objects** (Section 7)
+- [x] Where should type definitions live? → **Single src/ogc-api/csapi/model.ts file (~350-400 lines)** (Section 8)
+- [x] How to handle format-specific types (GeoJSON vs SensorML)? → **Only type JSON/GeoJSON, leave XML as string/unknown** (Section 9)
+- [x] How to model optional properties? → **Use ? operator, never | undefined | null** (Section 10)
+
+**Status:** Comprehensive type system designed with 9 resource interfaces, query options, helper types (~350-400 lines total). Three-tier hierarchy (shared → ogc-api → csapi) documented in Section 11.
 
 ---
 
