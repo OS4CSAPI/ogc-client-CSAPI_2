@@ -166,35 +166,129 @@
 
 ### Section 3: Format Requirements Analysis ⏳
 
+**Overview:** Analysis of data format requirements for CSAPI client library implementation, organized by format family.
+
+---
+
+#### Section 3.1: Common Format Requirements
+
 **Resources:**
 
-#### Standards & Specifications:
-- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html)
-- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
-- [SensorML 3.0 Specification](https://docs.ogc.org/is/20-010r3/20-010r3.html)
-- [SWE Common Data Model 3.0 Specification](https://docs.ogc.org/is/18-003r2/18-003r2.html)
-- [GeoJSON RFC 7946](https://datatracker.ietf.org/doc/html/rfc7946)
+##### Standards & Specifications:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html) - Sections on content negotiation
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html) - Sections on format support
+- [HTTP Content Negotiation (RFC 9110)](https://www.rfc-editor.org/rfc/rfc9110.html#name-content-negotiation)
 
-#### Schemas:
+##### Schemas:
 - docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml
 - docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
-- [SensorML 3.0 JSON Schema](https://schemas.opengis.net/sensorml/3.0/sensorml.json)
-- [SWE Common 3.0 JSON Schema](https://schemas.opengis.net/sweCommon/3.0/sweCommon.json)
-- [GeoJSON Schema](https://geojson.org/schema/GeoJSON.json)
 
 **Questions to answer:**
-- [ ] What formats MUST the library support?
+- [ ] What formats are REQUIRED by the standard for all implementations?
 - [ ] What formats are OPTIONAL but commonly used?
-- [ ] Does library need to parse formats or just request them?
-- [ ] Does library need to serialize formats for POST/PUT?
-- [ ] What's the scope of SensorML support? (SimpleProcess, AggregateProcess, PhysicalSystem, etc.)
-- [ ] What's the scope of SWE Common support? (DataArray, DataRecord, Quantity, etc.)
-- [ ] What format negotiation mechanisms are required? (Accept headers, query params)
-- [ ] Are there format validation requirements?
-- [ ] What's the minimum viable format support?
-- [ ] What did previous iterations get wrong about format requirements?
+- [ ] What media type identifiers are specified for each format?
+- [ ] What format negotiation mechanisms are required? (Accept headers, query params, precedence rules)
+- [ ] What are the minimum viable format support requirements for client library?
+- [ ] Does library need to parse formats or just request/pass-through them?
+- [ ] Does library need to serialize formats for POST/PUT operations?
+- [ ] Are there format validation requirements for client-side?
+- [ ] What format capabilities should be exposed in the client API?
+- [ ] How should format errors be handled (unsupported format, malformed content)?
 
-**Deliverable:** Complete format requirements analysis (~600-1000 lines)
+**Deliverable:** Common format requirements and negotiation analysis (~200-300 lines)
+
+---
+
+#### Section 3.2: GeoJSON Format Requirements
+
+**Resources:**
+
+##### Standards & Specifications:
+- [GeoJSON RFC 7946](https://datatracker.ietf.org/doc/html/rfc7946)
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html) - System/SamplingFeature GeoJSON representation
+- [OGC API – Features GeoJSON guidance](https://docs.ogc.org/is/17-069r4/17-069r4.html)
+
+##### Schemas:
+- [GeoJSON Schema](https://geojson.org/schema/GeoJSON.json)
+- docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml (System, SamplingFeature schemas)
+
+**Questions to answer:**
+- [ ] Which CSAPI resources support GeoJSON format?
+- [ ] What GeoJSON geometry types are used in CSAPI? (Point, LineString, Polygon, GeometryCollection)
+- [ ] What is the structure of CSAPI GeoJSON Feature representations?
+- [ ] How are CSAPI-specific properties mapped to GeoJSON Feature properties?
+- [ ] What coordinate reference systems (CRS) are supported? (WGS84 required, others?)
+- [ ] Are GeoJSON FeatureCollections used for resource collections?
+- [ ] Does library need to parse GeoJSON geometries or treat them opaquely?
+- [ ] Does library need to validate GeoJSON structure?
+- [ ] Are there geometry operations needed? (bounding box calculation, validation)
+- [ ] How should library handle 3D coordinates (altitude/elevation)?
+- [ ] What are the client API implications for GeoJSON support?
+
+**Deliverable:** GeoJSON format requirements analysis (~150-250 lines)
+
+---
+
+#### Section 3.3: SensorML Format Requirements
+
+**Resources:**
+
+##### Standards & Specifications:
+- [SensorML 3.0 Specification](https://docs.ogc.org/is/20-010r3/20-010r3.html)
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html) - System/Procedure SensorML representation
+
+##### Schemas:
+- [SensorML 3.0 JSON Schema](https://schemas.opengis.net/sensorml/3.0/sensorml.json)
+- docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml (System, Procedure schemas)
+
+**Questions to answer:**
+- [ ] Which CSAPI resources support SensorML format? (System, Procedure)
+- [ ] What SensorML component types are used? (SimpleProcess, AggregateProcess, PhysicalSystem, PhysicalComponent)
+- [ ] What is the minimal SensorML subset needed for CSAPI compatibility?
+- [ ] How are inputs/outputs defined in SensorML for CSAPI?
+- [ ] How are identification/classification/characteristics/capabilities represented?
+- [ ] Does library need to parse SensorML structure or treat it opaquely?
+- [ ] Does library need to serialize SensorML for POST/PUT operations?
+- [ ] Are there SensorML validation requirements?
+- [ ] What SensorML extensions or profiles are used by CSAPI?
+- [ ] How should library handle complex SensorML documents? (nested components, references)
+- [ ] What are the client API implications for SensorML support?
+
+**Deliverable:** SensorML format requirements analysis (~150-250 lines)
+
+---
+
+#### Section 3.4: SWE Common Format Requirements
+
+**Resources:**
+
+##### Standards & Specifications:
+- [SWE Common Data Model 3.0 Specification](https://docs.ogc.org/is/18-003r2/18-003r2.html)
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html) - Observation/Command schema and encoding
+
+##### Schemas:
+- [SWE Common 3.0 JSON Schema](https://schemas.opengis.net/sweCommon/3.0/sweCommon.json)
+- docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml (SWE Common component schemas)
+
+**Questions to answer:**
+- [ ] Which CSAPI resources use SWE Common? (Observation schemas, Command schemas)
+- [ ] What SWE Common data components are required? (Boolean, Count, Quantity, Time, Category, Text, DataRecord, DataArray, Vector, Matrix)
+- [ ] What SWE Common encoding formats must be supported? (JSON, Text/CSV, Binary)
+- [ ] How are SWE Common encodings configured? (JSONEncoding, TextEncoding, BinaryEncoding parameters)
+- [ ] What is the structure of SWE Common DataRecords for observations?
+- [ ] How are units of measure (UoM) handled in SWE Common?
+- [ ] Does library need to parse SWE Common data or treat it opaquely?
+- [ ] Does library need to encode/decode binary SWE Common formats?
+- [ ] Does library need to encode/decode text/CSV SWE Common formats?
+- [ ] Are there SWE Common validation requirements?
+- [ ] How should library handle complex SWE Common structures? (nested DataRecords, DataArrays)
+- [ ] What are the client API implications for SWE Common support?
+
+**Deliverable:** SWE Common format requirements analysis (~200-300 lines)
+
+---
+
+**Total Section 3 Deliverable:** ~700-1,100 lines
 
 ---
 
