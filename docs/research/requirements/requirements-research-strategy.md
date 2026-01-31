@@ -395,18 +395,48 @@
 - docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
 
 **Questions to answer:**
-- [ ] Which resources support full CRUD? (Create, Read, Update, Delete)
-- [ ] Which resources are read-only?
-- [ ] What HTTP methods map to which operations?
-- [ ] What request bodies are needed for create operations?
-- [ ] What request bodies are needed for update operations?
-- [ ] Is PATCH supported? What does it do?
-- [ ] What's the difference between PUT and PATCH?
-- [ ] What response codes are expected?
-- [ ] What headers are required for write operations?
-- [ ] Does library build request bodies or just URLs?
+- [x] Which resources support full CRUD? (Create, Read, Update, Delete)
+  - **Part 1:** Systems, Deployments, Procedures, SamplingFeatures, Properties (all support full CRUD)
+  - **Part 2:** DataStreams, Observations, ControlStreams, Commands, CommandStatus, CommandResult, Feasibility, SystemEvents (all support full CRUD)
+  - **Read-only:** Collections (server-managed, no CRUD operations)
+- [x] Which resources are read-only?
+  - **Collections only** - All other resources support CRUD operations via conformance classes
+- [x] What HTTP methods map to which operations?
+  - **GET:** Read (all endpoints)
+  - **POST:** Create (canonical + nested collection endpoints) → 201 Created with Location header
+  - **PUT:** Replace (single resource endpoints) → 204 No Content
+  - **PATCH:** Partial update (single resource endpoints) → 204 No Content (JSON Merge Patch RFC 7396)
+  - **DELETE:** Delete (single resource endpoints) → 204 No Content
+- [x] What request bodies are needed for create operations?
+  - **Part 1:** GeoJSON Feature (application/geo+json), SensorML (application/sml+json), plain JSON (application/json)
+  - **Part 2:** JSON (application/json), SWE Common (application/swe+json/text/binary)
+  - **Required properties:** uid, name, featureType (Part 1); varies by resource type (Part 2)
+- [x] What request bodies are needed for update operations?
+  - **PUT:** Complete resource representation (all required properties)
+  - **PATCH:** Partial representation (only properties to update, JSON Merge Patch format)
+- [x] Is PATCH supported? What does it do?
+  - **Yes** - PATCH supported via Update conformance class (OGC API - Features Part 4)
+  - **Operation:** Partial update using JSON Merge Patch (RFC 7396)
+  - **Format:** application/merge-patch+json or application/json
+- [x] What's the difference between PUT and PATCH?
+  - **PUT:** Full replacement - client sends complete resource, all properties replaced
+  - **PATCH:** Partial update - client sends only properties to change (JSON Merge Patch), other properties unchanged
+  - **Both:** Same schema evolution constraints for DataStreams/ControlStreams
+- [x] What response codes are expected?
+  - **Success:** 200 OK (GET), 201 Created (POST with Location header), 204 No Content (PUT/PATCH/DELETE)
+  - **Client errors:** 400 Bad Request (validation failure), 404 Not Found (resource doesn't exist), 409 Conflict (constraint violation, schema evolution)
+  - **Server errors:** 500 Internal Server Error, 503 Service Unavailable
+- [x] What headers are required for write operations?
+  - **Content-Type** (required for POST/PUT/PATCH) - Media type of request body
+  - **Location** (required in 201 Created response) - Canonical URL of created resource
+- [x] Does library build request bodies or just URLs?
+  - **Both** - Library provides:
+    - Type-safe request body interfaces (SystemInput, ObservationInput, CommandInput)
+    - Format-specific convenience methods (createFromGeoJSON, createFromSensorML)
+    - Validation helpers (schema validation before sending)
+    - Request body builders for complex types
 
-**Deliverable:** CRUD operation matrix and requirements (~400-600 lines)
+**Deliverable:** CRUD operation matrix and requirements (~400-600 lines) ✅ **COMPLETE** - See [csapi-crud-operations.md](csapi-crud-operations.md)
 
 ---
 
