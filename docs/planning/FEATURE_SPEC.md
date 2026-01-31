@@ -158,6 +158,7 @@ The ogc-client library already supports multiple OGC API standards (WFS, STAC, E
 - ✅ TypeScript interfaces provide full type safety
 - ✅ JSDoc documentation for all public methods
 - ✅ Usage examples demonstrate common workflows
+- ✅ Upstream Vue demo app works with CSAPI integration (no regressions)
 - ✅ Upstream maintainers approve PR for merge
 
 ---
