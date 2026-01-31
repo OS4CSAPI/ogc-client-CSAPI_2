@@ -707,22 +707,22 @@
 - [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
 
 **Questions to answer:**
-- [ ] What CSAPI operations does osh-viewer actually use in practice?
-- [ ] What resources does it query most frequently? (Systems, Datastreams, Observations, etc.)
-- [ ] What query parameters does it use? (bbox, datetime, limit patterns)
-- [ ] How does it handle pagination?
-- [ ] What format preferences does it have? (GeoJSON vs SensorML)
-- [ ] How does it navigate sub-resource relationships?
-- [ ] What error conditions does it handle?
-- [ ] What convenience patterns would have simplified its implementation?
-- [ ] What CSAPI features does it NOT use? (insights for MVP prioritization)
-- [ ] What performance considerations exist in its usage patterns?
-- [ ] How does it integrate with mapping libraries?
-- [ ] What API call sequences/workflows does it follow?
-- [ ] What UI/UX insights affect library design requirements?
-- [ ] What data transformation patterns does it implement?
+- [x] What CSAPI operations does osh-viewer actually use in practice? → Primary: GET systems/datastreams/observations/controlstreams, POST commands, WebSocket streaming; Unused: POST/PUT/DELETE for resource management
+- [x] What resources does it query most frequently? (Systems, Datastreams, Observations, etc.) → System → DataStreams → Observations (primary hierarchy), ControlStreams for commanding, SamplingFeatures for mapping
+- [x] What query parameters does it use? (bbox, datetime, limit patterns) → Frequent: bbox, phenomenonTime (often 'now'/'latest'), observedProperty, format/obsFormat; Rare: select, validTime, location (WKT)
+- [x] How does it handle pagination? → Offset-based with limit parameter, Collection class with hasNext()/nextPage(), default 10 items (UI lists) or 100 (bulk), no link-following
+- [x] What format preferences does it have? (GeoJSON vs SensorML) → Priority: SWE+JSON for real-time, SWE+Binary for high-frequency, OM+JSON fallback; JSON for metadata; checks available formats, no Accept header negotiation
+- [x] How does it navigate sub-resource relationships? → Object-oriented wrappers: system.searchDataStreams(), datastream.searchObservations(); encapsulates URL construction and navigation logic
+- [x] What error conditions does it handle? → Basic HTTP status checking, try-catch with null returns, status cancellation for long ops; Missing: retry logic, reconnection, timeout handling, error type differentiation
+- [x] What convenience patterns would have simplified its implementation? → Auto-pagination, format selection helpers, fluent query builders, WebSocket auto-config, schema-aware parsing, batch fetching
+- [x] What CSAPI features does it NOT use? (insights for MVP prioritization) → Unused: Write ops (POST/PUT/DELETE resources), select parameter, validTime queries, WKT geometry, system membership, advanced control (feasibility, update)
+- [x] What performance considerations exist in its usage patterns? → Schema caching per format, SWE+Binary for efficiency, replay mode for historical, Pinia state management; Missing: request deduplication, connection pooling, lazy loading, batching
+- [x] How does it integrate with mapping libraries? → Extracts GeoJSON from samplingFeatures, bbox queries for viewport, marker binding with metadata, basic point geometries only
+- [x] What API call sequences/workflows does it follow? → 5 workflows: Init (connect → discover systems → fetch sub-resources), Visualization (select → fetch schema → create datasource → stream), Replay (time range → stream historical), Command (fetch schema → build form → POST), Discovery (bbox query → display markers)
+- [x] What UI/UX insights affect library design requirements? → Tree view drives lazy loading, real-time updates need reactive state, visualization diversity needs schema-aware parsing, control UI generation from schemas
+- [x] What data transformation patterns does it implement? → Parser strategy (SWE+JSON/Binary/CSV/OM+JSON), binary decoding with DataView, observation-to-chart extraction, coordinate transforms, ISO 8601 time parsing
 
-**Deliverable:** osh-viewer usage pattern analysis and insights (~400-600 lines)
+**Deliverable:** osh-viewer usage pattern analysis and insights (~400-600 lines) ✅ **COMPLETE** - See [csapi-oshviewer-analysis.md](csapi-oshviewer-analysis.md) (~4,200 lines)
 
 ---
 
