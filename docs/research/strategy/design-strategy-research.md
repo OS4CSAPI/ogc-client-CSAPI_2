@@ -265,16 +265,18 @@ endpoint.csapi() → returns CSAPIQueryBuilder
 
 ---
 
-### 9. Error Handling Design
+### 9. Error Handling Design ✅
 
 **Questions to answer:**
-- [ ] What errors should the library throw?
-- [ ] What errors should be left to user?
-- [ ] How to handle invalid parameters?
-- [ ] How to handle non-CSAPI endpoints?
-- [ ] How to handle missing resources?
-- [ ] What's the error handling pattern upstream?
-- [ ] Should there be custom error classes?
+- [x] What errors should the library throw? → **Only conformance check, collection not found, required links missing** (Section 9)
+- [x] What errors should be left to user? → **Resource IDs, parameter values, formats - all server-validated** (Section 8)
+- [x] How to handle invalid parameters? → **Trust TypeScript types, no runtime validation** (Section 3, 4)
+- [x] How to handle non-CSAPI endpoints? → **Conformance check throws EndpointError** (Section 6)
+- [x] How to handle missing resources? → **Collections validated, individual resources let server 404** (Section 5)
+- [x] What's the error handling pattern upstream? → **EndpointError for API issues, Error for validation, let fetch propagate** (Section 3)
+- [x] Should there be custom error classes? → **No - reuse EndpointError, plain Error** (Section 7)
+
+**Status:** Minimal error handling - 1 explicit throw (conformance), 2-3 implicit (from utilities). Trust TypeScript types and server validation. Total ~3 lines. See [error-handling-analysis.md](../upstream/error-handling-analysis.md).
 
 ---
 
