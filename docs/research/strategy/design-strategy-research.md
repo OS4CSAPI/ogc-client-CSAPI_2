@@ -110,29 +110,30 @@ endpoint.csapi() → returns CSAPIQueryBuilder
 
 ---
 
-### 2. Existing ogc-client Architecture Patterns
+### 2. ✅ Existing ogc-client Architecture Patterns (COMPLETED)
 
-**Files to study:**
+**Files studied:**
 - `src/ogc-api/endpoint.ts` - Main endpoint class
 - `src/ogc-api/info.ts` - Conformance and capability checking
 - `src/index.ts` - Public API exports
-- `src/ogc-api/wfs/` - WFS implementation
-- `src/ogc-api/stac/` - STAC implementation
+- `src/ogc-api/edr/` - EDR implementation reference
 - `src/shared/` - Shared utilities and models
 
-**Questions to answer:**
-- [ ] What's the consistent pattern for adding new API support?
-- [ ] How do implementations extend OgcApiEndpoint?
-- [ ] How are collection-specific capabilities determined?
-- [ ] How are shared types vs API-specific types organized?
-- [ ] What's the pattern for adding methods to endpoint?
-- [ ] How is conformance class checking done consistently?
-- [ ] What utilities exist that we should reuse?
-- [ ] How are links handled?
-- [ ] How is pagination handled across implementations?
-- [ ] How are datetime/bbox parameters handled?
+**Analysis:** [docs/research/upstream/architecture-patterns-analysis.md](../upstream/architecture-patterns-analysis.md)
 
-**Action:** Read existing implementations to understand patterns
+**Answers:**
+- [x] What's the consistent pattern for adding new API support? → **5-step pattern: conformance check (info.ts) + capability getter (endpoint.ts) + collection filter + factory method + exports** (Analysis Section 2)
+- [x] How do implementations extend OgcApiEndpoint? → **They DON'T - QueryBuilder pattern via composition, not inheritance** (Section 3)
+- [x] How are collection-specific capabilities determined? → **Two-level: endpoint conformance + collection metadata via getCollectionInfo()** (Section 4)
+- [x] How are shared types vs API-specific types organized? → **3-tier: shared/ → ogc-api/ → ogc-api/{api}/model.ts** (Section 5)
+- [x] What's the pattern for adding methods to endpoint? → **Async factory methods with Map caching, conformance guards** (Section 6)
+- [x] How is conformance class checking done consistently? → **Helper functions in info.ts checking conformance URIs** (Section 7)
+- [x] What utilities exist that we should reuse? → **Link utils (getLinkUrl, fetchLink), url-utils (getChildPath), mime-type checking** (Section 8)
+- [x] How are links handled? → **Follow links via link-utils, never construct URLs manually** (Section 9)
+- [x] How is pagination handled across implementations? → **limit + offset query params via searchParams** (Section 10)
+- [x] How are datetime/bbox parameters handled? → **Shared DateTimeParameter type, encoded to ISO 8601 ranges** (Section 11)
+
+**Status:** Comprehensive 902-line architecture analysis completed. CSAPI implementation checklist documented in Section 12.
 
 ---
 
