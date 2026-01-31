@@ -30,25 +30,27 @@
 **Source:** [OGC API – Connected Systems Part 1: Feature Resources](https://docs.ogc.org/is/23-001/23-001.html)
 **OpenAPI:** docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml
 
-#### Section 1.1: Standard Document Analysis
+#### Section 1.1: Standard Document Analysis ✅
 
 **Source:** [OGC API – Connected Systems Part 1: Feature Resources](https://docs.ogc.org/is/23-001/23-001.html)
 
-**Questions to answer:**
-- [ ] What are ALL operations for each resource type according to the standard? (Systems, Deployments, Procedures, Sampling Features, Properties)
-- [ ] What HTTP methods are specified in the standard text?
-- [ ] What query parameters are defined in the standard?
-- [ ] What request bodies are described for create/update operations?
-- [ ] What response formats are required by the standard? (GeoJSON, SensorML)
-- [ ] What conformance classes are defined and what requirements do they specify?
-- [ ] What link relations are defined in the standard text?
-- [ ] How does the standard describe relationships between resources?
-- [ ] What history/versioning requirements are stated?
-- [ ] What filtering capabilities does the standard specify?
-- [ ] What are the requirements classes and their obligations?
-- [ ] What examples are provided in the standard?
+**Analysis:** [docs/research/requirements/csapi-part1-requirements.md](csapi-part1-requirements.md) Section 1.1
 
-**Deliverable:** Standard document analysis (~400-500 lines)
+**Answers:**
+- [x] What are ALL operations for each resource type according to the standard? → **70+ operations across 5 resource types: Systems (12 methods), Deployments (8 methods), Procedures (8 methods), Sampling Features (8 methods), Properties (6 methods) covering CRUD + nested endpoints** (Analysis Section 1)
+- [x] What HTTP methods are specified in the standard text? → **GET (retrieve), POST (create), PUT (replace), PATCH (update), DELETE (delete) with cascade option** (Section 2)
+- [x] What query parameters are defined in the standard? → **30+ parameters: spatial (bbox, geom), temporal (datetime), identifiers (id, uid), text (q), relationships (parent, procedure, foi, observedProperty, controlledProperty, system, baseProperty, objectType), hierarchical (recursive), pagination (limit, offset)** (Section 3)
+- [x] What request bodies are described for create/update operations? → **GeoJSON Feature format (application/geo+json) and SensorML-JSON format (application/sml+json) with detailed property mappings** (Section 4)
+- [x] What response formats are required by the standard? → **GeoJSON mandatory for all spatial resources, SensorML-JSON optional for Systems/Deployments/Procedures, format negotiation via Accept header or f parameter** (Section 5)
+- [x] What conformance classes are defined and what requirements do they specify? → **11 conformance classes: Common, System Features, Subsystems, Deployment Features, Subdeployments, Procedure Features, Sampling Features, Property Definitions, Advanced Filtering, Create/Replace/Delete, Update, GeoJSON Format, SensorML Format. No mandatory core - minimum is 1 resource + 1 encoding** (Section 6)
+- [x] What link relations are defined in the standard text? → **11 ogc-rel: prefixed relations: subsystems, parentSystem, samplingFeatures, deployments, procedures, featuresOfInterest, implementingSystems, sampledFeature, sampleOf, datastreams, controlStreams** (Section 7)
+- [x] How does the standard describe relationships between resources? → **Complex association model: Systems have subsystems/samplingFeatures/deployments/procedures, Deployments have deployedSystems/subdeployments, Procedures have implementingSystems, Sampling Features have parentSystem/sampledFeature/sampleOf, Properties have baseProperty** (Section 8)
+- [x] What history/versioning requirements are stated? → **validTime property for temporal validity (required for Deployments, optional for Systems), location updates for mobile systems, no complete version history in Part 1** (Section 9)
+- [x] What filtering capabilities does the standard specify? → **Spatial filters (bbox, geom), temporal filters (datetime), identifier filters (id, uid), text search (q), property filters, relationship filters (30+ params), hierarchical filters (recursive), pagination (limit, offset), logical AND between parameters, logical OR within ID lists** (Section 10)
+- [x] What are the requirements classes and their obligations? → **11 requirements classes with 103 total requirements. Minimum implementation: Common + 1 resource type + 1 encoding. Full implementation: all 5 resources + hierarchies + CRUD + filtering + both formats** (Section 11)
+- [x] What examples are provided in the standard? → **GeoJSON and SensorML examples for all 5 resource types including: fixed in-situ sensors, mobile systems, deployments (Saildrone Arctic Mission), procedures (datasheets, methodologies), sampling features (rock samples, trajectories, footprints)** (Section 12)
+
+**Deliverable:** Standard document analysis (~650 lines) ✅ COMPLETED
 
 #### Section 1.2: OpenAPI Schema Analysis
 
