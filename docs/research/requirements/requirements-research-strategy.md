@@ -242,19 +242,19 @@
 - docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml (System, Procedure schemas)
 
 **Questions to answer:**
-- [ ] Which CSAPI resources support SensorML format? (System, Procedure)
-- [ ] What SensorML component types are used? (SimpleProcess, AggregateProcess, PhysicalSystem, PhysicalComponent)
-- [ ] What is the minimal SensorML subset needed for CSAPI compatibility?
-- [ ] How are inputs/outputs defined in SensorML for CSAPI?
-- [ ] How are identification/classification/characteristics/capabilities represented?
-- [ ] Does library need to parse SensorML structure or treat it opaquely?
-- [ ] Does library need to serialize SensorML for POST/PUT operations?
-- [ ] Are there SensorML validation requirements?
-- [ ] What SensorML extensions or profiles are used by CSAPI?
-- [ ] How should library handle complex SensorML documents? (nested components, references)
-- [ ] What are the client API implications for SensorML support?
+- [x] Which CSAPI resources support SensorML format? (System, Procedure) → Part 1: Systems (PhysicalSystem, PhysicalComponent, SimpleProcess, AggregateProcess), Procedures (SimpleProcess, AggregateProcess), Deployments, Properties
+- [x] What SensorML component types are used? (SimpleProcess, AggregateProcess, PhysicalSystem, PhysicalComponent) → 4 main types: PhysicalSystem/PhysicalComponent (hardware), SimpleProcess/AggregateProcess (software/procedures); all extend DescribedObject → AbstractProcess → AbstractPhysicalProcess
+- [x] What is the minimal SensorML subset needed for CSAPI compatibility? → Required: type, label, uniqueId; Recommended: id, definition, validTime, links; Optional: identifiers, classifiers, inputs, outputs, parameters, characteristics, capabilities
+- [x] How are inputs/outputs defined in SensorML for CSAPI? → SWE Common components with name, type, definition (URI), uom, constraint, value; types: Quantity, Count, Boolean, Text, Category, Time, DataRecord, DataArray, Vector, Matrix
+- [x] How are identification/classification/characteristics/capabilities represented? → Identifiers/classifiers: Term arrays with definition/label/value; Characteristics/capabilities: Named lists with SWE Common components describing physical/operational properties
+- [x] Does library need to parse SensorML structure or treat it opaquely? → Hybrid: parse core properties (type/label/uniqueId/definition/validTime), identifiers/classifiers, IO component names/types; preserve SWE Common details, nested components, complex metadata
+- [x] Does library need to serialize SensorML for POST/PUT operations? → Yes: serialize from TypeScript types for create/update operations with format negotiation
+- [x] Are there SensorML validation requirements? → Yes: required properties (type/label/uniqueId), type validation (4 valid types), IO component validation (name/type), connections validation; optional JSON Schema validation with ajv
+- [x] What SensorML extensions or profiles are used by CSAPI? → CSAPI adds: links array (OGC API relations), id property (local resource ID); uses SensorML 3.0 JSON (not XML/previous versions)
+- [x] How should library handle complex SensorML documents? (nested components, references) → Parse top-level components, preserve nested structures, detect/resolve Link references, defer SWE Common parsing to external library
+- [x] What are the client API implications for SensorML support? → TypeScript types for all component types, format negotiation, metadata extraction utilities (getIdentifier/getClassifier/getCapability), write operations, validation utilities
 
-**Deliverable:** SensorML format requirements analysis (~150-250 lines)
+**Deliverable:** SensorML format requirements analysis (~700 lines) ✅ **COMPLETE** - See [csapi-format-requirements.md Section 3.3](csapi-format-requirements.md#section-33-sensorml-format-requirements)
 
 ---
 

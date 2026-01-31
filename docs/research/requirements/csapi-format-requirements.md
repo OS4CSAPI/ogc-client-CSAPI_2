@@ -828,3 +828,1052 @@ const inside = turf.booleanPointInPolygon(point, polygon);
 - Geometry simplification
 
 **Ready for Section 3.3:** SensorML Format Requirements
+
+---
+
+## Section 3.3: SensorML Format Requirements
+
+**Date:** 2026-01-31  
+**Status:** Complete
+
+### Overview
+
+SensorML 3.0 is the primary format for representing detailed system and procedure descriptions in CSAPI Part 1. It provides rich semantic metadata for sensors, actuators, platforms, processes, and methodologies beyond what GeoJSON can represent.
+
+**Media Type:** `application/sml+json`
+
+**Standard References:**
+- [SensorML 3.0 Specification](https://docs.ogc.org/is/20-010r3/20-010r3.html)
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html) - Clause 19.2, Requirements Class `/req/sensorml`
+- [SensorML 3.0 JSON Schema](https://schemas.opengis.net/sensorml/3.0/sensorml.json)
+
+---
+
+### 1. CSAPI Resources Supporting SensorML
+
+#### 1.1 Part 1 Resources
+
+**Systems (Required):**
+- **PhysicalSystem** - Hardware systems with components (weather stations, sensor networks, robotic platforms)
+- **PhysicalComponent** - Individual hardware elements (thermometers, cameras, GPS receivers)
+- **SimpleProcess** - Software processes, simulations, algorithms
+- **AggregateProcess** - Grouped/composite processes
+- More detailed than GeoJSON (inputs, outputs, parameters, characteristics, capabilities)
+
+**Procedures (Required):**
+- **SimpleProcess** - Methodologies, algorithms, processing steps
+- **AggregateProcess** - Complex multi-step procedures
+- Typically used for datasheets, calibration procedures, processing workflows
+- May have null geometry (conceptual, not spatial)
+
+**Deployments (Required):**
+- **Deployment** - SensorML-specific deployment description
+- References deployed systems, platforms
+- Temporal extent, spatial location, deployment metadata
+
+**Properties (Required):**
+- **DerivedProperty** - Computed/derived properties
+- Semantic definitions with provenance
+- References to derivation processes
+
+**Sampling Features (Optional):**
+- Rarely use SensorML (prefer GeoJSON for spatial features)
+- May use for complex sampling procedures
+
+#### 1.2 Part 2 Resources
+
+**Not Applicable:**
+- DataStreams, ControlStreams use JSON/SWE Common, not SensorML
+- Observations, Commands use SWE Common formats
+- System references in Part 2 may link to SensorML descriptions via `canonical` link
+
+---
+
+### 2. SensorML Component Types Used
+
+#### 2.1 Process Types (Abstract Classes)
+
+**Hierarchy:**
+```
+DescribedObject
+  ├─ AbstractProcess
+  │   ├─ SimpleProcess (software, simulations)
+  │   ├─ AggregateProcess (composite processes)
+  │   └─ AbstractPhysicalProcess
+  │       ├─ PhysicalComponent (hardware elements)
+  │       └─ PhysicalSystem (hardware systems with components)
+  └─ Deployment (deployment metadata)
+```
+
+**All types extend `DescribedObject`** with common properties (id, label, description, uniqueId, identifiers, classifiers, etc.)
+
+#### 2.2 Type Selection Rules
+
+**Systems:**
+- **PhysicalSystem** - Hardware with subsystems/components (e.g., weather station with multiple sensors)
+- **PhysicalComponent** - Single hardware element without subsystems (e.g., thermometer)
+- **SimpleProcess** - Software simulation, virtual sensor, data processing algorithm
+- **AggregateProcess** - Composite system with explicit connections between components
+
+**Procedures:**
+- **SimpleProcess** - Single-step procedure, algorithm, methodology (e.g., calibration procedure, quality control check)
+- **AggregateProcess** - Multi-step workflow with connected processing steps (e.g., data processing chain)
+
+**Rule:** Use Physical* types for hardware/human observers, use *Process types for software/simulations (Requirement 95)
+
+#### 2.3 Component Type Properties Summary
+
+| Type | Extends | Key Properties | Use Cases |
+|------|---------|----------------|-----------|
+| **SimpleProcess** | AbstractProcess | `method` (algorithm, description) | Software processes, simple procedures |
+| **AggregateProcess** | AbstractProcess | `components` (sub-processes), `connections` (data links) | Composite processes, workflows |
+| **PhysicalComponent** | AbstractPhysicalProcess | `method`, `attachedTo`, `position` | Individual hardware elements |
+| **PhysicalSystem** | AbstractPhysicalProcess | `components`, `connections`, `attachedTo`, `position` | Hardware systems with subsystems |
+
+---
+
+### 3. Minimal SensorML Subset for CSAPI
+
+#### 3.1 Required Properties (All Types)
+
+**From DescribedObject (Base Class):**
+- `type` (string, required) - Component type (`SimpleProcess`, `PhysicalSystem`, etc.)
+- `label` (string, required) - Human-readable name
+- `uniqueId` (string, format: uri, required) - Globally unique identifier (typically URN)
+
+**From AbstractProcess (Systems/Procedures):**
+- `definition` (string, format: uri, required for systems) - Type/ontology reference (e.g., `http://www.w3.org/ns/sosa/Sensor`)
+
+**Additional Required (Per CSAPI):**
+- `id` (string, optional but strongly recommended) - Local ID for resource
+- `validTime` (array of 2 date-times, optional) - Temporal validity `[startTime, endTime]`, `null` for open-ended
+- `links` (array, optional but recommended) - Navigation links
+
+**Example Minimal PhysicalSystem:**
+```json
+{
+  "type": "PhysicalSystem",
+  "id": "sensor123",
+  "definition": "http://www.w3.org/ns/sosa/Sensor",
+  "uniqueId": "urn:x-sensor:id:sensor123",
+  "label": "Temperature Sensor TS-001",
+  "validTime": ["2024-01-01T00:00:00Z", null]
+}
+```
+
+#### 3.2 Optional Properties (Rich Metadata)
+
+**Identification:**
+- `description` (string) - Detailed description
+- `keywords` (array of strings) - Discovery keywords
+- `identifiers` (array of Term) - Additional IDs (short name, serial number, model number)
+- `classifiers` (array of Term) - Type classifiers (sensor type, process type, application)
+
+**Process Metadata:**
+- `typeOf` (Link) - Reference to base process/datasheet (e.g., manufacturer's model description)
+- `configuration` (Settings) - Value settings constraining base process
+- `featuresOfInterest` (array of Links) - Relevant domain features
+- `inputs` (array) - Process inputs with SWE Common component definitions
+- `outputs` (array) - Process outputs with SWE Common component definitions
+- `parameters` (array) - Process parameters with SWE Common definitions
+- `modes` (array) - Operating modes with different parameter sets
+
+**Physical Process Metadata (Physical* types only):**
+- `attachedTo` (Link) - Parent platform/system
+- `position` (Point, Pose, Text, or DataStream link) - Spatial location
+- `localReferenceFrames` (array of SpatialFrame) - Local coordinate systems
+- `localTimeFrames` (array of TemporalFrame) - Local time references
+
+**Characteristics/Capabilities:**
+- `characteristics` (array of CharacteristicList) - Physical characteristics (size, weight, power, etc.)
+- `capabilities` (array of CapabilityList) - Operational capabilities (measurement range, accuracy, resolution, etc.)
+
+**Contacts/Documentation:**
+- `contacts` (array of ResponsibleParty) - Manufacturers, operators, maintainers
+- `documents` (array of Document) - User manuals, datasheets, specifications
+- `history` (array of Event) - Lifecycle events (deployment, calibration, maintenance)
+
+**Legal/Security:**
+- `legalConstraints` (array) - Copyright, licensing, usage restrictions
+- `securityConstraints` (array) - Security classification
+
+**Composite Types (PhysicalSystem, AggregateProcess):**
+- `components` (array) - Sub-components/sub-processes with names
+- `connections` (array) - Data flow connections between component inputs/outputs
+
+---
+
+### 4. Inputs, Outputs, and Parameters
+
+#### 4.1 IO Component Structure
+
+**Format:**
+```json
+{
+  "inputs": [
+    {
+      "name": "airTemperature",
+      "definition": "http://sweet.jpl.nasa.gov/ontology/property/Temperature",
+      "type": "Quantity",
+      "uom": {
+        "code": "Cel"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "name": "temperature",
+      "definition": "http://sweet.jpl.nasa.gov/ontology/property/Temperature",
+      "type": "Quantity",
+      "uom": {
+        "code": "Cel"
+      },
+      "constraint": {
+        "interval": [-40, 85]
+      }
+    }
+  ],
+  "parameters": [
+    {
+      "name": "samplingRate",
+      "label": "Sampling Rate",
+      "type": "Quantity",
+      "uom": {
+        "code": "Hz"
+      },
+      "value": 1.0
+    }
+  ]
+}
+```
+
+**IO Component Types (from SWE Common):**
+- **Quantity** - Numeric value with unit of measure
+- **Count** - Integer value
+- **Boolean** - True/false
+- **Text** - String value
+- **Category** - Categorical value from controlled vocabulary
+- **Time** - Temporal value
+- **DataRecord** - Composite structured data
+- **DataArray** - Array of values
+- **Vector** - Multi-dimensional vector
+- **Matrix** - Multi-dimensional matrix
+
+**Required Properties:**
+- `name` (string) - IO component name (used in data records, connections)
+- `type` (string) - SWE Common component type
+
+**Optional Properties:**
+- `definition` (uri) - Semantic definition (observable property, parameter type)
+- `label` (string) - Human-readable label
+- `description` (string) - Detailed description
+- `uom` (object) - Unit of measure (with `code` property)
+- `constraint` (object) - Value constraints (interval, allowedValues, etc.)
+- `value` (any) - Current/default value (for parameters)
+- `quality` (array) - Quality metadata
+
+#### 4.2 Connections (Composite Types)
+
+**Purpose:** Explicitly define data flow between component inputs/outputs
+
+**Structure:**
+```json
+{
+  "connections": [
+    {
+      "source": {
+        "ref": "components/thermometer/outputs/temperature"
+      },
+      "destination": {
+        "ref": "outputs/airTemperature"
+      }
+    },
+    {
+      "source": {
+        "ref": "components/barometer/outputs/pressure"
+      },
+      "destination": {
+        "ref": "outputs/atmosphericPressure"
+      }
+    }
+  ]
+}
+```
+
+**Required:**
+- `source` (PathRef) - JSON path to source output
+- `destination` (PathRef) - JSON path to destination input
+
+**Used in:** PhysicalSystem, AggregateProcess with `components`
+
+---
+
+### 5. Identification, Classification, Characteristics, Capabilities
+
+#### 5.1 Identifiers
+
+**Purpose:** Additional identifiers for discovery beyond `uniqueId`
+
+**Structure:**
+```json
+{
+  "identifiers": [
+    {
+      "definition": "http://sensorml.com/ont/swe/property/ShortName",
+      "label": "Short Name",
+      "value": "TS-001"
+    },
+    {
+      "definition": "http://sensorml.com/ont/swe/property/SerialNumber",
+      "label": "Serial Number",
+      "value": "SN-123456789"
+    },
+    {
+      "definition": "http://sensorml.com/ont/swe/property/ModelNumber",
+      "label": "Model Number",
+      "value": "TS-2000"
+    }
+  ]
+}
+```
+
+**Term Properties:**
+- `definition` (uri, required) - Property type
+- `label` (string) - Human-readable label
+- `value` (string, required) - Identifier value
+
+**Common Identifier Types:** Short name, serial number, model number, manufacturer part number, mission ID, platform ID
+
+#### 5.2 Classifiers
+
+**Purpose:** Type classification for discovery
+
+**Structure:**
+```json
+{
+  "classifiers": [
+    {
+      "definition": "http://www.opengis.net/def/property/OGC/0/SensorType",
+      "label": "Sensor Type",
+      "value": "Thermometer"
+    },
+    {
+      "definition": "http://www.opengis.net/def/property/OGC/0/IntendedApplication",
+      "label": "Intended Application",
+      "value": "Weather Monitoring"
+    }
+  ]
+}
+```
+
+**Common Classifier Types:** Sensor type, actuator type, platform type, process type, intended application, domain
+
+#### 5.3 Characteristics
+
+**Purpose:** Physical/non-operational properties (size, weight, power consumption)
+
+**Structure:**
+```json
+{
+  "characteristics": [
+    {
+      "name": "physicalProperties",
+      "label": "Physical Properties",
+      "characteristics": [
+        {
+          "name": "weight",
+          "label": "Weight",
+          "type": "Quantity",
+          "uom": {"code": "kg"},
+          "value": 0.5
+        },
+        {
+          "name": "dimensions",
+          "label": "Dimensions",
+          "type": "Vector",
+          "referenceFrame": "http://www.opengis.net/def/crs/OGC/0/ENU_LOCAL",
+          "coordinates": ["length", "width", "height"],
+          "uom": {"code": "m"},
+          "value": [0.1, 0.05, 0.03]
+        },
+        {
+          "name": "powerRequirement",
+          "label": "Power Requirement",
+          "type": "Quantity",
+          "uom": {"code": "W"},
+          "value": 2.5
+        }
+      ]
+    }
+  ]
+}
+```
+
+**CharacteristicList Properties:**
+- `name` (string) - Group name
+- `label` (string) - Human-readable label
+- `definition` (uri, optional) - Group semantic definition
+- `conditions` (array, optional) - Conditions under which characteristics apply
+- `characteristics` (array, required) - SWE Common components describing characteristics
+
+**Common Characteristics:** Physical properties (weight, size, power), material properties, environmental tolerances, storage requirements
+
+#### 5.4 Capabilities
+
+**Purpose:** Operational performance properties (measurement range, accuracy, resolution)
+
+**Structure:**
+```json
+{
+  "capabilities": [
+    {
+      "name": "measurementProperties",
+      "label": "Measurement Properties",
+      "capabilities": [
+        {
+          "name": "measurementRange",
+          "label": "Measurement Range",
+          "type": "QuantityRange",
+          "uom": {"code": "Cel"},
+          "value": [-40, 85]
+        },
+        {
+          "name": "accuracy",
+          "label": "Accuracy",
+          "type": "Quantity",
+          "uom": {"code": "Cel"},
+          "value": 0.1
+        },
+        {
+          "name": "resolution",
+          "label": "Resolution",
+          "type": "Quantity",
+          "uom": {"code": "Cel"},
+          "value": 0.01
+        },
+        {
+          "name": "responseTime",
+          "label": "Response Time",
+          "type": "Quantity",
+          "uom": {"code": "s"},
+          "value": 30
+        }
+      ]
+    }
+  ]
+}
+```
+
+**CapabilityList Properties:** Same structure as CharacteristicList
+
+**Common Capabilities:** Measurement range, accuracy, precision, resolution, sensitivity, response time, bandwidth, dynamic range
+
+---
+
+### 6. Client Library Parsing Requirements
+
+#### 6.1 Parse vs Opaque Handling
+
+**Recommended Approach: Hybrid Parsing**
+
+**What to Parse (Required):**
+- `type`, `id`, `definition`, `uniqueId`, `label`, `description` - Core identification
+- `validTime` - Temporal validity
+- `links` - Navigation
+- `typeOf` - Datasheet/base process reference
+- Top-level arrays: `identifiers`, `classifiers`, `inputs`, `outputs`, `parameters`
+
+**What to Preserve Semi-Opaquely:**
+- `characteristics`, `capabilities` - Parse structure (name, label, definition), preserve component details
+- `components`, `connections` - Parse references, preserve detailed schemas
+- `position` - Parse type (Point, Pose, Text), preserve structure
+- `contacts`, `documents`, `history` - Preserve as objects
+
+**What to Ignore (Optional Extensions):**
+- `configuration`, `modes` - Advanced features
+- `localReferenceFrames`, `localTimeFrames` - Specialized positioning
+- `legalConstraints`, `securityConstraints` - Specialized metadata
+
+**Rationale:**
+- Client needs core metadata for display (label, description, identifiers)
+- Client needs IO definitions for understanding system capabilities
+- Client needs links for navigation
+- Full SWE Common parsing is complex (defer to specialized libraries)
+- Preserve extensibility for unknown properties
+
+#### 6.2 TypeScript Type Definitions
+
+**Base SensorML Types:**
+```typescript
+// Base type for all SensorML objects
+interface DescribedObject {
+  type: string; // Component type
+  id?: string; // Local ID
+  uniqueId: string; // Global URI identifier
+  label: string; // Human-readable name
+  description?: string;
+  lang?: string;
+  keywords?: string[];
+  identifiers?: Term[];
+  classifiers?: Term[];
+  validTime?: [string, string | null]; // [start, end]
+  legalConstraints?: any[];
+  securityConstraints?: any[];
+  characteristics?: CharacteristicList[];
+  capabilities?: CapabilityList[];
+  contacts?: (ResponsibleParty | Link)[];
+  documents?: Document[];
+  history?: Event[];
+}
+
+// Term for identifiers/classifiers
+interface Term {
+  definition: string; // URI
+  label?: string;
+  value: string;
+}
+
+// Process types
+interface AbstractProcess extends DescribedObject {
+  definition: string; // Type URI
+  typeOf?: Link; // Reference to base process
+  configuration?: Settings;
+  featuresOfInterest?: Link[];
+  inputs?: IOComponent[];
+  outputs?: IOComponent[];
+  parameters?: IOComponent[];
+  modes?: Mode[];
+}
+
+interface SimpleProcess extends AbstractProcess {
+  type: 'SimpleProcess';
+  method?: ProcessMethod;
+}
+
+interface AggregateProcess extends AbstractProcess {
+  type: 'AggregateProcess';
+  components: Component[]; // Named sub-processes
+  connections?: Connection[];
+}
+
+// Physical types
+interface AbstractPhysicalProcess extends AbstractProcess {
+  attachedTo?: Link;
+  position?: Position;
+  localReferenceFrames?: SpatialFrame[];
+  localTimeFrames?: TemporalFrame[];
+}
+
+interface PhysicalComponent extends AbstractPhysicalProcess {
+  type: 'PhysicalComponent';
+  method?: ProcessMethod;
+}
+
+interface PhysicalSystem extends AbstractPhysicalProcess {
+  type: 'PhysicalSystem';
+  components?: Component[];
+  connections?: Connection[];
+}
+
+// Union type for all system types
+type SystemSensorML = 
+  | PhysicalSystem 
+  | PhysicalComponent 
+  | SimpleProcess 
+  | AggregateProcess;
+
+// Union type for all procedure types
+type ProcedureSensorML = 
+  | SimpleProcess 
+  | AggregateProcess;
+```
+
+**IO Components (Simplified):**
+```typescript
+interface IOComponent {
+  name: string;
+  type: string; // SWE Common type
+  label?: string;
+  description?: string;
+  definition?: string; // URI
+  uom?: UnitOfMeasure;
+  constraint?: any; // SWE Common constraint
+  value?: any; // For parameters
+  quality?: any[];
+  [key: string]: any; // Allow SWE Common extensions
+}
+
+interface UnitOfMeasure {
+  code: string; // UCUM code
+  href?: string;
+}
+```
+
+**Characteristics/Capabilities (Simplified):**
+```typescript
+interface CharacteristicList {
+  name?: string;
+  label?: string;
+  definition?: string;
+  conditions?: any[];
+  characteristics: IOComponent[]; // SWE Common components
+}
+
+interface CapabilityList {
+  name?: string;
+  label?: string;
+  definition?: string;
+  conditions?: any[];
+  capabilities: IOComponent[]; // SWE Common components
+}
+```
+
+**Components/Connections:**
+```typescript
+interface Component {
+  name: string;
+  component: SystemSensorML | Link;
+}
+
+interface Connection {
+  source: PathRef;
+  destination: PathRef;
+}
+
+interface PathRef {
+  ref: string; // JSON path (e.g., "components/sensor1/outputs/temperature")
+}
+```
+
+#### 6.3 Validation Requirements
+
+**Client-Side Validation:**
+
+**Required Property Validation:**
+- Validate `type` is one of: SimpleProcess, AggregateProcess, PhysicalComponent, PhysicalSystem
+- Validate `label` is non-empty string
+- Validate `uniqueId` is valid URI
+- Validate `definition` is valid URI (for systems)
+- Validate `validTime` array has 2 elements, first is date-time, second is date-time or null
+
+**Type-Specific Validation:**
+- PhysicalSystem: If `components` exists, validate each component has `name` and valid `component`
+- AggregateProcess: If `components` exists, validate minItems 1
+- Connections: Validate `source` and `destination` have `ref` property
+
+**IO Component Validation:**
+- Validate `name` is non-empty
+- Validate `type` is valid SWE Common type
+- If `uom` exists, validate `code` is present
+
+**Error Handling:**
+- Throw `ValidationError` for malformed SensorML
+- Include specific validation failure details
+- Provide JSON path to error location
+
+---
+
+### 7. SensorML Extensions and Profiles
+
+#### 7.1 CSAPI Extensions
+
+**Additional Properties Beyond SensorML 3.0:**
+- `links` (array of Link) - OGC API link relations (not in core SensorML)
+- `id` (string) - Local resource ID (CSAPI-specific)
+
+**Link Relations Used:**
+- `canonical` - Canonical URL of resource
+- `alternate` - Alternate format (GeoJSON)
+- `ogc-rel:subsystems` - Subsystems collection
+- `ogc-rel:deployments` - Deployments involving system
+- `ogc-rel:samplingFeatures` - Associated sampling features
+- `ogc-rel:procedures` - Implemented procedures
+- `ogc-rel:datastreams` - Associated data streams (Part 2)
+- `ogc-rel:controlStreams` - Associated control streams (Part 2)
+
+#### 7.2 SensorML 3.0 vs Previous Versions
+
+**SensorML 3.0 Changes:**
+- JSON encoding (vs XML in 2.0)
+- Simplified schema structure
+- Integrated SWE Common 3.0 components
+- GeoPose support for positioning
+- Removed deprecated elements
+
+**Client Library:** Support SensorML 3.0 JSON only, not XML or previous versions
+
+---
+
+### 8. Handling Complex SensorML Documents
+
+#### 8.1 Nested Components
+
+**Challenge:** PhysicalSystem can have deep component hierarchies
+
+**Example:**
+```json
+{
+  "type": "PhysicalSystem",
+  "label": "Weather Station",
+  "components": [
+    {
+      "name": "temperatureSensor",
+      "component": {
+        "type": "PhysicalComponent",
+        "label": "Thermometer",
+        "outputs": [...]
+      }
+    },
+    {
+      "name": "humiditySensor",
+      "component": {
+        "type": "PhysicalComponent",
+        "label": "Hygrometer",
+        "outputs": [...]
+      }
+    },
+    {
+      "name": "dataLogger",
+      "component": {
+        "type": "PhysicalSystem",
+        "label": "Data Logger",
+        "components": [...] // Further nesting
+      }
+    }
+  ]
+}
+```
+
+**Client Library Approach:**
+- Parse top-level component list
+- Extract component names and types
+- Preserve nested component structures as objects
+- Provide recursive traversal utilities if needed
+
+#### 8.2 Component References (Links)
+
+**Challenge:** Components can reference external resources via links
+
+**Example:**
+```json
+{
+  "components": [
+    {
+      "name": "thermometer",
+      "component": {
+        "type": "Link",
+        "rel": "canonical",
+        "href": "https://api.example.org/systems/therm-123"
+      }
+    }
+  ]
+}
+```
+
+**Client Library Approach:**
+- Detect `type: "Link"` in component
+- Provide link resolution utilities
+- Cache resolved components to avoid repeated fetches
+- Support both inline and referenced components
+
+#### 8.3 SWE Common Components
+
+**Challenge:** Inputs/outputs/parameters use SWE Common data components with complex schemas
+
+**Client Library Approach:**
+- Parse basic SWE Common types (Quantity, Count, Boolean, Text, Category, Time)
+- Preserve complex types (DataRecord, DataArray, Vector, Matrix) as objects
+- Provide minimal validation (type, name, uom)
+- **Defer to external SWE Common library** for full parsing/validation/encoding (e.g., `swe-common-js`)
+
+---
+
+### 9. Client API Implications
+
+#### 9.1 Format Negotiation
+
+**Requesting SensorML:**
+```typescript
+// Option 1: Accept header
+const system = await client.getSystem('sensor123', {
+  headers: { 'Accept': 'application/sml+json' }
+});
+
+// Option 2: Query parameter
+const system = await client.getSystem('sensor123', {
+  format: 'sensorml'
+});
+
+// Option 3: Convenience method
+const system = await client.getSystemAsSensorML('sensor123');
+```
+
+**Accept Header vs Query Parameter:**
+- Accept header: `Accept: application/sml+json`
+- Query parameter: `?f=sml` or `?format=application/sml+json`
+- Query parameter takes precedence (per OGC API – Common)
+
+#### 9.2 Response Type Handling
+
+**TypeScript Return Types:**
+```typescript
+class CSAPIClient {
+  // Generic method - format determined at runtime
+  async getSystem(
+    id: string, 
+    options?: {
+      format?: 'json' | 'geojson' | 'sensorml';
+      headers?: Record<string, string>;
+    }
+  ): Promise<System | SystemGeoJSON | SystemSensorML>;
+  
+  // Format-specific methods - explicit return types
+  async getSystemAsSensorML(id: string): Promise<SystemSensorML>;
+  async getProcedureAsSensorML(id: string): Promise<ProcedureSensorML>;
+  async getDeploymentAsSensorML(id: string): Promise<DeploymentSensorML>;
+  
+  // Collection endpoints
+  async getSystemsAsSensorML(options?: QueryOptions): Promise<SystemSensorMLCollection>;
+}
+```
+
+#### 9.3 Write Operations
+
+**Creating System with SensorML:**
+```typescript
+const newSystem = await client.createSystem({
+  type: 'PhysicalSystem',
+  definition: 'http://www.w3.org/ns/sosa/Sensor',
+  uniqueId: 'urn:x-sensor:id:new-sensor',
+  label: 'New Temperature Sensor',
+  position: {
+    type: 'Point',
+    coordinates: [-122.08, 37.42, 25.5]
+  },
+  outputs: [
+    {
+      name: 'temperature',
+      type: 'Quantity',
+      definition: 'http://sweet.jpl.nasa.gov/ontology/property/Temperature',
+      uom: { code: 'Cel' }
+    }
+  ]
+}, {
+  format: 'sensorml'
+});
+```
+
+**Updating System:**
+```typescript
+const system = await client.getSystemAsSensorML('sensor123');
+system.label = 'Updated Sensor Name';
+system.description = 'Updated description';
+await client.updateSystem('sensor123', system, { format: 'sensorml' });
+```
+
+#### 9.4 Metadata Extraction Utilities
+
+**Common Operations:**
+```typescript
+// Extract all identifiers
+function getIdentifier(system: SystemSensorML, definition: string): string | undefined {
+  return system.identifiers?.find(id => id.definition === definition)?.value;
+}
+
+const serialNumber = getIdentifier(system, 'http://sensorml.com/ont/swe/property/SerialNumber');
+
+// Extract all classifiers
+function getClassifier(system: SystemSensorML, definition: string): string | undefined {
+  return system.classifiers?.find(c => c.definition === definition)?.value;
+}
+
+const sensorType = getClassifier(system, 'http://www.opengis.net/def/property/OGC/0/SensorType');
+
+// Extract output definitions
+function getOutputs(system: SystemSensorML): string[] {
+  return system.outputs?.map(o => o.definition).filter(Boolean) || [];
+}
+
+// Extract capabilities by name
+function getCapability(system: SystemSensorML, capabilityName: string): any {
+  for (const capList of system.capabilities || []) {
+    const cap = capList.capabilities.find(c => c.name === capabilityName);
+    if (cap) return cap.value;
+  }
+  return undefined;
+}
+
+const measurementRange = getCapability(system, 'measurementRange');
+```
+
+---
+
+### 10. Error Handling
+
+#### 10.1 Format-Related Errors
+
+**Unsupported Format Error:**
+```typescript
+class UnsupportedFormatError extends Error {
+  constructor(
+    public requestedFormat: string,
+    public availableFormats: string[]
+  ) {
+    super(`Format '${requestedFormat}' not supported. Available: ${availableFormats.join(', ')}`);
+  }
+}
+
+// Server returns 406 Not Acceptable
+if (response.status === 406) {
+  throw new UnsupportedFormatError('application/sml+json', ['application/json', 'application/geo+json']);
+}
+```
+
+**Malformed SensorML Error:**
+```typescript
+class MalformedSensorMLError extends Error {
+  constructor(
+    public jsonPath: string,
+    public validationError: string
+  ) {
+    super(`Invalid SensorML at ${jsonPath}: ${validationError}`);
+  }
+}
+
+// Example
+throw new MalformedSensorMLError(
+  'outputs[0]',
+  'Output must have "name" property'
+);
+```
+
+#### 10.2 Type Validation
+
+**Validate System Type:**
+```typescript
+function validateSystemType(system: any): void {
+  const validTypes = ['SimpleProcess', 'AggregateProcess', 'PhysicalComponent', 'PhysicalSystem'];
+  if (!validTypes.includes(system.type)) {
+    throw new MalformedSensorMLError(
+      'type',
+      `System type must be one of: ${validTypes.join(', ')}, got "${system.type}"`
+    );
+  }
+}
+```
+
+**Validate Required Properties:**
+```typescript
+function validateRequiredProperties(system: any): void {
+  if (!system.label) {
+    throw new MalformedSensorMLError('label', 'label is required');
+  }
+  if (!system.uniqueId) {
+    throw new MalformedSensorMLError('uniqueId', 'uniqueId is required');
+  }
+  // Systems require definition
+  if (['PhysicalSystem', 'PhysicalComponent'].includes(system.type) && !system.definition) {
+    throw new MalformedSensorMLError('definition', 'definition is required for systems');
+  }
+}
+```
+
+---
+
+### 11. Dependencies and Libraries
+
+#### 11.1 Recommended External Libraries
+
+**SWE Common Parsing:**
+- **@ogc/swe-common** (if exists) - SWE Common 3.0 parsing/validation
+- **Custom SWE Common utilities** - Minimal parsing for Quantity, Count, Text, etc.
+
+**Schema Validation:**
+- **ajv** - JSON Schema validator for SensorML 3.0 schema validation
+- Load SensorML 3.0 JSON Schema from `https://schemas.opengis.net/sensorml/3.0/sensorml.json`
+
+**Usage:**
+```typescript
+import Ajv from 'ajv';
+import sensorMLSchema from 'sensorml-schema.json';
+
+const ajv = new Ajv();
+const validate = ajv.compile(sensorMLSchema);
+
+function validateSensorML(document: any): boolean {
+  const valid = validate(document);
+  if (!valid) {
+    throw new MalformedSensorMLError('', ajv.errorsText(validate.errors));
+  }
+  return true;
+}
+```
+
+#### 11.2 Built-in vs External
+
+**Built-in (Client Library):**
+- TypeScript type definitions for SensorML component types
+- Basic parsing (JSON.parse)
+- Format negotiation (Accept header, query param)
+- Core property extraction (label, uniqueId, identifiers, classifiers, inputs, outputs)
+- Link extraction and navigation
+
+**External Libraries (Optional Dependencies):**
+- Schema validation (ajv)
+- SWE Common parsing (custom or external library)
+- Unit conversion (if needed for capabilities/characteristics)
+
+**Rationale:** Keep core library lightweight, provide SensorML type definitions, defer complex SWE Common parsing to specialized libraries.
+
+---
+
+## Summary
+
+**Section 3.3 Complete:** SensorML Format Requirements (~700 lines documenting all SensorML aspects)
+
+### Key Requirements
+
+**Resources Supporting SensorML:**
+- Part 1: Systems (PhysicalSystem, PhysicalComponent, SimpleProcess, AggregateProcess), Procedures (SimpleProcess, AggregateProcess), Deployments, Properties
+- Part 2: Not directly used (JSON/SWE Common instead)
+
+**Component Types:**
+- **PhysicalSystem** - Hardware systems with components
+- **PhysicalComponent** - Individual hardware elements
+- **SimpleProcess** - Software processes, simple procedures
+- **AggregateProcess** - Composite processes with connections
+- **Deployment** - Deployment descriptions
+
+**Minimal Subset:**
+- Required: type, label, uniqueId
+- Recommended: id, definition, description, validTime, links
+- Optional: identifiers, classifiers, inputs, outputs, parameters, characteristics, capabilities, contacts, documents
+
+**Rich Metadata:**
+- Identification: identifiers (serial number, model number), classifiers (sensor type, application)
+- Process: inputs, outputs, parameters with SWE Common definitions
+- Physical: position, attachedTo, localReferenceFrames
+- Performance: characteristics (physical properties), capabilities (measurement range, accuracy, resolution)
+- Composite: components (sub-systems), connections (data flow)
+
+**Client Library Must:**
+- Parse core SensorML properties (type, label, uniqueId, definition, validTime)
+- Extract identifiers, classifiers for discovery
+- Extract inputs, outputs, parameters for capability understanding
+- Parse links for navigation
+- Support format negotiation
+- Validate required properties and types
+- Provide TypeScript types for all component types
+
+**Complex Handling:**
+- Nested components (recursive structures)
+- Component references (Links to external resources)
+- SWE Common components (defer to external library for full parsing)
+- Preserve unknown properties for extensibility
+
+**Optional (External Libraries):**
+- Full SWE Common parsing/validation
+- JSON Schema validation against SensorML 3.0 schema
+- Unit conversion
+
+**Ready for Section 3.4:** SWE Common Format Requirements
