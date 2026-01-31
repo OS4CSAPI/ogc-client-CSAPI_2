@@ -297,16 +297,18 @@ endpoint.csapi() → returns CSAPIQueryBuilder
 
 ---
 
-### 11. Code Reuse vs Duplication
+### 11. Code Reuse vs Duplication ✅
 
 **Questions to answer:**
-- [ ] When to reuse upstream utilities vs duplicate?
-- [ ] What shared models exist for bbox, datetime, pagination?
-- [ ] Should we create abstraction base classes?
-- [ ] When to copy-paste vs import?
-- [ ] How much duplication is acceptable to maintain isolation?
+- [x] When to reuse upstream utilities vs duplicate? → **Reuse types, errors, OGC API utils; duplicate simple helpers (<15 lines)** (Section 4, 6)
+- [x] What shared models exist for bbox, datetime, pagination? → **BoundingBox, DateTimeParameter in shared/models.ts - always import** (Section 2, 5)
+- [x] Should we create abstraction base classes? → **No - duplicate CSAPI-specific logic instead** (Section 6)
+- [x] When to copy-paste vs import? → **Import if >15 lines & stable; duplicate if CSAPI-specific or simple** (Section 7)
+- [x] How much duplication is acceptable to maintain isolation? → **1-15 lines always duplicate, 16-30 consider, 31+ extract or import** (Section 4)
 
 **Principle:** Prefer duplication over coupling (per governance constraints)
+
+**Status:** Minimal coupling strategy - 7 imports (types, errors, OGC API utils), ~75 lines duplicated (query building, datetime, resource discovery). Total dependency ratio: ~1% imports, ~99% implementation. See [code-reuse-analysis.md](../upstream/code-reuse-analysis.md).
 
 ---
 
