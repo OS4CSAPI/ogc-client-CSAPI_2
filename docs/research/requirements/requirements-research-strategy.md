@@ -30,19 +30,63 @@
 **Source:** [OGC API – Connected Systems Part 1: Feature Resources](https://docs.ogc.org/is/23-001/23-001.html)
 **OpenAPI:** docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml
 
-**Questions to answer:**
-- [ ] What are ALL operations for each resource type? (Systems, Deployments, Procedures, Sampling Features, Properties)
-- [ ] What HTTP methods are required? (GET, POST, PUT, DELETE, PATCH?)
-- [ ] What query parameters must be supported?
-- [ ] What request bodies are needed for create/update operations?
-- [ ] What response formats must be supported? (GeoJSON, SensorML)
-- [ ] What conformance classes exist and what do they require?
-- [ ] What link relations are defined and required?
-- [ ] What's the relationship model between resources?
-- [ ] What are the history/versioning requirements?
-- [ ] What filtering capabilities are specified?
+#### Section 1.1: Standard Document Analysis
 
-**Deliverable:** Detailed analysis of Part 1 requirements (~800-1200 lines)
+**Source:** [OGC API – Connected Systems Part 1: Feature Resources](https://docs.ogc.org/is/23-001/23-001.html)
+
+**Questions to answer:**
+- [ ] What are ALL operations for each resource type according to the standard? (Systems, Deployments, Procedures, Sampling Features, Properties)
+- [ ] What HTTP methods are specified in the standard text?
+- [ ] What query parameters are defined in the standard?
+- [ ] What request bodies are described for create/update operations?
+- [ ] What response formats are required by the standard? (GeoJSON, SensorML)
+- [ ] What conformance classes are defined and what requirements do they specify?
+- [ ] What link relations are defined in the standard text?
+- [ ] How does the standard describe relationships between resources?
+- [ ] What history/versioning requirements are stated?
+- [ ] What filtering capabilities does the standard specify?
+- [ ] What are the requirements classes and their obligations?
+- [ ] What examples are provided in the standard?
+
+**Deliverable:** Standard document analysis (~400-500 lines)
+
+#### Section 1.2: OpenAPI Schema Analysis
+
+**Source:** docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml
+
+**Questions to answer:**
+- [ ] What paths are defined in the OpenAPI schema?
+- [ ] What HTTP methods are specified for each path?
+- [ ] What parameters are defined (path, query, header)?
+- [ ] What request body schemas exist?
+- [ ] What response schemas are defined?
+- [ ] What are the exact parameter names, types, and constraints?
+- [ ] What status codes are documented?
+- [ ] What security requirements are specified?
+- [ ] What examples are provided in the schema?
+- [ ] What data models/schemas are defined for resources?
+- [ ] What are the exact property names and types for each resource?
+- [ ] What's optional vs required according to the schema?
+
+**Deliverable:** OpenAPI schema analysis (~400-500 lines)
+
+#### Section 1.3: Comparison and Insights
+
+**Questions to answer:**
+- [ ] Where do the standard and OpenAPI schema align perfectly?
+- [ ] Where does the OpenAPI schema provide more specific details than the standard?
+- [ ] Where does the standard describe things not captured in OpenAPI?
+- [ ] Are there any conflicts or ambiguities between the two sources?
+- [ ] What implementation details are clearer in the OpenAPI schema?
+- [ ] What conceptual/requirement details are clearer in the standard?
+- [ ] Which source should take precedence for specific decisions?
+- [ ] What requirements emerge from reading both together?
+- [ ] What examples or patterns appear in one but not the other?
+- [ ] What are the implications for implementation?
+
+**Deliverable:** Comparison analysis and insights (~200-300 lines)
+
+**Total Section 1 Deliverable:** ~1,000-1,300 lines
 
 ---
 
@@ -51,19 +95,64 @@
 **Source:** [OGC API – Connected Systems Part 2: Dynamic Data](https://docs.ogc.org/is/23-002/23-002.html)
 **OpenAPI:** docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
 
-**Questions to answer:**
-- [ ] What are ALL operations for dynamic data resources? (Datastreams, Observations, Control Streams, Commands)
-- [ ] What's different from Part 1 patterns?
-- [ ] What schema operations are required? (DataStream schema, Control Stream schema)
-- [ ] What status/result operations exist? (Command status, Command result)
-- [ ] What streaming/pagination patterns are used?
-- [ ] What temporal query requirements exist?
-- [ ] How do observations relate to datastreams?
-- [ ] How do commands relate to control streams?
-- [ ] What format options exist? (protobuf, SWE Common)
-- [ ] What real-time requirements exist (if any)?
+#### Section 2.1: Standard Document Analysis
 
-**Deliverable:** Detailed analysis of Part 2 requirements (~800-1200 lines)
+**Source:** [OGC API – Connected Systems Part 2: Dynamic Data](https://docs.ogc.org/is/23-002/23-002.html)
+
+**Questions to answer:**
+- [ ] What are ALL operations for dynamic data resources according to the standard? (Datastreams, Observations, Control Streams, Commands)
+- [ ] What HTTP methods are specified for dynamic data resources?
+- [ ] How does the standard describe differences from Part 1 patterns?
+- [ ] What schema operations are described in the standard? (DataStream schema, Control Stream schema)
+- [ ] What status/result operations does the standard define? (Command status, Command result)
+- [ ] What streaming/pagination patterns are specified?
+- [ ] What temporal query requirements does the standard describe?
+- [ ] How does the standard describe observation-datastream relationships?
+- [ ] How does the standard describe command-control stream relationships?
+- [ ] What format options are discussed in the standard? (protobuf, SWE Common)
+- [ ] What real-time or near-real-time requirements exist?
+- [ ] What conformance classes are defined for Part 2?
+- [ ] What examples are provided?
+
+**Deliverable:** Standard document analysis (~400-500 lines)
+
+#### Section 2.2: OpenAPI Schema Analysis
+
+**Source:** docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
+
+**Questions to answer:**
+- [ ] What paths are defined for Datastreams, Observations, Control Streams, and Commands?
+- [ ] What HTTP methods are specified for each dynamic data path?
+- [ ] What parameters are defined for dynamic data endpoints?
+- [ ] What request body schemas exist for observations and commands?
+- [ ] What response schemas are defined for dynamic data?
+- [ ] What are the schema operation endpoints and their definitions?
+- [ ] What are the status/result endpoint definitions?
+- [ ] What pagination/temporal query parameters are defined?
+- [ ] What data models exist for Observation, DataStream, ControlStream, Command?
+- [ ] What property names and types are specified?
+- [ ] What's required vs optional in the schemas?
+- [ ] What format media types are specified in responses?
+
+**Deliverable:** OpenAPI schema analysis (~400-500 lines)
+
+#### Section 2.3: Comparison and Insights
+
+**Questions to answer:**
+- [ ] Where do the Part 2 standard and OpenAPI schema align perfectly?
+- [ ] Where does the OpenAPI schema provide more specifics than the standard?
+- [ ] Where does the standard describe concepts not captured in OpenAPI?
+- [ ] Are there any conflicts or ambiguities between the two sources?
+- [ ] What patterns from Part 1 are reused vs changed in Part 2?
+- [ ] How do dynamic data resources differ from feature resources architecturally?
+- [ ] What implementation complexity is unique to Part 2?
+- [ ] Which source clarifies the datastream-observation relationship better?
+- [ ] Which source clarifies the control stream-command relationship better?
+- [ ] What are the implications for client library implementation?
+
+**Deliverable:** Comparison analysis and insights (~200-300 lines)
+
+**Total Section 2 Deliverable:** ~1,000-1,300 lines
 
 ---
 
