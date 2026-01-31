@@ -16,6 +16,33 @@ Everything else is secondary. This research answers that question definitively.
 
 ---
 
+## ⚠️ CRITICAL TERMINOLOGY QUESTION (MUST RESOLVE FIRST)
+
+**Issue:** We've been using the term "navigator" throughout documentation and previous implementations (e.g., `CSAPINavigator`, `endpoint.csapi()` returns a "navigator"). However, this term may not be consistent with upstream terminology.
+
+**Risk:** 
+- Using wrong terminology makes PR harder to review
+- Naming inconsistency with upstream patterns
+- Documentation uses incorrect concepts
+- Potential large refactor if wrong
+
+**MUST ANSWER BEFORE PROCEEDING:**
+- [ ] What does PR #114 call the object returned by `endpoint.edr()`?
+- [ ] Is "navigator" the correct upstream term?
+- [ ] What's the actual class name in PR #114? (EDRNavigator? EDRClient? EDREndpoint? Something else?)
+- [ ] What terminology is used in WFS/STAC implementations?
+- [ ] Should we be calling it "client", "accessor", "resource", or something else?
+
+**Action:** Check PR #114 and existing implementations IMMEDIATELY to determine correct terminology. Update all documentation accordingly before writing any code.
+
+**If "navigator" is wrong:** We need to update:
+- FEATURE_SPEC.md Section 2.2 (uses "navigator" extensively)
+- design-strategy-research.md (uses "navigator" throughout)
+- testing-strategy-research.md
+- Any other planning docs
+
+---
+
 ## Research Questions
 
 ### 1. PR #114 Architecture Deep Dive (PRIMARY REFERENCE)
@@ -23,6 +50,7 @@ Everything else is secondary. This research answers that question definitively.
 **Source:** [PR #114 - EDR Implementation](https://github.com/camptocamp/ogc-client/pull/114)
 
 **Questions to answer:**
+- [ ] **PRIORITY: What is the object returned by endpoint.edr() actually called?** (Class name? Type name?)
 - [ ] What files were added? (list complete file structure)
 - [ ] Where were files placed? (`src/ogc-api/edr/` ?)
 - [ ] What existing files were modified? (endpoint.ts, info.ts, index.ts?)
@@ -70,10 +98,13 @@ Everything else is secondary. This research answers that question definitively.
 
 ### 3. Navigator Pattern Analysis
 
-**Critical architectural decision: How does the navigator pattern work?**
+**⚠️ NOTE: "Navigator" may not be the correct term - verify with PR #114 first!**
+
+**Critical architectural decision: How does the [CORRECT_TERM] pattern work?**
 
 **Questions to answer:**
-- [ ] What is a "navigator" in ogc-client context?
+- [ ] **What is the correct terminology?** (navigator? client? accessor? endpoint?)
+- [ ] What is a "[TERM]" in ogc-client context?
 - [ ] What's the lifecycle of a navigator instance?
 - [ ] How is `endpoint.csapi(collectionId)` supposed to work?
 - [ ] What does a navigator expose? (methods, properties?)
@@ -282,10 +313,11 @@ Research is complete when we can answer:
 
 ## Investigation Priority Order
 
-**Week 1: Foundation**
-1. PR #114 complete file-by-file analysis
-2. Existing endpoint.ts patterns
-3. Navigator pattern deep dive
+**Week 1: Foundation (CRITICAL)**
+1. **FIRST:** Resolve terminology question - what is the correct term for the object returned by endpoint methods?
+2. PR #114 complete file-by-file analysis
+3. Existing endpoint.ts patterns
+4. [CORRECT_TERM] pattern deep dive
 
 **Week 2: Details**
 4. URL building patterns
