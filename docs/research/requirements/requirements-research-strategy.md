@@ -158,11 +158,21 @@
 
 ### Section 3: Format Requirements Analysis ⏳
 
-**Sources:** 
-- CSAPI specs (both parts)
-- SensorML 3.0 spec
-- SWE Common 3.0 spec  
-- GeoJSON RFC 7946
+**Resources:**
+
+#### Standards & Specifications:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html)
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
+- [SensorML 3.0 Specification](https://docs.ogc.org/is/20-010r3/20-010r3.html)
+- [SWE Common Data Model 3.0 Specification](https://docs.ogc.org/is/18-003r2/18-003r2.html)
+- [GeoJSON RFC 7946](https://datatracker.ietf.org/doc/html/rfc7946)
+
+#### Schemas:
+- docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml
+- docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
+- [SensorML 3.0 JSON Schema](https://schemas.opengis.net/sensorml/3.0/sensorml.json)
+- [SWE Common 3.0 JSON Schema](https://schemas.opengis.net/sweCommon/3.0/sweCommon.json)
+- [GeoJSON Schema](https://geojson.org/schema/GeoJSON.json)
 
 **Questions to answer:**
 - [ ] What formats MUST the library support?
@@ -182,10 +192,17 @@
 
 ### Section 4: Query Parameter Requirements ⏳
 
-**Sources:**
-- CSAPI OpenAPI specs
-- OGC API Common standards
-- Query examples from specs
+**Resources:**
+
+#### Standards & Specifications:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html)
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
+- [OGC API - Common - Part 1: Core](https://docs.ogc.org/is/19-072/19-072.html)
+- [OGC API - Common - Part 2: Geospatial Data](https://docs.ogc.org/DRAFTS/20-024.html)
+
+#### Schemas:
+- docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml
+- docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
 
 **Questions to answer:**
 - [ ] What are ALL standard OGC API query parameters? (bbox, datetime, limit, offset, f)
@@ -205,10 +222,16 @@
 
 ### Section 5: CRUD Operation Requirements ⏳
 
-**Sources:**
-- CSAPI OpenAPI specs
-- HTTP method specifications
-- Request/response examples
+**Resources:**
+
+#### Standards & Specifications:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html)
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
+- [HTTP/1.1 Method Definitions (RFC 9110)](https://www.rfc-editor.org/rfc/rfc9110.html#name-methods)
+
+#### Schemas:
+- docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml
+- docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
 
 **Questions to answer:**
 - [ ] Which resources support full CRUD? (Create, Read, Update, Delete)
@@ -228,10 +251,17 @@
 
 ### Section 6: Sub-Resource Navigation Requirements ⏳
 
-**Sources:**
-- CSAPI spec section on relationships
-- OpenAPI paths for sub-resources
-- Link relation specifications
+**Resources:**
+
+#### Standards & Specifications:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html) - especially sections on relationships
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html) - especially sections on relationships
+- [Web Linking (RFC 8288)](https://www.rfc-editor.org/rfc/rfc8288.html)
+- [Link Relation Types (IANA Registry)](https://www.iana.org/assignments/link-relations/link-relations.xhtml)
+
+#### Schemas:
+- docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml
+- docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
 
 **Questions to answer:**
 - [ ] What are ALL sub-resource relationships? (systems/{id}/datastreams, etc.)
@@ -251,10 +281,16 @@
 
 ### Section 7: Conformance and Capability Requirements ⏳
 
-**Sources:**
-- CSAPI conformance class definitions
-- Requirements classes in spec
-- Collection-level capabilities
+**Resources:**
+
+#### Standards & Specifications:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html) - especially Annex A (Conformance Classes)
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html) - especially Annex A (Conformance Classes)
+- [OGC API - Common - Part 1: Core](https://docs.ogc.org/is/19-072/19-072.html) - conformance framework
+
+#### Schemas:
+- docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml
+- docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
 
 **Questions to answer:**
 - [ ] What conformance classes exist?
@@ -274,11 +310,22 @@
 
 ### Section 8: Data Type and Schema Requirements ⏳
 
-**Sources:**
-- CSAPI data models
-- SWE Common schemas
-- GeoJSON schemas
-- TypeScript type requirements
+**Resources:**
+
+#### Standards & Specifications:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html) - data models
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html) - data models
+- [SWE Common Data Model 3.0](https://docs.ogc.org/is/18-003r2/18-003r2.html)
+- [GeoJSON RFC 7946](https://datatracker.ietf.org/doc/html/rfc7946)
+
+#### Schemas:
+- docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml
+- docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
+- [SWE Common 3.0 JSON Schema](https://schemas.opengis.net/sweCommon/3.0/sweCommon.json)
+- [GeoJSON Schema](https://geojson.org/schema/GeoJSON.json)
+
+#### Code References:
+- TypeScript type patterns in ogc-client (for consistency)
 
 **Questions to answer:**
 - [ ] What TypeScript interfaces does library export?
@@ -298,11 +345,19 @@
 
 ### Section 9: Real-World Usage Scenario Requirements ⏳
 
-**Sources:**
-- osh-viewer codebase
-- oscar-viewer codebase
-- OpenSensorHub examples
-- Common CSAPI use cases
+**Resources:**
+
+#### Reference Implementations:
+- [osh-js Repository](https://github.com/opensensorhub/osh-js) - JavaScript client implementation
+- [OpenSensorHub OSH-Core](https://github.com/opensensorhub/osh-core) - Java server with examples
+- [OGC Connected Systems API Implementations](https://github.com/opengeospatial/connected-systems) - official examples
+
+#### Use Case Documentation:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html) - use cases and examples
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html) - use cases and examples
+
+#### Related Client Libraries:
+- [camptocamp/ogc-client](https://github.com/camptocamp/ogc-client) - upstream patterns for WFS, WMS, etc.
 
 **Questions to answer:**
 - [ ] What are the top 10 most common usage scenarios?
@@ -322,10 +377,16 @@
 
 ### Section 10: Gap Analysis - Previous Iteration Misses ⏳
 
-**Sources:**
-- Previous iteration code (OS4CSAPI/ogc-client-CSAPI)
-- Draft PR #131 feedback
-- Known missing functionality
+**Resources:**
+
+#### Previous Implementation:
+- [OS4CSAPI/ogc-client-CSAPI Repository](https://github.com/OS4CSAPI/ogc-client-CSAPI) - first iteration
+- [Draft PR #131](https://github.com/camptocamp/ogc-client/pull/131) - review feedback
+- Design research documents (Sections 1-12) for lessons learned analysis
+
+#### Standards Reference:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html)
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
 
 **Questions to answer:**
 - [ ] What did previous iteration implement that shouldn't have been?
@@ -345,11 +406,21 @@
 
 ### Section 11: Upstream Library Expectations ⏳
 
-**Sources:**
-- ogc-client contribution guidelines
-- PR review patterns
-- Maintainer feedback
-- Similar library precedents
+**Resources:**
+
+#### Upstream Repository:
+- [camptocamp/ogc-client](https://github.com/camptocamp/ogc-client) - main repository
+- [camptocamp/ogc-client Contributing Guide](https://github.com/camptocamp/ogc-client/blob/main/CONTRIBUTING.md) (if exists)
+- [Draft PR #131 Review Comments](https://github.com/camptocamp/ogc-client/pull/131) - maintainer feedback
+
+#### Reference Implementations:
+- [ogc-client WFS implementation](https://github.com/camptocamp/ogc-client/tree/main/src/wfs)
+- [ogc-client WMS implementation](https://github.com/camptocamp/ogc-client/tree/main/src/wms)
+- [ogc-client EDR implementation](https://github.com/camptocamp/ogc-client/tree/main/src/ogc-api)
+
+#### Documentation Patterns:
+- [ogc-client README](https://github.com/camptocamp/ogc-client/blob/main/README.md)
+- [ogc-client API Documentation](https://camptocamp.github.io/ogc-client/)
 
 **Questions to answer:**
 - [ ] What does upstream expect a client library to do vs not do?
@@ -369,10 +440,22 @@
 
 ### Section 12: Minimum Viable vs Full Feature Set ⏳
 
-**Sources:**
-- All previous sections
-- CSAPI spec (required vs optional features)
-- Resource prioritization
+**Resources:**
+
+#### Analysis Synthesis:
+- All previous requirement sections (1-11)
+- Design research documents (docs/research/upstream/)
+
+#### Standards Reference:
+- [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html) - conformance requirements
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html) - conformance requirements
+- docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml
+- docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
+
+#### Priority References:
+- Real-world usage patterns (Section 9 findings)
+- Upstream expectations (Section 11 findings)
+- Previous iteration gaps (Section 10 findings)
 
 **Questions to answer:**
 - [ ] What's the absolute minimum for a valid CSAPI client?
