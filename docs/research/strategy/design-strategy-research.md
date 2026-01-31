@@ -227,18 +227,22 @@ endpoint.csapi() → returns CSAPIQueryBuilder
 
 ---
 
-### 7. Integration with Existing Code
+### 7. ✅ Integration with Existing Code (COMPLETED)
 
-**Questions to answer:**
-- [ ] Exactly what changes to `endpoint.ts`? (add csapi() method? what else?)
-- [ ] Exactly what changes to `info.ts`? (add conformance checking? what else?)
-- [ ] Exactly what changes to `index.ts`? (export what exactly?)
-- [ ] What shared models can/should be reused?
-- [ ] What shared utilities can be reused?
-- [ ] How to avoid touching unnecessary files?
-- [ ] How to minimize diff size?
+**Core functionality: How to integrate CSAPI into existing codebase?**
 
-**Principle:** Additive only, minimal modifications
+**Analysis:** [docs/research/upstream/integration-analysis.md](../upstream/integration-analysis.md)
+
+**Answers:**
+- [x] Exactly what changes to `endpoint.ts`? → **5 additions: import, cache field, collections getter, conformance getter, factory method (~35 lines)** (Analysis Section 3)
+- [x] Exactly what changes to `info.ts`? → **1 function: checkHasConnectedSystems (~12 lines)** (Section 4)
+- [x] Exactly what changes to `index.ts`? → **Export 9 resources + 3 option types + 2 helpers (~17 lines)** (Section 5)
+- [x] What shared models can/should be reused? → **BoundingBox, DateTimeParameter, CrsCode, MimeType, Contact, Provider, OgcApiDocumentLink** (Section 6)
+- [x] What shared utilities can be reused? → **15+ utilities: getLinkUrl, setQueryParams, getChildPath, EndpointError, etc.** (Section 7)
+- [x] How to avoid touching unnecessary files? → **Only modify 3 files (endpoint.ts, info.ts, index.ts), all additive** (Section 8)
+- [x] How to minimize diff size? → **Follow existing style, group changes, no refactoring (~65 lines total)** (Section 8)
+
+**Status:** Complete integration strategy. 3 files modified with ~65 lines added (all additive). Follows EDR pattern exactly. Reuses 15+ utilities and 6+ shared types. Clean, reviewable diff.
 
 ---
 
