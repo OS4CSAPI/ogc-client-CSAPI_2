@@ -162,23 +162,25 @@ endpoint.csapi() → returns CSAPIQueryBuilder
 
 ---
 
-### 4. URL Building Architecture
+### 4. ✅ URL Building Architecture (COMPLETED)
 
 **Core functionality: How should URL building be structured?**
 
-**Questions to answer:**
-- [ ] Should there be a base URL builder class?
-- [ ] How are query parameters assembled?
-- [ ] How is URL encoding handled?
-- [ ] How are optional vs required parameters modeled?
-- [ ] How are array parameters handled?
-- [ ] How is the base path constructed?
-- [ ] How are resource paths structured?
-- [ ] Should there be URL builder utilities?
-- [ ] How to avoid duplication across 9 resource types?
-- [ ] What's the pattern for sub-resource URLs (e.g., /systems/{id}/datastreams)?
+**Analysis:** [docs/research/upstream/url-building-analysis.md](../upstream/url-building-analysis.md)
 
-**Action:** Identify reusable URL building patterns
+**Answers:**
+- [x] Should there be a base URL builder class? → **No - native URL API + link relations are sufficient** (Analysis Section 2)
+- [x] How are query parameters assembled? → **Via URL.searchParams.set() for each parameter** (Section 3)
+- [x] How is URL encoding handled? → **Automatic via URL API - no manual encoding needed** (Section 4)
+- [x] How are optional vs required parameters modeled? → **Required as direct params, optional in destructured options object** (Section 5)
+- [x] How are array parameters handled? → **Join with comma: array.join(',')** (Section 6)
+- [x] How is the base path constructed? → **From collection links via getLinkUrl(), never manual construction** (Section 7)
+- [x] How are resource paths structured? → **Hypermedia structure, paths from links** (Section 8)
+- [x] Should there be URL builder utilities? → **Reuse existing link-utils, add helpers only for common param handling** (Section 9)
+- [x] How to avoid duplication across 9 resource types? → **Accept some duplication (EDR has ~70%), extract helpers for >80% duplication** (Section 10)
+- [x] What's the pattern for sub-resource URLs? → **Path concatenation: {parentUrl}/{parentId}/{childResource}** (Section 11)
+
+**Status:** Comprehensive 1323-line URL building analysis completed. CSAPI strategy with helper functions documented in Section 12.
 
 ---
 
