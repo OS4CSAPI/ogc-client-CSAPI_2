@@ -334,18 +334,50 @@
 - docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
 
 **Questions to answer:**
-- [ ] What are ALL standard OGC API query parameters? (bbox, datetime, limit, offset, f)
-- [ ] What are CSAPI-specific query parameters?
-- [ ] What parameter types exist? (spatial, temporal, pagination, format, filtering)
-- [ ] What encoding rules apply? (bbox arrays, datetime intervals, URL encoding)
-- [ ] What parameter combinations are valid?
-- [ ] What parameter validation is required?
-- [ ] What are parameter defaults?
-- [ ] What parameters are required vs optional?
-- [ ] Are there parameter constraints? (min/max values, format restrictions)
-- [ ] How do parameters interact with resource types?
+- [x] What are ALL standard OGC API query parameters? (bbox, datetime, limit, offset, f)
+  - **Standard:** bbox, datetime, limit, offset, f (from OGC API - Common/Features)
+- [x] What are CSAPI-specific query parameters?
+  - **Part 1:** id, uid, q, {propertyName}, recursive, parent, procedure, foi, observedProperty, controlledProperty, system, baseProperty, objectType
+  - **Part 2:** phenomenonTime, resultTime, executionTime, issueTime, obsFormat, cmdFormat, cursor
+- [x] What parameter types exist? (spatial, temporal, pagination, format, filtering)
+  - **Spatial:** bbox
+  - **Temporal:** datetime, phenomenonTime, resultTime, executionTime, issueTime
+  - **Pagination:** limit, offset, cursor
+  - **Format:** f, format, obsFormat, cmdFormat
+  - **Identifier:** id, uid
+  - **Search:** q, {propertyName}
+  - **Hierarchical:** recursive
+  - **Relationship:** parent, procedure, foi, observedProperty, controlledProperty, system, baseProperty, objectType
+- [x] What encoding rules apply? (bbox arrays, datetime intervals, URL encoding)
+  - **bbox:** Comma-separated coords (minLon,minLat,maxLon,maxLat[,minElev,maxElev])
+  - **datetime:** ISO 8601 instant or interval (start/end, start/.., ../end)
+  - **URL encoding:** Space=%20, Plus=%2B (MUST for media types), Colon=%3A (UIDs), Comma=NOT encoded (delimiter)
+  - **Lists:** Comma-separated values (id=a,b,c)
+- [x] What parameter combinations are valid?
+  - **Logical AND:** Between different parameters
+  - **Logical OR:** Within single parameter (comma-separated)
+  - **recursive + filters:** Filters apply to all processed resources
+- [x] What parameter validation is required?
+  - **Client-side:** Type, range, format, logical validation before sending
+  - **Server-side:** 400 Bad Request for invalid parameters, 406 Not Acceptable for unsupported formats
+- [x] What are parameter defaults?
+  - **limit:** Implementation-dependent (typically 10-100)
+  - **offset:** 0
+  - **recursive:** false
+  - **datetime:** No default (optional)
+- [x] What parameters are required vs optional?
+  - **All query parameters optional** (no required query parameters)
+  - Constraints: limit [1, 10000], offset [0, ∞)
+- [x] Are there parameter constraints? (min/max values, format restrictions)
+  - **limit:** [1, 10000] (Part 2), implementation-dependent (Part 1)
+  - **offset:** [0, ∞)
+  - **bbox:** Latitude [-90, 90], Longitude [-180, 180]
+  - **datetime:** Valid ISO 8601, start ≤ end
+- [x] How do parameters interact with resource types?
+  - **Resource-specific:** observedProperty/controlledProperty apply differently to Systems, Deployments, Procedures, SamplingFeatures
+  - **Part 2 temporal:** phenomenonTime/resultTime for DataStreams/Observations, executionTime/issueTime for ControlStreams
 
-**Deliverable:** Comprehensive query parameter catalog (~500-800 lines)
+**Deliverable:** Comprehensive query parameter catalog (~1,300 lines) ✅ **COMPLETE** - See [csapi-query-parameters.md](csapi-query-parameters.md)
 
 ---
 
