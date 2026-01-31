@@ -1,0 +1,160 @@
+name: General Task or Feature
+description: Standard issue template for development tasks, features, and enhancements
+title: "[Task]: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Instructions
+        
+        Complete all required sections. Use clear, specific language.
+        
+        **Good issues:**
+        - State the problem or goal explicitly
+        - Define scope boundaries (what's in, what's out)
+        - Reference relevant standards, specs, or upstream context
+        - Include acceptance criteria (how do we know when it's done?)
+        - Distinguish facts from assumptions
+        
+        **This template supports the AI Operational Constraints defined in `/docs/governance/`.**
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What is the objective of this issue? State in 1-2 clear sentences.
+      placeholder: "Example: Implement STAC API search endpoint with filtering support per STAC spec 1.0.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context & Background
+      description: |
+        Why is this work needed? What's the broader context?
+        Include:
+        - Problem being solved
+        - Related issues or dependencies
+        - Links to relevant discussions, specs, or documentation
+      placeholder: |
+        The current implementation only supports basic queries. STAC clients expect full filter support as defined in the STAC API spec.
+        
+        Related: #123
+        Spec: https://github.com/radiantearth/stac-api-spec/tree/main/fragments/filter
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope-in
+    attributes:
+      label: "In Scope"
+      description: What WILL be included in this work? Be specific about deliverables.
+      placeholder: |
+        - Implement CQL2-JSON filter parsing
+        - Add filter parameter to search endpoint
+        - Update tests for new functionality
+        - Document filter syntax in API docs
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope-out
+    attributes:
+      label: "Out of Scope"
+      description: What will NOT be included? This prevents scope creep.
+      placeholder: |
+        - CQL2-TEXT format (defer to future issue)
+        - Performance optimization (address separately)
+        - UI changes (separate concern)
+    validations:
+      required: true
+
+  - type: textarea
+    id: standards
+    attributes:
+      label: Standards & Specifications
+      description: |
+        List applicable standards, specs, or authoritative references.
+        Include specific versions and relevant sections when known.
+      placeholder: |
+        - STAC API Spec v1.0.0, Filter Extension
+        - OGC CQL2 (Common Query Language)
+        - Upstream: camptocamp/ogc-client patterns (if applicable)
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: |
+        How do we know this issue is complete?
+        Use testable, verifiable criteria.
+      placeholder: |
+        - [ ] Filter endpoint accepts CQL2-JSON queries
+        - [ ] Tests cover valid and invalid filter cases
+        - [ ] API documentation includes filter examples
+        - [ ] No regressions in existing search functionality
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-notes
+    attributes:
+      label: Technical Notes & Constraints
+      description: |
+        Any technical considerations, constraints, or implementation guidance?
+        Include:
+        - Architectural constraints
+        - Upstream alignment requirements
+        - Performance considerations
+        - Known limitations or trade-offs
+      placeholder: |
+        - Must preserve existing API structure (minimal diff)
+        - Follow upstream naming patterns from camptocamp/ogc-client
+        - Filter parsing should be isolated to allow future format additions
+    validations:
+      required: false
+
+  - type: textarea
+    id: assumptions
+    attributes:
+      label: Assumptions Requiring Confirmation
+      description: |
+        List any assumptions that need validation before work begins.
+        State "None" if no assumptions exist.
+      placeholder: |
+        - Assume CQL2-JSON is sufficient for MVP (confirm with users)
+        - Assume existing search endpoint can be extended without breaking changes
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ## AI Assistant Entry Procedure
+        
+        If AI assistance (Claude Sonnet 4.5) is involved in this issue, the following acknowledgment is **required** at the start of work:
+        
+        ```
+        I have reviewed the AI Operational Constraints.
+        Issue goal: [restate in one sentence]
+        Assumptions requiring confirmation: [list or "none"]
+        ```
+        
+        See `/docs/governance/AI_OPERATIONAL_CONSTRAINTS.md` for full details.
+
+  - type: checkboxes
+    id: governance
+    attributes:
+      label: Governance Acknowledgment
+      description: For work involving AI assistance
+      options:
+        - label: I have reviewed `/docs/governance/AI_OPERATIONAL_CONSTRAINTS.md`
+          required: false
+        - label: This issue follows the precedence hierarchy (standards → governance → issue → code → conversation)
+          required: false
