@@ -125,6 +125,7 @@ The ogc-client library already supports multiple OGC API standards (WFS, STAC, E
 **Previous Work:**
 - Exploratory repo: [OS4CSAPI/ogc-client-homework](https://github.com/OS4CSAPI/ogc-client-homework) (257 commits - learning phase)
 - Second iteration: [OS4CSAPI/ogc-client-CSAPI](https://github.com/OS4CSAPI/ogc-client-CSAPI) (refined implementation - Phases 1-5 ~90% complete)
+- Meta/planning repo: [OS4CSAPI/os4csapi-meta](https://github.com/OS4CSAPI/os4csapi-meta) (issue tracking and planning for second iteration)
 - Cleaned repo: [OS4CSAPI/ogc-client](https://github.com/OS4CSAPI/ogc-client) (14 commits - rebased)
 - Draft PR: [camptocamp/ogc-client#131](https://github.com/camptocamp/ogc-client/pull/131)
 
