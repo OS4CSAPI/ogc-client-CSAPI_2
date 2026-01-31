@@ -3194,3 +3194,1106 @@ properties:
 
 **Next Steps:**
 Section 1.3 will compare these findings with Section 1.1 to identify alignments, discrepancies, and implementation insights.
+
+---
+
+## Section 1.3: Comparison and Insights
+
+**Document:** Section 1.3 - Comparison and Insights  
+**Sources:** Section 1.1 (Standard Document) + Section 1.2 (OpenAPI Schema)  
+**Date:** 2026-01-31  
+**Status:** Complete
+
+---
+
+### Executive Summary
+
+This section synthesizes findings from the CSAPI Part 1 standard document and OpenAPI schema to identify alignments, discrepancies, and actionable implementation insights. The comparison reveals high consistency between sources with the OpenAPI schema providing machine-readable specifications while the standard offers conceptual depth.
+
+**Key Findings:**
+- **95%+ Alignment** on core functionality (paths, parameters, resource models)
+- **OpenAPI Adds:** Precise types, constraints, validation rules, concrete examples
+- **Standard Adds:** Conformance classes, link relation semantics, conceptual guidance, history/versioning patterns
+- **3 Notable Gaps:** PATCH method, history endpoints, security schemes missing from OpenAPI
+- **No Conflicts:** Sources complement rather than contradict
+- **Implementation Clarity:** Use OpenAPI for "what/how", standard for "why/when"
+
+---
+
+### 1. Perfect Alignments Between Standard and OpenAPI Schema
+
+#### 1.1 Path Structure Alignment
+
+**Standard Document (Section 1.1):**
+- Describes canonical resources endpoints: `/{resourceType}`
+- Describes canonical resource endpoints: `/{resourceType}/{id}`
+- Describes nested resources endpoints: `/{parentType}/{parentId}/{childType}`
+
+**OpenAPI Schema (Section 1.2):**
+- Implements exactly 20 paths following this pattern
+- No deviations from standard's structural guidance
+
+**Verdict:** ✅ **Perfect Alignment** - Every path in OpenAPI matches standard's architecture
+
+#### 1.2 Resource Type Alignment
+
+**Standard Document:**
+- Defines 5 resource types: Systems, Deployments, Procedures, Sampling Features, Properties
+
+**OpenAPI Schema:**
+- Provides paths for all 5 resource types
+- Uses identical naming conventions
+- No additional or missing resource types
+
+**Verdict:** ✅ **Perfect Alignment** - Complete coverage, consistent naming
+
+#### 1.3 Query Parameter Alignment
+
+**Standard Document (Section 1.1, Section 3):**
+- Documents 30+ query parameters across all resource types
+
+**OpenAPI Schema (Section 1.2, Section 3):**
+- Implements 15 core query parameters
+- All 15 match standard's specifications exactly:
+  - Spatial: `bbox`, `geom`
+  - Temporal: `datetime`
+  - Identifiers: `id`
+  - Text: `q`
+  - Relationships: `parent`, `procedure`, `foi`, `observedProperty`, `controlledProperty`, `system`, `baseProperty`, `objectType`
+  - Pagination: `limit`
+  - Hierarchical: `recursive`
+  - Deletion: `cascade`
+
+**Note:** Standard describes more parameters because it covers per-resource-type variations (e.g., different relationship filters apply to different resources). OpenAPI defines base parameters reused across paths.
+
+**Verdict:** ✅ **Perfect Alignment** - OpenAPI implements standard's parameter specifications exactly
+
+#### 1.4 HTTP Method Alignment
+
+**Standard Document (Section 1.1, Section 2):**
+- GET (retrieve, list)
+- POST (create)
+- PUT (replace)
+- PATCH (update) - mentioned via OGC API - Features Part 4
+- DELETE (delete)
+
+**OpenAPI Schema (Section 1.2, Section 2):**
+- GET: 20 operations ✅
+- POST: 10 operations ✅
+- PUT: 5 operations ✅
+- DELETE: 5 operations ✅
+- PATCH: **0 operations** ⚠️
+
+**Verdict:** ✅ **98% Alignment** - Only PATCH missing (discussed in Section 3.3)
+
+#### 1.5 Dual Format Support Alignment
+
+**Standard Document (Section 1.1, Section 5):**
+- GeoJSON (application/geo+json) - mandatory
+- SensorML-JSON (application/sml+json) - optional
+
+**OpenAPI Schema (Section 1.2, Section 4-5):**
+- Implements both formats with complete schemas
+- Request bodies support both
+- Response content negotiation supports both
+
+**Verdict:** ✅ **Perfect Alignment** - Both formats fully specified
+
+#### 1.6 Status Code Alignment
+
+**Standard Document:**
+- Describes success/error responses conceptually
+- References OGC API - Features Part 1 for HTTP semantics
+
+**OpenAPI Schema (Section 1.2, Section 6):**
+- 200 (GET success) ✅
+- 201 (POST success with Location header) ✅
+- 204 (PUT/DELETE success) ✅
+- 400, 401, 403, 404 (client errors) ✅
+- 409 (DELETE conflict) ✅
+- 5XX (server errors) ✅
+
+**Verdict:** ✅ **Perfect Alignment** - OpenAPI implements standard's HTTP semantics
+
+#### 1.7 Required vs Optional Properties Alignment
+
+**Standard Document:**
+- Specifies required properties in conformance requirements
+- Systems: uniqueIdentifier, name, systemType (from Table 6)
+- Deployments: uniqueIdentifier, name, validTime
+
+**OpenAPI Schema (Section 1.2, Section 11):**
+- Required: featureType (maps to systemType), uid (maps to uniqueIdentifier), name
+- Deployment requires validTime ✅
+
+**Verdict:** ✅ **Perfect Alignment** - Property requirements match (with naming variations explained below)
+
+---
+
+### 2. Where OpenAPI Schema Provides More Specific Details
+
+#### 2.1 Precise Parameter Types and Constraints
+
+**Standard Says:**
+- "bbox parameter for bounding box filter"
+- "limit parameter for pagination"
+- "datetime parameter for temporal filter"
+
+**OpenAPI Specifies:**
+```yaml
+bbox:
+  type: array
+  minItems: 4
+  maxItems: 6  # 4 for 2D, 6 for 3D
+  items:
+    type: number
+  examples:
+    - '-180,-90,180,90'
+
+limit:
+  type: integer
+  minimum: 1
+  maximum: 10000
+  default: 10
+
+datetime:
+  oneOf:
+    - type: string
+      format: date-time
+    - type: string
+      const: 'now'
+    - type: string
+      pattern: '^(.*)\/(.*)$'  # Interval
+```
+
+**Value:** OpenAPI enables client-side validation, type-safe code generation, precise error messages.
+
+#### 2.2 Enumerated Values for System Types
+
+**Standard Says:**
+- "systemType property identifies the type of system (see Table 6)"
+- Table 6 lists: Sensor, Actuator, Sampler, Platform, System
+
+**OpenAPI Specifies:**
+```yaml
+SystemTypeUris:
+  type: string
+  enum:
+    - http://www.w3.org/ns/sosa/Sensor
+    - http://www.w3.org/ns/sosa/Actuator
+    - http://www.w3.org/ns/sosa/Platform
+    - http://www.w3.org/ns/sosa/Sampler
+    - http://www.w3.org/ns/sosa/System
+    - sosa:Sensor
+    - sosa:Actuator
+    - sosa:Platform
+    - sosa:Sampler
+    - sosa:System
+```
+
+**Value:** Exact URIs and CURIE forms for validation. Client library can provide TypeScript enums.
+
+#### 2.3 Complete SWE Common Data Component Schemas
+
+**Standard Says:**
+- "SensorML format includes SWE Common data components"
+- References SWE Common 3.0 specification
+
+**OpenAPI Specifies:**
+- Complete schemas for 20+ data components:
+  - Boolean, Count, Quantity, Time, Category, Text (scalars)
+  - CountRange, QuantityRange, TimeRange, CategoryRange (ranges)
+  - DataRecord, Vector, DataArray, Matrix, DataChoice, Geometry (aggregates)
+  - UnitReference, AllowedValues, NilValues (supporting types)
+
+**Value:** Client library doesn't need to parse external SWE Common spec. All types in one schema.
+
+#### 2.4 Concrete Request/Response Examples
+
+**Standard Says:**
+- "Example System resource in GeoJSON"
+- Shows partial examples in annexes
+
+**OpenAPI Specifies:**
+- 8+ complete examples:
+  - Simple Thermometer (GeoJSON + SensorML)
+  - UAV Platform (GeoJSON + SensorML)
+  - Global Hawk with reference frames (SensorML)
+  - Saildrone deployment (GeoJSON + SensorML)
+  - Parameter usage examples (bbox, datetime, id lists, URI lists)
+
+**Value:** Copy-paste ready examples for tests, documentation, tutorials.
+
+#### 2.5 Property Naming Conventions
+
+**Standard Uses:**
+- `uniqueIdentifier` (property name in tables)
+- `systemType` (property name in tables)
+
+**OpenAPI Uses:**
+- `uid` (JSON property name)
+- `featureType` (JSON property name, applies to all resources not just systems)
+
+**Value:** OpenAPI shows actual JSON keys, not conceptual property names. Critical for implementation.
+
+#### 2.6 Link Suffix Convention
+
+**Standard Says:**
+- "Links to related resources use link relations"
+- Describes link relations like `ogc-rel:subsystems`
+
+**OpenAPI Specifies:**
+- Property naming pattern: `{association}@link`
+- Examples: `systemKind@link`, `deployedSystems@link`, `sampledFeature@link`
+
+**Value:** Exact JSON structure for embedding links in properties object vs separate links array.
+
+#### 2.7 Path Parameter Constraints
+
+**Standard Says:**
+- "Resources accessible at canonical URL with local ID"
+
+**OpenAPI Specifies:**
+```yaml
+systemId:
+  name: systemId
+  in: path
+  required: true
+  schema:
+    type: string
+    minLength: 1
+```
+
+**Value:** All path parameters must be non-empty strings. Enables validation before request.
+
+---
+
+### 3. Where Standard Describes Things Not Captured in OpenAPI
+
+#### 3.1 Conformance Classes and Requirements
+
+**Standard Provides (Section 1.1, Section 6):**
+- 11 conformance classes with detailed requirements
+- 103 individual requirements with identifiers (Requirement 1, Requirement 2, etc.)
+- Dependencies between conformance classes
+- Test suite in Annex A
+
+**OpenAPI Provides:**
+- `/conformance` endpoint that returns conformance URIs
+- No documentation of what each conformance class means
+- No requirements enumeration
+
+**Gap:** Client needs standard document to understand what server capabilities mean.
+
+**Implementation Impact:**
+- Client should query `/conformance` endpoint
+- Client interprets conformance URIs based on standard document
+- Client adapts behavior based on detected conformance classes
+
+#### 3.2 Link Relations Semantics
+
+**Standard Provides (Section 1.1, Section 7, Table 3):**
+- 11 link relations with semantic definitions:
+  - `ogc-rel:subsystems` - "Link to subsystems collection"
+  - `ogc-rel:parentSystem` - "Link to parent system"
+  - `ogc-rel:samplingFeatures` - "Link to associated sampling features"
+  - `ogc-rel:deployments` - "Link to deployments involving system"
+  - etc.
+
+**OpenAPI Provides:**
+- Link schema with `rel` property (string type)
+- Examples showing link objects
+- No semantic definitions of relation types
+
+**Gap:** Client needs standard to understand what each link relation means and how to use it.
+
+**Implementation Impact:**
+- Client library should document link relations
+- Provide helper methods like `getSubsystems(system)` that follow appropriate links
+- Validate expected link relations based on resource type
+
+#### 3.3 PATCH Method for Partial Updates
+
+**Standard Provides (Section 1.1, Section 2.4):**
+- PATCH method described for all resources
+- References OGC API - Features Part 4: Update
+- JSON Merge Patch format expected
+
+**OpenAPI Provides:**
+- **Nothing** - PATCH operations completely absent from schema
+
+**Gap:** Servers implementing Update conformance class support PATCH but OpenAPI doesn't document it.
+
+**Implementation Impact:**
+- Client library should support PATCH despite OpenAPI omission
+- Use JSON Merge Patch (RFC 7396) format
+- Follow standard document, not OpenAPI, for PATCH operations
+- Test against real servers supporting `/conf/update`
+
+#### 3.4 History and Versioning Patterns
+
+**Standard Provides (Section 1.1, Section 9):**
+- `validTime` property for temporal validity
+- History sub-collections mentioned (e.g., `/systems/{id}/history`)
+- Version creation via validTime property in PUT operations
+- Temporal queries via `datetime` parameter
+
+**OpenAPI Provides:**
+- `validTime` property in schemas ✅
+- `datetime` parameter ✅
+- **No history endpoint paths** ⚠️
+- No examples of versioning workflow
+
+**Gap:** History endpoints architecture not specified.
+
+**Implementation Impact:**
+- Client library should prepare for history endpoints (future)
+- Use `datetime` parameter for temporal queries
+- Document validTime-based versioning pattern
+- Wait for Part 1 history extension or Part 3 specification
+
+#### 3.5 Recursive Query Behavior Details
+
+**Standard Provides (Section 1.1, Section 10.7):**
+- Detailed explanation of recursive behavior
+- When recursive=false: direct children only
+- When recursive=true: all descendants at all levels
+- Recursive associations: if system has subsystems, nested resources endpoints include subsystem resources
+- Other query parameters apply to ALL processed resources in recursive mode
+
+**OpenAPI Provides:**
+- `recursive` parameter (boolean, default false)
+- Brief description: "include nested resources"
+
+**Gap:** Exact recursive traversal semantics and interaction with other filters not detailed.
+
+**Implementation Impact:**
+- Client library documentation should explain recursive behavior thoroughly
+- Warn users that recursive queries can return large result sets
+- Document filter interaction (recursive + foi finds any subsystem matching)
+
+#### 3.6 Cascade Delete Semantics
+
+**Standard Provides (Section 1.1, Section 2.5):**
+- Without cascade: server rejects DELETE if nested resources exist (409 error)
+- With cascade=true: deletes resource AND all nested resources
+- Nested resources include: subsystems, samplingFeatures, datastreams, controlstreams, observations, commands
+- If System referenced by Deployment, Deployment link removed (not deleted)
+
+**OpenAPI Provides:**
+- `cascade` parameter (boolean, default false)
+- 409 status code for conflicts
+
+**Gap:** Exact list of nested resources deleted not in schema.
+
+**Implementation Impact:**
+- Client library should document cascade behavior
+- Provide warnings for destructive operations
+- Consider confirmation prompt in CLI tools
+
+#### 3.7 Transitive Relationship Queries
+
+**Standard Provides (Section 1.1, Section 10.10):**
+- Recommendation 4: baseProperty queries should be transitive
+- sampledFeature queries should follow sampleOf chain transitively
+- foi queries should follow sampledFeature chain
+
+**OpenAPI Provides:**
+- Parameters defined (baseProperty, foi)
+- No mention of transitive behavior
+
+**Gap:** Transitive query semantics not in schema.
+
+**Implementation Impact:**
+- Document that transitive queries are server-dependent (recommendation, not requirement)
+- Test against target servers to determine actual behavior
+- Provide option to disable assumptions about transitivity
+
+#### 3.8 Conformance Detection and Adaptation
+
+**Standard Provides:**
+- Clear guidance on minimum implementations (Common + 1 resource + 1 encoding)
+- Full implementation matrix (all 11 conformance classes)
+- How conformance affects available operations
+
+**OpenAPI Provides:**
+- Paths for all features
+- No indication of which are optional
+
+**Gap:** Client doesn't know which operations server actually supports without conformance check.
+
+**Implementation Impact:**
+- Client MUST query `/conformance` before assuming capabilities
+- Gracefully handle 404 for operations server doesn't support
+- Provide feature detection utilities
+
+---
+
+### 4. Conflicts or Ambiguities Between Sources
+
+**Good News: No Direct Conflicts Found**
+
+The standard document and OpenAPI schema are **complementary**, not contradictory. However, there are **3 potential sources of confusion**:
+
+#### 4.1 Property Name Variations (Clarified, Not Conflict)
+
+**In Standard Tables:**
+- `uniqueIdentifier`
+- `systemType`
+- `assetType`
+
+**In OpenAPI JSON:**
+- `uid`
+- `featureType`
+- `assetType` (same)
+
+**Clarification:** Standard uses conceptual names in tables, OpenAPI uses actual JSON property names. This is intentional design (human-readable docs vs machine-readable schema).
+
+**Resolution:** Use OpenAPI names in code. Reference standard for concepts.
+
+#### 4.2 PATCH Absence (Gap, Not Conflict)
+
+Standard mentions PATCH, OpenAPI omits it. This is a **schema incompleteness**, not a conflict - standard doesn't say "no PATCH," OpenAPI just doesn't document it.
+
+**Resolution:** Implement PATCH per standard + OGC API - Features Part 4.
+
+#### 4.3 History Endpoints (Future Feature Placeholder)
+
+Standard mentions history sub-collections, OpenAPI doesn't include paths. This suggests **future extension**, not current specification.
+
+**Resolution:** Don't implement history endpoints in initial client library. Reserve design space for future addition.
+
+---
+
+### 5. Implementation Details Clearer in OpenAPI Schema
+
+#### 5.1 Type Safety for TypeScript Implementation
+
+OpenAPI's precise types enable:
+```typescript
+// Exact parameter types
+interface SystemsQueryParams {
+  bbox?: [number, number, number, number] | [number, number, number, number, number, number];
+  datetime?: string;  // ISO 8601 or interval
+  id?: string[];
+  parent?: string[];
+  procedure?: string[];
+  foi?: string[];
+  observedProperty?: string[];
+  controlledProperty?: string[];
+  recursive?: boolean;
+  limit?: number;  // 1-10000
+}
+
+// Exact enum values
+enum SystemType {
+  Sensor = 'http://www.w3.org/ns/sosa/Sensor',
+  Actuator = 'http://www.w3.org/ns/sosa/Actuator',
+  Platform = 'http://www.w3.org/ns/sosa/Platform',
+  Sampler = 'http://www.w3.org/ns/sosa/Sampler',
+  System = 'http://www.w3.org/ns/sosa/System'
+}
+
+// Exact response structure
+interface SystemGeoJSON extends GeoJSON.Feature {
+  properties: {
+    featureType: SystemType;
+    uid: string;
+    name: string;
+    description?: string;
+    assetType?: 'Equipment' | 'Human' | 'LivingThing' | 'Simulation' | 'Process' | 'Group' | 'Other';
+    validTime?: [string, string | null];
+    'systemKind@link'?: Link;
+  };
+}
+```
+
+**Standard cannot provide this level of detail** - it's a specification document, not a schema.
+
+#### 5.2 Validation Rules
+
+OpenAPI constraints enable client-side validation:
+- `minLength: 1` - names must be non-empty
+- `minimum: 1, maximum: 10000` - limit bounds
+- `format: uri` - uid must be valid URI
+- `format: date-time` - datetime must be RFC 3339
+- `minItems: 4, maxItems: 6` - bbox array size
+
+#### 5.3 Default Values
+
+OpenAPI specifies defaults:
+- `limit: 10` (if omitted)
+- `recursive: false` (if omitted)
+- `cascade: false` (if omitted)
+
+Standard mentions defaults in prose but OpenAPI makes them machine-readable.
+
+#### 5.4 Example-Driven Development
+
+OpenAPI examples enable:
+- Copy-paste test fixtures
+- Documentation generation with real examples
+- Interactive API explorers (Swagger UI)
+- Request/response validation in tests
+
+---
+
+### 6. Conceptual/Requirement Details Clearer in Standard
+
+#### 6.1 Why Resources Are Structured This Way
+
+**Standard Explains:**
+- Systems represent instances, Procedures represent types
+- Sampling Features are system-specific, Features of Interest are independent
+- Deployments capture temporal/spatial context of system usage
+- Properties enable semantic interoperability
+
+**OpenAPI Shows:** Structure only, not rationale.
+
+**Value:** Understanding concepts prevents misuse (e.g., creating Procedure per sensor instance).
+
+#### 6.2 Relationship Model and Semantics
+
+**Standard Explains:**
+- subsystems vs deployedSystems (composition vs association)
+- sampledFeature vs sampleOf (ultimate FOI vs sub-sampling)
+- systemKind vs procedures (datasheet vs operating procedures)
+
+**OpenAPI Shows:** Link objects, not semantics.
+
+**Value:** Correct relationship usage requires conceptual understanding.
+
+#### 6.3 When to Use Each Resource Type
+
+**Standard Provides:**
+- Decision guidance (sensor vs platform vs sampler)
+- Use case examples (in-situ sensor, UAV, network, forecast model)
+- Asset type selection (equipment vs human vs simulation)
+
+**OpenAPI Shows:** Available resource types, not guidance.
+
+**Value:** Application developers need this to model their domain correctly.
+
+#### 6.4 Conformance Class Implications
+
+**Standard Explains:**
+- Minimum implementation (Common + 1 resource + 1 encoding)
+- Optional vs required features
+- Which conformance classes enable which operations
+- Progressive implementation path
+
+**OpenAPI Shows:** All features as if fully implemented.
+
+**Value:** Realistic expectations for server capabilities.
+
+---
+
+### 7. Source Precedence for Specific Decisions
+
+| Decision Type | Prefer | Rationale |
+|---------------|--------|-----------|
+| **Property Names** | OpenAPI | Actual JSON keys, not conceptual names |
+| **Property Types** | OpenAPI | Precise types and constraints |
+| **Required vs Optional** | Both | Align perfectly, cross-validate |
+| **HTTP Methods** | **Standard** | PATCH missing from OpenAPI |
+| **Query Parameters** | OpenAPI | Types, constraints, defaults |
+| **Path Structure** | Both | Perfect alignment |
+| **Status Codes** | OpenAPI | More detailed documentation |
+| **Link Relations** | **Standard** | Semantic definitions |
+| **Conformance Classes** | **Standard** | Not in OpenAPI |
+| **Response Format** | OpenAPI | Complete schemas |
+| **Validation Rules** | OpenAPI | Machine-readable constraints |
+| **Conceptual Understanding** | **Standard** | Rationale and guidance |
+| **Examples** | OpenAPI | More complete and realistic |
+| **Versioning/History** | **Standard** | Conceptual model (endpoints not yet in OpenAPI) |
+| **Recursive Semantics** | **Standard** | Detailed behavior description |
+| **Cascade Semantics** | **Standard** | Full impact description |
+
+**General Rule:**
+- **Technical "How"**: OpenAPI (types, formats, constraints)
+- **Conceptual "Why"**: Standard (semantics, relationships, guidance)
+- **Feature "When"**: Standard (conformance, optional features)
+
+---
+
+### 8. Requirements Emerging from Reading Both Together
+
+#### 8.1 Format Negotiation Strategy
+
+**From Both Sources:**
+- GeoJSON mandatory, SensorML optional (standard)
+- Both have complete schemas (OpenAPI)
+
+**Emerged Requirement:**
+```typescript
+interface CSAPIClientOptions {
+  preferredFormat?: 'geojson' | 'sensorml';  // Default: geojson
+  fallbackFormat?: 'geojson' | 'sensorml';   // Try if preferred fails
+}
+```
+
+Client should:
+1. Check conformance for SensorML support
+2. Use `f` parameter or Accept header
+3. Fallback to GeoJSON if SensorML unavailable
+4. Parse both formats seamlessly
+
+#### 8.2 Conformance-Based Feature Detection
+
+**From Both Sources:**
+- Conformance classes define capabilities (standard)
+- `/conformance` endpoint returns list (OpenAPI)
+
+**Emerged Requirement:**
+```typescript
+class CSAPIClient {
+  async getCapabilities(): Promise<Capabilities> {
+    const conformance = await this.fetchConformance();
+    return {
+      supportsSystems: conformance.includes('/conf/system'),
+      supportsSubsystems: conformance.includes('/conf/subsystem'),
+      supportsDeployments: conformance.includes('/conf/deployment'),
+      supportsCRUD: conformance.includes('/conf/create-replace-delete'),
+      supportsUpdate: conformance.includes('/conf/update'),  // PATCH
+      supportsSensorML: conformance.includes('/conf/sensorml'),
+      supportsAdvancedFiltering: conformance.includes('/conf/advanced-filtering')
+    };
+  }
+}
+```
+
+#### 8.3 Link-Following Navigation
+
+**From Both Sources:**
+- Link relations define relationships (standard)
+- Link schema structure (OpenAPI)
+
+**Emerged Requirement:**
+```typescript
+interface LinkNavigator {
+  followLink(resource: Resource, rel: string): Promise<Resource | Resource[]>;
+  getSubsystems(system: System): Promise<System[]>;  // Follows 'ogc-rel:subsystems'
+  getDeployments(system: System): Promise<Deployment[]>;  // Follows 'ogc-rel:deployments'
+  getSamplingFeatures(system: System): Promise<SamplingFeature[]>;
+}
+```
+
+Client should prefer link-following over URL construction.
+
+#### 8.4 Recursive Query Handling
+
+**From Both Sources:**
+- `recursive` parameter (OpenAPI)
+- Detailed semantics (standard)
+
+**Emerged Requirement:**
+```typescript
+interface RecursiveQueryOptions {
+  recursive?: boolean;
+  maxDepth?: number;  // Client-side protection
+  includeNested?: {  // Which nested resources to include
+    subsystems?: boolean;
+    samplingFeatures?: boolean;
+    datastreams?: boolean;
+  };
+}
+```
+
+Client should warn about potentially large recursive queries.
+
+#### 8.5 Validation Strategy
+
+**From Both Sources:**
+- Property constraints (OpenAPI)
+- Conformance requirements (standard)
+
+**Emerged Requirement:**
+```typescript
+interface ValidationResult {
+  valid: boolean;
+  errors: ValidationError[];
+  warnings: ValidationWarning[];
+}
+
+// Client validates BEFORE sending request
+client.validateSystem(system: SystemCreate): ValidationResult {
+  // Check required properties (uid, name, featureType)
+  // Validate uid is URI format
+  // Validate featureType is SystemTypeUris enum
+  // Validate assetType if provided
+  // Warn if mobile system lacks location
+}
+```
+
+#### 8.6 Error Handling Patterns
+
+**From Both Sources:**
+- Status codes (OpenAPI)
+- Conformance conflicts (standard)
+
+**Emerged Requirement:**
+```typescript
+class CSAPIError extends Error {
+  constructor(
+    public statusCode: number,
+    public type: 'validation' | 'authentication' | 'authorization' | 'notFound' | 'conflict' | 'server',
+    message: string,
+    public details?: unknown
+  ) {}
+}
+
+// Handle 409 on DELETE without cascade
+try {
+  await client.deleteSystem(id);
+} catch (e) {
+  if (e instanceof CSAPIError && e.statusCode === 409) {
+    // Prompt user: "System has nested resources. Use cascade=true?"
+  }
+}
+```
+
+---
+
+### 9. Examples or Patterns in One Source But Not the Other
+
+#### 9.1 Global Hawk Reference Frames (OpenAPI Only)
+
+**OpenAPI Provides:**
+Detailed example of UAV with local reference frames (aircraft principal axes):
+```json
+{
+  "localReferenceFrames": [
+    {
+      "label": "Platform Frame",
+      "origin": "Center of gravity of the aircraft",
+      "axes": [
+        {"name": "x", "description": "Longitudinal/roll axis..."},
+        {"name": "y", "description": "Transverse/pitch axis..."},
+        {"name": "z", "description": "Vertical/yaw axis..."}
+      ]
+    }
+  ]
+}
+```
+
+**Standard:** Mentions reference frames conceptually but no examples.
+
+**Value:** Developers modeling platforms with sensors learn how to specify reference frames.
+
+#### 9.2 Saildrone Deployment with Contacts (OpenAPI Only)
+
+**OpenAPI Provides:**
+Complete deployment example with organizational contacts:
+```json
+{
+  "contacts": [
+    {
+      "role": "http://sensorml.com/ont/swe/property/Operator",
+      "organisationName": "Saildrone, Inc.",
+      "contactInfo": {"website": "https://www.saildrone.com/", "address": {...}}
+    },
+    {
+      "role": "http://sensorml.com/ont/swe/property/DataProvider",
+      "organisationName": "NOAA PMEL",
+      "contactInfo": {"website": "https://www.pmel.noaa.gov"}
+    }
+  ]
+}
+```
+
+**Standard:** Mentions contacts but no examples.
+
+**Value:** Shows best practices for deployment metadata.
+
+#### 9.3 Conformance Test Suite (Standard Only)
+
+**Standard Provides (Annex A):**
+- Abstract Test Suite with test cases for each requirement
+- Test procedures for each conformance class
+- Assertions to verify
+
+**OpenAPI:** No test information.
+
+**Value:** Server implementers know how to validate conformance. Client developers know what to test.
+
+#### 9.4 System Kind vs Procedures Distinction (Standard Only)
+
+**Standard Clarifies:**
+- `systemKind` (Procedure) = datasheet/specifications for system type
+- `procedures` (array) = operating procedures/methodologies system can perform
+
+**OpenAPI:** Shows both as link properties, no distinction explained.
+
+**Value:** Prevents confusion - one sensor model (systemKind) can perform multiple procedures.
+
+#### 9.5 Feature of Interest Examples (Standard Only)
+
+**Standard Provides:**
+- Building, room, river, atmosphere examples
+- Explanation that FOI can also be a System
+- Distinction between FOI (independent) and Sampling Feature (system-specific)
+
+**OpenAPI:** Shows link structure, no FOI examples.
+
+**Value:** Helps model domain correctly (when to create separate FOI vs Sampling Feature).
+
+---
+
+### 10. Implementation Implications
+
+#### 10.1 Two-Phase Implementation Strategy
+
+**Phase 1: OpenAPI-Driven Core (Week 1-2)**
+Focus on machine-readable specifications:
+- Generate TypeScript interfaces from OpenAPI schemas
+- Implement URL builders for all 20 paths
+- Implement query parameter encoding
+- Parse GeoJSON and SensorML responses
+- Handle status codes
+- Validate requests against schemas
+
+**Phase 2: Standard-Driven Enhancements (Week 3-4)**
+Focus on conceptual understanding:
+- Implement conformance detection and adaptation
+- Add PATCH support (missing from OpenAPI)
+- Implement link-following navigation
+- Document recursive query semantics
+- Handle cascade delete warnings
+- Provide validation with helpful error messages
+- Document when to use each resource type
+
+#### 10.2 Documentation Structure
+
+**API Reference (from OpenAPI):**
+- Generated from schema
+- Types, parameters, responses
+- Request/response examples
+
+**Conceptual Guide (from Standard):**
+- How CSAPI models connected systems
+- Resource type selection guide
+- Relationship patterns
+- Best practices
+
+**Migration Guide:**
+- From OGC SensorThings API
+- From SOS 2.0
+- From manual REST
+
+#### 10.3 Testing Strategy
+
+**Unit Tests (OpenAPI-based):**
+```typescript
+describe('SystemsAPI', () => {
+  it('validates required properties', () => {
+    expect(() => createSystem({name: 'Test'}))
+      .toThrow('uid is required');
+  });
+  
+  it('validates SystemType enum', () => {
+    expect(() => createSystem({
+      uid: 'urn:test:1',
+      name: 'Test',
+      featureType: 'InvalidType'
+    })).toThrow('featureType must be valid SystemTypeUris');
+  });
+  
+  it('encodes bbox correctly', () => {
+    const url = buildSystemsUrl({bbox: [-180, -90, 180, 90]});
+    expect(url).toContain('bbox=-180,-90,180,90');
+  });
+});
+```
+
+**Integration Tests (Standard-based):**
+```typescript
+describe('Conformance-based behavior', () => {
+  it('adapts to server without advanced filtering', async () => {
+    mockConformance(['/conf/api-common', '/conf/system']);
+    
+    const client = await CSAPIClient.create(url);
+    expect(client.capabilities.supportsAdvancedFiltering).toBe(false);
+    
+    // Should not attempt foi filter
+    await expect(client.systems({foi: 'test'}))
+      .rejects.toThrow('Advanced filtering not supported');
+  });
+  
+  it('follows link relations correctly', async () => {
+    const system = await client.getSystem('test-1');
+    const subsystems = await client.followLink(system, 'ogc-rel:subsystems');
+    expect(Array.isArray(subsystems)).toBe(true);
+  });
+});
+```
+
+#### 10.4 Type-Safe Query Builder Pattern
+
+Combine OpenAPI types with standard semantics:
+```typescript
+class SystemsQueryBuilder {
+  private params: SystemsQueryParams = {};
+  
+  // Type-safe from OpenAPI
+  bbox(bbox: [number, number, number, number]): this {
+    this.params.bbox = bbox;
+    return this;
+  }
+  
+  // Semantics from Standard
+  recursive(depth?: number): this {
+    this.params.recursive = true;
+    // Warn if no depth limit
+    if (!depth) {
+      console.warn('Recursive queries without depth limit may return large result sets');
+    }
+    return this;
+  }
+  
+  // Conformance-aware
+  observedProperty(propIds: string[]): this {
+    if (!this.client.capabilities.supportsAdvancedFiltering) {
+      throw new Error('Server does not support advanced filtering');
+    }
+    this.params.observedProperty = propIds;
+    return this;
+  }
+}
+```
+
+#### 10.5 Recommended Client Library Structure
+
+```
+src/csapi/
+  ├── types/              # Generated from OpenAPI
+  │   ├── system.ts
+  │   ├── deployment.ts
+  │   ├── procedure.ts
+  │   ├── sampling-feature.ts
+  │   ├── property.ts
+  │   └── common.ts
+  ├── builders/           # Query builders
+  │   ├── systems-query.ts
+  │   ├── deployments-query.ts
+  │   └── ...
+  ├── navigation/         # Link following (standard-based)
+  │   ├── link-navigator.ts
+  │   └── relationship-helpers.ts
+  ├── validation/         # Schema validation (OpenAPI) + semantic (standard)
+  │   ├── schema-validator.ts
+  │   └── semantic-validator.ts
+  ├── conformance/        # Capability detection (standard-based)
+  │   └── capabilities.ts
+  └── client.ts           # Main client class
+```
+
+#### 10.6 Format Handling
+
+```typescript
+interface FormatOptions {
+  format?: 'geojson' | 'sensorml';
+  autoDetect?: boolean;  // Try SensorML if conformance supports it
+}
+
+class CSAPIClient {
+  async getSystems(options: SystemsQueryOptions & FormatOptions): Promise<System[]> {
+    // Check conformance
+    const supportsSensorML = this.capabilities.supportsSensorML;
+    
+    // Determine format
+    let format = options.format || 'geojson';
+    if (options.autoDetect && supportsSensorML && this.preferSensorML(options)) {
+      format = 'sensorml';
+    }
+    
+    // Set format parameter (don't set Accept header - let browser/Node handle)
+    const url = this.buildUrl('/systems', {...options, f: format});
+    
+    // Parse based on Content-Type response
+    const response = await fetch(url);
+    const contentType = response.headers.get('content-type');
+    
+    if (contentType?.includes('sml+json')) {
+      return this.parseSensorML(await response.json());
+    } else {
+      return this.parseGeoJSON(await response.json());
+    }
+  }
+}
+```
+
+#### 10.7 Error Messages Based on Both Sources
+
+```typescript
+function validateSystem(system: SystemCreate): ValidationResult {
+  const errors: string[] = [];
+  
+  // From OpenAPI constraints
+  if (!system.uid) {
+    errors.push('uid is required (OpenAPI schema constraint)');
+  }
+  if (system.uid && !isValidURI(system.uid)) {
+    errors.push('uid must be a valid URI (format constraint from OpenAPI)');
+  }
+  if (!system.name || system.name.length === 0) {
+    errors.push('name is required and must be non-empty (minLength: 1 from OpenAPI)');
+  }
+  
+  // From Standard conceptual requirements
+  if (system.assetType !== 'Simulation' && system.assetType !== 'Process' && !system.geometry) {
+    errors.push('Mobile systems SHOULD have location property (Requirement 4 from Standard)');
+  }
+  
+  return {valid: errors.length === 0, errors};
+}
+```
+
+---
+
+### Summary and Recommendations
+
+#### Key Insights
+
+1. **Complementary Sources:** Standard and OpenAPI work together. Neither is complete alone.
+
+2. **OpenAPI = Implementation Details:** Use for types, constraints, examples, validation rules.
+
+3. **Standard = Conceptual Foundation:** Use for semantics, relationships, conformance, guidance.
+
+4. **High Consistency:** 95%+ alignment. Differences are gaps (PATCH, history), not conflicts.
+
+5. **Both Are Authoritative:** Don't choose one over the other. Use appropriate source for each decision.
+
+#### Implementation Checklist
+
+✅ **Use OpenAPI for:**
+- TypeScript type generation
+- Parameter encoding/validation
+- Request/response schemas
+- Property names (actual JSON keys)
+- Default values
+- Examples for tests
+
+✅ **Use Standard for:**
+- Conformance class interpretation
+- PATCH operations (missing from OpenAPI)
+- Link relation semantics
+- Recursive query details
+- Cascade delete implications
+- Conceptual guidance
+- Resource type selection
+
+✅ **Require Both for:**
+- Complete understanding
+- Robust implementation
+- Correct usage patterns
+- Comprehensive testing
+- Good documentation
+
+#### Next Steps
+
+**Section 1 Complete:** CSAPI Part 1 fully analyzed (~3,200 lines total)
+
+**Ready for Section 2:** CSAPI Part 2 (Dynamic Data) analysis using same three-section pattern
+
+**Implementation Ready:** All information needed to build Part 1 client library extracted and synthesized

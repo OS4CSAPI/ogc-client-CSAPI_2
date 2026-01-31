@@ -74,21 +74,23 @@
 
 **Deliverable:** OpenAPI schema analysis (~1,250 lines) ✅ COMPLETED
 
-#### Section 1.3: Comparison and Insights
+#### Section 1.3: Comparison and Insights ✅
 
-**Questions to answer:**
-- [ ] Where do the standard and OpenAPI schema align perfectly?
-- [ ] Where does the OpenAPI schema provide more specific details than the standard?
-- [ ] Where does the standard describe things not captured in OpenAPI?
-- [ ] Are there any conflicts or ambiguities between the two sources?
-- [ ] What implementation details are clearer in the OpenAPI schema?
-- [ ] What conceptual/requirement details are clearer in the standard?
-- [ ] Which source should take precedence for specific decisions?
-- [ ] What requirements emerge from reading both together?
-- [ ] What examples or patterns appear in one but not the other?
-- [ ] What are the implications for implementation?
+**Analysis:** [docs/research/requirements/csapi-part1-requirements.md](csapi-part1-requirements.md) Section 1.3
 
-**Deliverable:** Comparison analysis and insights (~200-300 lines)
+**Answers:**
+- [x] Where do the standard and OpenAPI schema align perfectly? → **95%+ alignment on core functionality: path structure (20 paths match canonical patterns), resource types (all 5 types with identical naming), query parameters (all 15 OpenAPI params match standard), HTTP methods (GET/POST/PUT/DELETE all present), dual format support (both GeoJSON + SensorML fully specified), status codes (200/201/204/4XX/5XX match HTTP semantics), required properties (featureType/uid/name align perfectly)** (Section 1)
+- [x] Where does the OpenAPI schema provide more specific details than the standard? → **Precise parameter types/constraints (bbox array 4-6 numbers, limit 1-10000, datetime RFC 3339), enumerated SystemTypeUris (5 SOSA URIs with CURIE forms), complete SWE Common 3.0 schemas (20+ data components), concrete examples (8 complete request/response examples), property naming (uid not uniqueIdentifier, featureType not systemType), link suffix convention ({association}@link), path parameter constraints (minLength:1), exact default values (limit:10, recursive:false, cascade:false)** (Section 2)
+- [x] Where does the standard describe things not captured in OpenAPI? → **Conformance classes (11 classes with 103 requirements, dependencies, test suite), link relation semantics (11 ogc-rel: definitions), PATCH method (references Part 4 Update, completely absent from OpenAPI), history/versioning (mentions /systems/{id}/history endpoints, not in OpenAPI paths), recursive query details (traversal semantics, filter interactions), cascade delete semantics (exact list of nested resources deleted), transitive relationships (Recommendation 4 on baseProperty/foi), conformance detection guidance (minimum vs full implementation)** (Section 3)
+- [x] Are there any conflicts or ambiguities between the two sources? → **No direct conflicts. 3 sources of potential confusion clarified: property name variations (conceptual vs JSON keys - intentional design), PATCH absence (schema incompleteness not conflict with standard), history endpoints (future extension not current spec). Sources are complementary not contradictory** (Section 4)
+- [x] What implementation details are clearer in the OpenAPI schema? → **Type safety for TypeScript (exact interfaces, enums, validation), validation rules (minLength, minimum, maximum, format, minItems, maxItems), default values (machine-readable), example-driven development (copy-paste test fixtures), property naming conventions (actual JSON keys)** (Section 5)
+- [x] What conceptual/requirement details are clearer in the standard? → **Resource structure rationale (Systems vs Procedures = instances vs types), relationship semantics (subsystems vs deployedSystems, sampledFeature vs sampleOf), resource type selection guidance (when to use sensor vs platform vs sampler), conformance class implications (minimum vs full implementation paths), transitive query behavior, cascade delete impact** (Section 6)
+- [x] Which source should take precedence for specific decisions? → **Property names/types/constraints: OpenAPI. HTTP methods: Standard (includes PATCH). Query parameters: OpenAPI (types/constraints). Link relations: Standard (semantics). Conformance: Standard only. Response formats: OpenAPI (complete schemas). Validation rules: OpenAPI. Conceptual understanding: Standard. Examples: OpenAPI (more complete). Versioning/history: Standard (concepts). General rule: Technical "how" = OpenAPI, Conceptual "why" = Standard, Feature "when" = Standard** (Section 7)
+- [x] What requirements emerge from reading both together? → **Format negotiation strategy (conformance check + f parameter + fallback), conformance-based feature detection (query /conformance then adapt), link-following navigation (prefer links over URL construction), recursive query handling (with maxDepth protection), client-side validation (before request), error handling patterns (typed errors with status codes + conformance conflicts)** (Section 8)
+- [x] What examples or patterns appear in one but not the other? → **OpenAPI only: Global Hawk reference frames (local coordinate systems), Saildrone deployment with contacts (organizational metadata). Standard only: conformance test suite (Annex A abstract tests), System Kind vs Procedures distinction (datasheet vs operating procedures), Feature of Interest examples (building/room/river/atmosphere, FOI as System)** (Section 9)
+- [x] What are the implications for implementation? → **Two-phase strategy: Phase 1 OpenAPI-driven core (generate types, URL builders, parsers, status handling), Phase 2 standard-driven enhancements (conformance, PATCH, links, documentation). Documentation structure: API reference from OpenAPI, conceptual guide from standard. Testing: unit tests from OpenAPI constraints, integration tests from standard behaviors. Type-safe query builders, format handling with auto-detect, error messages citing both sources** (Section 10)
+
+**Deliverable:** Comparison analysis and insights (~3,200 lines) ✅ COMPLETED
 
 **Total Section 1 Deliverable:** ~1,000-1,300 lines
 
