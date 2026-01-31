@@ -16,82 +16,97 @@ Everything else is secondary. This research answers that question definitively.
 
 ---
 
-## ⚠️ CRITICAL TERMINOLOGY QUESTION (MUST RESOLVE FIRST)
+## ✅ CRITICAL TERMINOLOGY QUESTION (RESOLVED)
 
 **Issue:** We've been using the term "navigator" throughout documentation and previous implementations (e.g., `CSAPINavigator`, `endpoint.csapi()` returns a "navigator"). However, this term may not be consistent with upstream terminology.
 
-**Risk:** 
-- Using wrong terminology makes PR harder to review
-- Naming inconsistency with upstream patterns
-- Documentation uses incorrect concepts
-- Potential large refactor if wrong
+**RESOLUTION (from PR #114 analysis):**
 
-**MUST ANSWER BEFORE PROCEEDING:**
-- [ ] What does PR #114 call the object returned by `endpoint.edr()`?
-- [ ] Is "navigator" the correct upstream term?
-- [ ] What's the actual class name in PR #114? (EDRNavigator? EDRClient? EDREndpoint? Something else?)
-- [ ] What terminology is used in WFS/STAC implementations?
-- [ ] Should we be calling it "client", "accessor", "resource", or something else?
+The object returned by `endpoint.edr()` is called **`EDRQueryBuilder`** (not "navigator").
 
-**Action:** Check PR #114 and existing implementations IMMEDIATELY to determine correct terminology. Update all documentation accordingly before writing any code.
+**Answers:**
+- [x] What does PR #114 call the object returned by `endpoint.edr()`? → **`EDRQueryBuilder`**
+- [x] Is "navigator" the correct upstream term? → **No, "QueryBuilder" is the pattern**
+- [x] What's the actual class name in PR #114? → **`EDRQueryBuilder`**
+- [x] What terminology should CSAPI use? → **`CSAPIQueryBuilder`**
 
-**If "navigator" is wrong:** We need to update:
-- FEATURE_SPEC.md Section 2.2 (uses "navigator" extensively)
-- design-strategy-research.md (uses "navigator" throughout)
-- testing-strategy-research.md
-- Any other planning docs
+**Confirmed Pattern:**
+```typescript
+// EDR implementation:
+endpoint.edr() → returns EDRQueryBuilder
+
+// CSAPI should follow:
+endpoint.csapi() → returns CSAPIQueryBuilder
+```
+
+**Impact:** 
+- Previous "navigator" terminology was incorrect
+- CSAPI implementation must use "QueryBuilder" pattern
+- Minimal documentation updates needed (terminology wasn't widely used in committed docs yet)
+
+**Source:** [docs/research/upstream/pr114-analysis.md](../upstream/pr114-analysis.md) Section 2
 
 ---
 
-## ⚠️ CODE VOLUME CONCERN (MUST ADDRESS)
+## ✅ CODE VOLUME CONCERN (RESOLVED)
 
 **Issue:** Previous implementation was ~2x the size of entire upstream repo. This is a red flag for maintainers.
 
-**Risk:**
-- Contribution appears over-engineered
-- Review burden too high
-- Reduces acceptance likelihood
-- Creates maintenance concerns
+**RESOLUTION (from PR #114 analysis):**
 
-**MUST INVESTIGATE:**
-- [ ] How large is PR #114? (lines of code, files added)
-- [ ] What's the typical size of an OGC API implementation in upstream?
-- [ ] How many resources does EDR have vs CSAPI's 9?
-- [ ] What's the code-per-resource ratio in EDR?
-- [ ] How much was test code vs implementation code in our second iteration?
-- [ ] Can we eliminate bloat before reaching 2x upstream size?
+**PR #114 Metrics:**
+- **Total:** 2858 additions, 54 deletions
+- **Implementation code:** ~750 lines (26%)
+- **Test code:** ~2050 lines (72%)
+- **Other:** ~58 lines (2%)
+- **Files:** 18 total
+- **Core modifications:** ~115 lines to existing files
 
-**Design Principle:** Every line of code must justify its existence. If we can't explain why CSAPI needs more code than EDR proportionally, it's probably over-engineered.
+**CSAPI Projection:**
+- EDR has 5 query types, CSAPI has 9 resources
+- Estimated **~3500 total lines** (~975 implementation, ~2450 tests, ~75 other)
+- This is **~25% larger than EDR** (reasonable for 80% more resources)
+- **NOT 2x the size of entire repo** - that was over-engineering in previous attempts
 
-**Action:** Add code volume analysis to research. Compare CSAPI needs to EDR implementation on per-resource basis. Plan for lean implementation.
+**Answers:**
+- [x] How large is PR #114? → **2858 total lines, 750 implementation**
+- [x] Typical size? → **~750 implementation per API family**
+- [x] EDR resources vs CSAPI? → **5 query types vs 9 resources**
+- [x] Code-per-resource ratio? → **~150 lines per resource for EDR**
+- [x] Can we stay proportional? → **Yes, if we follow EDR patterns closely**
+
+**Design Principle Confirmed:** Match PR #114's architecture exactly. Code volume will naturally align with upstream patterns.
+
+**Source:** [docs/research/upstream/pr114-analysis.md](../upstream/pr114-analysis.md) Section 1
 
 ---
 
 ## Research Questions
 
-### 1. PR #114 Architecture Deep Dive (PRIMARY REFERENCE)
+### 1. ✅ PR #114 Architecture Deep Dive (COMPLETED)
 
-**Source:** [PR #114 - EDR Implementation](https://github.com/camptocamp/ogc-client/pull/114)
+**Source:** [PR #114 - EDR Implementation](https://github.com/camptocamp/ogc-client/pull/114)  
+**Analysis:** [docs/research/upstream/pr114-analysis.md](../upstream/pr114-analysis.md)
 
-**Questions to answer:**
-- [ ] **PRIORITY: What is the object returned by endpoint.edr() actually called?** (Class name? Type name?)
-- [ ] **PRIORITY: How many lines of code / files did PR #114 add?** (Need baseline for comparison)
-- [ ] What files were added? (list complete file structure)
-- [ ] Where were files placed? (`src/ogc-api/edr/` ?)
-- [ ] What existing files were modified? (endpoint.ts, info.ts, index.ts?)
-- [ ] How minimal were modifications to existing files?
-- [ ] What classes/interfaces were created?
-- [ ] How is the navigator pattern implemented?
-- [ ] How is format negotiation handled?
-- [ ] How are TypeScript types defined?
-- [ ] How are query parameters modeled?
-- [ ] How is conformance checking done?
-- [ ] How are errors handled?
-- [ ] What's the separation of concerns between files?
-- [ ] How is caching implemented?
-- [ ] What's exported from the module?
+**Answers:**
+- [x] **PRIORITY: What is the object returned by endpoint.edr() actually called?** → **`EDRQueryBuilder`** (Analysis Section 2)
+- [x] **PRIORITY: How many lines of code / files did PR #114 add?** → **2858 additions, 54 deletions, 18 files** (Section 1)
+- [x] What files were added? → **18 files documented in complete structure** (Section 3.1)
+- [x] Where were files placed? → **`src/ogc-api/edr/`** (Section 3.1)
+- [x] What existing files were modified? → **endpoint.ts, info.ts, index.ts + 3 others, ~115 lines total** (Section 3.2)
+- [x] How minimal were modifications to existing files? → **Very minimal: 6 files, ~115 lines to core** (Section 3.2)
+- [x] What classes/interfaces were created? → **EDRQueryBuilder, 15+ TypeScript types** (Section 4)
+- [x] How is the QueryBuilder pattern implemented? → **Fluent API with method chaining** (Section 5)
+- [x] How is format negotiation handled? → **Accept header, format parameter, defaults to GeoJSON** (Section 6.2)
+- [x] How are TypeScript types defined? → **Types in types.ts, detailed in Section 4** (Section 4)
+- [x] How are query parameters modeled? → **Interfaces per query type + common params** (Section 5.1)
+- [x] How is conformance checking done? → **info.ts conformance classes** (Section 6.4)
+- [x] How are errors handled? → **HTTP errors, validation errors, network errors** (Section 6.5)
+- [x] What's the separation of concerns between files? → **Clear separation documented** (Section 7)
+- [x] How is caching implemented? → **Collection metadata cached** (Section 6.3)
+- [x] What's exported from the module? → **EDRQueryBuilder + 3 types** (Section 8)
 
-**Action:** Download PR #114 diff and analyze file-by-file
+**Status:** Comprehensive 794-line analysis completed and documented.
 
 ---
 
