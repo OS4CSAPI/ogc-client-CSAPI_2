@@ -1877,3 +1877,1385 @@ function validateSensorML(document: any): boolean {
 - Unit conversion
 
 **Ready for Section 3.4:** SWE Common Format Requirements
+
+---
+
+## Section 3.4: SWE Common Format Requirements
+
+**Date:** 2026-01-31  
+**Status:** Complete
+
+### Overview
+
+SWE Common Data Model 3.0 provides standardized formats for encoding observation results, command parameters, and structured sensor data in CSAPI Part 2. It supports multiple encodings (JSON, Text/CSV, Binary) optimized for different use cases from human readability to high-frequency data transmission.
+
+**Media Types:**
+- `application/swe+json` - JSON encoding
+- `application/swe+csv` - CSV/Text encoding  
+- `application/swe+binary` - Binary encoding
+
+**Standard References:**
+- [SWE Common Data Model 3.0 Specification](https://docs.ogc.org/is/18-003r2/18-003r2.html)
+- [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html) - Observations and Commands encoding
+- [SWE Common 3.0 JSON Schema](https://schemas.opengis.net/sweCommon/3.0/sweCommon.json)
+
+---
+
+### 1. CSAPI Resources Using SWE Common
+
+#### 1.1 Part 2 Dynamic Data Resources
+
+**Observations (Required):**
+- **Result Schema:** DataStream defines `resultSchema` as SWE Common DataRecord/DataArray
+- **Result Data:** Observation `result` field encoded per DataStream `encoding` specification
+- **Formats:** JSON (application/swe+json), CSV (application/swe+csv), Binary (application/swe+binary)
+- **Use Case:** Sensor measurements, time series data, complex observations
+
+**Commands (Required):**
+- **Parameters Schema:** ControlStream defines `parametersSchema` as SWE Common DataRecord
+- **Parameters Data:** Command `parameters` field encoded per ControlStream `encoding`
+- **Result Schema:** ControlStream defines `resultSchema` for command results (optional)
+- **Formats:** JSON (application/swe+json), CSV (application/swe+csv)
+- **Use Case:** Actuator control parameters, configuration commands
+
+**DataStreams (Metadata):**
+- **Schema Definition:** `resultSchema` property defines observation structure
+- **Encoding Definition:** `encoding` property specifies how observations are serialized
+- **Not Data:** DataStream itself uses JSON, not SWE Common encoding
+
+**ControlStreams (Metadata):**
+- **Schema Definition:** `parametersSchema` and `resultSchema` properties
+- **Encoding Definition:** `encoding` property specifies command/result serialization
+- **Not Data:** ControlStream itself uses JSON
+
+#### 1.2 Part 1 Resources (Limited Use)
+
+**Systems/Procedures (SensorML):**
+- SensorML inputs/outputs/parameters use SWE Common component definitions
+- SWE Common types: Quantity, Count, Boolean, Text, Category, Time, DataRecord, Vector, Matrix
+- Inline definitions only (not separate encoding)
+
+**Not Applicable:**
+- Deployments, Sampling Features, Properties - Do not use SWE Common
+
+---
+
+### 2. SWE Common Data Components Required
+
+#### 2.1 Simple Components (Scalars)
+
+**Quantity:**
+- Numeric value with unit of measure
+- Used for: Temperature, pressure, voltage, length, etc.
+- Properties: `value` (number), `uom` (unit), `constraint` (range), `nilValues`
+- Example: `{"type": "Quantity", "value": 23.5, "uom": {"code": "Cel"}}`
+
+**Count:**
+- Integer value
+- Used for: Counters, indices, discrete quantities
+- Properties: `value` (integer), `constraint` (range, allowedValues)
+- Example: `{"type": "Count", "value": 42}`
+
+**Boolean:**
+- True/false value
+- Used for: Flags, status indicators, binary states
+- Properties: `value` (boolean)
+- Example: `{"type": "Boolean", "value": true}`
+
+**Text:**
+- String value
+- Used for: Descriptions, codes, identifiers
+- Properties: `value` (string), `constraint` (pattern, allowedValues)
+- Example: `{"type": "Text", "value": "CLEAR_SKY"}`
+
+**Category:**
+- Categorical value from controlled vocabulary
+- Used for: Enumerated types, classification codes
+- Properties: `value` (string), `codeSpace` (vocabulary URI), `constraint` (allowedValues)
+- Example: `{"type": "Category", "value": "cloudy", "codeSpace": "http://example.org/weather-codes"}`
+
+**Time:**
+- Temporal value (instant or period)
+- Used for: Timestamps, time instants, durations
+- Properties: `value` (ISO 8601 string), `referenceFrame` (time system), `uom` (for durations)
+- Example: `{"type": "Time", "value": "2024-01-15T12:00:00Z"}`
+
+#### 2.2 Composite Components (Structures)
+
+**DataRecord:**
+- Ordered collection of named fields
+- Used for: Structured observations, multi-parameter results
+- Properties: `fields` (array of named components)
+- Fields: Each field has `name`, `type`, and component-specific properties
+- Example:
+  ```json
+  {
+    "type": "DataRecord",
+    "fields": [
+      {"name": "time", "type": "Time", "value": "2024-01-15T12:00:00Z"},
+      {"name": "temp", "type": "Quantity", "value": 23.5, "uom": {"code": "Cel"}},
+      {"name": "humidity", "type": "Quantity", "value": 65.0, "uom": {"code": "%"}}
+    ]
+  }
+  ```
+
+**DataArray:**
+- Array of values with same component type
+- Used for: Time series, arrays of measurements, matrices
+- Properties: `elementType` (component schema), `values` (array), `elementCount` (size)
+- Example:
+  ```json
+  {
+    "type": "DataArray",
+    "elementCount": {"type": "Count", "value": 3},
+    "elementType": {"type": "Quantity", "uom": {"code": "Cel"}},
+    "values": [23.5, 24.1, 23.8]
+  }
+  ```
+
+**Vector:**
+- Multi-dimensional vector with labeled axes
+- Used for: Position (x,y,z), velocity, acceleration, orientation
+- Properties: `coordinates` (array of Quantity components), `referenceFrame` (CRS/coordinate system)
+- Example:
+  ```json
+  {
+    "type": "Vector",
+    "referenceFrame": "http://www.opengis.net/def/crs/EPSG/0/4979",
+    "coordinates": [
+      {"name": "lat", "type": "Quantity", "axisID": "Lat", "uom": {"code": "deg"}, "value": 37.42},
+      {"name": "lon", "type": "Quantity", "axisID": "Lon", "uom": {"code": "deg"}, "value": -122.08},
+      {"name": "h", "type": "Quantity", "axisID": "h", "uom": {"code": "m"}, "value": 25.5}
+    ]
+  }
+  ```
+
+**Matrix:**
+- 2D matrix of values
+- Used for: Images, grids, correlation matrices
+- Properties: `elementType` (component schema), `values` (2D array), `elementCount` (dimensions)
+- Less common in CSAPI
+
+#### 2.3 Component Type Matrix
+
+| Component Type | Value Type | Unit Support | Primary Use Cases |
+|----------------|------------|--------------|-------------------|
+| **Quantity** | number | Yes (required) | Measurements with units |
+| **Count** | integer | No | Counters, indices |
+| **Boolean** | boolean | No | Flags, binary states |
+| **Text** | string | No | Descriptions, identifiers |
+| **Category** | string | No (codeSpace) | Enumerated types |
+| **Time** | ISO 8601 string | Yes (for durations) | Timestamps, time periods |
+| **DataRecord** | object | N/A | Multi-field structures |
+| **DataArray** | array | N/A | Homogeneous arrays |
+| **Vector** | array of Quantity | Yes (per coordinate) | Multi-dimensional vectors |
+| **Matrix** | 2D array | N/A | Grids, images |
+
+**All Components Required:** Client library MUST support all component types for observation/command parsing
+
+---
+
+### 3. SWE Common Encoding Formats
+
+#### 3.1 JSON Encoding (application/swe+json)
+
+**Purpose:** Human-readable, structured format preserving SWE Common semantics
+
+**Media Type:** `application/swe+json`
+
+**Structure:** JSON representation of SWE Common data components
+
+**DataRecord Encoding Options:**
+- **Object Mode (default):** Fields encoded as JSON object with field names as keys
+  ```json
+  {
+    "time": "2024-01-15T12:00:00Z",
+    "temp": 23.5,
+    "humidity": 65.0
+  }
+  ```
+  
+- **Array Mode:** Fields encoded as JSON array (preserves order, more compact)
+  ```json
+  ["2024-01-15T12:00:00Z", 23.5, 65.0]
+  ```
+  
+**JSONEncoding Configuration:**
+```json
+{
+  "type": "JSONEncoding",
+  "includeNilValues": false
+}
+```
+
+**Properties:**
+- `includeNilValues` (boolean, default: false) - Include nil values in output
+- No additional encoding parameters (JSON is self-describing)
+
+**Characteristics:**
+- **Size:** Moderate (larger than CSV/Binary, smaller than plain JSON with full metadata)
+- **Readability:** High (human-readable)
+- **Efficiency:** Moderate
+- **Best For:** Moderate-frequency data, debugging, development
+
+#### 3.2 Text/CSV Encoding (application/swe+csv)
+
+**Purpose:** Compact, human-readable tabular format
+
+**Media Type:** `application/swe+csv` or `application/swe+text`
+
+**Structure:** Delimited text (CSV-like) with configurable separators
+
+**TextEncoding Configuration:**
+```json
+{
+  "type": "TextEncoding",
+  "tokenSeparator": ",",
+  "blockSeparator": "\n",
+  "decimalSeparator": ".",
+  "collapseWhiteSpaces": true
+}
+```
+
+**Properties:**
+- `tokenSeparator` (string, default: ",") - Field delimiter (typically comma or tab)
+- `blockSeparator` (string, default: "\n") - Record delimiter (typically newline)
+- `decimalSeparator` (string, default: ".") - Decimal point character
+- `collapseWhiteSpaces` (boolean, default: true) - Trim whitespace
+
+**Example:**
+```
+2024-01-15T12:00:00Z,23.5,65.0
+2024-01-15T12:01:00Z,23.6,64.8
+2024-01-15T12:02:00Z,23.4,65.2
+```
+
+**Characteristics:**
+- **Size:** Small (~2-5x smaller than JSON)
+- **Readability:** High (spreadsheet-compatible)
+- **Efficiency:** Good
+- **Best For:** Time series data, batch processing, spreadsheet integration
+- **Limitations:** No nested structures (DataRecord only), field order matters
+
+#### 3.3 Binary Encoding (application/swe+binary)
+
+**Purpose:** Maximum efficiency for high-frequency data
+
+**Media Type:** `application/swe+binary`
+
+**Structure:** Binary-packed data with schema-defined layout
+
+**BinaryEncoding Configuration:**
+```json
+{
+  "type": "BinaryEncoding",
+  "byteOrder": "BIG_ENDIAN",
+  "byteEncoding": "RAW",
+  "members": [
+    {"component": "fields/time", "dataType": "INT64", "byteLength": 8},
+    {"component": "fields/temp", "dataType": "FLOAT32", "byteLength": 4},
+    {"component": "fields/humidity", "dataType": "FLOAT32", "byteLength": 4}
+  ]
+}
+```
+
+**Properties:**
+- `byteOrder` (enum) - BIG_ENDIAN or LITTLE_ENDIAN
+- `byteEncoding` (enum) - RAW (no compression) or BASE64 (for transmission)
+- `members` (array) - Field-by-field encoding specification
+  - `component` (string) - JSON path to component
+  - `dataType` (enum) - INT8, INT16, INT32, INT64, UINT8, UINT16, UINT32, UINT64, FLOAT32, FLOAT64, UTF8
+  - `byteLength` (integer) - Size in bytes
+
+**Characteristics:**
+- **Size:** Very small (~10-100x smaller than JSON)
+- **Readability:** None (binary)
+- **Efficiency:** Excellent
+- **Best For:** High-frequency sensor data (>1 Hz), bandwidth-constrained applications, long-term storage
+- **Limitations:** Requires schema for parsing, not human-readable, more complex implementation
+
+**Byte Order Considerations:**
+- Most modern systems use LITTLE_ENDIAN
+- Network protocols typically use BIG_ENDIAN
+- Client library MUST support both
+
+#### 3.4 Encoding Selection Matrix
+
+| Format | Size | Speed | Readable | Best Use Case |
+|--------|------|-------|----------|---------------|
+| **JSON** | Large | Moderate | Yes | Development, debugging, moderate-frequency (<0.1 Hz) |
+| **CSV** | Small | Fast | Yes | Batch processing, time series, spreadsheet integration (0.1-10 Hz) |
+| **Binary** | Very Small | Very Fast | No | High-frequency sensors (>10 Hz), bandwidth-constrained, archival |
+
+**Format Negotiation:**
+```
+GET /datastreams/ds123/observations
+Accept: application/swe+binary
+// Server returns observations in binary format
+```
+
+---
+
+### 4. DataStream Schema Configuration
+
+#### 4.1 resultSchema Property
+
+**Purpose:** Defines structure of observation `result` field
+
+**Type:** SWE Common DataRecord or DataArray
+
+**Example:**
+```json
+{
+  "type": "DataStream",
+  "resultSchema": {
+    "type": "DataRecord",
+    "fields": [
+      {
+        "name": "time",
+        "type": "Time",
+        "definition": "http://www.opengis.net/def/property/OGC/0/SamplingTime",
+        "referenceFrame": "http://www.opengis.net/def/trs/BIPM/0/UTC",
+        "label": "Sampling Time",
+        "uom": {"href": "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"}
+      },
+      {
+        "name": "temp",
+        "type": "Quantity",
+        "definition": "http://mmisw.org/ont/cf/parameter/air_temperature",
+        "label": "Air Temperature",
+        "uom": {"code": "Cel"},
+        "constraint": {"interval": [-40, 85]},
+        "nilValues": [
+          {"reason": "http://www.opengis.net/def/nil/OGC/0/missing", "value": "NaN"},
+          {"reason": "http://www.opengis.net/def/nil/OGC/0/BelowDetectionRange", "value": "-Infinity"},
+          {"reason": "http://www.opengis.net/def/nil/OGC/0/AboveDetectionRange", "value": "+Infinity"}
+        ]
+      }
+    ]
+  },
+  "encoding": {
+    "type": "JSONEncoding"
+  }
+}
+```
+
+**Validation:**
+- All observations in DataStream MUST conform to `resultSchema`
+- Server rejects observations with invalid result (400 Bad Request)
+- Schema cannot be changed if observations exist (409 Conflict)
+
+#### 4.2 encoding Property
+
+**Purpose:** Specifies how observation results are serialized
+
+**Type:** JSONEncoding, TextEncoding, or BinaryEncoding
+
+**Per-Format Schemas:**
+DataStream can have different encoding per format:
+```
+GET /datastreams/ds123/schema?obsFormat=application/swe+json
+GET /datastreams/ds123/schema?obsFormat=application/swe+csv
+GET /datastreams/ds123/schema?obsFormat=application/swe+binary
+```
+
+Each returns appropriate `encoding` configuration for that format.
+
+#### 4.3 Schema Evolution
+
+**Challenge:** Cannot modify schema if observations exist
+
+**Workarounds:**
+1. **Create New DataStream:** New schema, migrate data if needed
+2. **Versioned DataStreams:** Name includes version (ds-temp-v1, ds-temp-v2)
+3. **Delete All Observations:** Clear data, update schema, re-ingest
+
+**Client Library Implications:**
+- Cache DataStream schemas to avoid repeated fetches
+- Validate observation data against schema before POST
+- Handle 409 Conflict errors on schema updates
+
+---
+
+### 5. Units of Measure (UoM)
+
+#### 5.1 UCUM Code System
+
+**Standard:** Unified Code for Units of Measure (UCUM)
+
+**Format:**
+```json
+{
+  "uom": {
+    "code": "Cel"  // UCUM code
+  }
+}
+```
+
+**Common UCUM Codes:**
+- Temperature: `Cel` (Celsius), `[degF]` (Fahrenheit), `K` (Kelvin)
+- Length: `m` (meter), `cm`, `mm`, `km`, `ft` (foot), `mi` (mile)
+- Time: `s` (second), `min`, `h`, `d`, `a` (year)
+- Speed: `m/s`, `km/h`, `mi/h`
+- Percentage: `%`
+- Angle: `deg` (degree), `rad` (radian)
+- Frequency: `Hz`, `kHz`, `MHz`
+- Pressure: `Pa`, `hPa`, `bar`, `atm`
+- Mass: `kg`, `g`, `lb`
+
+**UCUM Resources:**
+- [UCUM Specification](https://ucum.org/)
+- [UCUM Validator](https://ucum.org/ucum-lhc/demo.html)
+
+#### 5.2 URI-Based Units
+
+**Format:**
+```json
+{
+  "uom": {
+    "href": "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+  }
+}
+```
+
+**Usage:** Time units, specialized domains, OGC unit URIs
+
+**Common URIs:**
+- Time: `http://www.opengis.net/def/uom/ISO-8601/0/Gregorian`
+- Angle: `http://www.opengis.net/def/uom/OGC/0/deg`
+
+#### 5.3 Client Library UoM Handling
+
+**Requirements:**
+- **Parse:** Extract UoM code or href from components
+- **Validate:** Check UCUM code syntax (optional, basic validation)
+- **Preserve:** Maintain UoM in round-trip operations
+- **Display:** Format units for user presentation
+
+**Optional Features:**
+- **Unit Conversion:** Convert between compatible units (e.g., Cel ↔ K)
+- **Unit Validation:** Full UCUM validation against grammar
+- **Unit Normalization:** Convert to canonical UCUM form
+
+**Recommended External Library:** `ucum-js` or similar for unit operations
+
+---
+
+### 6. Nil Values and Quality
+
+#### 6.1 Nil Values
+
+**Purpose:** Represent missing, invalid, or special values
+
+**Structure:**
+```json
+{
+  "nilValues": [
+    {
+      "reason": "http://www.opengis.net/def/nil/OGC/0/missing",
+      "value": "NaN"
+    },
+    {
+      "reason": "http://www.opengis.net/def/nil/OGC/0/BelowDetectionRange",
+      "value": "-Infinity"
+    },
+    {
+      "reason": "http://www.opengis.net/def/nil/OGC/0/AboveDetectionRange",
+      "value": "+Infinity"
+    }
+  ]
+}
+```
+
+**Properties:**
+- `reason` (uri) - Semantic reason for nil value
+- `value` (any) - Special value representing nil (NaN, Infinity, null, sentinel number)
+
+**Common Nil Reasons:**
+- `missing` - Value not available
+- `unknown` - Value cannot be determined
+- `BelowDetectionRange` - Below sensor detection limit
+- `AboveDetectionRange` - Above sensor detection limit
+- `inapplicable` - Measurement not applicable
+- `withheld` - Value withheld (privacy, security)
+
+**Client Handling:**
+- Detect nil values in observation data
+- Display reason to user instead of raw value
+- Filter out nil values for analysis (optional)
+- Preserve nil values in round-trip
+
+#### 6.2 Quality Metadata
+
+**Purpose:** Attach quality indicators to component values
+
+**Structure:**
+```json
+{
+  "name": "temp",
+  "type": "Quantity",
+  "value": 23.5,
+  "uom": {"code": "Cel"},
+  "quality": [
+    {
+      "type": "Quantity",
+      "definition": "http://www.opengis.net/def/property/OGC/0/Accuracy",
+      "uom": {"code": "Cel"},
+      "value": 0.1
+    },
+    {
+      "type": "Category",
+      "definition": "http://www.opengis.net/def/property/OGC/0/QualityFlag",
+      "value": "GOOD"
+    }
+  ]
+}
+```
+
+**Quality Types:**
+- **Accuracy** - Measurement accuracy/uncertainty
+- **Confidence** - Statistical confidence level
+- **QualityFlag** - Categorical quality indicator (GOOD, FAIR, POOR, BAD)
+- **Status** - Instrument status during measurement
+
+**Client Handling:**
+- Parse quality array
+- Display quality alongside value
+- Filter by quality for analysis
+- Preserve in round-trip
+
+---
+
+### 7. Client Library Parsing Requirements
+
+#### 7.1 Parse vs Opaque Handling
+
+**Recommended Approach: Schema-Driven Parsing**
+
+**What to Parse (Required):**
+- **Schema Definitions:** Parse `resultSchema`/`parametersSchema` to understand structure
+- **Component Types:** Identify Quantity, Count, Boolean, Text, Time, Category, DataRecord, DataArray, Vector
+- **Component Properties:** Extract `name`, `type`, `uom`, `definition`, `label`, `constraint`
+- **Encoding Configuration:** Parse `encoding` type and parameters
+- **Data Values:** Parse observation/command data according to schema and encoding
+
+**What to Preserve:**
+- **Unknown Component Types:** Store as opaque objects for forward compatibility
+- **Extension Properties:** Preserve unrecognized properties
+- **Encoding Details:** Preserve full encoding configuration
+
+**Rationale:**
+- Client needs schema to validate data before POST
+- Client needs to parse data values for display/analysis
+- Schema-driven approach enables generic handling of any observation structure
+- Preservation ensures round-trip fidelity
+
+#### 7.2 TypeScript Type Definitions
+
+**Base SWE Common Types:**
+```typescript
+// Base component interface
+interface AbstractComponent {
+  type: string;
+  id?: string;
+  definition?: string; // URI to observable property
+  label?: string;
+  description?: string;
+  optional?: boolean;
+  updatable?: boolean;
+}
+
+// Simple component types
+interface Quantity extends AbstractComponent {
+  type: 'Quantity';
+  value?: number;
+  uom: UnitOfMeasure;
+  constraint?: QuantityConstraint;
+  nilValues?: NilValue[];
+  quality?: AbstractComponent[];
+}
+
+interface Count extends AbstractComponent {
+  type: 'Count';
+  value?: number;
+  constraint?: CountConstraint;
+}
+
+interface Boolean extends AbstractComponent {
+  type: 'Boolean';
+  value?: boolean;
+}
+
+interface Text extends AbstractComponent {
+  type: 'Text';
+  value?: string;
+  constraint?: TextConstraint;
+}
+
+interface Category extends AbstractComponent {
+  type: 'Category';
+  value?: string;
+  codeSpace?: string; // URI to vocabulary
+  constraint?: CategoryConstraint;
+}
+
+interface Time extends AbstractComponent {
+  type: 'Time';
+  value?: string; // ISO 8601
+  referenceFrame?: string; // Time system URI
+  uom?: UnitOfMeasure; // For durations
+}
+
+// Composite types
+interface DataRecord extends AbstractComponent {
+  type: 'DataRecord';
+  fields: NamedComponent[];
+}
+
+interface DataArray extends AbstractComponent {
+  type: 'DataArray';
+  elementType: AbstractComponent;
+  elementCount?: Count;
+  values?: any[];
+  encoding?: AbstractEncoding;
+}
+
+interface Vector extends AbstractComponent {
+  type: 'Vector';
+  referenceFrame?: string; // CRS URI
+  coordinates: NamedComponent[]; // Array of Quantity
+}
+
+// Union type for all components
+type SWEComponent = 
+  | Quantity 
+  | Count 
+  | Boolean 
+  | Text 
+  | Category 
+  | Time 
+  | DataRecord 
+  | DataArray 
+  | Vector;
+
+// Named component (for DataRecord fields, Vector coordinates)
+interface NamedComponent {
+  name: string;
+  component?: SWEComponent; // For nested structures
+  // Or inline component properties:
+  type?: string;
+  value?: any;
+  uom?: UnitOfMeasure;
+  // ... other properties
+}
+
+// Unit of measure
+interface UnitOfMeasure {
+  code?: string; // UCUM code
+  href?: string; // URI
+}
+
+// Nil value
+interface NilValue {
+  reason: string; // URI
+  value: any; // Special value (NaN, Infinity, null, etc.)
+}
+
+// Constraints
+interface QuantityConstraint {
+  interval?: [number, number]; // [min, max]
+  significantFigures?: number;
+}
+
+interface CountConstraint {
+  interval?: [number, number];
+  allowedValues?: number[];
+}
+
+interface TextConstraint {
+  pattern?: string; // Regex
+  length?: number;
+}
+
+interface CategoryConstraint {
+  allowedValues?: string[];
+}
+```
+
+**Encoding Types:**
+```typescript
+interface JSONEncoding {
+  type: 'JSONEncoding';
+  includeNilValues?: boolean;
+}
+
+interface TextEncoding {
+  type: 'TextEncoding';
+  tokenSeparator?: string;
+  blockSeparator?: string;
+  decimalSeparator?: string;
+  collapseWhiteSpaces?: boolean;
+}
+
+interface BinaryEncoding {
+  type: 'BinaryEncoding';
+  byteOrder?: 'BIG_ENDIAN' | 'LITTLE_ENDIAN';
+  byteEncoding?: 'RAW' | 'BASE64';
+  members: BinaryMember[];
+}
+
+interface BinaryMember {
+  component: string; // JSON path
+  dataType: 'INT8' | 'INT16' | 'INT32' | 'INT64' | 
+            'UINT8' | 'UINT16' | 'UINT32' | 'UINT64' | 
+            'FLOAT32' | 'FLOAT64' | 'UTF8';
+  byteLength: number;
+}
+
+type AbstractEncoding = JSONEncoding | TextEncoding | BinaryEncoding;
+```
+
+**Observation Schema:**
+```typescript
+interface ObservationSchema {
+  obsFormat: string; // Media type
+  recordSchema: DataRecord; // Result schema
+  encoding?: AbstractEncoding;
+}
+```
+
+#### 7.3 Validation Requirements
+
+**Schema Validation:**
+- Validate observation `result` against DataStream `resultSchema`
+- Check component types match schema
+- Validate values within constraints (interval, allowedValues)
+- Validate UoM codes (basic UCUM syntax)
+
+**Encoding Validation:**
+- Validate encoding type matches format
+- Check required encoding parameters present
+- Validate binary encoding members reference valid components
+
+**Data Validation:**
+- Validate values are correct type (number, string, boolean)
+- Validate nil values match declared nilValues
+- Validate array lengths match elementCount
+
+**Error Handling:**
+- Throw `ValidationError` with component path and specific error
+- Example: "Invalid value for fields/temp: 150 exceeds maximum 85"
+
+---
+
+### 8. Encoding/Decoding Implementation
+
+#### 8.1 JSON Encoding
+
+**Encoding (DataRecord → JSON):**
+```typescript
+function encodeJSON(data: DataRecord, encoding: JSONEncoding): any {
+  const result: any = {};
+  for (const field of data.fields) {
+    const value = getComponentValue(field);
+    if (value !== undefined || encoding.includeNilValues) {
+      result[field.name] = value;
+    }
+  }
+  return result;
+}
+
+function getComponentValue(component: SWEComponent): any {
+  switch (component.type) {
+    case 'Quantity':
+    case 'Count':
+    case 'Boolean':
+    case 'Text':
+    case 'Category':
+    case 'Time':
+      return component.value;
+    case 'DataRecord':
+      return encodeJSON(component, {type: 'JSONEncoding'});
+    case 'DataArray':
+      return component.values;
+    case 'Vector':
+      return component.coordinates.map(c => c.value);
+    default:
+      return component.value;
+  }
+}
+```
+
+**Decoding (JSON → DataRecord):**
+```typescript
+function decodeJSON(json: any, schema: DataRecord): DataRecord {
+  const result: DataRecord = { ...schema, fields: [] };
+  for (const fieldSchema of schema.fields) {
+    const value = json[fieldSchema.name];
+    const field = { ...fieldSchema };
+    setComponentValue(field, value);
+    result.fields.push(field);
+  }
+  return result;
+}
+
+function setComponentValue(component: SWEComponent, value: any): void {
+  switch (component.type) {
+    case 'Quantity':
+    case 'Count':
+      component.value = typeof value === 'number' ? value : parseFloat(value);
+      break;
+    case 'Boolean':
+      component.value = !!value;
+      break;
+    case 'Text':
+    case 'Category':
+    case 'Time':
+      component.value = String(value);
+      break;
+    case 'DataRecord':
+      decodeJSON(value, component);
+      break;
+    case 'DataArray':
+      component.values = Array.isArray(value) ? value : [];
+      break;
+    case 'Vector':
+      if (Array.isArray(value)) {
+        component.coordinates.forEach((coord, i) => {
+          coord.value = value[i];
+        });
+      }
+      break;
+  }
+}
+```
+
+#### 8.2 CSV Encoding
+
+**Encoding (DataRecord → CSV):**
+```typescript
+function encodeCSV(data: DataRecord, encoding: TextEncoding): string {
+  const values: string[] = [];
+  for (const field of data.fields) {
+    const value = formatCSVValue(getComponentValue(field), encoding);
+    values.push(value);
+  }
+  return values.join(encoding.tokenSeparator || ',');
+}
+
+function formatCSVValue(value: any, encoding: TextEncoding): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'number') {
+    const str = value.toString();
+    return str.replace('.', encoding.decimalSeparator || '.');
+  }
+  return String(value);
+}
+```
+
+**Decoding (CSV → DataRecord):**
+```typescript
+function decodeCSV(csv: string, schema: DataRecord, encoding: TextEncoding): DataRecord {
+  const separator = encoding.tokenSeparator || ',';
+  const tokens = csv.split(separator);
+  
+  if (encoding.collapseWhiteSpaces) {
+    tokens.forEach((t, i) => tokens[i] = t.trim());
+  }
+  
+  const result: DataRecord = { ...schema, fields: [] };
+  schema.fields.forEach((fieldSchema, i) => {
+    const field = { ...fieldSchema };
+    const token = tokens[i] || '';
+    const value = parseCSVValue(token, field.type, encoding);
+    setComponentValue(field, value);
+    result.fields.push(field);
+  });
+  
+  return result;
+}
+
+function parseCSVValue(token: string, type: string, encoding: TextEncoding): any {
+  if (!token) return undefined;
+  
+  switch (type) {
+    case 'Quantity':
+    case 'Count':
+      const normalized = token.replace(encoding.decimalSeparator || '.', '.');
+      return parseFloat(normalized);
+    case 'Boolean':
+      return token.toLowerCase() === 'true' || token === '1';
+    case 'Text':
+    case 'Category':
+    case 'Time':
+      return token;
+    default:
+      return token;
+  }
+}
+```
+
+#### 8.3 Binary Encoding
+
+**Encoding (DataRecord → Binary):**
+```typescript
+function encodeBinary(data: DataRecord, encoding: BinaryEncoding): ArrayBuffer {
+  const buffer = new ArrayBuffer(calculateByteLength(data, encoding));
+  const view = new DataView(buffer);
+  
+  let offset = 0;
+  for (const member of encoding.members) {
+    const component = resolveComponent(data, member.component);
+    const value = getComponentValue(component);
+    
+    writeValue(view, offset, value, member, encoding);
+    offset += member.byteLength;
+  }
+  
+  return buffer;
+}
+
+function writeValue(
+  view: DataView, 
+  offset: number, 
+  value: any, 
+  member: BinaryMember,
+  encoding: BinaryEncoding
+): void {
+  const littleEndian = encoding.byteOrder === 'LITTLE_ENDIAN';
+  
+  switch (member.dataType) {
+    case 'FLOAT32':
+      view.setFloat32(offset, value, littleEndian);
+      break;
+    case 'FLOAT64':
+      view.setFloat64(offset, value, littleEndian);
+      break;
+    case 'INT32':
+      view.setInt32(offset, value, littleEndian);
+      break;
+    case 'INT64':
+      view.setBigInt64(offset, BigInt(value), littleEndian);
+      break;
+    case 'UINT32':
+      view.setUint32(offset, value, littleEndian);
+      break;
+    // ... other data types
+  }
+}
+```
+
+**Decoding (Binary → DataRecord):**
+```typescript
+function decodeBinary(
+  buffer: ArrayBuffer, 
+  schema: DataRecord, 
+  encoding: BinaryEncoding
+): DataRecord {
+  const view = new DataView(buffer);
+  const result: DataRecord = { ...schema, fields: [] };
+  
+  let offset = 0;
+  for (const member of encoding.members) {
+    const value = readValue(view, offset, member, encoding);
+    const component = resolveComponent(schema, member.component);
+    setComponentValue(component, value);
+    offset += member.byteLength;
+  }
+  
+  return result;
+}
+
+function readValue(
+  view: DataView,
+  offset: number,
+  member: BinaryMember,
+  encoding: BinaryEncoding
+): any {
+  const littleEndian = encoding.byteOrder === 'LITTLE_ENDIAN';
+  
+  switch (member.dataType) {
+    case 'FLOAT32':
+      return view.getFloat32(offset, littleEndian);
+    case 'FLOAT64':
+      return view.getFloat64(offset, littleEndian);
+    case 'INT32':
+      return view.getInt32(offset, littleEndian);
+    case 'INT64':
+      return Number(view.getBigInt64(offset, littleEndian));
+    case 'UINT32':
+      return view.getUint32(offset, littleEndian);
+    // ... other data types
+  }
+}
+```
+
+---
+
+### 9. Client API Implications
+
+#### 9.1 Schema Management
+
+**Fetching Schemas:**
+```typescript
+class CSAPIClient {
+  // Get observation schema for specific format
+  async getObservationSchema(
+    dataStreamId: string,
+    format: 'application/swe+json' | 'application/swe+csv' | 'application/swe+binary'
+  ): Promise<ObservationSchema> {
+    const response = await fetch(
+      `/datastreams/${dataStreamId}/schema?obsFormat=${encodeURIComponent(format)}`
+    );
+    return response.json();
+  }
+  
+  // Get command schema
+  async getCommandSchema(controlStreamId: string): Promise<ObservationSchema> {
+    return this.getObservationSchema(controlStreamId, 'application/swe+json');
+  }
+}
+```
+
+**Schema Caching:**
+```typescript
+class SchemaCache {
+  private cache = new Map<string, ObservationSchema>();
+  
+  async get(dataStreamId: string, format: string, client: CSAPIClient): Promise<ObservationSchema> {
+    const key = `${dataStreamId}:${format}`;
+    if (!this.cache.has(key)) {
+      const schema = await client.getObservationSchema(dataStreamId, format as any);
+      this.cache.set(key, schema);
+    }
+    return this.cache.get(key)!;
+  }
+  
+  invalidate(dataStreamId: string): void {
+    for (const key of this.cache.keys()) {
+      if (key.startsWith(`${dataStreamId}:`)) {
+        this.cache.delete(key);
+      }
+    }
+  }
+}
+```
+
+#### 9.2 Observation Creation with Validation
+
+**Creating Observations:**
+```typescript
+class CSAPIClient {
+  async createObservation(
+    dataStreamId: string,
+    observation: {
+      phenomenonTime: string;
+      resultTime: string;
+      result: any; // Raw data matching schema
+    },
+    options?: {
+      format?: 'application/swe+json' | 'application/swe+csv';
+      validate?: boolean; // Default: true
+    }
+  ): Promise<Observation> {
+    const format = options?.format || 'application/swe+json';
+    
+    // Validate against schema
+    if (options?.validate !== false) {
+      const schema = await this.getObservationSchema(dataStreamId, format);
+      this.validateObservationResult(observation.result, schema.recordSchema);
+    }
+    
+    // Encode result
+    const body = {
+      ...observation,
+      result: this.encodeResult(observation.result, format, schema)
+    };
+    
+    const response = await fetch(`/datastreams/${dataStreamId}/observations`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': format
+      },
+      body: JSON.stringify(body)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to create observation: ${response.statusText}`);
+    }
+    
+    return response.json();
+  }
+  
+  private validateObservationResult(result: any, schema: DataRecord): void {
+    for (const field of schema.fields) {
+      const value = result[field.name];
+      
+      // Check type
+      if (value === undefined && !field.optional) {
+        throw new ValidationError(field.name, 'Required field missing');
+      }
+      
+      // Check constraints
+      if (field.type === 'Quantity' && field.constraint?.interval) {
+        const [min, max] = field.constraint.interval;
+        if (value < min || value > max) {
+          throw new ValidationError(
+            field.name,
+            `Value ${value} outside range [${min}, ${max}]`
+          );
+        }
+      }
+    }
+  }
+}
+```
+
+#### 9.3 Observation Retrieval and Decoding
+
+**Fetching Observations:**
+```typescript
+class CSAPIClient {
+  async getObservations(
+    dataStreamId: string,
+    options?: {
+      format?: 'application/swe+json' | 'application/swe+csv' | 'application/swe+binary';
+      phenomenonTime?: string;
+      resultTime?: string;
+      limit?: number;
+    }
+  ): Promise<Observation[]> {
+    const format = options?.format || 'application/swe+json';
+    
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (options?.phenomenonTime) params.set('phenomenonTime', options.phenomenonTime);
+    if (options?.resultTime) params.set('resultTime', options.resultTime);
+    if (options?.limit) params.set('limit', options.limit.toString());
+    
+    // Fetch observations
+    const response = await fetch(
+      `/datastreams/${dataStreamId}/observations?${params}`,
+      {
+        headers: { 'Accept': format }
+      }
+    );
+    
+    // Get schema for decoding
+    const schema = await this.getObservationSchema(dataStreamId, format);
+    
+    // Decode response
+    if (format === 'application/swe+json') {
+      const json = await response.json();
+      return json.items.map((obs: any) => ({
+        ...obs,
+        result: this.decodeJSON(obs.result, schema.recordSchema)
+      }));
+    } else if (format === 'application/swe+csv') {
+      const csv = await response.text();
+      return this.decodeCSVObservations(csv, schema);
+    } else if (format === 'application/swe+binary') {
+      const buffer = await response.arrayBuffer();
+      return this.decodeBinaryObservations(buffer, schema);
+    }
+    
+    throw new Error(`Unsupported format: ${format}`);
+  }
+}
+```
+
+#### 9.4 Format Conversion
+
+**Converting Between Formats:**
+```typescript
+class SWEConverter {
+  // Convert observation result from one format to another
+  convertResult(
+    result: any,
+    fromFormat: string,
+    toFormat: string,
+    schema: DataRecord
+  ): any {
+    // Step 1: Decode from source format
+    let decoded: DataRecord;
+    switch (fromFormat) {
+      case 'application/swe+json':
+        decoded = decodeJSON(result, schema);
+        break;
+      case 'application/swe+csv':
+        decoded = decodeCSV(result, schema, {type: 'TextEncoding'});
+        break;
+      case 'application/swe+binary':
+        decoded = decodeBinary(result, schema, {type: 'BinaryEncoding', members: []});
+        break;
+      default:
+        throw new Error(`Unsupported source format: ${fromFormat}`);
+    }
+    
+    // Step 2: Encode to target format
+    switch (toFormat) {
+      case 'application/swe+json':
+        return encodeJSON(decoded, {type: 'JSONEncoding'});
+      case 'application/swe+csv':
+        return encodeCSV(decoded, {type: 'TextEncoding'});
+      case 'application/swe+binary':
+        return encodeBinary(decoded, {type: 'BinaryEncoding', members: []});
+      default:
+        throw new Error(`Unsupported target format: ${toFormat}`);
+    }
+  }
+}
+```
+
+---
+
+### 10. Error Handling
+
+#### 10.1 Schema Validation Errors
+
+**Schema Mismatch:**
+```typescript
+class SchemaValidationError extends Error {
+  constructor(
+    public componentPath: string,
+    public expectedType: string,
+    public actualValue: any
+  ) {
+    super(`Schema validation failed at ${componentPath}: expected ${expectedType}, got ${typeof actualValue}`);
+  }
+}
+```
+
+**Constraint Violation:**
+```typescript
+class ConstraintViolationError extends Error {
+  constructor(
+    public componentPath: string,
+    public constraint: string,
+    public value: any
+  ) {
+    super(`Constraint violation at ${componentPath}: ${constraint}, value: ${value}`);
+  }
+}
+```
+
+#### 10.2 Encoding/Decoding Errors
+
+**Invalid Encoding:**
+```typescript
+class EncodingError extends Error {
+  constructor(
+    public format: string,
+    public details: string
+  ) {
+    super(`Failed to encode data as ${format}: ${details}`);
+  }
+}
+```
+
+**Corrupt Data:**
+```typescript
+class DecodingError extends Error {
+  constructor(
+    public format: string,
+    public offset?: number,
+    public details?: string
+  ) {
+    super(`Failed to decode ${format} data${offset !== undefined ? ` at offset ${offset}` : ''}: ${details}`);
+  }
+}
+```
+
+---
+
+### 11. Dependencies and Libraries
+
+#### 11.1 Recommended External Libraries
+
+**Unit Handling:**
+- **ucum-js** - UCUM code validation and conversion
+- Usage: Validate UoM codes, convert between units
+
+**Schema Validation:**
+- **ajv** - JSON Schema validator
+- Usage: Validate SWE Common component structures against JSON Schema
+
+**Binary Encoding:**
+- **DataView** (built-in) - Read/write binary data
+- **Buffer** (Node.js) - Binary data manipulation
+- Usage: Encode/decode SWE Common binary format
+
+**CSV Parsing:**
+- **csv-parse** - Robust CSV parsing
+- Usage: Handle edge cases in CSV decoding (quoted values, escaping)
+
+#### 11.2 Built-in vs External
+
+**Built-in (Client Library):**
+- TypeScript type definitions for SWE Common components
+- Basic JSON encoding/decoding
+- Basic CSV encoding/decoding
+- Basic binary encoding/decoding (DataView)
+- Schema-driven validation (type checking, constraints)
+- Format negotiation
+
+**External Libraries (Optional Dependencies):**
+- Advanced UCUM operations (ucum-js)
+- Robust CSV parsing (csv-parse)
+- JSON Schema validation (ajv)
+
+**Rationale:** Core SWE Common functionality is manageable without heavy dependencies. External libraries provide enhanced capabilities for production use.
+
+---
+
+## Summary
+
+**Section 3.4 Complete:** SWE Common Format Requirements (~1,200 lines documenting all SWE Common aspects)
+
+### Key Requirements
+
+**Resources Using SWE Common:**
+- Part 2: Observations (result field), Commands (parameters/result fields)
+- DataStreams/ControlStreams define schemas and encodings
+- Part 1: SensorML inputs/outputs use SWE Common component definitions
+
+**Data Components:**
+- **Simple:** Quantity, Count, Boolean, Text, Category, Time (all required)
+- **Composite:** DataRecord, DataArray, Vector, Matrix (all required)
+- **All types MUST be supported** for observation/command parsing
+
+**Encoding Formats:**
+- **JSON (application/swe+json):** Human-readable, structured, moderate size
+- **CSV (application/swe+csv):** Compact, tabular, spreadsheet-compatible
+- **Binary (application/swe+binary):** Very compact, high-frequency data, requires schema
+
+**Units of Measure:**
+- UCUM codes (standard: `Cel`, `m`, `s`, `Hz`, etc.)
+- URI-based units (for time, specialized domains)
+- Client must parse, preserve, optionally validate/convert
+
+**Nil Values & Quality:**
+- Nil values for missing/invalid data with semantic reasons
+- Quality metadata for accuracy, confidence, status
+
+**Client Library Must:**
+- Parse schemas (resultSchema, parametersSchema, encoding)
+- Validate observation/command data against schemas
+- Encode/decode all three formats (JSON, CSV, Binary)
+- Support all component types
+- Cache schemas to avoid repeated fetches
+- Handle units of measure, nil values, quality
+- Provide TypeScript types for all components
+
+**Complex Handling:**
+- Schema-driven parsing (generic handling of any structure)
+- Binary encoding with byte order (BIG_ENDIAN/LITTLE_ENDIAN)
+- CSV with configurable separators
+- Nested DataRecords, DataArrays
+
+**Optional (External Libraries):**
+- UCUM validation/conversion (ucum-js)
+- Robust CSV parsing (csv-parse)
+- JSON Schema validation (ajv)
+
+**Section 3 Complete:** All format requirements documented (GeoJSON, SensorML, SWE Common)

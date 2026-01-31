@@ -271,20 +271,20 @@
 - docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml (SWE Common component schemas)
 
 **Questions to answer:**
-- [ ] Which CSAPI resources use SWE Common? (Observation schemas, Command schemas)
-- [ ] What SWE Common data components are required? (Boolean, Count, Quantity, Time, Category, Text, DataRecord, DataArray, Vector, Matrix)
-- [ ] What SWE Common encoding formats must be supported? (JSON, Text/CSV, Binary)
-- [ ] How are SWE Common encodings configured? (JSONEncoding, TextEncoding, BinaryEncoding parameters)
-- [ ] What is the structure of SWE Common DataRecords for observations?
-- [ ] How are units of measure (UoM) handled in SWE Common?
-- [ ] Does library need to parse SWE Common data or treat it opaquely?
-- [ ] Does library need to encode/decode binary SWE Common formats?
-- [ ] Does library need to encode/decode text/CSV SWE Common formats?
-- [ ] Are there SWE Common validation requirements?
-- [ ] How should library handle complex SWE Common structures? (nested DataRecords, DataArrays)
-- [ ] What are the client API implications for SWE Common support?
+- [x] Which CSAPI resources use SWE Common? (Observation schemas, Command schemas) → Part 2: Observations (result field), Commands (parameters/result fields); DataStreams/ControlStreams define schemas/encodings
+- [x] What SWE Common data components are required? (Boolean, Count, Quantity, Time, Category, Text, DataRecord, DataArray, Vector, Matrix) → All 10 component types required: Quantity, Count, Boolean, Text, Category, Time, DataRecord, DataArray, Vector, Matrix
+- [x] What SWE Common encoding formats must be supported? (JSON, Text/CSV, Binary) → All 3 formats: JSON (application/swe+json), CSV (application/swe+csv), Binary (application/swe+binary) with configurable parameters
+- [x] How are SWE Common encodings configured? (JSONEncoding, TextEncoding, BinaryEncoding parameters) → JSONEncoding (includeNilValues), TextEncoding (tokenSeparator, blockSeparator, decimalSeparator, collapseWhiteSpaces), BinaryEncoding (byteOrder, byteEncoding, members)
+- [x] What is the structure of SWE Common DataRecords for observations? → DataRecord with named fields array, each field has name/type/uom/definition/constraint/nilValues/quality; supports nested DataRecords
+- [x] How are units of measure (UoM) handled in SWE Common? → UCUM codes (standard) or URI-based units; uom object with code or href property; client must parse, preserve, optionally validate/convert
+- [x] Does library need to parse SWE Common data or treat it opaquely? → Schema-driven parsing: parse schemas (resultSchema/parametersSchema/encoding), component types, properties; decode data values according to schema and encoding
+- [x] Does library need to encode/decode binary SWE Common formats? → Yes: implement binary encoding/decoding with DataView, support BIG_ENDIAN/LITTLE_ENDIAN byte order, all data types (INT8-64, UINT8-64, FLOAT32/64, UTF8)
+- [x] Does library need to encode/decode text/CSV SWE Common formats? → Yes: implement CSV encoding/decoding with configurable separators, decimal separator, whitespace handling; parse/format values by component type
+- [x] Are there SWE Common validation requirements? → Yes: validate against schema (component types, constraints, required fields), validate UoM codes, validate nil values, throw detailed validation errors with component path
+- [x] How should library handle complex SWE Common structures? (nested DataRecords, DataArrays) → Schema-driven approach enables generic handling; parse nested structures recursively; preserve unknown components for extensibility
+- [x] What are the client API implications for SWE Common support? → Schema fetching/caching, observation/command creation with validation, format negotiation, encoding/decoding all 3 formats, TypeScript types for all components, format conversion utilities
 
-**Deliverable:** SWE Common format requirements analysis (~200-300 lines)
+**Deliverable:** SWE Common format requirements analysis (~1,200 lines) ✅ **COMPLETE** - See [csapi-format-requirements.md Section 3.4](csapi-format-requirements.md#section-34-swe-common-format-requirements)
 
 ---
 
