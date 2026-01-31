@@ -738,22 +738,22 @@
 - [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
 
 **Questions to answer:**
-- [ ] How does oscar-viewer's TypeScript implementation differ from osh-viewer's JavaScript approach?
-- [ ] What CSAPI operations does oscar-viewer prioritize?
-- [ ] What type safety patterns does it employ?
-- [ ] How does it structure CSAPI API calls and responses?
-- [ ] What query patterns are most common in its codebase?
-- [ ] How does it handle dynamic data updates? (Observations, Datastreams)
-- [ ] What format handling does it implement?
-- [ ] How does it manage state for CSAPI resources?
-- [ ] What convenience methods would have reduced its implementation complexity?
-- [ ] What TypeScript interfaces would have helped its development?
-- [ ] How does it handle real-time or near-real-time data?
-- [ ] What error handling patterns does it use?
-- [ ] What API call sequences define its workflows?
-- [ ] What lessons emerge from comparing to osh-viewer?
+- [x] How does oscar-viewer's TypeScript implementation differ from osh-viewer's JavaScript approach? → TypeScript with partial adoption (extensive `any` usage), React+Redux vs Vue+Pinia, Node abstraction for multi-server, domain models (LaneMapEntry, EventTableData), MQTT vs WebSocket, Redux persistence vs schema caching
+- [x] What CSAPI operations does oscar-viewer prioritize? → GET systems/datastreams/observations (same as osh-viewer), POST commands, custom `/observations/count` endpoint, searchMembers=true for hierarchies, validTime=latest queries
+- [x] What type safety patterns does it employ? → `typeof` imports (awkward pattern), custom interfaces (INode, IEventTableData, LaneDSColl), type guard utilities (isGammaDataStream, isTamperDataStream), but extensive `any` usage and `@ts-ignore` comments undermine benefits
+- [x] How does it structure CSAPI API calls and responses? → Node class wraps API clients, encapsulates endpoint construction, pagination loops with hasNext()/nextPage(), filter builder classes, direct component calls (no service layer)
+- [x] What query patterns are most common in its codebase? → Property-based filtering (observedProperty URIs), comma-separated ID lists for batching, time ranges with resultTime parameter, latest observations for real-time, order=desc for recent-first
+- [x] How does it handle dynamic data updates? (Observations, Datastreams) → MQTT subscriptions for real-time, Redux state updates trigger React re-renders, pre-fetching on initialization, lazy loading on demand
+- [x] What format handling does it implement? → SWE+JSON default, SWE+Binary for video only, format selection based on datastream type detection (video outputName check), no explicit Accept header negotiation
+- [x] How does it manage state for CSAPI resources? → Redux Toolkit with redux-persist, state slices per resource type, React refs for mutable caches (timeRangeCache), Context API for global data access
+- [x] What convenience methods would have reduced its implementation complexity? → fetchAll() for pagination, findByObservedProperty(), fetchObservationsForDataStreams(), built-in auth helpers, URL builder utility, observation count helper
+- [x] What TypeScript interfaces would have helped its development? → Clean type exports (not typeof), strong resource interfaces, generic Collection<T>, property guards, error type hierarchy, federated client types
+- [x] How does it handle real-time or near-real-time data? → MQTT subscriptions with shared client, connection pooling, subscribe/unsubscribe on component lifecycle, Redux dispatch on message receipt, reactive UI updates
+- [x] What error handling patterns does it use? → Try-catch with defaults (return empty/null), silent failures with console warnings, retry logic for video (5 attempts, 750ms delay), no status code differentiation, graceful degradation
+- [x] What API call sequences define its workflows? → 5 workflows: Init (check endpoint → fetch systems → datastreams → controls → MQTT setup), Real-time (MQTT subscribe → message handler → Redux update), Historical (identify DS → query obs → display), Command (find CS → build JSON → POST → poll status), Federated (parallel node queries → merge results)
+- [x] What lessons emerge from comparing to osh-viewer? → Same osh-js patterns (pagination loops, filters, property matching), TypeScript underutilized (many `any` types), multi-server critical for production, property-based discovery essential, both lack spatial queries, custom endpoints valuable (/count), Redux vs Pinia trade-offs
 
-**Deliverable:** oscar-viewer usage pattern analysis and comparative insights (~400-600 lines)
+**Deliverable:** oscar-viewer usage pattern analysis and comparative insights (~400-600 lines) ✅ **COMPLETE** - See [csapi-oscarviewer-analysis.md](csapi-oscarviewer-analysis.md) (~4,800 lines)
 
 ---
 
