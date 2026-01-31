@@ -4854,4 +4854,1168 @@ The OpenAPI specification provides machine-readable definitions for:
 - Read-only vs write-only property distinctions (id readOnly, schema writeOnly)
 - Link relation types for navigation (canonical, self, next, system, datastream, etc.)
 
-**Ready for Section 2.3:** CSAPI Part 2 Comparison and Insights (compare Section 2.1 standard vs Section 2.2 OpenAPI)
+---
+
+## Section 2.3: CSAPI Part 2 Comparison and Insights
+
+**Date:** 2026-01-31  
+**Status:** Complete
+
+This section compares findings from Section 2.1 (standard document analysis) and Section 2.2 (OpenAPI schema analysis) to identify alignments, discrepancies, and implementation implications.
+
+---
+
+### 1. Perfect Alignments Between Standard and OpenAPI
+
+The standard document and OpenAPI schema align precisely on these aspects:
+
+#### 1.1 Resource Path Structure
+
+Both sources define identical hierarchical paths:
+- `/datastreams` and `/systems/{systemId}/datastreams`
+- `/observations` and `/datastreams/{dataStreamId}/observations`
+- `/controlstreams` and `/systems/{systemId}/controlstreams`
+- `/commands` and `/controlstreams/{controlStreamId}/commands`
+- `/commands/{cmdId}/status` and `/commands/{cmdId}/result`
+- `/systemEvents` and `/systems/{systemId}/events`
+- `/systems/{systemId}/history`
+
+#### 1.2 Core Data Models
+
+**DataStream/ControlStream properties** match exactly:
+- Required properties: `name`, `system@link`, `observedProperties`/`controlledProperties`
+- Temporal extent properties: `phenomenonTime`/`resultTime` (DataStream), `issueTime`/`executionTime` (ControlStream)
+- Association properties: `procedure@link`, `deployment@link`, `featureOfInterest@link`, `samplingFeature@link`
+- Schema property: `schema` (writeOnly in OpenAPI, creation-time in standard)
+
+**Observation/Command properties** match exactly:
+- Parent associations: `datastream@id` (Observation), `controlstream@id` (Command)
+- Temporal properties: `resultTime` (Observation), `issueTime` (Command)
+- Data properties: `result` or `result@link` (Observation), `parameters` (Command)
+- Schema validation requirements identical
+
+#### 1.3 Temporal Query Parameters
+
+Both sources specify identical temporal filtering:
+- Parameter names: `phenomenonTime`, `resultTime`, `issueTime`, `executionTime`, `reportTime`, `validTime`, `datetime`
+- ISO 8601 format support: instants (`2024-01-15T10:00:00Z`) and periods (`2024-01-15T10:00:00Z/2024-01-15T12:00:00Z`)
+- Special values: `now`, `latest` (observations), `..` (open-ended periods)
+- Intersection semantics: resources selected if temporal property overlaps query value
+
+#### 1.4 CommandStatus State Machine
+
+Both sources define identical status codes and transitions:
+- **Codes:** PENDING, ACCEPTED, REJECTED, SCHEDULED, UPDATED, CANCELED, EXECUTING, FAILED, COMPLETED
+- **Transitions:** PENDING → ACCEPTED → SCHEDULED → EXECUTING → COMPLETED/FAILED
+- **Branches:** REJECTED, CANCELED (final states)
+- **Semantics:** Identical descriptions for each status code
+
+#### 1.5 HTTP Status Codes
+
+Both sources specify identical response codes:
+- **200 OK:** Successful retrieval (collection or single resource)
+- **201 Created:** Resource created with `Location` header
+- **204 No Content:** Successful update or deletion
+- **400 Bad Request:** Invalid parameters or schema validation failure
+- **404 Not Found:** Resource doesn't exist
+- **409 Conflict:** Cascade constraint violation or schema change conflict
+
+#### 1.6 Schema Operation Semantics
+
+Both sources describe identical schema behavior:
+- GET `/datastreams/{id}/schema` returns observation schema
+- GET `/controlstreams/{id}/schema` returns command schema
+- Format-specific schemas: JSON, SWE Common (JSON/Text/Binary), Protobuf
+- PUT schema operations return 409 if observations/commands already exist
+- Schema validation applies to all subsequent observations/commands
+
+---
+
+### 2. OpenAPI Schema Provides More Specifics
+
+The OpenAPI schema adds precision beyond the standard document:
+
+#### 2.1 Precise Parameter Constraints
+
+**Standard:** Describes parameters conceptually  
+**OpenAPI:** Adds exact constraints
+
+| Parameter | Standard Description | OpenAPI Constraint |
+|-----------|---------------------|-------------------|
+| `limit` | "Maximum number of items" | `integer`, `minimum: 1`, `maximum: 10000`, `default: 10` |
+| `id` | "Filter by resource IDs" | `oneOf[array<string>, array<string format:uri>]`, `explode: false` |
+| `q` | "Keyword search" | `array<string>`, `minLength: 1`, `maxLength: 50` |
+| Path params | "Resource identifiers" | `string`, `minLength: 1`, `required: true` |
+| `cascade` | "Delete nested resources" | `boolean`, `default: false` |
+
+**Implementation Benefit:** Client library can validate parameters before HTTP request
+
+#### 2.2 Exact Required vs Optional Properties
+
+**Standard:** Uses "MUST" and "MAY" language  
+**OpenAPI:** Explicit `required` arrays
+
+**DataStream Example:**
+```yaml
+# Standard: "A DataStream MUST have name, system link, and observed properties"
+# OpenAPI:
+required:
+  - name
+  - system@link
+  - observedProperties
+  - phenomenonTime
+  - resultTime
+  - resultType
+  - live
+  - formats
+```
+
+**Observation Example:**
+```yaml
+# Standard: "An Observation MUST reference its DataStream and include resultTime"
+# OpenAPI:
+required:
+  - id
+  - datastream@id
+  - resultTime
+oneOf:
+  - required: [result]
+  - required: [result@link]
+```
+
+**Implementation Benefit:** TypeScript interfaces can use exact optional (`?`) vs required properties
+
+#### 2.3 Read-Only Property Specifications
+
+**Standard:** Describes properties as "system-generated"  
+**OpenAPI:** Explicit `readOnly: true` markers
+
+**Examples:**
+- `id` - Server assigns unique identifier
+- `datastream@id` / `controlstream@id` - Set from parent path parameter
+- `issueTime` / `reportTime` - Server sets to current time
+- `currentStatus` - Derived from latest status report
+- `observedProperties` / `controlledProperties` - Derived from schema
+- `phenomenonTime` / `resultTime` / `issueTime` / `executionTime` (extents) - Computed from nested resources
+
+**Implementation Benefit:** Client library can prevent sending read-only properties in PUT/POST
+
+#### 2.4 Write-Only Property Specifications
+
+**Standard:** "Schema provided at creation time"  
+**OpenAPI:** `schema` property with `writeOnly: true`
+
+**Semantics:**
+- Client provides `schema` in POST request body
+- Server stores schema separately
+- GET response doesn't include `schema` property
+- GET `/datastreams/{id}/schema` retrieves schema
+
+**Implementation Benefit:** Client library can strip write-only properties from cached responses
+
+#### 2.5 Link Object Complete Specification
+
+**Standard:** References RFC 8288 Web Linking  
+**OpenAPI:** Complete schema with validation patterns
+
+```yaml
+Link:
+  type: object
+  required:
+    - href
+  properties:
+    href:
+      type: string
+      format: uri
+    rel:
+      type: string
+    type:
+      type: string
+    hreflang:
+      type: string
+      pattern: ^([a-z]{2}(-[A-Z]{2})?)|x-default$
+    title:
+      type: string
+    uid:
+      type: string
+      format: uri
+    rt:
+      type: string
+      format: uri
+    if:
+      type: string
+      format: uri
+```
+
+**Implementation Benefit:** Client library can validate link objects and enforce `hreflang` pattern
+
+#### 2.6 Encoding Specification Details
+
+**Standard:** References SWE Common 3.0  
+**OpenAPI:** Complete inline schemas
+
+**TextEncoding Example:**
+```yaml
+TextEncoding:
+  required:
+    - tokenSeparator
+    - blockSeparator
+  properties:
+    collapseWhiteSpaces:
+      type: boolean
+    decimalSeparator:
+      type: string
+      minLength: 1
+    tokenSeparator:
+      type: string
+      minLength: 1
+    blockSeparator:
+      type: string
+      minLength: 1
+```
+
+**Implementation Benefit:** Client library can generate CSV/TSV parsers from encoding metadata
+
+#### 2.7 CommandResult OneOf Constraint
+
+**Standard:** "Result can be inline data, observation reference, or external link"  
+**OpenAPI:** Explicit `oneOf` validation
+
+```yaml
+CommandResult:
+  oneOf:
+    - required: [data]
+    - required: [observation@link]
+    - required: [observationSet@link]
+    - required: [datastream@link]
+    - required: [external@link]
+```
+
+**Implementation Benefit:** Client library can provide discriminated union type for CommandResult
+
+---
+
+### 3. Standard Describes Concepts Not in OpenAPI
+
+The standard document provides context absent from the OpenAPI schema:
+
+#### 3.1 Architecture and Design Rationale
+
+**Standard Coverage:**
+- **Purpose:** "Dynamic data extension enables sensor data streaming and actuator control"
+- **Use Cases:** Environmental monitoring, UAV control, robotic tasking, IoT device management
+- **Design Decisions:** Why separate Datastream/Observation vs single resource
+- **Relationship to Part 1:** Dynamic data complements static system descriptions
+
+**OpenAPI Coverage:** None - purely operational specification
+
+**Implementation Impact:** Developers need standard document to understand *why* API is designed this way
+
+#### 3.2 Content Negotiation Details
+
+**Standard Coverage:**
+- Accept header usage: `Accept: application/swe+json`
+- Format query parameter: `?f=application/swe+csv`
+- Precedence: Query parameter overrides Accept header
+- Default format: `application/json` if neither specified
+
+**OpenAPI Coverage:** Lists content types per endpoint but doesn't explain negotiation rules
+
+**Implementation Impact:** Client library needs to implement format negotiation logic based on standard
+
+#### 3.3 Pagination Cursor Semantics
+
+**Standard Coverage:**
+- Cursor values are opaque (server-generated)
+- Cursors expire after reasonable time (implementation-specific)
+- Clients should not construct cursor values
+- `limit` parameter doesn't guarantee exact count (server may return fewer)
+
+**OpenAPI Coverage:** Defines `limit` parameter and `rel="next"` links but not cursor behavior
+
+**Implementation Impact:** Client library should treat cursors as opaque strings, not parse/construct them
+
+#### 3.4 Schema Validation Workflow
+
+**Standard Coverage:**
+- **Validation Timing:** Schema applied to observations/commands *after* schema creation
+- **Pre-existing Data:** Changing schema doesn't retroactively validate old observations
+- **Partial Validation:** `parametersSchema` optional, `resultSchema` required
+- **Error Handling:** 400 with validation details if observation doesn't match schema
+
+**OpenAPI Coverage:** Indicates validation happens (400 on failure) but not workflow details
+
+**Implementation Impact:** Client library should validate against schema before POST to provide early error feedback
+
+#### 3.5 Cascade Delete Semantics
+
+**Standard Coverage:**
+- `cascade=false` (default): DELETE fails with 409 if nested resources exist
+- `cascade=true`: Recursively deletes nested resources (DataStream → Observations, ControlStream → Commands)
+- **Order:** Commands deleted before ControlStream, Observations deleted before DataStream
+- **Atomicity:** Either all deleted or none (transaction semantics)
+
+**OpenAPI Coverage:** Defines `cascade` parameter but not deletion order or atomicity
+
+**Implementation Impact:** Client library should warn users about cascade implications
+
+#### 3.6 Live Data Stream Semantics
+
+**Standard Coverage:**
+- `live: true` - New observations/commands may arrive at any time
+- `live: false` - Historical dataset, no new data expected
+- `live: null` - Unknown or transitioning state
+- **Polling Recommendations:** Live streams benefit from WebSocket/Server-Sent Events (future extension)
+
+**OpenAPI Coverage:** Defines `live` property as `oneOf[boolean, null]` but not semantics
+
+**Implementation Impact:** Client library could optimize polling intervals based on `live` flag
+
+#### 3.7 Temporal Extent Auto-Update
+
+**Standard Coverage:**
+- `phenomenonTime`/`resultTime` (DataStream) auto-expand as observations added
+- `issueTime`/`executionTime` (ControlStream) auto-expand as commands issued
+- Server responsible for maintaining extents
+- Clients should not compute extents themselves
+
+**OpenAPI Coverage:** Marks temporal extents as `readOnly` but doesn't explain auto-update
+
+**Implementation Impact:** Client library should refresh DataStream/ControlStream metadata after POST operations
+
+---
+
+### 4. Conflicts and Ambiguities
+
+Areas where standard and OpenAPI disagree or are unclear:
+
+#### 4.1 PATCH Method Discrepancy
+
+**Standard:** "Resources can be updated using PUT (full replacement) or PATCH (partial update)" (Section 7.3.4)
+
+**OpenAPI:** No `patch` operations defined in schema
+
+**Ambiguity:**
+- Is PATCH support optional?
+- Should clients use PUT with full resource even for single property update?
+- Does server support JSON Patch (RFC 6902) or JSON Merge Patch (RFC 7386)?
+
+**Resolution Needed:** Clarify in standard whether PATCH is required, optional, or future work
+
+**Implementation Impact:** Client library implements PUT-only updates until PATCH specified
+
+#### 4.2 StatusCode Transition Validation
+
+**Standard:** Describes status code transitions but not validation rules
+
+**OpenAPI:** Defines `statusCode` as enum but not transition constraints
+
+**Ambiguity:**
+- Can client transition PENDING → COMPLETED (skip EXECUTING)?
+- Can client submit duplicate status codes (EXECUTING → EXECUTING)?
+- Does server validate state machine transitions or accept any sequence?
+
+**Example Unclear Transition:**
+```
+PENDING → COMPLETED  // Valid shortcut or error?
+EXECUTING → PENDING  // Valid rollback or error?
+```
+
+**Resolution Needed:** Standard should specify valid transitions and server validation behavior
+
+**Implementation Impact:** Client library cannot validate transitions without clarification
+
+#### 4.3 Schema Format Constraints
+
+**Standard:** "Observation schema must specify format" (Section 8.2.1)
+
+**OpenAPI:** `obsFormat` parameter required on GET schema, but POST schema body format unclear
+
+**Ambiguity:**
+- Does POST `/systems/{systemId}/datastreams` with `schema` property require format in body?
+- Can one DataStream support multiple formats (multiple schemas)?
+- Is `formats` array (readOnly) derived from `schema.obsFormat` or separate?
+
+**Resolution Needed:** Clarify schema-format relationship
+
+**Implementation Impact:** Client library unclear whether to include `obsFormat` in schema body
+
+#### 4.4 Observation phenomenonTime Default
+
+**Standard:** "If phenomenonTime omitted, defaults to resultTime"
+
+**OpenAPI:** `phenomenonTime` not in `required` array but no `default` specified
+
+**Ambiguity:**
+- Does server populate `phenomenonTime` in POST response?
+- Does server populate `phenomenonTime` in subsequent GET?
+- If client provides null, is that different from omitting?
+
+**Resolution Needed:** OpenAPI should use `default` keyword or standard should clarify server behavior
+
+**Implementation Impact:** Client library unclear whether to set `phenomenonTime = resultTime` or let server handle it
+
+#### 4.5 CommandResult Multiple Results Timing
+
+**Standard:** "A command can produce multiple results"
+
+**OpenAPI:** Defines `/commands/{cmdId}/result` collection but not creation timing
+
+**Ambiguity:**
+- Can client POST multiple results?
+- Are results added incrementally during execution?
+- Can results be added after COMPLETED status?
+- Must results be added before COMPLETED status?
+
+**Resolution Needed:** Standard should specify result lifecycle relative to status
+
+**Implementation Impact:** Client library unclear when to fetch results
+
+---
+
+### 5. Patterns Reused vs Changed from Part 1
+
+Comparison of architectural patterns between Part 1 and Part 2:
+
+#### 5.1 Reused Patterns
+
+**Collection + Single Resource Pattern:**
+- Part 1: `/systems`, `/systems/{systemId}`
+- Part 2: `/datastreams`, `/datastreams/{dataStreamId}`
+- **Consistent:** All resources follow this pattern
+
+**Nested Resource Creation:**
+- Part 1: POST `/systems/{systemId}/subsystems`
+- Part 2: POST `/systems/{systemId}/datastreams`, POST `/datastreams/{dataStreamId}/observations`
+- **Consistent:** POST to parent collection creates child with automatic association
+
+**Query Parameter Filtering:**
+- Part 1: `system`, `procedure`, `foi`, `validTime`, `q`, `id`, `limit`
+- Part 2: Reuses all Part 1 parameters + adds `phenomenonTime`, `resultTime`, `issueTime`, `executionTime`, `statusCode`
+- **Consistent:** Same parameter names, types, and semantics
+
+**Link-Based Associations:**
+- Part 1: `system@link`, `procedure@link`, `deployment@link`
+- Part 2: Reuses same link properties + adds `datastream@id`, `controlstream@id` for dynamic associations
+- **Consistent:** `@link` suffix for external resources, `@id` suffix for local foreign keys
+
+**Temporal Properties:**
+- Part 1: `validTime` (TimePeriod) for system description validity
+- Part 2: `phenomenonTime`, `resultTime`, `issueTime`, `executionTime` (TimePeriod or TimeInstant)
+- **Consistent:** All use ISO 8601, support open-ended periods, allow null
+
+#### 5.2 Changed Patterns
+
+**Mandatory Parent Association:**
+- Part 1: Systems can exist independently (root systems)
+- Part 2: Observations *require* DataStream parent, Commands *require* ControlStream parent
+- **Rationale:** Dynamic data meaningless without container context
+
+**Read-Only Identifier Patterns:**
+- Part 1: `id` optional in POST, server assigns if omitted
+- Part 2: `datastream@id`, `controlstream@id` always read-only, derived from POST path
+- **Rationale:** Parent association immutable after creation
+
+**Schema-Based Validation:**
+- Part 1: Resources validated against OpenAPI schema only
+- Part 2: Observations/Commands validated against DataStream/ControlStream schema *and* OpenAPI schema
+- **Rationale:** Flexible result structures require runtime schema validation
+
+**Temporal Extent Auto-Computation:**
+- Part 1: `validTime` explicitly provided by client
+- Part 2: `phenomenonTime`, `resultTime`, `issueTime`, `executionTime` (extents) computed by server from nested resources
+- **Rationale:** Extents change as observations/commands added
+
+**Live Data Flag:**
+- Part 1: No equivalent concept
+- Part 2: `live` boolean indicates whether new data expected
+- **Rationale:** Clients can optimize polling/caching for live vs historical data
+
+**Multiple Format Support:**
+- Part 1: Single JSON format per resource
+- Part 2: DataStream/ControlStream support multiple formats via `formats` array
+- **Rationale:** Observations may use different encodings (JSON, CSV, binary) for efficiency
+
+---
+
+### 6. Dynamic Data vs Feature Resource Architectural Differences
+
+Key architectural distinctions between Part 2 (dynamic data) and Part 1 (feature resources):
+
+#### 6.1 Container-Item Hierarchy
+
+**Part 1 (Feature Resources):**
+- Flat hierarchy: `/systems` collection contains independent system resources
+- Systems can have `parent@link` but no mandatory containment
+
+**Part 2 (Dynamic Data):**
+- Strict two-level hierarchy: DataStream → Observations, ControlStream → Commands
+- Observations cannot exist without DataStream
+- Commands cannot exist without ControlStream
+
+**Rationale:** Observations/Commands meaningless without container metadata (observed properties, schema, temporal extents)
+
+#### 6.2 Schema-Driven Flexibility
+
+**Part 1 (Feature Resources):**
+- Fixed schemas: System, Deployment, Procedure, SamplingFeature
+- All properties defined in OpenAPI
+- No runtime schema variation
+
+**Part 2 (Dynamic Data):**
+- Flexible schemas: Observation `result` and Command `parameters` structures defined at runtime
+- DataStream/ControlStream `schema` property defines structure
+- Different DataStreams can have completely different observation structures
+
+**Rationale:** Sensor observations vary wildly (temperature scalar vs GPS vector vs image), fixed schema impractical
+
+#### 6.3 Temporal Dynamics
+
+**Part 1 (Feature Resources):**
+- Mostly static: Systems, Procedures, Deployments change infrequently
+- `validTime` explicitly provided by client
+- Updates via PUT replace entire resource
+
+**Part 2 (Dynamic Data):**
+- Highly dynamic: Observations/Commands added continuously
+- Temporal extents auto-computed from nested resources
+- Extents expand as new data arrives
+
+**Rationale:** Sensor data arrives continuously, extents must track without client computation
+
+#### 6.4 Lifecycle Complexity
+
+**Part 1 (Feature Resources):**
+- Simple lifecycle: Create → Read → Update → Delete
+- No state machine or status tracking
+
+**Part 2 (Dynamic Data):**
+- Complex lifecycle: Commands have 9-state state machine
+- Status reports track execution progress
+- Results may be added incrementally
+
+**Rationale:** Actuator commands have execution phases (pending, scheduled, executing, completed) requiring status tracking
+
+#### 6.5 Data Volume Characteristics
+
+**Part 1 (Feature Resources):**
+- Low volume: Hundreds to thousands of systems/deployments/procedures
+- GET `/systems` typically returns complete collection
+
+**Part 2 (Dynamic Data):**
+- High volume: Millions to billions of observations/commands
+- GET `/observations` always requires pagination
+- `limit` parameter critical for performance
+
+**Rationale:** Sensor data accumulates continuously at high frequency
+
+#### 6.6 Update Patterns
+
+**Part 1 (Feature Resources):**
+- Infrequent updates: System descriptions change rarely
+- PUT replaces entire resource
+- No partial update constraints
+
+**Part 2 (Dynamic Data):**
+- Rare updates: Observations typically immutable once created
+- Commands updated only via status reports
+- DataStream/ControlStream schema updates fail (409) if data exists
+
+**Rationale:** Time-series data should not be modified after recording (data integrity)
+
+---
+
+### 7. Implementation Complexity Unique to Part 2
+
+Part 2 introduces challenges absent from Part 1:
+
+#### 7.1 Dynamic Schema Validation
+
+**Challenge:** Client must fetch DataStream/ControlStream schema before validating Observation/Command
+
+**Workflow:**
+```typescript
+// 1. Fetch DataStream metadata
+const datastream = await client.getDataStream('ds123');
+
+// 2. Fetch observation schema for desired format
+const schema = await client.getDataStreamSchema('ds123', 'application/swe+json');
+
+// 3. Validate observation against schema
+const observation = {
+  resultTime: '2024-01-15T10:00:00Z',
+  result: { temperature: 25.3, humidity: 60.2 }
+};
+validateObservation(observation, schema); // Client-side validation
+
+// 4. POST observation
+await client.createObservation('ds123', observation);
+```
+
+**Complexity:**
+- Client library needs JSON Schema validator
+- Schema caching required for performance
+- Schema may change, cache invalidation needed
+
+#### 7.2 Multi-Format Parsing
+
+**Challenge:** Single DataStream may return observations in different formats
+
+**Example:**
+```typescript
+// Fetch observations in JSON format
+const jsonObs = await client.getObservations('ds123', { format: 'application/json' });
+
+// Fetch observations in SWE CSV format
+const csvObs = await client.getObservations('ds123', { format: 'application/swe+csv' });
+
+// Fetch observations in SWE binary format
+const binaryObs = await client.getObservations('ds123', { format: 'application/swe+binary' });
+```
+
+**Complexity:**
+- Client library needs parsers for: JSON, SWE JSON, SWE CSV, SWE Binary, Protobuf
+- Encoding metadata (TextEncoding, BinaryEncoding) must be parsed to configure parsers
+- Binary formats require byte-level manipulation
+
+#### 7.3 Temporal Query Construction
+
+**Challenge:** Temporal parameters support complex syntax (instants, periods, open-ended, special values)
+
+**Examples:**
+```typescript
+// Instant
+await client.getObservations('ds123', { 
+  phenomenonTime: '2024-01-15T10:00:00Z' 
+});
+
+// Closed period
+await client.getObservations('ds123', { 
+  phenomenonTime: '2024-01-15T00:00:00Z/2024-01-15T23:59:59Z' 
+});
+
+// Open-ended period
+await client.getObservations('ds123', { 
+  phenomenonTime: '2024-01-15T00:00:00Z/..' 
+});
+
+// Latest observation
+await client.getObservations('ds123', { 
+  resultTime: 'latest' 
+});
+```
+
+**Complexity:**
+- Client library needs temporal query builder
+- URL encoding required (`/` → `%2F`)
+- Validation of ISO 8601 format
+
+#### 7.4 Pagination Cursor Management
+
+**Challenge:** Cursor-based pagination requires state management
+
+**Workflow:**
+```typescript
+let allObservations = [];
+let nextCursor = null;
+
+do {
+  const response = await client.getObservations('ds123', {
+    limit: 1000,
+    cursor: nextCursor
+  });
+  
+  allObservations = allObservations.concat(response.items);
+  nextCursor = extractCursor(response.links); // Parse rel="next" link
+} while (nextCursor);
+```
+
+**Complexity:**
+- Client library needs link parser to extract cursor
+- Iterator pattern for transparent pagination
+- Cursor expiration handling
+
+#### 7.5 CommandStatus State Machine Tracking
+
+**Challenge:** Command execution involves multiple status updates
+
+**Workflow:**
+```typescript
+// Issue command
+const cmd = await client.createCommand('cs123', { parameters: { angle: 45 } });
+
+// Poll for status updates
+const statusUpdates = [];
+let finalStatus = null;
+
+while (!['COMPLETED', 'FAILED', 'REJECTED', 'CANCELED'].includes(finalStatus)) {
+  const statuses = await client.getCommandStatus(cmd.id);
+  finalStatus = statuses.items[statuses.items.length - 1].statusCode;
+  statusUpdates.push(finalStatus);
+  
+  await delay(1000); // Wait 1 second before polling again
+}
+
+// Fetch results
+if (finalStatus === 'COMPLETED') {
+  const results = await client.getCommandResults(cmd.id);
+}
+```
+
+**Complexity:**
+- Client library needs status polling logic
+- WebSocket/Server-Sent Events support for live updates (future)
+- Timeout and error handling
+
+#### 7.6 Schema Conflict Detection
+
+**Challenge:** Schema changes fail if data already exists
+
+**Scenario:**
+```typescript
+// Create DataStream with initial schema
+await client.createDataStream('sys123', {
+  name: 'Temperature Sensor',
+  schema: {
+    obsFormat: 'application/json',
+    resultSchema: { type: 'object', properties: { temp: { type: 'number' } } }
+  }
+});
+
+// Add observations
+await client.createObservation('ds123', { 
+  resultTime: '2024-01-15T10:00:00Z',
+  result: { temp: 25.3 }
+});
+
+// Attempt schema change (will fail with 409)
+try {
+  await client.updateDataStreamSchema('ds123', {
+    obsFormat: 'application/json',
+    resultSchema: { type: 'object', properties: { temperature: { type: 'number' } } }
+  });
+} catch (err) {
+  // 409 Conflict - observations exist
+  console.error('Cannot change schema: observations already exist');
+}
+```
+
+**Complexity:**
+- Client library should check for existing data before schema update
+- Clear error messages to guide users
+- Schema versioning strategy needed
+
+---
+
+### 8. DataStream-Observation Relationship Clarity
+
+**Which source clarifies better?**
+
+#### 8.1 Standard Document Strengths
+
+- **Conceptual Model:** "A DataStream represents a container for a sequence of observations from a single sensor output"
+- **Lifecycle:** Explains DataStream creation *before* observations
+- **Temporal Extents:** "phenomenonTime and resultTime extents are derived from nested observations"
+- **Schema Semantics:** "Schema defines the structure and constraints for all observations in the DataStream"
+- **Use Cases:** Examples of status streams vs observation streams
+
+**Winner for Conceptual Understanding:** Standard
+
+#### 8.2 OpenAPI Schema Strengths
+
+- **Required Properties:** Exact list of 9 required DataStream properties
+- **Read-Only Properties:** Clear which properties server-computed (`id`, `observedProperties`, `phenomenonTime`, `resultTime`, `resultType`, `formats`)
+- **Write-Only Properties:** `schema` provided at creation, not returned in responses
+- **Association Mechanics:** `datastream@id` in Observation always read-only, set from POST path
+- **Validation Rules:** Observation `result` validated against DataStream `resultSchema`
+
+**Winner for Implementation Details:** OpenAPI
+
+#### 8.3 Combined Insights
+
+**Best Practice:**
+1. Read standard to understand *why* DataStream-Observation separation exists
+2. Read OpenAPI to understand *how* to implement create/read/update operations
+3. Use standard for conceptual model, OpenAPI for validation rules
+
+**Key Insight:** Relationship is strictly hierarchical (tree, not graph):
+- One Observation belongs to exactly one DataStream
+- One DataStream contains many Observations
+- DataStream metadata (observed properties, schema, temporal extents) applies to all nested Observations
+
+---
+
+### 9. ControlStream-Command Relationship Clarity
+
+**Which source clarifies better?**
+
+#### 9.1 Standard Document Strengths
+
+- **Conceptual Model:** "A ControlStream represents a communication channel for sending commands to an actuator"
+- **Async vs Sync:** Explains `async: true` (polling for status) vs `async: false` (result in HTTP response)
+- **Command Lifecycle:** Describes status transitions from PENDING to COMPLETED/FAILED
+- **Result Types:** Explains five result types (inline data, observation reference, observation set, datastream reference, external reference)
+- **Use Cases:** Examples of UAV waypoint commands, camera capture commands, calibration commands
+
+**Winner for Conceptual Understanding:** Standard
+
+#### 9.2 OpenAPI Schema Strengths
+
+- **Required Properties:** Exact list of 10 required ControlStream properties, 4 required Command properties
+- **Status Code Enum:** Complete list of 9 status codes
+- **CommandStatus Schema:** Precise structure with `reportTime`, `statusCode`, `percentCompletion`, `executionTime`, `message`, `results`
+- **CommandResult OneOf:** Explicit validation that exactly one result type must be provided
+- **Endpoint Definitions:** 16 command-related endpoints (commands, status, result collections and items)
+
+**Winner for Implementation Details:** OpenAPI
+
+#### 9.3 Combined Insights
+
+**Best Practice:**
+1. Read standard to understand command execution model (issue → schedule → execute → complete)
+2. Read OpenAPI to understand status/result data structures
+3. Use standard for async semantics, OpenAPI for status code values
+
+**Key Insight:** Relationship is hierarchical with lifecycle complexity:
+- One Command belongs to exactly one ControlStream
+- One ControlStream contains many Commands
+- Each Command has 0-to-many CommandStatus reports (lifecycle tracking)
+- Each Command has 0-to-many CommandResult objects (execution outputs)
+
+**Complexity Comparison:**
+- DataStream-Observation: Simple container-item (static metadata)
+- ControlStream-Command: Complex container-item (dynamic status tracking)
+
+---
+
+### 10. Client Library Implementation Implications
+
+Key decisions informed by standard vs OpenAPI comparison:
+
+#### 10.1 Type System Architecture
+
+**Decision:** Generate TypeScript interfaces from OpenAPI, augment with standard semantics
+
+**Rationale:**
+- OpenAPI provides exact property types and required/optional distinctions
+- Standard provides read-only/write-only semantics not fully captured in OpenAPI
+- Need both for accurate type generation
+
+**Example:**
+```typescript
+// Generated from OpenAPI
+interface DataStream {
+  readonly id: string;  // OpenAPI: readOnly
+  name: string;  // OpenAPI: required
+  description?: string;  // OpenAPI: optional
+  readonly observedProperties: ObservableProperty[] | null;  // OpenAPI: readOnly
+  readonly phenomenonTime: TimePeriod | null;  // OpenAPI: readOnly
+  readonly resultTime: TimePeriod | null;  // OpenAPI: readOnly
+  readonly resultType: 'measure' | 'vector' | 'record' | 'coverage' | 'complex' | null;  // OpenAPI: readOnly
+  live: boolean | null;  // OpenAPI: required
+  readonly formats: string[];  // OpenAPI: readOnly
+  // ... other properties
+}
+
+// Augmented from standard
+interface CreateDataStreamRequest {
+  name: string;
+  schema: ObservationSchema;  // Standard: provided at creation, writeOnly
+  // Omit all readOnly properties
+}
+```
+
+#### 10.2 Validation Strategy
+
+**Decision:** Implement two-tier validation (OpenAPI + runtime schema)
+
+**Tier 1 - OpenAPI Validation (Client-Side):**
+- Validate request parameters against OpenAPI constraints
+- Check required properties present
+- Validate parameter types and formats
+- Occurs before HTTP request
+
+**Tier 2 - Schema Validation (Client-Side):**
+- Validate Observation `result` against DataStream `resultSchema`
+- Validate Command `parameters` against ControlStream `parametersSchema`
+- Requires fetching schema first
+- Occurs before POST
+
+**Benefits:**
+- Early error detection
+- Reduced server load
+- Better error messages
+
+#### 10.3 Caching Strategy
+
+**Decision:** Cache DataStream/ControlStream schemas aggressively
+
+**Rationale:**
+- Schema rarely changes (409 if data exists)
+- Every observation/command POST requires schema for validation
+- Fetching schema for every observation prohibitively expensive
+
+**Implementation:**
+```typescript
+class SchemaCache {
+  private cache = new Map<string, { schema: any, expiresAt: number }>();
+  
+  async getDataStreamSchema(dataStreamId: string, format: string): Promise<any> {
+    const key = `${dataStreamId}:${format}`;
+    const cached = this.cache.get(key);
+    
+    if (cached && Date.now() < cached.expiresAt) {
+      return cached.schema;
+    }
+    
+    const schema = await api.getDataStreamSchema(dataStreamId, format);
+    this.cache.set(key, { schema, expiresAt: Date.now() + 3600000 }); // 1 hour TTL
+    return schema;
+  }
+  
+  invalidate(dataStreamId: string) {
+    // Called when DataStream deleted or schema updated
+    for (const key of this.cache.keys()) {
+      if (key.startsWith(`${dataStreamId}:`)) {
+        this.cache.delete(key);
+      }
+    }
+  }
+}
+```
+
+#### 10.4 Pagination API Design
+
+**Decision:** Provide iterator-based API hiding cursor management
+
+**Rationale:**
+- Cursors are opaque (standard guidance)
+- Clients shouldn't manage cursors manually
+- Iterator pattern familiar to developers
+
+**Implementation:**
+```typescript
+class ObservationIterator {
+  private dataStreamId: string;
+  private params: QueryParams;
+  private nextCursor: string | null = null;
+  
+  async *[Symbol.asyncIterator]() {
+    do {
+      const response = await api.getObservations(this.dataStreamId, {
+        ...this.params,
+        cursor: this.nextCursor
+      });
+      
+      for (const obs of response.items) {
+        yield obs;
+      }
+      
+      this.nextCursor = this.extractNextCursor(response.links);
+    } while (this.nextCursor);
+  }
+}
+
+// Usage
+for await (const obs of client.observationsIterator('ds123', { limit: 1000 })) {
+  console.log(obs.result);
+}
+```
+
+#### 10.5 Command Polling Design
+
+**Decision:** Provide async/await API with status callbacks
+
+**Rationale:**
+- Standard describes async command execution model
+- Polling implementation detail hidden from users
+- Callbacks allow progress tracking
+
+**Implementation:**
+```typescript
+interface CommandExecutionOptions {
+  onStatusUpdate?: (status: CommandStatus) => void;
+  pollInterval?: number;  // milliseconds
+  timeout?: number;  // milliseconds
+}
+
+async function executeCommand(
+  controlStreamId: string,
+  parameters: any,
+  options: CommandExecutionOptions = {}
+): Promise<CommandResult[]> {
+  // Issue command
+  const cmd = await api.createCommand(controlStreamId, { parameters });
+  
+  // Poll for completion
+  const finalStates = ['COMPLETED', 'FAILED', 'REJECTED', 'CANCELED'];
+  let currentStatus = 'PENDING';
+  const startTime = Date.now();
+  
+  while (!finalStates.includes(currentStatus)) {
+    if (options.timeout && Date.now() - startTime > options.timeout) {
+      throw new Error('Command execution timeout');
+    }
+    
+    await delay(options.pollInterval || 1000);
+    
+    const statuses = await api.getCommandStatus(cmd.id);
+    const latestStatus = statuses.items[statuses.items.length - 1];
+    currentStatus = latestStatus.statusCode;
+    
+    if (options.onStatusUpdate) {
+      options.onStatusUpdate(latestStatus);
+    }
+  }
+  
+  // Fetch results if completed
+  if (currentStatus === 'COMPLETED') {
+    const results = await api.getCommandResults(cmd.id);
+    return results.items;
+  } else {
+    throw new Error(`Command failed with status: ${currentStatus}`);
+  }
+}
+
+// Usage
+const results = await client.executeCommand('cs123', { angle: 45 }, {
+  onStatusUpdate: (status) => console.log(`Status: ${status.statusCode} (${status.percentCompletion}%)`),
+  timeout: 30000
+});
+```
+
+#### 10.6 Error Handling Strategy
+
+**Decision:** Map HTTP status codes to typed exceptions
+
+**Rationale:**
+- OpenAPI defines precise status codes
+- Standard explains semantic meaning
+- Typed errors enable better error handling
+
+**Implementation:**
+```typescript
+class ApiError extends Error {
+  constructor(
+    public statusCode: number,
+    public message: string,
+    public details?: any
+  ) {
+    super(message);
+  }
+}
+
+class ValidationError extends ApiError {
+  constructor(message: string, details?: any) {
+    super(400, message, details);
+  }
+}
+
+class NotFoundError extends ApiError {
+  constructor(resourceType: string, id: string) {
+    super(404, `${resourceType} not found: ${id}`);
+  }
+}
+
+class ConflictError extends ApiError {
+  constructor(message: string, details?: any) {
+    super(409, message, details);
+  }
+}
+
+// Usage
+try {
+  await client.createObservation('ds123', obs);
+} catch (err) {
+  if (err instanceof ValidationError) {
+    console.error('Observation validation failed:', err.details);
+  } else if (err instanceof ConflictError) {
+    console.error('Schema conflict:', err.message);
+  } else if (err instanceof NotFoundError) {
+    console.error('DataStream not found');
+  }
+}
+```
+
+#### 10.7 Format Support Strategy
+
+**Decision:** Implement JSON format fully, SWE Common formats via plugins
+
+**Rationale:**
+- JSON format ubiquitous, required for all implementations
+- SWE Common formats complex (binary parsing, encoding metadata)
+- Plugin architecture allows opt-in for specialized use cases
+
+**Implementation:**
+```typescript
+interface FormatCodec {
+  encode(data: any, schema: any): string | ArrayBuffer;
+  decode(data: string | ArrayBuffer, schema: any): any;
+}
+
+class JsonCodec implements FormatCodec {
+  encode(data: any): string {
+    return JSON.stringify(data);
+  }
+  
+  decode(data: string): any {
+    return JSON.parse(data);
+  }
+}
+
+// Optional plugin
+class SweCommonBinaryCodec implements FormatCodec {
+  encode(data: any, schema: BinaryEncodingSchema): ArrayBuffer {
+    // Complex binary encoding logic
+  }
+  
+  decode(data: ArrayBuffer, schema: BinaryEncodingSchema): any {
+    // Complex binary decoding logic
+  }
+}
+
+// Client registration
+client.registerCodec('application/json', new JsonCodec());
+client.registerCodec('application/swe+binary', new SweCommonBinaryCodec()); // Optional
+```
+
+---
+
+## Summary
+
+**Section 2.3 Complete:** CSAPI Part 2 Comparison and Insights (~3,300 words documenting alignment, discrepancies, and implementation implications)
+
+### Key Findings
+
+**Perfect Alignments:**
+- Resource paths, core data models, temporal parameters, status codes, HTTP status codes, schema semantics
+
+**OpenAPI Provides More Specifics:**
+- Exact parameter constraints, required/optional properties, read-only/write-only markers, link validation, encoding schemas, oneOf constraints
+
+**Standard Provides Unique Context:**
+- Architecture rationale, content negotiation rules, pagination cursor semantics, validation workflow, cascade delete details, live stream semantics, temporal extent auto-update
+
+**Conflicts Requiring Resolution:**
+- PATCH method discrepancy (standard specifies, OpenAPI omits)
+- Status transition validation rules unclear
+- Schema format constraints ambiguous
+- phenomenonTime default behavior unclear
+- CommandResult timing relative to status unclear
+
+**Architectural Insights:**
+- Part 2 uses strict container-item hierarchy (vs Part 1 flat hierarchy)
+- Schema-driven flexibility enables diverse observation structures
+- Temporal dynamics require auto-computed extents
+- Complex command lifecycle requires state machine tracking
+- High data volume necessitates pagination and caching
+
+**Implementation Implications:**
+- Two-tier validation (OpenAPI + runtime schema)
+- Aggressive schema caching required
+- Iterator-based pagination API
+- Async/await command execution with status callbacks
+- Typed exception hierarchy mapped from HTTP status codes
+- Plugin architecture for format codecs
+
+**Ready for Section 3:** Format Requirements Analysis
