@@ -62,7 +62,83 @@ The ogc-client library already supports multiple OGC API standards (WFS, STAC, E
 - Collection-level capability checking
 - TypeScript interfaces for all query options
 
-### 2.3 Out of Scope
+### 2.3 Testing Strategy - Ensuring Meaningful Coverage
+
+**Context:** Previous iterations received feedback that tests were too trivial and didn't deeply validate functionality. This section defines what constitutes appropriate, meaningful testing for a TypeScript URL-building client library implementing CSAPI.
+
+**What "Meaningful Tests" Look Like for This Project:**
+
+**1. URL Builder Tests (Unit Level)**
+- ✅ **GOOD:** Verify complete URL structure including base path, resource path, and query string
+- ✅ **GOOD:** Test all query parameter combinations with real values from the spec
+- ✅ **GOOD:** Validate proper URL encoding (spaces, special characters, arrays)
+- ✅ **GOOD:** Test edge cases (empty params, null values, boundary conditions)
+- ❌ **TRIVIAL:** Just checking that method returns a string
+
+**Example of meaningful test:**
+```typescript
+// GOOD - Validates complete URL structure and encoding
+expect(navigator.getSystemsUrl({ 
+  bbox: [-180, -90, 180, 90],
+  datetime: '2024-01-01T00:00:00Z/..',
+  limit: 10 
+})).toBe('https://api.example.com/systems?bbox=-180,-90,180,90&datetime=2024-01-01T00:00:00Z/..&limit=10')
+
+// TRIVIAL - Doesn't validate anything meaningful
+expect(typeof navigator.getSystemsUrl()).toBe('string')
+```
+
+**2. Integration Tests (Endpoint Level)**
+- ✅ **GOOD:** Test endpoint conformance detection from real CSAPI landing page fixtures
+- ✅ **GOOD:** Verify collection capability checking (does collection X support resource Y?)
+- ✅ **GOOD:** Test navigator caching and instance reuse
+- ✅ **GOOD:** Validate error handling for non-CSAPI endpoints
+- ❌ **TRIVIAL:** Only testing that methods exist
+
+**3. Parser/Validator Tests (Format Handling)**
+- ✅ **GOOD:** Test with real GeoJSON features from CSAPI spec examples
+- ✅ **GOOD:** Test with real SensorML 3.0 documents (SimpleProcess, AggregateProcess, PhysicalSystem)
+- ✅ **GOOD:** Test with real SWE Common 3.0 data components (DataArray, DataRecord, Quantity, etc.)
+- ✅ **GOOD:** Validate that parsers detect malformed data
+- ✅ **GOOD:** Test property extraction from nested structures
+- ❌ **TRIVIAL:** Only testing with minimal/empty objects
+
+**4. Format Negotiation Tests**
+- ✅ **GOOD:** Verify Accept headers are set correctly for GeoJSON vs SensorML
+- ✅ **GOOD:** Test Content-Type detection for different response formats
+- ✅ **GOOD:** Validate that format parameter propagates through URL building
+- ❌ **TRIVIAL:** Just checking that header exists
+
+**5. Standards Compliance Tests**
+- ✅ **GOOD:** Validate query parameters match CSAPI spec exactly
+- ✅ **GOOD:** Test datetime/bbox formats follow OGC API Common patterns
+- ✅ **GOOD:** Verify conformance class URIs are correct
+- ✅ **GOOD:** Test that generated URLs match OpenAPI spec examples
+- ❌ **TRIVIAL:** Not checking against actual spec requirements
+
+**What We're NOT Testing (Because Users Handle It):**
+- ❌ Network requests (no fetch/axios in library)
+- ❌ Authentication/authorization (user's responsibility)
+- ❌ Retry logic or error handling for HTTP failures
+- ❌ Full server round-trips (that's what CSAPI-Live-Testing repo was for)
+
+**Coverage Targets:**
+- **Overall:** 85%+ statement coverage
+- **Critical paths:** 95%+ (URL builders, parsers, validators)
+- **Edge cases:** Explicit tests for null, undefined, empty arrays, boundary values
+- **Real data:** Use fixtures from actual CSAPI servers and spec examples
+
+**Reference Point:**
+Study [PR #114 (EDR implementation)](https://github.com/camptocamp/ogc-client/pull/114) test suite to understand upstream expectations for test depth and quality.
+
+**Validation:**
+Before claiming tests are "complete," ask:
+1. Do tests use real data from the CSAPI spec?
+2. Do they validate complete behavior, not just existence?
+3. Would they catch actual bugs in URL construction or parsing?
+4. Do they test the spec-defined edge cases?
+
+### 2.4 Out of Scope
 
 **Explicitly excluded (defer or not applicable):**
 - HTTP execution (users control fetch, auth, retries)
@@ -79,7 +155,7 @@ The ogc-client library already supports multiple OGC API standards (WFS, STAC, E
 - Performance benchmarking suite
 - Browser-specific optimizations
 
-### 2.4 Upstream Alignment & Constraints
+### 2.5 Upstream Alignment & Constraints
 
 **Non-Negotiable Principles:**
 
@@ -106,7 +182,7 @@ The ogc-client library already supports multiple OGC API standards (WFS, STAC, E
 
 **Rationale:** Maintainers must review changes efficiently. Mixing CSAPI addition with unrelated changes creates review burden, increases merge conflict risk, and reduces approval likelihood.
 
-### 2.5 Standards & Specifications
+### 2.6 Standards & Specifications
 
 **Primary:**
 - [OGC API – Connected Systems Part 1: Feature Resources (23-001) v1.0](https://docs.ogc.org/is/23-001/23-001.html)
@@ -146,7 +222,7 @@ The ogc-client library already supports multiple OGC API standards (WFS, STAC, E
 - [OpenSensorHub](https://github.com/opensensorhub) - Reference CSAPI server implementation
 - [52°North OGC API Connected Systems](https://52north.org/software/software-components/ogc-api-connected-systems/) - Alternative CSAPI server
 
-### 2.6 Success Criteria
+### 2.7 Success Criteria
 
 **Complete when:**
 - ✅ URL builder methods exist for all 70+ CRUD operations across 9 resources
