@@ -455,18 +455,63 @@
 - docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml
 
 **Questions to answer:**
-- [ ] What are ALL sub-resource relationships? (systems/{id}/datastreams, etc.)
-- [ ] How deep does nesting go? (2 levels? 3 levels?)
-- [ ] What sub-resource query parameters are supported?
-- [ ] Are sub-resource collections paginated?
-- [ ] Can sub-resources be created via parent URLs?
-- [ ] What link relations exist for sub-resources?
-- [ ] How do bidirectional relationships work? (systems->deployments, deployments->systems)
-- [ ] What's the canonical URL for a sub-resource vs relationship URL?
-- [ ] Are there sub-resource filtering capabilities?
-- [ ] What navigation patterns are required?
+- [x] What are ALL sub-resource relationships? (systems/{id}/datastreams, etc.)
+  - **Part 1:** subsystems, subdeployments, samplingFeatures, deployments (reverse), datastreams, controlstreams, events, collection items (9 total)
+  - **Part 2:** observations, commands, status, result, feasibility (7 total)
+  - **16 total sub-resource relationships** across both parts
+- [x] How deep does nesting go? (2 levels? 3 levels?)
+  - **Hierarchical (unlimited):** Systems → Subsystems → Sub-subsystems (unlimited depth), Deployments → Subdeployments (unlimited depth)
+  - **Compositional (depth 1):** SamplingFeatures, DataStreams, ControlStreams, Observations, Commands, Status, Result
+  - **Maximum path:** System → Subsystem (N levels) → DataStream → Observation (6+ levels possible)
+- [x] What sub-resource query parameters are supported?
+  - **All standard OGC API params:** limit, offset, bbox, datetime, f
+  - **Hierarchical:** recursive (boolean for subsystems/subdeployments)
+  - **Relationship:** foi, observedProperty, controlledProperty, system
+  - **Temporal (Part 2):** phenomenonTime, resultTime, executionTime, issueTime
+  - **Full filtering support at nested endpoints**
+- [x] Are sub-resource collections paginated?
+  - **Yes** - All nested collections support limit/offset pagination
+  - **Part 1:** Implementation-dependent limit (typically 10-100)
+  - **Part 2:** limit range 1-10000, default 10
+  - **Cursor-based recommended** for large observation/command datasets
+  - **next/prev links** in response for page navigation
+- [x] Can sub-resources be created via parent URLs?
+  - **Yes** - POST at nested endpoints creates sub-resources
+  - **Part 1:** POST /systems/{id}/subsystems, POST /systems/{id}/samplingFeatures
+  - **Part 2:** POST /datastreams/{id}/observations, POST /controlstreams/{id}/commands
+  - **Response:** 201 Created with Location header (canonical URL)
+  - **Observations/Commands:** Can ONLY be created via nested endpoint (no canonical POST)
+- [x] What link relations exist for sub-resources?
+  - **IANA standard:** self, alternate, collection, item, next, prev, first, last
+  - **CSAPI @link suffix:** subsystems@link, datastreams@link, controlstreams@link, observations@link, commands@link, status@link, result@link, foi@link, procedure@link, system@link, deployments@link, samplingFeatures@link
+  - **Hypermedia navigation:** Client follows links dynamically (doesn't hardcode URLs)
+- [x] How do bidirectional relationships work? (systems->deployments, deployments->systems)
+  - **Forward:** GET /systems/{id}/deployments (nested endpoint)
+  - **Reverse:** GET /deployments?system={id} (query parameter) OR access deployedSystems property
+  - **Many-to-many:** Both resources exist independently, deleting one doesn't delete other
+  - **Other bidirectional:** Observations↔DataStreams (observation.datastream property + nested endpoint)
+- [x] What's the canonical URL for a sub-resource vs relationship URL?
+  - **Canonical:** /{resourceType}/{id} (primary identifier, used in Location header)
+  - **Relationship:** /{parentType}/{parentId}/{childType}/{childId} (navigation URL)
+  - **Equivalence:** Both URLs return SAME resource representation
+  - **Updates:** Changes at any URL reflected at all URLs
+  - **Recommendation:** Use canonical for identity, nested for discovery
+- [x] Are there sub-resource filtering capabilities?
+  - **Yes** - Full query parameter support at nested endpoints
+  - **Spatial:** bbox (for Systems, SamplingFeatures)
+  - **Temporal:** datetime, phenomenonTime, resultTime, executionTime, issueTime
+  - **Relationship:** foi, observedProperty, controlledProperty, system
+  - **Hierarchical:** recursive=true (all descendants)
+  - **Combined:** Multiple filters with logical AND
+- [x] What navigation patterns are required?
+  - **Fluent API:** Method chaining (client.systems.get(id).datastreams.list())
+  - **Lazy loading:** Load related resources on demand (system.datastreams())
+  - **Async iterators:** Auto-pagination (for await...of)
+  - **Bidirectional:** Navigate both directions (forward via nested, reverse via query)
+  - **Path-based:** Multi-level navigation (system → datastream → observations)
+  - **Builder pattern:** Complex queries with filters
 
-**Deliverable:** Sub-resource relationship model and requirements (~500-700 lines)
+**Deliverable:** Sub-resource relationship model and requirements (~500-700 lines) ✅ **COMPLETE** - See [csapi-subresource-navigation.md](csapi-subresource-navigation.md)
 
 ---
 
