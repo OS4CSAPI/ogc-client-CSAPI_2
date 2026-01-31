@@ -848,23 +848,24 @@
 - [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
 
 **Questions to answer:**
-- [ ] What architectural patterns does the C++ library use?
-- [ ] How does memory management affect design decisions? (insights for resource handling)
-- [ ] What scope does the C++ library cover? (Part 1 only, both parts?)
-- [ ] How does it structure URL building vs HTTP execution?
-- [ ] What format handling exists in C++? (GeoJSON, SensorML parsing)
-- [ ] How does it handle type safety? (lessons for TypeScript types)
-- [ ] What method naming conventions are used?
-- [ ] What resource coverage exists? (all 9 resources or subset?)
-- [ ] How does it handle dynamic data and streaming?
-- [ ] What error handling patterns are implemented?
-- [ ] What performance optimizations exist? (relevant for TypeScript?)
-- [ ] How does it compare to Python libraries' design approaches?
-- [ ] What lessons translate from C++ to TypeScript?
-- [ ] What pain points in C++ should we avoid in TypeScript?
-- [ ] What testing patterns are used?
+- [x] What architectural patterns does the C++ library use? → **N/A - Repository is stub with no implementation (only LICENSE, 2-line README, Windows boilerplate header)**
+- [x] How does memory management affect design decisions? (insights for resource handling) → **N/A - No code present; TypeScript uses GC (avoid C++ manual memory management)**
+- [x] What scope does the C++ library cover? (Part 1 only, both parts?) → **0/11 resources implemented (neither Part 1 nor Part 2)**
+- [x] How does it structure URL building vs HTTP execution? → **N/A - No URL building or HTTP code; recommend TypeScript separates concerns**
+- [x] What format handling exists in C++? (GeoJSON, SensorML parsing) → **N/A - No JSON parsing libraries; TypeScript has native JSON.parse()**
+- [x] How does it handle type safety? (lessons for TypeScript types) → **N/A - No type system; TypeScript generics simpler than C++ templates**
+- [x] What method naming conventions are used? → **N/A - No methods; recommend TypeScript camelCase (JS standard)**
+- [x] What resource coverage exists? (all 9 resources or subset?) → **0/11 resources (all missing: Systems, Deployments, Procedures, SamplingFeatures, Properties, Datastreams, Observations, Controls, ControlChannels, Commands, CommandStreams)**
+- [x] How does it handle dynamic data and streaming? → **N/A - No streaming code; recommend TypeScript AsyncIterables over C++ callbacks**
+- [x] What error handling patterns are implemented? → **N/A - No error handling; recommend TypeScript discriminated unions**
+- [x] What performance optimizations exist? (relevant for TypeScript?) → **N/A - No optimizations; most C++ techniques (RAII, move semantics, custom allocators) not applicable to TypeScript**
+- [x] How does it compare to Python libraries' design approaches? → **100% divergence from OWSLib/OSHConnect-Python production implementations**
+- [x] What lessons translate from C++ to TypeScript? → **Theoretical mappings only: std::optional→T|undefined, templates→generics, RAII→try/finally**
+- [x] What pain points in C++ should we avoid in TypeScript? → **Avoid: manual memory management, platform-specific code (WIN32_LEAN_AND_MEAN), header/impl split, callback-based async, template complexity**
+- [x] What testing patterns are used? → **N/A - No tests; recommend TypeScript use Vitest with mocks**
 
-**Deliverable:** C++ library architecture analysis and cross-language insights (~400-600 lines)
+**Deliverable:** C++ library architecture analysis and cross-language insights (~2,800 lines)  
+**Status:** ✅ **COMPLETE** - Repository documented as stub/abandoned; comprehensive C++ vs TypeScript comparison provided
 
 ---
 
