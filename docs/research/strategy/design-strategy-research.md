@@ -283,15 +283,17 @@ endpoint.csapi() → returns CSAPIQueryBuilder
 ### 10. CSAPI-Specific Architectural Decisions
 
 **Questions to answer:**
-- [ ] How to handle 9 different resource types cleanly?
-- [ ] Should resources share base implementation?
-- [ ] How to model Part 1 vs Part 2 resources?
-- [ ] How to handle sub-resources (systems/{id}/datastreams)?
-- [ ] How to model observation/command schemas?
-- [ ] How to handle SWE Common data components?
-- [ ] How to handle SensorML structures?
-- [ ] Should there be resource-specific navigators?
-- [ ] How to check resource availability per collection?
+- [x] How to handle 9 different resource types cleanly? → **Single QueryBuilder with helper methods, ~70-80 methods** (Section 3, 6)
+- [x] Should resources share base implementation? → **No inheritance - use private helpers like buildResourceUrl** (Section 6)
+- [x] How to model Part 1 vs Part 2 resources? → **Single class, logical sections via comments** (Section 4)
+- [x] How to handle sub-resources (systems/{id}/datastreams)? → **Path concatenation pattern, parent ID as parameter** (Section 5)
+- [x] How to model observation/command schemas? → **URL building with format parameter, no parsing** (Section 8)
+- [x] How to handle SWE Common data components? → **No parsing - return URLs only, user handles** (Section 8)
+- [x] How to handle SensorML structures? → **No parsing - return URLs only, user handles** (Section 8)
+- [x] Should there be resource-specific navigators? → **No - single QueryBuilder for all resources** (Section 3, 4)
+- [x] How to check resource availability per collection? → **Expose availableResources property, no validation in methods** (Section 7)
+
+**Status:** Clean single-class architecture. Total ~560-760 lines (~62-84 lines per resource). 5-6x more efficient than EDR per resource. No parsing, no inheritance, follow EDR pattern exactly. See [csapi-architecture-analysis.md](../upstream/csapi-architecture-analysis.md).
 
 ---
 
