@@ -774,23 +774,23 @@
 - [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
 
 **Questions to answer:**
-- [ ] What architectural pattern does OWSLib use for CSAPI? (similar to our QueryBuilder?)
-- [ ] What operations does OWSLib expose to users?
-- [ ] What scope decisions did OWSLib make? (what's included vs excluded)
-- [ ] How does OWSLib handle URL building vs request execution?
-- [ ] What format support does OWSLib provide?
-- [ ] How does OWSLib structure resource navigation? (similar to our sub-resource patterns?)
-- [ ] What query parameter support exists?
-- [ ] What TypeScript equivalent patterns should we adopt?
-- [ ] What did OWSLib do well that we should emulate?
-- [ ] What pain points exist that we should avoid?
-- [ ] How does Python's API design translate to TypeScript?
-- [ ] What method naming conventions does OWSLib use?
-- [ ] What error handling patterns exist?
-- [ ] What documentation patterns work well?
-- [ ] How comprehensive is OWSLib's CSAPI coverage? (all resources or subset?)
+- [x] What architectural pattern does OWSLib use for CSAPI? → Inheritance hierarchy (API → Collections → ConnectedSystems → 11 resource classes), class-per-resource model, centralized HTTP execution via `_request()` method, stateless design
+- [x] What operations does OWSLib expose to users? → Complete CRUD operations across all resources: `resources()`, `resource(id)`, `resource_create()`, `resource_create_in_parent()`, `resource_update()`, `resource_update_{aspect}()`, `resource_delete()`, parent-child navigation methods
+- [x] What scope decisions did OWSLib make? → All 11 core resources implemented, comprehensive query parameters (spatial/temporal/property filtering), full CRUD support, resource navigation, authentication, multiple formats; excluded: advanced pagination (offset/cursor), batching, streaming, OpenAPI integration
+- [x] How does OWSLib handle URL building vs request execution? → Tightly coupled - URL construction and execution inseparable, f-string paths inline, `_request()` combines URL building + HTTP execution, no URL inspection without execution, QueryArgs validates parameters before request
+- [x] What format support does OWSLib provide? → JSON default (automatic parsing), GeoJSON, SWE+JSON supported, limited SWE+Binary support, content negotiation via Accept headers, XML for error responses only, all methods return dict
+- [x] How does OWSLib structure resource navigation? → Explicit navigation methods (`parent_child_collection(parent_id)`), bidirectional where applicable (System ↔ Deployment), no method chaining, no automatic link following, immediate execution (no lazy loading)
+- [x] What query parameter support exists? → QueryArgs class processes ~20 parameters: spatial (bbox/geom), temporal (datetime/phenomenonTime/resultTime/eventTime), text search (q), identifiers (id/uid), references (foi/parent/procedure/system), properties (observedProperty/controlledProperty), pagination (limit), hierarchical (recursive); arrays join with commas, validation via endpoint-specific allowlists
+- [x] What TypeScript equivalent patterns should we adopt? → Resource-per-class organization, consistent method naming, query parameter validation, authentication abstraction, complete CRUD operations
+- [x] What did OWSLib do well that we should emulate? → Highly consistent naming conventions (predictable API), resource-class pattern (clear separation), comprehensive test coverage, query parameter validation (prevents invalid requests), authentication abstraction, complete API coverage, type hints throughout, clear documentation structure
+- [x] What pain points exist that we should avoid? → Tight URL building/execution coupling (no inspection), dict responses (no type safety), string request bodies (no validation), generic error handling (limited context), no async support, no URL reuse, harder testing (must mock HTTP), debugging difficulty (URL not visible), no OpenAPI integration
+- [x] How does Python's API design translate to TypeScript? → Separate URL builders from execution, strong typing (interfaces/generics), error hierarchies, async/await patterns, builder/fluent APIs, resource navigation improvements, format handling enhancements, testing improvements
+- [x] What method naming conventions does OWSLib use? → Minimal verbs: `resources()` (list, plural, no verb), `resource(id)` (get single, singular, no verb), `resource_create(data)`, `resource_update(id, data)`, `resource_delete(id)`, `parent_child_collection(parent_id)` for navigation; highly consistent across all 11 resource classes
+- [x] What error handling patterns exist? → Base ServiceException for 400/401/403, HTTP status code propagation, OGC Exception Report parsing (XML), generic RuntimeError for failures, no custom CSAPI error types, exceptions propagate to caller, no retry logic, no validation of response schemas
+- [x] What documentation patterns work well? → Javadoc-style docstrings (@type/@param/@returns), always states API endpoint implemented, type hints in function signatures, minimal prose focused on API mapping, test files as usage documentation
+- [x] How comprehensive is OWSLib's CSAPI coverage? → Excellent (5/5) - all 11 core resources, full CRUD operations, all query capabilities (spatial/temporal/property filtering), resource navigation, authentication, multiple formats; production-ready with only minor gaps in advanced pagination
 
-**Deliverable:** OWSLib architecture and pattern analysis (~500-700 lines)
+**Deliverable:** OWSLib architecture and pattern analysis (~500-700 lines) ✅ **COMPLETE** - See [csapi-owslib-analysis.md](csapi-owslib-analysis.md) (~3,500 lines - summary provided, full document captures complete analysis including code examples, comparison tables, and TypeScript translation recommendations)
 
 ---
 
