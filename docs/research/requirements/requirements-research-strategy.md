@@ -606,18 +606,60 @@
 - TypeScript type patterns in ogc-client (for consistency)
 
 **Questions to answer:**
-- [ ] What TypeScript interfaces does library export?
-- [ ] What domain model types are needed? (System, Deployment, Observation, etc.)
-- [ ] What query option types are needed?
-- [ ] What response types are needed?
-- [ ] Does library provide types for SensorML structures?
-- [ ] Does library provide types for SWE Common structures?
-- [ ] What's the scope of type definitions? (minimal vs comprehensive)
-- [ ] Are types for request bodies needed?
-- [ ] Are generic types needed? (Resource<T>, Collection<T>)
-- [ ] What's the balance between type safety and flexibility?
+- [x] What TypeScript interfaces does library export?
+  - **Public API (25 types):** 10 core resources, 3 collections, 5 query params, 7 utilities
+  - **Advanced API (100+ types):** Full SWE Common hierarchy, SensorML processes, encodings, constraints
+  - **Type organization:** resources/, data-components/, geometries/, sensorml/, encodings/, query-params/, utilities/
+- [x] What domain model types are needed? (System, Deployment, Observation, etc.)
+  - **Part 1 Resources (5):** System, Deployment, Procedure, SamplingFeature, PropertyResource
+  - **Part 2 Resources (5):** DataStream, Observation, ControlStream, Command, SystemEvent
+  - **Dual representations:** GeoJSON and SensorML for Part 1 features
+  - **Status/Result types:** CommandStatus, CommandResult
+- [x] What query option types are needed?
+  - **Common params:** limit, offset, datetime, bbox, geom, keyword, q
+  - **Part 1 filtering:** id, uid, parent, procedure, foi, observedProperty, controlledProperty, recursive
+  - **Part 2 filtering:** system, phenomenonTime, resultTime, issueTime, executionTime, statusCode
+  - **Type-specific params:** SystemQueryParams, DataStreamQueryParams, ObservationQueryParams, etc.
+- [x] What response types are needed?
+  - **Success responses:** ListResponse<T>, GetResponse<T>, CreateResponse, UpdateResponse, DeleteResponse
+  - **Error responses:** ErrorResponse with status codes (400, 401, 403, 404, 409, 500, 503)
+  - **Collections:** ResourceCollection<T>, PaginatedResponse<T>, FeatureCollection
+  - **Pagination:** PaginationLinks, PageInfo
+- [x] Does library provide types for SensorML structures?
+  - **Yes - Process hierarchy:** DescribedObject, AbstractProcess, SimpleProcess, AggregateProcess, PhysicalComponent, PhysicalSystem
+  - **Supporting types:** Term, ResponsibleParty, Contact, Document, Event, Settings, Mode, CharacteristicList, CapabilityList
+  - **Spatial/Temporal:** SpatialFrame, TemporalFrame, Position, Pose (GeoPose, RelativePose)
+  - **Process components:** InputList, OutputList, ParameterList, ComponentList, ConnectionList
+- [x] Does library provide types for SWE Common structures?
+  - **Yes - 30+ component types:** Boolean, Count, Quantity, Time, Category, Text, ranges, DataRecord, Vector, DataArray, Matrix, DataChoice, Geometry
+  - **Base hierarchy:** AbstractSWE → AbstractSweIdentifiable → AbstractDataComponent → AbstractSimpleComponent
+  - **Constraints:** AllowedValues, AllowedTimes, AllowedTokens
+  - **Nil values:** NilValuesInteger, NilValuesNumber, NilValuesTime, NilValuesText
+  - **Encodings:** BinaryEncoding, TextEncoding, JSONEncoding, XMLEncoding
+  - **UOM:** UnitReference with code/href/symbol/label
+- [x] What's the scope of type definitions? (minimal vs comprehensive)
+  - **Minimal (recommended v1):** 25 exported types (core resources + utilities)
+  - **Comprehensive (advanced):** 100+ types covering all OpenAPI schemas
+  - **Progressive disclosure:** Simple public API (index.ts), advanced opt-in (advanced.ts)
+  - **Hybrid generation:** Generate from OpenAPI, refine manually, add JSDoc
+- [x] Are types for request bodies needed?
+  - **Yes - CRUD operations:** CreateProps<T>, UpdateProps<T>, ReplaceProps<T>, ReadOnlyProps<T>
+  - **Request wrappers:** CreateSystemRequest, CreateObservationRequest, UpdateResourceRequest, DeleteRequest
+  - **Headers:** Content-Type and Accept negotiation
+  - **Schema validation:** ObservationSchema, CommandSchema for datastream/controlstream creation
+- [x] Are generic types needed? (Resource<T>, Collection<T>)
+  - **Yes - Generic wrappers:** Resource<TProperties>, Feature<TProperties, TGeometry>, Collection<T>, PaginatedResponse<T>
+  - **Conditional types:** Expand<T, D> for depth control, FormatResponse<T, F> for format negotiation
+  - **Utility types:** ReadOnlyProps<T>, CreateProps<T>, UpdateProps<T>, ReplaceProps<T>
+  - **Type guards:** isSystem(), isDataStream(), isQuantity(), isPoint() for runtime narrowing
+- [x] What's the balance between type safety and flexibility?
+  - **Strict internally, flexible externally:** StrictSystem vs SystemInput
+  - **Union types:** AnyComponent, Geometry, Pose for polymorphism
+  - **Optional properties:** Most properties optional except core identifiers (id, uid, name)
+  - **Format flexibility:** Accept multiple representations (GeoJSON | SensorML), return format-specific
+  - **Optional validation:** Types only by default, opt-in Zod schemas for runtime validation
 
-**Deliverable:** Type system requirements and scope definition (~500-700 lines)
+**Deliverable:** Type system requirements and scope definition (~500-700 lines) ✅ **COMPLETE** - See [csapi-datatype-schema-requirements.md](csapi-datatype-schema-requirements.md) (~3,300 lines)
 
 ---
 
