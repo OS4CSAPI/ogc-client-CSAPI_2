@@ -312,18 +312,20 @@ endpoint.csapi() → returns CSAPIQueryBuilder
 
 ---
 
-### 12. Lessons from Previous Iterations
+### 12. Lessons from Previous Iterations ✅
 
 **From [ogc-client-CSAPI](https://github.com/OS4CSAPI/ogc-client-CSAPI):**
-- [ ] What architectural decisions worked well?
-- [ ] What was over-engineered?
-- [ ] What was under-engineered?
-- [ ] What caused maintenance problems?
-- [ ] What made testing difficult?
-- [ ] What would maintainers likely reject?
-- [ ] What feedback did we get (if any)?
+- [x] What architectural decisions worked well? → **URL building pattern, resource coverage, isolation in own directory** (Section 3)
+- [x] What was over-engineered? → **Format parsing (~2000-4000 lines), validation, domain types, abstractions - saved ~3000-6000 lines** (Section 4)
+- [x] What was under-engineered? → **Test quality (trivial tests), documentation, incremental planning** (Section 5)
+- [x] What caused maintenance problems? → **Mixed concerns, tight coupling, unclear responsibilities** (Section 6)
+- [x] What made testing difficult? → **Unclear scope (what to test), low quality standards, poor organization** (Section 7)
+- [x] What would maintainers likely reject? → **Code volume (~2x), wrong patterns, poor tests, unclear justification** (Section 8)
+- [x] What feedback did we get (if any)? → **"Too trivial" tests, code volume concerns, terminology errors** (Section 2)
 
 **Action:** Review second iteration's architecture and identify improvements
+
+**Status:** All concerns addressed. Research-first approach (12 analyses complete), right-sized code (~560-760 lines vs ~2x), correct terminology (QueryBuilder not navigator), minimal scope (URL only, no parsing), quality tests (meaningful with spec examples), clear justification (every decision documented), strong isolation (7 minimal imports). Expected outcome: successful PR merge. See [lessons-learned-analysis.md](../upstream/lessons-learned-analysis.md).
 
 ---
 
