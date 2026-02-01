@@ -20,6 +20,8 @@
 
 **Implementation Maturity:** Part 1 production-ready, Part 2 in active development, used for real-world projects (EMODnet/Eurofleets, MINKE, DIRECTED)
 
+**Live Demo Server Available:** Public testing server at https://csa.demo.52north.org/ (⚠️ expired SSL certificate, incomplete conformance declaration, Part 2 non-functional)
+
 **Multi-Server Implications:** Clients must implement adaptive behaviors based on conformance detection, cannot assume identical server behaviors
 
 ---
@@ -1417,14 +1419,249 @@ async function connectToServer(baseUrl: string): Promise<CSAPIClient> {
 
 ---
 
-## 15. References
+## 15. Live Demo Server Analysis
+
+### 15.1 Overview
+
+52°North provides a **public demonstration server** for testing and validation purposes. This live deployment provides valuable real-world testing scenarios for client library development, particularly for handling incomplete implementations and error conditions.
+
+**Server Details:**
+- **URL:** https://csa.demo.52north.org/
+- **Implementation:** connected-systems-pygeoapi
+- **Status:** Development/testing deployment
+- **⚠️ SSL Warning:** Certificate expired/invalid (requires certificate validation bypass)
+- **Authentication:** None (public access)
+
+### 15.2 Conformance Analysis
+
+**Critical Finding:** The server declares **only 1 conformance class**, significantly less than the full implementation:
+
+```json
+{
+  "conformsTo": [
+    "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core"
+  ]
+}
+```
+
+**Implications:**
+- **Incomplete Declaration:** Missing Part 1 CSAPI-specific conformance classes
+- **Client Testing:** Tests client resilience to minimal conformance declarations
+- **Standards Compliance:** Servers may not fully declare all implemented features
+- **Endpoint Probing:** Clients must probe endpoints when conformance incomplete
+
+**Comparison to Full Implementation:**
+- **Expected:** 33+ conformance classes (Part 1 + Part 2)
+- **Declared:** 1 conformance class (OGC API Common Core only)
+- **Actual Capability:** Part 1 resources functional, Part 2 returns errors
+
+### 15.3 Data Inventory
+
+**Systems (3 total):**
+
+1. **DCPS #526** - Doppler Current Profiler Sensor
+   - ID: `5400-526`
+   - Manufacturer: Aanderaa Data Instruments
+   - Model: DCPS 5400
+   - Serial: 526
+   - Type: Oceanographic sensor (acoustic current profiler)
+
+2. **EXO3 Sonde #1** - Water Quality Sensor
+   - ID: `599503-00-1`
+   - Manufacturer: YSI
+   - Model: EXO3
+   - Type: Multi-parameter water quality sonde
+
+3. **SMARTGUARD Platform 5300-909** - Oceanographic Buoy
+   - ID: `5300-909`
+   - Manufacturer: Aanderaa Data Instruments
+   - Model: SMARTGUARD 5300
+   - Type: Platform (buoy with multiple sensor mounts)
+
+**Deployments (1 total):**
+
+**Messtonne 1 - 2025 Test**
+- **Location:** Baltic Sea, offshore Rostock, Germany
+  - Latitude: 54.1322°N
+  - Longitude: 12.0839°E
+- **Platform:** SMARTGUARD 5300-909 buoy
+- **Deployed Systems:** 2 sensors
+  - EXO3 Sonde #1 (water quality)
+  - DCPS #526 (current profiler)
+- **Operator:** BfN (Bundesamt für Naturschutz / Federal Agency for Nature Conservation)
+- **Context:** Manufacturing hangar testing deployment
+- **Purpose:** Validation testing for oceanographic monitoring equipment
+
+**Procedures (1 total):**
+- **Aanderaa DCPS TD304** - Sensor type definition
+- **External Documentation:** https://www.aanderaa.com/media/pdfs/td304-manual-dcps.pdf
+- **Format:** SensorML JSON with manufacturer metadata
+
+**Sampling Features:** 0 (none defined)
+
+**Properties:** 0 (none defined)
+
+**Part 2 Resources:**
+- **DataStreams:** Not accessible (500 Internal Server Error)
+- **Observations:** Not accessible (Part 2 non-functional)
+
+### 15.4 Real-World Testing Value
+
+**Client Compatibility Testing:**
+
+1. **Incomplete Conformance Handling**
+   - Tests client behavior with minimal conformance declarations
+   - Validates endpoint probing logic when conformance insufficient
+   - Exercises feature detection fallback mechanisms
+
+2. **Error Recovery**
+   - Part 2 endpoints return 500 errors (graceful degradation testing)
+   - SSL certificate issues (certificate validation handling)
+   - Tests client resilience to partial implementations
+
+3. **Small-Scale Testing**
+   - Limited dataset (3 systems, 1 deployment) reduces test complexity
+   - Fast response times for development iteration
+   - Real oceanographic data with proper identifiers and metadata
+
+4. **Real-World Deployment Pattern**
+   - Oceanographic monitoring use case (Baltic Sea research)
+   - Government operator (BfN) with professional metadata
+   - Multiple sensor types (platform + deployed sensors)
+   - External documentation links (manufacturer PDFs)
+
+**TypeScript Client Testing Examples:**
+
+```typescript
+// Test incomplete conformance declaration
+const server = new CSAPIClient('https://csa.demo.52north.org/');
+const conformance = await server.getConformance();
+
+// Should work even with minimal conformance
+if (conformance.conformsTo.length < 5) {
+  console.warn('Incomplete conformance declaration - probing endpoints');
+  
+  // Probe for Part 1 resources
+  const systems = await server.listSystems().catch(() => null);
+  const deployments = await server.listDeployments().catch(() => null);
+  
+  if (systems) console.log('Part 1 Systems: functional');
+  if (deployments) console.log('Part 1 Deployments: functional');
+  
+  // Probe for Part 2 resources
+  const datastreams = await server.listDataStreams().catch(() => null);
+  if (!datastreams) console.warn('Part 2 not available');
+}
+
+// Test Part 2 error handling
+try {
+  const datastreams = await server.listDataStreams();
+} catch (error) {
+  if (error.status === 500) {
+    console.log('Part 2 not implemented - falling back to Part 1 only');
+    // Client continues with Part 1 resources
+  }
+}
+
+// Test oceanographic deployment query
+const deployment = await server.getDeployment('af05f2c4-45ba-4f05-b5a5-a273e0b3e12c');
+console.log(`Deployment: ${deployment.name}`);
+console.log(`Location: ${deployment.geometry.coordinates}`);
+console.log(`Deployed Systems: ${deployment.deployedSystems.length}`);
+```
+
+### 15.5 Comparison with OSH Live Server
+
+| Feature | 52°North Demo | OSH Live Server |
+|---------|---------------|-----------------|
+| **URL** | csa.demo.52north.org | sensiasoft.net:8181/sensorhub |
+| **SSL Certificate** | ⚠️ Expired | ✅ Valid |
+| **Conformance Classes** | 1 (incomplete) | 33 (complete) |
+| **Systems** | 3 | 6 |
+| **Deployments** | 1 | 3 |
+| **Procedures** | 1 | 6 |
+| **Sampling Features** | 0 | 2 |
+| **Part 2 Status** | ❌ 500 errors | ✅ Functional |
+| **DataStreams** | Not accessible | 10 available |
+| **Observations** | Not accessible | Historical + real-time |
+| **Use Case** | Oceanographic buoy | Weather stations |
+| **Operator** | BfN (research) | Sensia (commercial) |
+| **Setup** | No Docker needed | Requires Docker setup |
+| **Data Volume** | Minimal (testing) | Production-scale |
+
+### 15.6 Advantages for Client Testing
+
+**Development Benefits:**
+1. **Public Access:** No authentication or Docker setup required
+2. **Fast Iteration:** Small dataset enables rapid testing cycles
+3. **Edge Case Testing:** Incomplete conformance, Part 2 errors, SSL issues
+4. **Real-World Example:** Actual oceanographic deployment with proper metadata
+5. **Minimal Complexity:** Limited data reduces debugging difficulty
+
+**Client Library Validation:**
+1. Tests conformance detection with incomplete declarations
+2. Validates graceful degradation when Part 2 unavailable
+3. Exercises error handling for 500 responses
+4. Tests certificate validation bypass options
+5. Validates Part 1-only operation mode
+
+### 15.7 Limitations
+
+**Testing Constraints:**
+1. **SSL Certificate:** Expired - requires certificate validation bypass
+2. **Incomplete Conformance:** Only declares 1 class vs 33 expected
+3. **Part 2 Non-Functional:** DataStreams/Observations return 500 errors
+4. **Limited Data:** Only 3 systems, 1 deployment (not representative of production scale)
+5. **No Real-Time Data:** Part 2 unavailable means no observation streaming tests
+6. **Stability Unknown:** Development server may have downtime or resets
+
+**Not Suitable For:**
+- Part 2 functionality testing (datastreams, observations, control)
+- Large-scale performance testing
+- Real-time data streaming validation
+- Production deployment examples
+- Full conformance validation
+
+### 15.8 Recommended Testing Strategy
+
+**Phase 1: Conformance Detection**
+1. Query `/conformance` and verify handling of incomplete declaration
+2. Implement endpoint probing when conformance < 5 classes
+3. Test client fallback to capability detection
+
+**Phase 2: Part 1 Resources**
+1. Query all 3 systems and validate metadata parsing
+2. Query deployment and verify location/platform relationships
+3. Query procedure and test external documentation links
+4. Verify GeoJSON geometry handling for deployment location
+
+**Phase 3: Error Handling**
+1. Attempt Part 2 queries and verify 500 error handling
+2. Test graceful degradation to Part 1-only mode
+3. Validate error messages and recovery strategies
+
+**Phase 4: Real-World Patterns**
+1. Test oceanographic use case workflows
+2. Validate deployment hierarchy (platform → deployed systems)
+3. Test external resource links (manufacturer PDFs)
+4. Verify coordinate system handling (WGS84)
+
+**Testing Recommendation:** Use 52°North demo server for **basic connectivity and error handling tests**, then switch to **OSH live server for comprehensive feature validation**, and finally test against **local Docker deployments for Part 2 and advanced features**.
+
+For detailed testing recommendations and multi-server compatibility strategies, see [Section 16.1 of requirements-research-strategy.md](./requirements-research-strategy.md#161-live-52north-demo-server).
+
+---
+
+## 16. References
 
 - **52°North Repository:** https://github.com/52North/connected-systems-pygeoapi
 - **52°North Documentation:** https://52north.org/software/software-components/ogc-api-connected-systems/
+- **52°North Live Demo Server:** https://csa.demo.52north.org/ (⚠️ SSL certificate expired)
 - **OpenSensorHub Repository:** https://github.com/opensensorhub/osh-core
 - **CSAPI Part 1 Specification:** https://docs.ogc.org/is/23-001/23-001.html
 - **CSAPI Part 2 Specification:** https://docs.ogc.org/is/23-002/23-002.html
 - **pygeoapi Framework:** https://pygeoapi.io/
+- **Aanderaa DCPS Manual:** https://www.aanderaa.com/media/pdfs/td304-manual-dcps.pdf
 
 ---
 
