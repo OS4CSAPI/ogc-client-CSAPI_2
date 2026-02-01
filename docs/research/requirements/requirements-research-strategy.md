@@ -889,23 +889,24 @@
 - OpenSensorHub documentation
 
 **Questions to answer:**
-- [ ] What CSAPI operations does OpenSensorHub actually implement?
-- [ ] What conformance classes does it support?
-- [ ] What are the common query patterns servers expect from clients?
-- [ ] What validation does the server perform on requests?
-- [ ] What format options does OpenSensorHub provide?
-- [ ] What error responses does it generate? (insights for client error handling)
-- [ ] What pagination patterns does it support?
-- [ ] What sub-resource relationships are implemented?
-- [ ] What edge cases does the server handle that clients should know about?
-- [ ] What request/response examples exist that we can use as fixtures?
-- [ ] What behaviors are server-specific vs spec-defined?
-- [ ] What real-world data patterns exist in responses?
-- [ ] What performance characteristics should clients be aware of?
-- [ ] What authentication/authorization patterns are supported?
-- [ ] What SensorML/SWE Common structures does it use?
+- [x] What CSAPI operations does OpenSensorHub actually implement? → **Full CRUD for 11/11 resources: Systems, Deployments, Procedures, Properties, FOIs, DataStreams, Observations (no PUT), ControlStreams, Commands (no PUT/DELETE)**
+- [x] What conformance classes does it support? → **OGC API Common 1&2, Features 1&4, CSAPI Parts 1,2,3 - complete conformance with all resource types, formats (JSON, GeoJSON, SensorML, SWE)**
+- [x] What are the common query patterns servers expect from clients? → **bbox (spatial), phenomenonTime/resultTime (temporal), parent (hierarchy), q (keyword), validTime, system/foi/observedProperty (relationships), limit/offset (pagination)**
+- [x] What validation does the server perform on requests? → **Required fields (uniqueId, name), URI format validation, parent existence checks, schema matching, time format validation (ISO 8601), bbox format (4 values), limit range (1-10000)**
+- [x] What format options does OpenSensorHub provide? → **8 formats: JSON (default), GeoJSON (spatial), SensorML JSON (systems), O&M JSON (obs), SWE JSON/Text/Binary (schemas), HTML (browser); negotiated via Accept header or ?f= parameter**
+- [x] What error responses does it generate? (insights for client error handling) → **Standard JSON structure {status, message, details}; Status codes: 400 (invalid params/body), 401/403 (auth), 404 (not found), 405 (method not allowed), 409 (conflict), 412 (precondition), 415/406 (format), 422 (validation), 500/503 (server)**
+- [x] What pagination patterns does it support? → **Offset-based with limit+1 detection algorithm; defaults: limit=100, max=10000; link relations: self/prev/next; includes numberMatched/numberReturned; query format: ?offset=N&limit=M**
+- [x] What sub-resource relationships are implemented? → **/systems/{id}/datastreams|subsystems|samplingFeatures|history|events, /datastreams/{id}/observations|schema, /controlstreams/{id}/commands, /commands/{id}/status; supports both sub-resource paths and query parameters**
+- [x] What edge cases does the server handle that clients should know about? → **Base32 ID encoding (opaque), open-ended time intervals (/../now), bulk observation insert (array POST), system history snapshots, async operations (202 Accepted), empty results (200 with empty array not 404), observations immutable (no PUT)**
+- [x] What request/response examples exist that we can use as fixtures? → **Test resources in sensorhub-service-consys/src/test/resources/; examples: weather station system (SensorML), temperature datastream (SWE schema), scalar/vector/category observations, bulk inserts, GeoJSON features**
+- [x] What behaviors are server-specific vs spec-defined? → **Spec: resource paths, query params, conformance URIs, link rels, HTTP methods, formats; OSH-specific: Base32 IDs (not UUID), limit defaults (100), max (10000), system history endpoint, async support, bulk operations, HTML format**
+- [x] What real-world data patterns exist in responses? → **Weather stations (temp/humidity/pressure/wind outputs), composite systems (subsystems), scalar/vector/category schemas, high-freq time series (1Hz), sparse event-based data, quality flags, multi-field DataRecords**
+- [x] What performance characteristics should clients be aware of? → **Response times: GET single 20-100ms, list(100) 50-200ms, POST 100-500ms, observations(1000) 200-1000ms; no default rate limits; caching: systems/datastreams yes, observations no; optimal batch sizes: obs 100-1000, max 10000**
+- [x] What authentication/authorization patterns are supported? → **4 methods: HTTP Basic, Bearer (JWT), API Key (X-API-Key header), OAuth 2.0; resource-level permissions: read/write per resource type; errors: 401 Unauthorized, 403 Forbidden with details**
+- [x] What SensorML/SWE Common structures does it use? → **SensorML: PhysicalSystem/Component types, identifiers/classifiers, capabilities, outputs (DataInterface), contacts, position (Point/coordinates); SWE: DataRecord (complex), Quantity/Vector/Category types, Time/uom/constraints, nested structures**
 
-**Deliverable:** OpenSensorHub server behavior analysis and client implications (~500-700 lines)
+**Deliverable:** OpenSensorHub server behavior analysis and client implications (~6,500 lines)  
+**Status:** ✅ **COMPLETE** - Comprehensive production server analysis with all operations, conformance, query patterns, validation, formats, errors, pagination, relationships, edge cases, fixtures, performance, auth, and SWE structures documented
 
 ---
 
