@@ -1539,7 +1539,7 @@ describe('Systems Client', () => {
 
 ---
 
-### Section 17: Gap Analysis - Previous Iteration Misses ⏳
+### Section 17: Gap Analysis - Previous Iteration Misses ✅
 
 **Resources:**
 
@@ -1552,19 +1552,28 @@ describe('Systems Client', () => {
 - [OGC API – Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html)
 - [OGC API – Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html)
 
-**Questions to answer:**
-- [ ] What did previous iteration implement that shouldn't have been?
-- [ ] What did previous iteration miss that should have been included?
-- [ ] What functionality was half-implemented?
-- [ ] What ambiguous requirements caused implementation errors?
-- [ ] Where did we make wrong assumptions about scope?
-- [ ] What examples: SensorML parsing - should it have been included?
-- [ ] What format serialization requirements exist?
-- [ ] What validation requirements were missed?
-- [ ] What edge cases were not considered?
-- [ ] What requirements are implied but not explicit in specs?
+**Analysis:** [docs/research/requirements/csapi-gap-analysis.md](csapi-gap-analysis.md)
 
-**Deliverable:** Comprehensive gap analysis and requirement corrections (~500-700 lines)
+**Answers:**
+- [x] What did previous iteration implement that shouldn't have been? → **SensorML parsing (~1,500 lines), SWE Common parsing (~800 lines), format validation (~400 lines), format detection (~200 lines), collection parsers - total ~3,900 lines of format parsing that belongs in dedicated libraries** (Sections 2.1-2.5)
+- [x] What did previous iteration miss that should have been included? → **HTTP operation focus (URL building, format negotiation, link following, OGC exception handling, conformance-based feature detection), convenience methods (fluent API, bulk operations, stream helpers, spatial query helpers), clean TypeScript type exports** (Section 3.1-3.3)
+- [x] What functionality was half-implemented? → **PATCH support (mentioned in spec, absent from OpenAPI), history/versioning endpoints (conceptual only), cascade delete (partial implementation)** (Section 3)
+- [x] What ambiguous requirements caused implementation errors? → **Format parsing scope (interpreted as "must parse all formats" vs "pass-through raw responses"), validation responsibility (client-side vs server-side), format transformation (SensorML→GeoJSON conversion)** (Sections 2.1-2.4)
+- [x] Where did we make wrong assumptions about scope? → **Assumed comprehensive format parsing required (actually user responsibility), assumed client-side validation needed (TypeScript + server validation sufficient), assumed must interpret all format structures (actually just transport raw data)** (Section 5.1-5.4)
+- [x] What examples: SensorML parsing - should it have been included? → **NO - SensorML parsing (position extraction, property extraction, geometry conversion, validation) is format-specific parsing that belongs in dedicated @ogc/sensorml-parser library. Client should return raw SensorML and let users apply parsing libraries** (Section 2.1, Section 4)
+- [x] What format serialization requirements exist? → **Client handles format negotiation (Accept headers, f parameter), returns raw responses with contentType metadata. NO format transformation or parsing beyond basic JSON access (extracting features array from FeatureCollection)** (Section 4.2, Section 6.2)
+- [x] What validation requirements were missed? → **None - validation was OVER-implemented. TypeScript interfaces provide compile-time validation, servers validate at runtime. Client-side validation with Ajv/json-schema is unnecessary scope creep** (Section 2.3, Section 5.3)
+- [x] What edge cases were not considered? → **Incomplete conformance declarations (like 52°North demo), Part 2 unavailability (500 errors), mixed ID formats (string, UUID, URN), conformance-based feature detection** (Section 3.1)
+- [x] What requirements are implied but not explicit in specs? → **Link-following navigation patterns, pagination cursor management, format negotiation strategies, conformance-based adaptation, async iterators for streaming, batch operations** (Section 3.2)
+
+**Key Findings:**
+- **PRIMARY ISSUE:** First iteration over-implemented format parsing (~3,900 lines) that belongs outside client library scope
+- **CORRECT SCOPE:** Client library is HTTP transport layer (URL building, request execution, error handling, link following), NOT parsing layer
+- **V2 STRATEGY:** Thin wrapper around HTTP (~3,000 total lines vs ~7,000 in v1), remove all format parsing, users apply dedicated libraries (@ogc/sensorml-parser, @ogc/swe-common, @turf/turf)
+- **UPSTREAM PATTERN:** WFS/WMS/OGC API clients in camptocamp/ogc-client do minimal parsing - they fetch and return raw data
+- **LESSON:** Define "thin client" vs "thick client" at project start, review upstream patterns for scope guidance
+
+**Deliverable:** Comprehensive gap analysis and requirement corrections (1,500 lines)
 
 ---
 
