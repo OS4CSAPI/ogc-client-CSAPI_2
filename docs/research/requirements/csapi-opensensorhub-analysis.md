@@ -1796,6 +1796,506 @@ class CSAPIClient {
 }
 ```
 
+### 15.4 Key Insights for TypeScript Client Development
+
+This subsection synthesizes critical learnings from the OpenSensorHub analysis to guide TypeScript client implementation.
+
+#### 15.4.1 Query Parameter Validation
+
+**Must Validate Before Sending:**
+
+```typescript
+class QueryValidator {
+  static validateLimit(limit?: number): number {
+    if (limit === undefined) return 100; // OSH default
+    if (limit < 1 || limit > 10000) {
+      throw new ValidationError('limit must be between 1 and 10,000');
+    }
+    return limit;
+  }
+  
+  static validateBbox(bbox?: number[]): string | undefined {
+    if (!bbox) return undefined;
+    if (bbox.length !== 4) {
+      throw new ValidationError('bbox must have exactly 4 values [minLon, minLat, maxLon, maxLat]');
+    }
+    return bbox.join(',');
+  }
+  
+  static validateTimeParameter(time: string | Date): string {
+    if (time instanceof Date) {
+      return time.toISOString();
+    }
+    // Must be ISO 8601 format
+    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/.test(time)) {
+      throw new ValidationError('Time must be ISO 8601 format');
+    }
+    return time;
+  }
+}
+```
+
+#### 15.4.2 Pagination Patterns
+
+**OSH uses limit+1 detection - implement smart pagination:**
+
+```typescript
+interface PaginatedResponse<T> {
+  items: T[];
+  links: Link[];
+  numberMatched?: number;
+  numberReturned: number;
+}
+
+class PaginationHelper {
+  // AsyncGenerator for automatic pagination
+  static async *paginateAll<T>(
+    baseUrl: string,
+    initialParams?: Record<string, string>,
+    limit: number = 100
+  ): AsyncGenerator<T, void, undefined> {
+    let nextUrl: string | undefined = baseUrl;
+    
+    while (nextUrl) {
+      const url = new URL(nextUrl);
+      
+      if (nextUrl === baseUrl && initialParams) {
+        Object.entries(initialParams).forEach(([key, value]) => {
+          url.searchParams.set(key, value);
+        });
+      }
+      
+      url.searchParams.set('limit', String(Math.min(limit, 10000)));
+      
+      const response = await fetch(url);
+      const data: PaginatedResponse<T> = await response.json();
+      
+      for (const item of data.items) {
+        yield item;
+      }
+      
+      const nextLink = data.links.find(link => link.rel === 'next');
+      nextUrl = nextLink?.href;
+    }
+  }
+}
+
+// Usage
+for await (const system of PaginationHelper.paginateAll<System>(
+  'http://api.example.org/systems',
+  { q: 'weather' }
+)) {
+  console.log(system.name);
+}
+```
+
+#### 15.4.3 Error Response Handling
+
+**Parse OSH JSON error bodies:**
+
+```typescript
+interface CSAPIErrorResponse {
+  status: number;
+  message: string;
+  details?: string;
+}
+
+class CSAPIError extends Error {
+  constructor(
+    public statusCode: number,
+    public serverMessage: string,
+    public details?: string,
+    public response?: Response
+  ) {
+    super(`${statusCode}: ${serverMessage}`);
+    this.name = 'CSAPIError';
+  }
+  
+  static async fromResponse(response: Response): Promise<CSAPIError> {
+    try {
+      const body: CSAPIErrorResponse = await response.json();
+      return new CSAPIError(body.status, body.message, body.details, response);
+    } catch {
+      return new CSAPIError(response.status, response.statusText, undefined, response);
+    }
+  }
+  
+  isNotFound(): boolean { return this.statusCode === 404; }
+  isValidationError(): boolean { return this.statusCode === 400 || this.statusCode === 422; }
+  isAuthError(): boolean { return this.statusCode === 401 || this.statusCode === 403; }
+}
+```
+
+#### 15.4.4 Format Negotiation
+
+**Request appropriate formats per resource type:**
+
+```typescript
+enum ContentType {
+  JSON = 'application/json',
+  GeoJSON = 'application/geo+json',
+  SensorML_JSON = 'application/sml+json',
+  OM_JSON = 'application/om+json',
+  SWE_JSON = 'application/swe+json'
+}
+
+class FormatNegotiator {
+  static getPreferredFormat(resourceType: string): ContentType {
+    const defaults: Record<string, ContentType> = {
+      'systems': ContentType.GeoJSON,        // Spatial features
+      'deployments': ContentType.GeoJSON,
+      'fois': ContentType.GeoJSON,
+      'procedures': ContentType.SensorML_JSON,
+      'datastreams': ContentType.JSON,
+      'observations': ContentType.OM_JSON
+    };
+    return defaults[resourceType] || ContentType.JSON;
+  }
+  
+  static buildAcceptHeader(preferred: ContentType): string {
+    return `${preferred}, application/json;q=0.9, */*;q=0.8`;
+  }
+}
+```
+
+#### 15.4.5 Sub-Resource Navigation
+
+**Follow link relations from responses:**
+
+```typescript
+interface Link {
+  rel: string;
+  href: string;
+  type?: string;
+}
+
+class ResourceNavigator<T> {
+  constructor(
+    private resource: T & { links?: Link[] },
+    private http: HttpClient
+  ) {}
+  
+  async followLink<R>(rel: string): Promise<R[]> {
+    const link = this.resource.links?.find(l => l.rel === rel);
+    if (!link) {
+      throw new Error(`No link with rel="${rel}" found`);
+    }
+    const response = await this.http.get<{ items: R[] }>(link.href);
+    return response.items;
+  }
+  
+  hasLink(rel: string): boolean {
+    return this.resource.links?.some(l => l.rel === rel) ?? false;
+  }
+}
+
+// Enhanced System class
+class System {
+  id: string;
+  name: string;
+  links?: Link[];
+  private navigator: ResourceNavigator<this>;
+  
+  constructor(data: any, http: HttpClient) {
+    Object.assign(this, data);
+    this.navigator = new ResourceNavigator(this, http);
+  }
+  
+  async getDatastreams(): Promise<Datastream[]> {
+    return this.navigator.followLink<Datastream>('datastreams');
+  }
+  
+  async getSubsystems(): Promise<System[]> {
+    return this.navigator.hasLink('subsystems') 
+      ? this.navigator.followLink<System>('subsystems')
+      : [];
+  }
+}
+```
+
+#### 15.4.6 Conformance-Based Feature Detection
+
+**Check server capabilities before using features:**
+
+```typescript
+class ConformanceChecker {
+  private conformsTo: Set<string> = new Set();
+  
+  async loadConformance(baseUrl: string): Promise<void> {
+    const response = await fetch(`${baseUrl}/conformance`);
+    const data = await response.json();
+    this.conformsTo = new Set(data.conformsTo || []);
+  }
+  
+  supportsCore(): boolean {
+    return this.conformsTo.has(
+      'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/core'
+    );
+  }
+  
+  supportsControlStreams(): boolean {
+    return this.conformsTo.has(
+      'http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/control-stream'
+    );
+  }
+  
+  supportsSystemEvents(): boolean {
+    return this.conformsTo.has(
+      'http://www.opengis.net/spec/ogcapi-connectedsystems-3/1.0/conf/system-events'
+    );
+  }
+}
+
+// Usage in client
+class CSAPIClient {
+  private conformance: ConformanceChecker;
+  
+  async initialize(baseUrl: string): Promise<void> {
+    this.conformance = new ConformanceChecker();
+    await this.conformance.loadConformance(baseUrl);
+    
+    if (!this.conformance.supportsCore()) {
+      throw new Error('Server does not support CSAPI Core');
+    }
+  }
+  
+  async getSystemHistory(systemId: string): Promise<SystemSnapshot[] | null> {
+    if (!this.conformance.supportsSystemEvents()) {
+      console.warn('System history not supported by this server');
+      return null;
+    }
+    return this.http.get(`/systems/${systemId}/history`);
+  }
+}
+```
+
+#### 15.4.7 Bulk Operations
+
+**Batch observations for efficiency (OSH supports bulk insert):**
+
+```typescript
+class BulkOperationHelper {
+  static async insertObservationsBulk(
+    datastreamId: string,
+    observations: Observation[],
+    http: HttpClient,
+    batchSize: number = 1000
+  ): Promise<void> {
+    const batches = this.chunk(observations, Math.min(batchSize, 10000));
+    
+    for (const batch of batches) {
+      await http.post(`/datastreams/${datastreamId}/observations`, batch);
+      await this.delay(100); // Small delay between batches
+    }
+  }
+  
+  static async insertObservationsSmart(
+    datastreamId: string,
+    observations: Observation[],
+    http: HttpClient
+  ): Promise<void> {
+    if (observations.length === 1) {
+      await http.post(`/datastreams/${datastreamId}/observations`, observations[0]);
+      return;
+    }
+    
+    try {
+      await this.insertObservationsBulk(datastreamId, observations, http);
+    } catch (error) {
+      if (error instanceof CSAPIError && error.statusCode === 400) {
+        console.warn('Bulk insert failed, falling back to sequential');
+        for (const obs of observations) {
+          await http.post(`/datastreams/${datastreamId}/observations`, obs);
+        }
+      } else {
+        throw error;
+      }
+    }
+  }
+  
+  private static chunk<T>(array: T[], size: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+  }
+  
+  private static delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+}
+```
+
+#### 15.4.8 Caching Strategy
+
+**Smart caching based on resource mutability:**
+
+```typescript
+class ResourceCache {
+  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+  
+  private static CACHE_POLICIES: Record<string, number> = {
+    // Metadata - cache for 5 minutes
+    'systems': 5 * 60 * 1000,
+    'deployments': 5 * 60 * 1000,
+    'procedures': 5 * 60 * 1000,
+    'datastreams': 5 * 60 * 1000,
+    'fois': 5 * 60 * 1000,
+    
+    // Static - cache for 1 hour
+    'collections': 60 * 60 * 1000,
+    'conformance': 60 * 60 * 1000,
+    
+    // Dynamic - never cache
+    'observations': 0,
+    'commands': 0,
+    'systemevents': 0,
+  };
+  
+  set<T>(key: string, data: T, resourceType: string): void {
+    const ttl = ResourceCache.CACHE_POLICIES[resourceType] || 0;
+    if (ttl === 0) return;
+    
+    this.cache.set(key, { data, timestamp: Date.now(), ttl });
+  }
+  
+  get<T>(key: string): T | undefined {
+    const entry = this.cache.get(key);
+    if (!entry) return undefined;
+    
+    if (Date.now() - entry.timestamp > entry.ttl) {
+      this.cache.delete(key);
+      return undefined;
+    }
+    
+    return entry.data as T;
+  }
+  
+  invalidatePattern(pattern: RegExp): void {
+    for (const key of this.cache.keys()) {
+      if (pattern.test(key)) {
+        this.cache.delete(key);
+      }
+    }
+  }
+}
+
+// Usage in HTTP client
+class CachedHttpClient extends HttpClient {
+  private cache = new ResourceCache();
+  
+  async get<T>(path: string, resourceType: string, bypassCache = false): Promise<T> {
+    const cacheKey = `GET:${path}`;
+    
+    if (!bypassCache) {
+      const cached = this.cache.get<T>(cacheKey);
+      if (cached) return cached;
+    }
+    
+    const data = await super.get<T>(path);
+    this.cache.set(cacheKey, data, resourceType);
+    return data;
+  }
+  
+  async post<T>(path: string, body: any, resourceType: string): Promise<T> {
+    const data = await super.post<T>(path, body);
+    
+    // Invalidate related caches after write
+    const resourceMatch = path.match(/\/([\w]+)/);
+    if (resourceMatch) {
+      this.cache.invalidatePattern(new RegExp(`^GET:/${resourceMatch[1]}`));
+    }
+    
+    return data;
+  }
+}
+```
+
+#### 15.4.9 Testing Against OSH
+
+**Use OSH as reference implementation for integration tests:**
+
+```typescript
+describe('CSAPI Client Integration Tests (OSH)', () => {
+  const baseUrl = 'http://localhost:8282/sensorhub/api';
+  let client: CSAPIClient;
+  
+  beforeAll(async () => {
+    client = new CSAPIClient(baseUrl, {
+      type: 'basic',
+      credentials: { username: 'admin', password: 'admin' }
+    });
+    await client.initialize();
+  });
+  
+  it('should list systems with pagination', async () => {
+    const systems = await client.systems.list({ limit: 10 });
+    expect(Array.isArray(systems)).toBe(true);
+  });
+  
+  it('should create and delete system', async () => {
+    const system = await client.systems.create({
+      name: 'Test System',
+      type: 'PhysicalSystem',
+      uniqueId: `urn:test:system:${Date.now()}`
+    });
+    
+    expect(system.id).toBeDefined();
+    await client.systems.delete(system.id);
+  });
+  
+  it('should query observations with time filter', async () => {
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+    
+    const observations = await client.observations.list({
+      phenomenonTime: `${oneHourAgo.toISOString()}/${now.toISOString()}`,
+      limit: 100
+    });
+    
+    expect(Array.isArray(observations)).toBe(true);
+  });
+  
+  it('should handle errors gracefully', async () => {
+    await expect(
+      client.systems.get('nonexistent-id')
+    ).rejects.toThrow(CSAPIError);
+    
+    try {
+      await client.systems.get('nonexistent-id');
+    } catch (error) {
+      expect(error).toBeInstanceOf(CSAPIError);
+      expect((error as CSAPIError).isNotFound()).toBe(true);
+    }
+  });
+});
+```
+
+#### 15.4.10 Critical Takeaways
+
+**Must-Have Features:**
+1. ✅ Query parameter validation (limit 1-10,000, bbox 4 values, ISO 8601 times)
+2. ✅ Link-following pagination with AsyncGenerator support
+3. ✅ JSON error body parsing with type guards
+4. ✅ Format negotiation (GeoJSON for spatial, SensorML for systems)
+5. ✅ Sub-resource navigation via link relations
+6. ✅ Conformance-based feature detection
+7. ✅ Multi-strategy authentication (Basic/Bearer/API Key)
+8. ✅ Smart caching with TTL policies
+
+**Performance Optimizations:**
+- Batch observations (100-1000 per request)
+- Cache metadata (5 min TTL), static resources (1 hr TTL)
+- Never cache dynamic data (observations/commands)
+- Reuse HTTP connections
+
+**Testing Strategy:**
+- Deploy OSH locally for integration tests
+- Use fixtures from `sensorhub-service-consys/src/test/resources/`
+- Test against real server behaviors
+- Validate all CRUD operations
+
 ---
 
 ## 16. SensorML/SWE Common Structures
@@ -2279,6 +2779,1173 @@ class HttpClient {
 5. **Separate URL Building from HTTP:** Testability and flexibility
 6. **Feature Detection:** Check conformance, don't assume capabilities
 7. **Follow OSH Patterns:** Proven in production, good reference
+
+---
+
+## 19. Key Insights from OSH for TypeScript Client Development
+
+### 19.1 Understanding Server Expectations
+
+#### Query Parameter Handling
+
+**What OSH Teaches Us:**
+
+OpenSensorHub's query parameter processing reveals critical client design requirements:
+
+1. **Always Validate Before Sending**
+   ```typescript
+   // OSH validates: limit must be 1-10,000
+   class QueryValidator {
+     static validateLimit(limit?: number): number {
+       if (limit === undefined) return 100; // Default
+       if (limit < 1 || limit > 10000) {
+         throw new ValidationError('limit must be between 1 and 10,000');
+       }
+       return limit;
+     }
+     
+     static validateBbox(bbox?: number[]): string | undefined {
+       if (!bbox) return undefined;
+       if (bbox.length !== 4) {
+         throw new ValidationError('bbox must have exactly 4 values');
+       }
+       return bbox.join(',');
+     }
+   }
+   ```
+
+2. **Time Format Strictness**
+   ```typescript
+   // OSH requires ISO 8601 - validate before sending
+   function validateTimeParameter(time: string | Date): string {
+     if (time instanceof Date) {
+       return time.toISOString();
+     }
+     
+     // Validate ISO 8601 format
+     if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/.test(time)) {
+       throw new ValidationError('Time must be in ISO 8601 format');
+     }
+     
+     return time;
+   }
+   ```
+
+3. **Hierarchical Queries**
+   ```typescript
+   // OSH supports both patterns - implement both
+   interface DatastreamQuery {
+     // Pattern 1: Query parameter
+     system?: string;
+     
+     // Pattern 2: Sub-resource path (handled by URL building)
+     // GET /systems/{id}/datastreams
+   }
+   
+   class DatastreamsClient {
+     // Support both approaches
+     async list(query?: DatastreamQuery): Promise<Datastream[]> {
+       const url = query?.system
+         ? `/systems/${query.system}/datastreams`
+         : `/datastreams${query ? '?' + buildQuery(query) : ''}`;
+       
+       return this.http.get(url);
+     }
+   }
+   ```
+
+#### Error Response Patterns
+
+**Client Must Handle:**
+
+```typescript
+interface CSAPIErrorResponse {
+  status: number;
+  message: string;
+  details?: string;
+}
+
+class CSAPIError extends Error {
+  constructor(
+    public statusCode: number,
+    public serverMessage: string,
+    public details?: string,
+    public response?: Response
+  ) {
+    super(`${statusCode}: ${serverMessage}`);
+    this.name = 'CSAPIError';
+  }
+  
+  static async fromResponse(response: Response): Promise<CSAPIError> {
+    try {
+      const body: CSAPIErrorResponse = await response.json();
+      return new CSAPIError(
+        body.status,
+        body.message,
+        body.details,
+        response
+      );
+    } catch {
+      // Server didn't return JSON error body
+      return new CSAPIError(
+        response.status,
+        response.statusText,
+        undefined,
+        response
+      );
+    }
+  }
+  
+  // Type guards for specific errors
+  isNotFound(): boolean {
+    return this.statusCode === 404;
+  }
+  
+  isValidationError(): boolean {
+    return this.statusCode === 400 || this.statusCode === 422;
+  }
+  
+  isAuthError(): boolean {
+    return this.statusCode === 401 || this.statusCode === 403;
+  }
+}
+
+// Usage in client
+async function fetchSystem(id: string): Promise<System> {
+  const response = await fetch(`/api/systems/${id}`);
+  
+  if (!response.ok) {
+    throw await CSAPIError.fromResponse(response);
+  }
+  
+  return response.json();
+}
+```
+
+### 19.2 Pagination Design Patterns
+
+#### Implementing OSH-Style Pagination
+
+**Key Insight:** OSH uses `limit+1` detection algorithm to determine if more results exist.
+
+```typescript
+interface PaginatedResponse<T> {
+  items: T[];
+  links: Link[];
+  numberMatched?: number;
+  numberReturned: number;
+}
+
+class PaginationHelper {
+  /**
+   * Implements OSH's limit+1 detection pattern
+   * Client should request limit+1 items to detect if more exist
+   */
+  static async fetchPage<T>(
+    url: URL,
+    limit: number = 100
+  ): Promise<PaginatedResponse<T>> {
+    // OSH limits max to 10,000
+    const validLimit = Math.min(Math.max(limit, 1), 10000);
+    
+    url.searchParams.set('limit', String(validLimit));
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw await CSAPIError.fromResponse(response);
+    }
+    
+    const data = await response.json();
+    return data;
+  }
+  
+  /**
+   * AsyncGenerator for all results
+   * Follows pagination links automatically
+   */
+  static async *paginateAll<T>(
+    baseUrl: string,
+    initialParams?: Record<string, string>,
+    limit: number = 100
+  ): AsyncGenerator<T, void, undefined> {
+    let nextUrl: string | undefined = baseUrl;
+    
+    while (nextUrl) {
+      const url = new URL(nextUrl);
+      
+      // Add initial params only on first request
+      if (nextUrl === baseUrl && initialParams) {
+        Object.entries(initialParams).forEach(([key, value]) => {
+          url.searchParams.set(key, value);
+        });
+      }
+      
+      url.searchParams.set('limit', String(limit));
+      
+      const response: PaginatedResponse<T> = await this.fetchPage(url, limit);
+      
+      // Yield all items
+      for (const item of response.items) {
+        yield item;
+      }
+      
+      // Find next link
+      const nextLink = response.links.find(link => link.rel === 'next');
+      nextUrl = nextLink?.href;
+    }
+  }
+}
+
+// Usage examples
+// 1. Manual pagination
+const page1 = await PaginationHelper.fetchPage<System>(
+  new URL('http://api.example.org/systems'),
+  50
+);
+
+// 2. Automatic pagination (all results)
+for await (const system of PaginationHelper.paginateAll<System>(
+  'http://api.example.org/systems',
+  { q: 'weather' },
+  100
+)) {
+  console.log(system.name);
+}
+
+// 3. Collect all into array (use with caution for large datasets)
+async function getAllSystems(): Promise<System[]> {
+  const systems: System[] = [];
+  for await (const system of PaginationHelper.paginateAll<System>(
+    'http://api.example.org/systems'
+  )) {
+    systems.push(system);
+  }
+  return systems;
+}
+```
+
+### 19.3 Format Negotiation Strategy
+
+#### Content-Type Handling
+
+**OSH Insight:** Servers support multiple formats, clients should request preferred format explicitly.
+
+```typescript
+enum ContentType {
+  JSON = 'application/json',
+  GeoJSON = 'application/geo+json',
+  SensorML_JSON = 'application/sml+json',
+  OM_JSON = 'application/om+json',
+  SWE_JSON = 'application/swe+json',
+  SWE_Binary = 'application/swe+binary',
+  HTML = 'text/html'
+}
+
+class FormatNegotiator {
+  /**
+   * Determine best format for resource type
+   * Based on OSH's default representations
+   */
+  static getPreferredFormat(resourceType: string): ContentType {
+    const defaults: Record<string, ContentType> = {
+      'systems': ContentType.GeoJSON,        // Spatial features
+      'deployments': ContentType.GeoJSON,    // Spatial features
+      'fois': ContentType.GeoJSON,           // Spatial features
+      'procedures': ContentType.SensorML_JSON,
+      'datastreams': ContentType.JSON,
+      'observations': ContentType.OM_JSON,
+      'collections': ContentType.JSON,
+      'conformance': ContentType.JSON
+    };
+    
+    return defaults[resourceType] || ContentType.JSON;
+  }
+  
+  /**
+   * Build Accept header with preference order
+   */
+  static buildAcceptHeader(preferred: ContentType): string {
+    // Always accept JSON as fallback
+    return `${preferred}, application/json;q=0.9, */*;q=0.8`;
+  }
+}
+
+class CSAPIClient {
+  async get<T>(
+    path: string,
+    resourceType: string,
+    format?: ContentType
+  ): Promise<T> {
+    const preferredFormat = format || 
+      FormatNegotiator.getPreferredFormat(resourceType);
+    
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      headers: {
+        'Accept': FormatNegotiator.buildAcceptHeader(preferredFormat)
+      }
+    });
+    
+    if (!response.ok) {
+      throw await CSAPIError.fromResponse(response);
+    }
+    
+    return response.json();
+  }
+}
+
+// Usage
+const client = new CSAPIClient('http://api.example.org');
+
+// Automatically requests GeoJSON for spatial features
+const system = await client.get<System>('/systems/abc123', 'systems');
+
+// Override format if needed
+const systemAsJSON = await client.get<System>(
+  '/systems/abc123',
+  'systems',
+  ContentType.JSON
+);
+```
+
+### 19.4 Sub-Resource Navigation
+
+#### Implementing Resource Relationships
+
+**OSH Pattern:** Resources have both sub-resource paths AND query parameter access.
+
+```typescript
+interface Link {
+  rel: string;
+  href: string;
+  type?: string;
+}
+
+class ResourceNavigator<T> {
+  constructor(
+    private resource: T & { links?: Link[] },
+    private http: HttpClient
+  ) {}
+  
+  /**
+   * Navigate to related resources using link relations
+   */
+  async followLink<R>(rel: string): Promise<R[]> {
+    const link = this.resource.links?.find(l => l.rel === rel);
+    
+    if (!link) {
+      throw new Error(`No link with rel="${rel}" found on resource`);
+    }
+    
+    const response = await this.http.get<{ items: R[] }>(link.href);
+    return response.items;
+  }
+  
+  /**
+   * Check if resource has a particular relationship
+   */
+  hasLink(rel: string): boolean {
+    return this.resource.links?.some(l => l.rel === rel) ?? false;
+  }
+  
+  /**
+   * Get all available link relations
+   */
+  getLinkRelations(): string[] {
+    return this.resource.links?.map(l => l.rel) ?? [];
+  }
+}
+
+// Enhanced System class with navigation
+class System {
+  id: string;
+  name: string;
+  links?: Link[];
+  
+  private navigator: ResourceNavigator<this>;
+  
+  constructor(data: any, private http: HttpClient) {
+    Object.assign(this, data);
+    this.navigator = new ResourceNavigator(this, http);
+  }
+  
+  // Convenience methods that follow OSH patterns
+  async getDatastreams(): Promise<Datastream[]> {
+    // Follows "datastreams" link relation
+    return this.navigator.followLink<Datastream>('datastreams');
+  }
+  
+  async getSubsystems(): Promise<System[]> {
+    if (!this.navigator.hasLink('subsystems')) {
+      return []; // System has no subsystems
+    }
+    return this.navigator.followLink<System>('subsystems');
+  }
+  
+  async getControlStreams(): Promise<ControlStream[]> {
+    return this.navigator.followLink<ControlStream>('controlstreams');
+  }
+  
+  async getHistory(): Promise<SystemSnapshot[]> {
+    // Only available if server supports Part 3
+    if (!this.navigator.hasLink('history')) {
+      throw new Error('System history not supported by this server');
+    }
+    return this.navigator.followLink<SystemSnapshot>('history');
+  }
+}
+```
+
+### 19.5 Conformance-Based Feature Detection
+
+#### Adaptive Client Behavior
+
+**OSH Insight:** Check conformance endpoint to determine available features.
+
+```typescript
+class ConformanceChecker {
+  private conformsTo: Set<string> = new Set();
+  
+  async loadConformance(baseUrl: string): Promise<void> {
+    const response = await fetch(`${baseUrl}/conformance`);
+    const data = await response.json();
+    
+    this.conformsTo = new Set(data.conformsTo || []);
+  }
+  
+  // Part 1 - Core
+  supportsCore(): boolean {
+    return this.conformsTo.has(
+      'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/core'
+    );
+  }
+  
+  supportsSystems(): boolean {
+    return this.conformsTo.has(
+      'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system-features'
+    );
+  }
+  
+  supportsDeployment(): boolean {
+    return this.conformsTo.has(
+      'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment'
+    );
+  }
+  
+  supportsDatastreams(): boolean {
+    return this.conformsTo.has(
+      'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/datastream'
+    );
+  }
+  
+  // Part 2 - Control
+  supportsControlStreams(): boolean {
+    return this.conformsTo.has(
+      'http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/control-stream'
+    );
+  }
+  
+  supportsCommands(): boolean {
+    return this.conformsTo.has(
+      'http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/command'
+    );
+  }
+  
+  // Part 3 - Advanced
+  supportsSystemEvents(): boolean {
+    return this.conformsTo.has(
+      'http://www.opengis.net/spec/ogcapi-connectedsystems-3/1.0/conf/system-events'
+    );
+  }
+  
+  // Feature checks
+  supportsFormat(format: ContentType): boolean {
+    // Check if format conformance class exists
+    const formatMap: Record<ContentType, string> = {
+      [ContentType.JSON]: 'json',
+      [ContentType.GeoJSON]: 'geojson',
+      [ContentType.SensorML_JSON]: 'sml-json',
+      // ... etc
+    };
+    
+    // Simplified - real implementation would check format conformance URIs
+    return true; // Assume JSON always supported
+  }
+}
+
+// Usage in client
+class CSAPIClient {
+  private conformance: ConformanceChecker;
+  
+  async initialize(baseUrl: string): Promise<void> {
+    this.conformance = new ConformanceChecker();
+    await this.conformance.loadConformance(baseUrl);
+    
+    // Validate required features
+    if (!this.conformance.supportsCore()) {
+      throw new Error('Server does not support CSAPI Core');
+    }
+  }
+  
+  // Gracefully handle optional features
+  async getSystemHistory(systemId: string): Promise<SystemSnapshot[] | null> {
+    if (!this.conformance.supportsSystemEvents()) {
+      console.warn('System history not supported by this server');
+      return null;
+    }
+    
+    const response = await this.http.get(`/systems/${systemId}/history`);
+    return response.items;
+  }
+}
+```
+
+### 19.6 Authentication Implementation
+
+#### Multi-Strategy Auth Based on OSH Patterns
+
+```typescript
+interface AuthConfig {
+  type: 'basic' | 'bearer' | 'apikey' | 'none';
+  credentials?: {
+    username?: string;
+    password?: string;
+    token?: string;
+    apiKey?: string;
+  };
+}
+
+abstract class AuthStrategy {
+  abstract applyAuth(request: RequestInit): void;
+}
+
+class BasicAuthStrategy extends AuthStrategy {
+  constructor(private username: string, private password: string) {
+    super();
+  }
+  
+  applyAuth(request: RequestInit): void {
+    const encoded = btoa(`${this.username}:${this.password}`);
+    request.headers = {
+      ...request.headers,
+      'Authorization': `Basic ${encoded}`
+    };
+  }
+}
+
+class BearerAuthStrategy extends AuthStrategy {
+  constructor(private token: string) {
+    super();
+  }
+  
+  applyAuth(request: RequestInit): void {
+    request.headers = {
+      ...request.headers,
+      'Authorization': `Bearer ${this.token}`
+    };
+  }
+}
+
+class APIKeyAuthStrategy extends AuthStrategy {
+  constructor(
+    private apiKey: string,
+    private headerName: string = 'X-API-Key'
+  ) {
+    super();
+  }
+  
+  applyAuth(request: RequestInit): void {
+    request.headers = {
+      ...request.headers,
+      [this.headerName]: this.apiKey
+    };
+  }
+}
+
+class NoAuthStrategy extends AuthStrategy {
+  applyAuth(request: RequestInit): void {
+    // No authentication
+  }
+}
+
+class AuthStrategyFactory {
+  static create(config: AuthConfig): AuthStrategy {
+    switch (config.type) {
+      case 'basic':
+        if (!config.credentials?.username || !config.credentials?.password) {
+          throw new Error('Basic auth requires username and password');
+        }
+        return new BasicAuthStrategy(
+          config.credentials.username,
+          config.credentials.password
+        );
+      
+      case 'bearer':
+        if (!config.credentials?.token) {
+          throw new Error('Bearer auth requires token');
+        }
+        return new BearerAuthStrategy(config.credentials.token);
+      
+      case 'apikey':
+        if (!config.credentials?.apiKey) {
+          throw new Error('API key auth requires apiKey');
+        }
+        return new APIKeyAuthStrategy(config.credentials.apiKey);
+      
+      case 'none':
+        return new NoAuthStrategy();
+      
+      default:
+        throw new Error(`Unknown auth type: ${config.type}`);
+    }
+  }
+}
+
+// Usage in HTTP client
+class HttpClient {
+  private authStrategy: AuthStrategy;
+  
+  constructor(
+    private baseUrl: string,
+    authConfig: AuthConfig = { type: 'none' }
+  ) {
+    this.authStrategy = AuthStrategyFactory.create(authConfig);
+  }
+  
+  async fetch(path: string, options: RequestInit = {}): Promise<Response> {
+    const url = `${this.baseUrl}${path}`;
+    const request: RequestInit = { ...options };
+    
+    // Apply authentication
+    this.authStrategy.applyAuth(request);
+    
+    // Add default headers
+    request.headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      ...request.headers
+    };
+    
+    return fetch(url, request);
+  }
+}
+```
+
+### 19.7 Bulk Operations and Performance
+
+#### OSH-Informed Batch Processing
+
+```typescript
+class BulkOperationHelper {
+  /**
+   * OSH supports bulk observation insert - batch for efficiency
+   * Recommended batch size: 100-1000 observations
+   * Max: 10,000
+   */
+  static async insertObservationsBulk(
+    datastreamId: string,
+    observations: Observation[],
+    http: HttpClient,
+    batchSize: number = 1000
+  ): Promise<void> {
+    // Split into batches
+    const batches = this.chunk(observations, Math.min(batchSize, 10000));
+    
+    for (const batch of batches) {
+      await http.post(`/datastreams/${datastreamId}/observations`, batch);
+      
+      // Small delay between batches to avoid overwhelming server
+      await this.delay(100);
+    }
+  }
+  
+  /**
+   * Fallback for servers that don't support bulk operations
+   */
+  static async insertObservationsSequential(
+    datastreamId: string,
+    observations: Observation[],
+    http: HttpClient
+  ): Promise<void> {
+    for (const obs of observations) {
+      try {
+        await http.post(`/datastreams/${datastreamId}/observations`, obs);
+      } catch (error) {
+        if (error instanceof CSAPIError && error.statusCode === 400) {
+          // Server doesn't support bulk - log and continue
+          console.warn('Server rejected observation:', obs, error.serverMessage);
+        } else {
+          throw error;
+        }
+      }
+    }
+  }
+  
+  /**
+   * Try bulk first, fallback to sequential
+   */
+  static async insertObservationsSmart(
+    datastreamId: string,
+    observations: Observation[],
+    http: HttpClient
+  ): Promise<void> {
+    if (observations.length === 1) {
+      // Single observation - don't batch
+      await http.post(`/datastreams/${datastreamId}/observations`, observations[0]);
+      return;
+    }
+    
+    try {
+      // Try bulk insert
+      await this.insertObservationsBulk(datastreamId, observations, http);
+    } catch (error) {
+      if (error instanceof CSAPIError && error.statusCode === 400) {
+        // Bulk failed - try sequential
+        console.warn('Bulk insert failed, falling back to sequential');
+        await this.insertObservationsSequential(datastreamId, observations, http);
+      } else {
+        throw error;
+      }
+    }
+  }
+  
+  private static chunk<T>(array: T[], size: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+  }
+  
+  private static delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+}
+```
+
+### 19.8 Caching Strategy
+
+#### OSH-Informed Smart Caching
+
+```typescript
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  ttl: number; // Time to live in milliseconds
+}
+
+class ResourceCache {
+  private cache = new Map<string, CacheEntry<any>>();
+  
+  /**
+   * Cache policies based on OSH resource characteristics
+   */
+  private static CACHE_POLICIES: Record<string, number> = {
+    // Metadata resources - cache for 5 minutes
+    'systems': 5 * 60 * 1000,
+    'deployments': 5 * 60 * 1000,
+    'procedures': 5 * 60 * 1000,
+    'datastreams': 5 * 60 * 1000,
+    'fois': 5 * 60 * 1000,
+    'properties': 5 * 60 * 1000,
+    
+    // Static resources - cache for 1 hour
+    'collections': 60 * 60 * 1000,
+    'conformance': 60 * 60 * 1000,
+    
+    // Dynamic data - never cache
+    'observations': 0,
+    'commands': 0,
+    'systemevents': 0,
+  };
+  
+  set<T>(key: string, data: T, resourceType: string): void {
+    const ttl = ResourceCache.CACHE_POLICIES[resourceType] || 0;
+    
+    if (ttl === 0) {
+      // Don't cache this resource type
+      return;
+    }
+    
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl
+    });
+  }
+  
+  get<T>(key: string): T | undefined {
+    const entry = this.cache.get(key);
+    
+    if (!entry) {
+      return undefined;
+    }
+    
+    // Check if expired
+    if (Date.now() - entry.timestamp > entry.ttl) {
+      this.cache.delete(key);
+      return undefined;
+    }
+    
+    return entry.data as T;
+  }
+  
+  invalidate(key: string): void {
+    this.cache.delete(key);
+  }
+  
+  invalidatePattern(pattern: RegExp): void {
+    for (const key of this.cache.keys()) {
+      if (pattern.test(key)) {
+        this.cache.delete(key);
+      }
+    }
+  }
+  
+  clear(): void {
+    this.cache.clear();
+  }
+}
+
+// Usage in client
+class CachedHttpClient extends HttpClient {
+  private cache = new ResourceCache();
+  
+  async get<T>(
+    path: string,
+    resourceType: string,
+    bypassCache: boolean = false
+  ): Promise<T> {
+    const cacheKey = `GET:${path}`;
+    
+    // Check cache
+    if (!bypassCache) {
+      const cached = this.cache.get<T>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
+    // Fetch from server
+    const response = await super.fetch(path);
+    if (!response.ok) {
+      throw await CSAPIError.fromResponse(response);
+    }
+    
+    const data = await response.json();
+    
+    // Store in cache
+    this.cache.set(cacheKey, data, resourceType);
+    
+    return data;
+  }
+  
+  async post<T>(path: string, body: any, resourceType: string): Promise<T> {
+    const response = await super.fetch(path, {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+    
+    if (!response.ok) {
+      throw await CSAPIError.fromResponse(response);
+    }
+    
+    // Invalidate related caches after write operations
+    const resourceMatch = path.match(/\/([\w]+)/);
+    if (resourceMatch) {
+      const resource = resourceMatch[1];
+      this.cache.invalidatePattern(new RegExp(`^GET:/${resource}`));
+    }
+    
+    return response.json();
+  }
+  
+  async put<T>(path: string, body: any): Promise<T> {
+    const response = await super.fetch(path, {
+      method: 'PUT',
+      body: JSON.stringify(body)
+    });
+    
+    if (!response.ok) {
+      throw await CSAPIError.fromResponse(response);
+    }
+    
+    // Invalidate specific resource cache
+    this.cache.invalidate(`GET:${path}`);
+    
+    return response.json();
+  }
+  
+  async delete(path: string): Promise<void> {
+    const response = await super.fetch(path, { method: 'DELETE' });
+    
+    if (!response.ok) {
+      throw await CSAPIError.fromResponse(response);
+    }
+    
+    // Invalidate specific resource cache
+    this.cache.invalidate(`GET:${path}`);
+  }
+}
+```
+
+### 19.9 Testing Against OSH
+
+#### Integration Test Setup
+
+```typescript
+/**
+ * OSH-based integration test suite
+ * Assumes OSH running on localhost:8282
+ */
+
+describe('CSAPI Client Integration Tests (OSH)', () => {
+  const baseUrl = 'http://localhost:8282/sensorhub/api';
+  let client: CSAPIClient;
+  
+  beforeAll(async () => {
+    // Initialize client with OSH credentials
+    client = new CSAPIClient(baseUrl, {
+      type: 'basic',
+      credentials: {
+        username: 'admin',
+        password: 'admin'
+      }
+    });
+    
+    // Wait for OSH to be ready
+    await client.initialize();
+  });
+  
+  describe('Systems', () => {
+    it('should list systems', async () => {
+      const systems = await client.systems.list({ limit: 10 });
+      expect(Array.isArray(systems)).toBe(true);
+    });
+    
+    it('should create and delete system', async () => {
+      const system = await client.systems.create({
+        name: 'Test System',
+        type: 'PhysicalSystem',
+        uniqueId: `urn:test:system:${Date.now()}`,
+        description: 'Integration test system'
+      });
+      
+      expect(system.id).toBeDefined();
+      expect(system.name).toBe('Test System');
+      
+      // Cleanup
+      await client.systems.delete(system.id);
+    });
+    
+    it('should handle pagination', async () => {
+      const allSystems: System[] = [];
+      
+      for await (const system of client.systems.paginate({ limit: 5 })) {
+        allSystems.push(system);
+        
+        // Limit for testing
+        if (allSystems.length >= 10) break;
+      }
+      
+      expect(allSystems.length).toBeGreaterThan(0);
+    });
+  });
+  
+  describe('DataStreams', () => {
+    let testSystem: System;
+    
+    beforeAll(async () => {
+      testSystem = await client.systems.create({
+        name: 'Test System for DataStreams',
+        type: 'PhysicalSystem',
+        uniqueId: `urn:test:system:ds:${Date.now()}`
+      });
+    });
+    
+    afterAll(async () => {
+      await client.systems.delete(testSystem.id);
+    });
+    
+    it('should create datastream with schema', async () => {
+      const datastream = await client.datastreams.create({
+        name: 'Temperature Stream',
+        outputName: 'temp_output',
+        'system@link': { href: `/systems/${testSystem.id}` },
+        schema: {
+          obsFormat: 'application/om+json',
+          recordSchema: {
+            type: 'DataRecord',
+            field: [
+              {
+                name: 'time',
+                type: 'Time',
+                uom: { href: 'http://www.opengis.net/def/uom/ISO-8601/0/Gregorian' }
+              },
+              {
+                name: 'temp',
+                type: 'Quantity',
+                uom: { code: 'Cel' }
+              }
+            ]
+          }
+        }
+      });
+      
+      expect(datastream.id).toBeDefined();
+      expect(datastream.name).toBe('Temperature Stream');
+    });
+  });
+  
+  describe('Observations', () => {
+    it('should query observations with time filter', async () => {
+      const now = new Date();
+      const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+      
+      const observations = await client.observations.list({
+        phenomenonTime: `${oneHourAgo.toISOString()}/${now.toISOString()}`,
+        limit: 100
+      });
+      
+      expect(Array.isArray(observations)).toBe(true);
+    });
+    
+    it('should handle bulk observation insert', async () => {
+      // Assumes datastream exists
+      const observations = Array.from({ length: 100 }, (_, i) => ({
+        phenomenonTime: new Date().toISOString(),
+        resultTime: new Date().toISOString(),
+        result: {
+          time: new Date().toISOString(),
+          temp: 20 + Math.random() * 10
+        }
+      }));
+      
+      // Should not throw
+      await expect(
+        client.observations.createBulk('ds-test-id', observations)
+      ).resolves.not.toThrow();
+    });
+  });
+  
+  describe('Error Handling', () => {
+    it('should handle 404 gracefully', async () => {
+      await expect(
+        client.systems.get('nonexistent-id')
+      ).rejects.toThrow(CSAPIError);
+      
+      try {
+        await client.systems.get('nonexistent-id');
+      } catch (error) {
+        expect(error).toBeInstanceOf(CSAPIError);
+        expect((error as CSAPIError).statusCode).toBe(404);
+        expect((error as CSAPIError).isNotFound()).toBe(true);
+      }
+    });
+    
+    it('should handle validation errors', async () => {
+      await expect(
+        client.systems.create({
+          // Missing required fields
+          name: 'Invalid System'
+        } as any)
+      ).rejects.toThrow(CSAPIError);
+    });
+  });
+  
+  describe('Conformance', () => {
+    it('should check server capabilities', async () => {
+      const conformance = await client.getConformance();
+      
+      expect(conformance.supportsCore()).toBe(true);
+      expect(conformance.supportsSystems()).toBe(true);
+      expect(conformance.supportsDatastreams()).toBe(true);
+      
+      // OSH supports Part 2
+      expect(conformance.supportsControlStreams()).toBe(true);
+      
+      // OSH supports Part 3
+      expect(conformance.supportsSystemEvents()).toBe(true);
+    });
+  });
+});
+```
+
+### 19.10 Summary: Critical Takeaways from OSH
+
+#### Must-Have Features
+
+1. **✅ Query Validation**
+   - Validate `limit` (1-10,000), `bbox` (4 values), time formats (ISO 8601) before sending
+   - Provide sensible defaults (limit: 100)
+
+2. **✅ Pagination**
+   - Implement link-following pagination
+   - Support `AsyncGenerator` pattern for streaming results
+   - Handle `numberMatched`/`numberReturned` metadata
+
+3. **✅ Error Handling**
+   - Parse JSON error bodies (`status`, `message`, `details`)
+   - Provide type guards (`isNotFound()`, `isValidationError()`, etc.)
+   - Include original response for debugging
+
+4. **✅ Format Negotiation**
+   - Request appropriate format per resource type
+   - GeoJSON for spatial features, SensorML for systems, O&M for observations
+   - Always accept JSON as fallback
+
+5. **✅ Authentication**
+   - Support multiple strategies (Basic, Bearer, API Key)
+   - Strategy pattern for extensibility
+   - Thread auth through all requests
+
+6. **✅ Sub-Resource Navigation**
+   - Follow link relations from responses
+   - Support both `/parent/{id}/child` and `/child?parent=id` patterns
+   - Provide convenience methods on resource objects
+
+7. **✅ Feature Detection**
+   - Check conformance endpoint on initialization
+   - Gracefully handle optional features (history, events)
+   - Don't assume all servers implement all parts
+
+8. **✅ Caching**
+   - Cache metadata (systems, datastreams) - 5 min TTL
+   - Never cache dynamic data (observations, commands)
+   - Invalidate on write operations
+
+#### Performance Optimizations
+
+1. **Bulk Operations**
+   - Batch observations (100-1000 per request)
+   - Delay between batches (100ms) to avoid overwhelming server
+   - Fallback to sequential if bulk fails
+
+2. **Efficient Pagination**
+   - Use appropriate limit sizes (100-1000 for large datasets)
+   - Don't request more than needed
+   - Stop early if result count known
+
+3. **Smart HTTP**
+   - Reuse connections (HTTP client with keep-alive)
+   - Compress requests/responses if supported
+   - Parallel requests for independent resources
+
+#### Testing Strategy
+
+1. **Use OSH for Integration Tests**
+   - Deploy locally via Docker
+   - Test against real server behavior
+   - Validate all CRUD operations
+
+2. **Unit Tests with Mocks**
+   - Mock HTTP responses
+   - Test edge cases (errors, pagination edge, empty results)
+   - Validate query building without network calls
+
+3. **Fixtures from OSH**
+   - Use `sensorhub-service-consys/src/test/resources/`
+   - Real-world data patterns
+   - Validate parsing against production data
 
 ---
 
