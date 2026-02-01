@@ -1359,6 +1359,184 @@ describe('Systems Client', () => {
 
 **Deliverable:** 52°North server behavior analysis and multi-server compatibility insights (~900 lines) ✅ COMPLETED
 
+#### Section 16.1: Live Demo Server Analysis
+
+**Live 52°North Demo Server:** https://csa.demo.52north.org/  
+**Purpose:** Public demonstration instance of 52°North CSAPI implementation for real-world testing and validation
+
+⚠️ **Certificate Warning:** Demo server uses expired/invalid SSL certificate - clients may need to skip certificate validation for testing
+
+**Server Characteristics:**
+
+**Conformance (Minimal Declaration):**
+- ✅ OGC API - Common Part 1 (Core)
+- ⚠️ **Only 1 conformance class declared** (vs OSH's 33 classes)
+- ⚠️ Conformance response incomplete - does not list Part 1 resource classes despite endpoints being available
+- **Implication:** Client must probe endpoints directly, cannot rely solely on conformance
+
+**Live Data Inventory:**
+- **3 Active Systems:**
+  - Doppler Current Profiler Sensor (DCPS #526) - Aanderaa 5400 model
+  - EXO3 Sonde #1 (YSI599503-00-1) - Water quality sensor
+  - SMARTGUARD Platform (5300-909) - Oceanographic buoy
+  
+- **1 Deployment:**
+  - Messtonne 1 - 2025 Test deployment
+  - Location: Baltic Sea (12.08°E, 54.13°N - near Rostock, Germany)
+  - Platform: SMARTGUARD buoy with 2 deployed sensors (EXO3 + DCPS)
+  - Operator: BfN (German Federal Agency for Nature Conservation)
+  - Deployment type: Manufacturing hangar testing
+  
+- **1 Procedure:**
+  - Aanderaa DCPS TD304 sensor type definition
+  - Includes manufacturer info, model number, sensor type classification
+  - Links to external documentation (operating manual PDF)
+  
+- **0 Sampling Features:** No sampling features defined
+- **0 Properties:** No custom properties defined
+- **DataStreams/Observations:** ⚠️ Part 2 endpoints return 500 Internal Server Error (not yet functional on demo server)
+
+**Value for Client Development:**
+
+1. **Minimal Conformance Testing:**
+   - Tests client behavior with incomplete conformance declaration
+   - Validates endpoint probing/discovery mechanisms
+   - Demonstrates need for robust fallback strategies
+
+2. **Small Dataset Validation:**
+   - Tests with minimal data (3 systems, 1 deployment, 1 procedure)
+   - Validates empty collection handling (0 sampling features, 0 properties)
+   - Useful for edge case testing (small-scale deployments)
+
+3. **Real-World Deployment Patterns:**
+   - Oceanographic buoy deployment example
+   - Multi-sensor platform configuration
+   - System-to-procedure relationships via `typeOf` property
+
+4. **Format Support Testing:**
+   - SensorML JSON format for systems/procedures
+   - System identifiers (serial numbers, product numbers)
+   - Classifier and document link patterns
+
+5. **Error Condition Testing:**
+   - Part 2 endpoints return 500 errors (implementation incomplete)
+   - SSL certificate validation issues
+   - Tests client error handling for unavailable features
+
+6. **ID Format Examples:**
+   - String IDs: `"5400-526"`, `"YSI599503-00-1"`, `"5300-909"`
+   - UUID IDs: `"4e09de42-674d-4e03-a620-2d219b030a50"`, `"af41f84f-2492-40e2-a154-17df67119271"`
+   - URN format: `"urn:sensor:5400-526"`, `"urn:platform:5300-909"`, `"urn:sensortype:aanderaa:dcps:td304"`
+
+**Testing Recommendations:**
+
+1. **Use for Conformance Detection Testing:**
+   ```typescript
+   describe('Incomplete Conformance Handling', () => {
+     const server = 'https://csa.demo.52north.org/';
+     
+     it('should detect available resources despite incomplete conformance', async () => {
+       const client = new CSAPIClient(server, { skipCertCheck: true });
+       await client.initialize();
+       
+       // Conformance says only "Common Core", but systems endpoint works
+       expect(client.conformance.size).toBe(1);
+       
+       // Client should probe endpoints
+       const systems = await client.systems.list();
+       expect(systems.length).toBeGreaterThan(0);
+     });
+     
+     it('should handle 500 errors for unavailable Part 2 features', async () => {
+       const client = new CSAPIClient(server, { skipCertCheck: true });
+       
+       await expect(
+         client.datastreams.list()
+       ).rejects.toThrow(/500|Internal Server Error/);
+     });
+   });
+   ```
+
+2. **Small-Scale Deployment Testing:**
+   - Test with 3 systems (validates minimal deployments)
+   - Test empty collections (0 sampling features)
+   - Test single deployment scenarios
+
+3. **System-Procedure Relationships:**
+   - Validate `typeOf` link following
+   - Test procedure datasheet links (external PDF)
+   - Verify classifier and identifier parsing
+
+4. **Error Recovery Testing:**
+   ```typescript
+   async function queryDatastreamsWithFallback(client: CSAPIClient): Promise<any[]> {
+     try {
+       return await client.datastreams.list();
+     } catch (error) {
+       if (error.statusCode === 500) {
+         console.warn('Part 2 not available on this server');
+         return [];
+       }
+       throw error;
+     }
+   }
+   ```
+
+**Advantages Over Local Deployment:**
+
+- ✅ No Docker/Elasticsearch/TimescaleDB setup required
+- ✅ Publicly accessible (no authentication)
+- ✅ Real-world oceanographic deployment example
+- ✅ Tests incomplete conformance handling
+- ✅ Small dataset ideal for quick testing
+
+**Limitations:**
+
+- ⚠️ Expired SSL certificate (requires skip cert check)
+- ⚠️ Incomplete conformance declaration (only 1 class listed)
+- ⚠️ Part 2 endpoints non-functional (500 errors)
+- ⚠️ Very small dataset (3 systems, 1 deployment)
+- ⚠️ No dynamic data (observations not available)
+- ⚠️ No authentication testing possible
+
+**Comparison to OSH Live Server:**
+
+| Aspect | 52°North Demo | OSH Live Server |
+|--------|---------------|-----------------|
+| **URL** | https://csa.demo.52north.org/ | http://45.55.99.236:8080/sensorhub/api |
+| **SSL** | ⚠️ Invalid cert | ✅ HTTP (no SSL issues) |
+| **Auth** | None | HTTP Basic (ogc:ogc) |
+| **Conformance** | 1 class | 33 classes |
+| **Systems** | 3 | 6 |
+| **Deployments** | 1 | 0 (not demonstrated) |
+| **DataStreams** | ❌ 500 error | ✅ 28 active |
+| **Observations** | ❌ 500 error | ✅ Thousands (live) |
+| **Use Case** | Oceanographic buoy | Drone + Android sensors |
+| **Part 1** | ✅ Functional | ✅ Functional |
+| **Part 2** | ❌ Non-functional | ✅ Functional |
+| **Part 3** | ❌ N/A | ✅ Functional |
+
+**Recommended Testing Strategy:**
+
+1. **Phase 1:** Use 52°North demo for Part 1 testing only (systems, deployments, procedures)
+2. **Phase 2:** Use OSH live server for Part 2 testing (observations, datastreams)
+3. **Phase 3:** Use OSH live server for Part 3 testing (events, streaming)
+4. **Phase 4:** Deploy both servers locally for comprehensive integration testing
+
+**Live Server Data Summary:**
+- **Server URL:** https://csa.demo.52north.org/
+- **Conformance:** 1 class declared (incomplete)
+- **Total Systems:** 3 (oceanographic sensors + platform)
+- **Total Deployments:** 1 (Baltic Sea buoy testing)
+- **Total Procedures:** 1 (sensor type definition)
+- **Total Sampling Features:** 0
+- **Total Properties:** 0
+- **DataStreams/Observations:** Non-functional (500 errors)
+- **Primary Use Case:** Oceanographic monitoring equipment metadata
+- **Geographic Location:** Baltic Sea, Germany (54.13°N, 12.08°E)
+- **Deployment Context:** Research/testing installation
+- **Format Support:** SensorML JSON, GeoJSON (Part 1 only)
+
 ---
 
 ### Section 17: Gap Analysis - Previous Iteration Misses ⏳
