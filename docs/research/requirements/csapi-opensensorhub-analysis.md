@@ -2716,6 +2716,409 @@ class HttpClient {
 }
 ```
 
+### 17.4 Synthesized Insights for TypeScript Client Implementation
+
+This section synthesizes the most critical learnings from the OpenSensorHub analysis into actionable guidance for TypeScript client library development.
+
+#### 17.4.1 Query Parameter Implementation
+
+**Client-Side Validation Rules:**
+
+```typescript
+class QueryValidator {
+  static validateLimit(limit?: number): number {
+    if (limit === undefined) return 100; // OSH default
+    if (limit < 1 || limit > 10000) {
+      throw new ValidationError('limit must be between 1 and 10,000');
+    }
+    return limit;
+  }
+  
+  static validateBbox(bbox?: number[]): string | undefined {
+    if (!bbox) return undefined;
+    if (bbox.length !== 4) {
+      throw new ValidationError('bbox must have exactly 4 values [minLon, minLat, maxLon, maxLat]');
+    }
+    return bbox.join(',');
+  }
+  
+  static validateTimeParameter(time: string | Date): string {
+    if (time instanceof Date) {
+      return time.toISOString();
+    }
+    // Must be ISO 8601 format
+    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/.test(time)) {
+      throw new ValidationError('Time must be ISO 8601 format');
+    }
+    return time;
+  }
+}
+```
+
+**Query Pattern Support:**
+- **Spatial:** `bbox` (4 values), `geom` (GeoJSON geometry)
+- **Temporal:** `phenomenonTime`, `resultTime`, `validTime` (ISO 8601 intervals)
+- **Hierarchical:** `parent`, `system`, `foi`, `observedProperty`, `controlledProperty`
+- **Text Search:** `q` (keyword array, 1-50 chars per keyword)
+- **Pagination:** `limit` (1-10,000, default 100), `offset`
+- **Deletion:** `cascade` (boolean, default false)
+
+#### 17.4.2 Pagination Strategy
+
+**OSH Pattern: Limit+1 Detection**
+
+```typescript
+async *paginateAll<T>(
+  baseUrl: string,
+  params?: Record<string, string>,
+  limit: number = 100
+): AsyncGenerator<T> {
+  let nextUrl: string | undefined = baseUrl;
+  
+  while (nextUrl) {
+    const url = new URL(nextUrl);
+    
+    if (nextUrl === baseUrl && params) {
+      Object.entries(params).forEach(([key, value]) => {
+        url.searchParams.set(key, value);
+      });
+    }
+    
+    url.searchParams.set('limit', String(Math.min(limit, 10000)));
+    
+    const response = await fetch(url);
+    const data: PaginatedResponse<T> = await response.json();
+    
+    for (const item of data.items) {
+      yield item;
+    }
+    
+    const nextLink = data.links.find(l => l.rel === 'next');
+    nextUrl = nextLink?.href;
+  }
+}
+
+// Usage: for await (const system of paginateAll('/systems', { q: 'weather' }))
+```
+
+#### 17.4.3 Error Response Handling
+
+**OSH Error Format:**
+```json
+{
+  "status": 400,
+  "message": "Invalid parameter value",
+  "details": "limit must be between 1 and 10,000"
+}
+```
+
+**Type-Safe Error Class:**
+```typescript
+class CSAPIError extends Error {
+  constructor(
+    public statusCode: number,
+    public serverMessage: string,
+    public details?: string,
+    public response?: Response
+  ) {
+    super(`${statusCode}: ${serverMessage}`);
+    this.name = 'CSAPIError';
+  }
+  
+  static async fromResponse(response: Response): Promise<CSAPIError> {
+    try {
+      const body = await response.json();
+      return new CSAPIError(body.status, body.message, body.details, response);
+    } catch {
+      return new CSAPIError(response.status, response.statusText, undefined, response);
+    }
+  }
+  
+  isNotFound(): boolean { return this.statusCode === 404; }
+  isValidationError(): boolean { return this.statusCode === 400 || this.statusCode === 422; }
+  isAuthError(): boolean { return this.statusCode === 401 || this.statusCode === 403; }
+}
+```
+
+#### 17.4.4 Format Negotiation
+
+**Resource-Specific Format Defaults:**
+```typescript
+const FORMAT_DEFAULTS: Record<string, string> = {
+  'systems': 'application/geo+json',       // Spatial features
+  'deployments': 'application/geo+json',   // Spatial features
+  'fois': 'application/geo+json',          // Spatial features
+  'procedures': 'application/sml+json',    // SensorML
+  'datastreams': 'application/json',       // Default JSON
+  'observations': 'application/om+json',   // O&M
+};
+
+function buildAcceptHeader(resourceType: string): string {
+  const preferred = FORMAT_DEFAULTS[resourceType] || 'application/json';
+  return `${preferred}, application/json;q=0.9, */*;q=0.8`;
+}
+```
+
+#### 17.4.5 Sub-Resource Navigation
+
+**Link-Following Pattern:**
+```typescript
+class ResourceNavigator<T extends { links?: Link[] }> {
+  constructor(private resource: T, private http: HttpClient) {}
+  
+  async followLink<R>(rel: string): Promise<R[]> {
+    const link = this.resource.links?.find(l => l.rel === rel);
+    if (!link) throw new Error(`No link with rel="${rel}"`);
+    
+    const response = await this.http.get<{ items: R[] }>(link.href);
+    return response.items;
+  }
+  
+  hasLink(rel: string): boolean {
+    return this.resource.links?.some(l => l.rel === rel) ?? false;
+  }
+}
+
+// Enhanced System class
+class System {
+  private navigator: ResourceNavigator<this>;
+  
+  async getDatastreams(): Promise<Datastream[]> {
+    return this.navigator.followLink<Datastream>('datastreams');
+  }
+  
+  async getSubsystems(): Promise<System[]> {
+    return this.navigator.hasLink('subsystems')
+      ? this.navigator.followLink<System>('subsystems')
+      : [];
+  }
+}
+```
+
+#### 17.4.6 Conformance-Based Feature Detection
+
+**Check Server Capabilities:**
+```typescript
+class ConformanceChecker {
+  private conformsTo: Set<string> = new Set();
+  
+  async loadConformance(baseUrl: string): Promise<void> {
+    const response = await fetch(`${baseUrl}/conformance`);
+    const data = await response.json();
+    this.conformsTo = new Set(data.conformsTo || []);
+  }
+  
+  supportsControlStreams(): boolean {
+    return this.conformsTo.has(
+      'http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/control-stream'
+    );
+  }
+  
+  supportsSystemEvents(): boolean {
+    return this.conformsTo.has(
+      'http://www.opengis.net/spec/ogcapi-connectedsystems-3/1.0/conf/system-events'
+    );
+  }
+}
+
+// Graceful degradation
+async getSystemHistory(systemId: string): Promise<SystemSnapshot[] | null> {
+  if (!this.conformance.supportsSystemEvents()) {
+    console.warn('System history not supported by this server');
+    return null;
+  }
+  return this.http.get(`/systems/${systemId}/history`);
+}
+```
+
+#### 17.4.7 Bulk Operations
+
+**Smart Batching with Fallback:**
+```typescript
+async insertObservationsSmart(
+  datastreamId: string,
+  observations: Observation[],
+  http: HttpClient
+): Promise<void> {
+  if (observations.length === 1) {
+    await http.post(`/datastreams/${datastreamId}/observations`, observations[0]);
+    return;
+  }
+  
+  try {
+    // Try bulk insert (array POST)
+    const batches = chunk(observations, 1000); // OSH max 10,000, safe batch 1,000
+    for (const batch of batches) {
+      await http.post(`/datastreams/${datastreamId}/observations`, batch);
+      await delay(100); // Small delay between batches
+    }
+  } catch (error) {
+    if (error instanceof CSAPIError && error.statusCode === 400) {
+      // Server doesn't support bulk - fall back to sequential
+      for (const obs of observations) {
+        await http.post(`/datastreams/${datastreamId}/observations`, obs);
+      }
+    } else {
+      throw error;
+    }
+  }
+}
+```
+
+#### 17.4.8 Caching Strategy
+
+**Resource-Specific TTL Policies:**
+```typescript
+const CACHE_POLICIES: Record<string, number> = {
+  // Metadata - cache for 5 minutes
+  'systems': 5 * 60 * 1000,
+  'deployments': 5 * 60 * 1000,
+  'procedures': 5 * 60 * 1000,
+  'datastreams': 5 * 60 * 1000,
+  'fois': 5 * 60 * 1000,
+  
+  // Static - cache for 1 hour
+  'conformance': 60 * 60 * 1000,
+  'collections': 60 * 60 * 1000,
+  
+  // Dynamic - never cache (0 TTL)
+  'observations': 0,
+  'commands': 0,
+};
+
+class ResourceCache {
+  set<T>(key: string, data: T, resourceType: string): void {
+    const ttl = CACHE_POLICIES[resourceType] || 0;
+    if (ttl === 0) return; // Don't cache dynamic data
+    
+    this.cache.set(key, { data, timestamp: Date.now(), ttl });
+  }
+  
+  invalidatePattern(pattern: RegExp): void {
+    // Invalidate all matching keys (e.g., after POST/PUT/DELETE)
+    for (const key of this.cache.keys()) {
+      if (pattern.test(key)) this.cache.delete(key);
+    }
+  }
+}
+```
+
+#### 17.4.9 Authentication Patterns
+
+**Multi-Strategy Support:**
+```typescript
+interface AuthConfig {
+  type: 'basic' | 'bearer' | 'apikey' | 'none';
+  credentials?: {
+    username?: string;
+    password?: string;
+    token?: string;
+    apiKey?: string;
+  };
+}
+
+class HttpClient {
+  private authStrategy: AuthStrategy;
+  
+  constructor(baseUrl: string, authConfig: AuthConfig) {
+    this.authStrategy = AuthStrategyFactory.create(authConfig);
+  }
+  
+  async fetch(path: string, options: RequestInit = {}): Promise<Response> {
+    const request: RequestInit = { ...options };
+    this.authStrategy.applyAuth(request); // Add auth headers
+    return fetch(`${this.baseUrl}${path}`, request);
+  }
+}
+
+// Strategies: Basic (Authorization: Basic base64), 
+//             Bearer (Authorization: Bearer token),
+//             API Key (X-API-Key: key)
+```
+
+#### 17.4.10 Edge Cases from OSH
+
+**Important Behaviors to Handle:**
+
+1. **Opaque IDs:** OSH uses Base32, others may use UUIDs or integers - treat as strings
+2. **Open-Ended Intervals:** `../..` (all time), `2024-01-01T00:00:00Z/..` (from date to now)
+3. **Immutable Observations:** No PUT support (delete + recreate instead)
+4. **Command Status:** Separate endpoint `/commands/{id}/status` for status polling
+5. **System History:** Part 3 feature - check conformance before using
+6. **Async Operations:** 202 Accepted with Location header for polling
+7. **Empty Results:** 200 with empty array (not 404)
+
+#### 17.4.11 Performance Characteristics
+
+**OSH Benchmarks (guidance for expectations):**
+- GET single resource: 20-100ms
+- List 100 items: 50-200ms
+- POST create: 100-500ms
+- Query 1000 observations: 200-1000ms
+
+**Optimization Strategies:**
+- Reuse HTTP connections (keep-alive)
+- Optimal batch sizes: 100-1000 observations
+- Parallel requests for independent resources
+- Cache metadata aggressively, never cache observations
+
+#### 17.4.12 Testing Against OSH
+
+**Integration Test Setup:**
+```typescript
+describe('CSAPI Client vs OSH', () => {
+  const client = new CSAPIClient('http://localhost:8282/sensorhub/api', {
+    type: 'basic',
+    credentials: { username: 'admin', password: 'admin' }
+  });
+  
+  it('should paginate through systems', async () => {
+    const systems = [];
+    for await (const sys of client.systems.paginate({ limit: 5 })) {
+      systems.push(sys);
+      if (systems.length >= 10) break;
+    }
+    expect(systems.length).toBeGreaterThan(0);
+  });
+  
+  it('should handle 404 with type-safe error', async () => {
+    try {
+      await client.systems.get('nonexistent');
+    } catch (error) {
+      expect(error).toBeInstanceOf(CSAPIError);
+      expect((error as CSAPIError).isNotFound()).toBe(true);
+    }
+  });
+});
+```
+
+**Fixtures:** Use `sensorhub-service-consys/src/test/resources/` for unit tests
+
+#### 17.4.13 Critical Implementation Checklist
+
+**Must-Have Features:**
+- ✅ Query parameter validation (client-side before sending)
+- ✅ Link-following pagination with AsyncGenerator
+- ✅ JSON error body parsing with type guards
+- ✅ Format negotiation per resource type
+- ✅ Sub-resource navigation via links
+- ✅ Conformance-based feature detection
+- ✅ Multi-strategy authentication
+- ✅ Smart caching with TTL policies
+
+**Performance Features:**
+- ✅ Bulk observation insert (with fallback to sequential)
+- ✅ Connection reuse (HTTP keep-alive)
+- ✅ Parallel independent requests
+- ✅ Metadata caching (5 min TTL)
+
+**Testing Requirements:**
+- ✅ Integration tests against OSH locally
+- ✅ Use real server fixtures
+- ✅ Test all CRUD operations
+- ✅ Test error conditions (404, 400, 422)
+- ✅ Test pagination edge cases
+
 ---
 
 ## 18. Conclusion
