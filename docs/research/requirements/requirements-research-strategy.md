@@ -908,7 +908,188 @@
 **Deliverable:** OpenSensorHub server behavior analysis and client implications (~6,500 lines)  
 **Status:** ✅ **COMPLETE** - Comprehensive production server analysis with all operations, conformance, query patterns, validation, formats, errors, pagination, relationships, edge cases, fixtures, performance, auth, and SWE structures documented
 
-#### Section 15.1: Key Insights for TypeScript Client Implementation
+#### Section 15.1: Live Demo Server Analysis
+
+**Live OSH Demo Server:** http://45.55.99.236:8080/sensorhub/api  
+**Authentication:** HTTP Basic Auth (credentials available separately)  
+**Purpose:** Live production-ready OSH instance for real-time client testing and validation
+
+**Server Characteristics:**
+
+**Conformance (Full CSAPI Coverage):**
+- ✅ OGC API Common Parts 1 & 2 (Core, HTML, JSON, OpenAPI)
+- ✅ OGC API Features Part 1 (Core, GeoJSON, HTML)
+- ✅ OGC API Features Part 4 (Create-Replace-Delete)
+- ✅ CSAPI Part 1: Core, System, Subsystem, Deployment, Subdeployment, Procedure, Sampling Features, Property, Create-Replace-Delete, GeoJSON, SensorML
+- ✅ CSAPI Part 2: DataStream, ControlStream, System History, System Events, Create-Replace-Delete, JSON, SWE Common (JSON/Text/Binary)
+- ✅ CSAPI Part 3: WebSocket, MQTT (real-time streaming)
+
+**Live Data Inventory:**
+- **6 Active Systems:**
+  - LIVE - Field Drone (FCU CubePilot UAV with 10+ datastreams)
+  - LIVE - Android Phone [Blue 1] (looped replay, ~4 min cycle)
+  - LIVE - Android Phone [Blue 2] (looped replay, ~4 min cycle)
+  - Android Sensors [blue1] (live sensor feeds)
+  - Android Sensors [blue2] (live sensor feeds)
+  - FCU Field Drone CubePilot (flight controller unit)
+
+- **28 Datastreams** including:
+  - **Drone telemetry:** Location (lat/lon/alt), Velocity, Acceleration, Attitude (Euler angles), Angular Velocity, Magnetic Field, Temperature, GPS Health, Health Status
+  - **Android sensors:** GPS location, accelerometer, gyroscope, magnetometer, orientation
+  - **Multiple formats:** O&M JSON, SWE JSON/CSV/XML/Binary
+
+- **Live Observations:** Real-time streaming data with `validTime: [..., "now"]` indicating active systems
+
+**Value for Client Development:**
+
+1. **Real-Time Integration Testing:**
+   - Test against live server (no local deployment needed initially)
+   - Validate actual network behavior (latency, timeouts, errors)
+   - Test with real-world data patterns (not just fixtures)
+
+2. **Conformance Validation:**
+   - Verify client against all 33 conformance classes
+   - Test Part 3 WebSocket/MQTT features (not in local test fixtures)
+   - Validate format negotiation (5 SWE formats: JSON/CSV/XML/Binary/Text)
+
+3. **Real-World Data Patterns:**
+   - **Location tracking:** Drone at Taiwan coordinates (24.18°N, 120.64°E, ~112m alt)
+   - **Vector quantities:** 3D acceleration, velocity, magnetic field
+   - **Complex records:** Health status with 7 boolean fields
+   - **Temporal patterns:** Looped replay data (~4 min cycles)
+   - **High-frequency data:** IMU sensors (gyro, accel) at high rates
+
+4. **Edge Case Testing:**
+   - Open-ended time intervals: `validTime: [..., "now"]`
+   - Base32 IDs: `03bc5ofvvstg`, `02sv18sqotc0` (not UUIDs)
+   - Multiple result types: `measure`, `record`, `vector`
+   - Format negotiation: Test Accept header vs `?f=` parameter
+
+5. **Authentication Testing:**
+   - HTTP Basic Auth validation
+   - 401/403 error handling
+   - Secure connection patterns
+
+6. **Pagination Testing:**
+   - 28 datastreams across 6 systems
+   - Test with various limit sizes (5, 10, 100)
+   - Validate link-following (`next` relations)
+
+7. **Sub-Resource Navigation:**
+   - `/systems/{id}/datastreams` endpoints
+   - Link relations in responses
+   - System-to-datastream associations
+
+8. **Live Observation Queries:**
+   - Temporal filtering: `phenomenonTime=2026-02-01T00:00:00Z/..`
+   - Datastream filtering: `datastream@id=...`
+   - Multiple format requests
+
+**Testing Recommendations:**
+
+1. **Use for CI/CD Integration Tests:**
+   ```typescript
+   const LIVE_SERVER = 'http://45.55.99.236:8080/sensorhub/api';
+   
+   describe('Live OSH Integration Tests', () => {
+     it('should connect and authenticate', async () => {
+       const client = new CSAPIClient(LIVE_SERVER, { 
+         type: 'basic',
+         credentials: { username: 'ogc', password: 'ogc' }
+       });
+       const conformance = await client.getConformance();
+       expect(conformance.conformsTo).toContain(
+         'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/core'
+       );
+     });
+     
+     it('should paginate through live systems', async () => {
+       const systems = [];
+       for await (const sys of client.systems.paginate({ limit: 3 })) {
+         systems.push(sys);
+       }
+       expect(systems.length).toBe(6);
+     });
+     
+     it('should query live drone observations', async () => {
+       // Drone location datastream: 02v937ubpscg
+       const obs = await client.observations.list({
+         datastream: '02v937ubpscg',
+         phenomenonTime: '2026-02-01T00:00:00Z/..',
+         limit: 10
+       });
+       expect(obs.length).toBeGreaterThan(0);
+       expect(obs[0].result).toHaveProperty('Location');
+     });
+   });
+   ```
+
+2. **Real-Time Stream Testing (Part 3):**
+   - WebSocket endpoint: `ws://45.55.99.236:8080/sensorhub/api/...`
+   - MQTT endpoint available
+   - Test live data streaming
+
+3. **Format Negotiation Testing:**
+   ```typescript
+   // Test multiple format support
+   const formats = [
+     'application/om+json',
+     'application/swe+json',
+     'application/swe+csv',
+     'application/swe+xml',
+     'application/swe+binary'
+   ];
+   
+   for (const format of formats) {
+     const obs = await fetch(
+       `${LIVE_SERVER}/datastreams/03tbj7mvqg50/observations?limit=1`,
+       { headers: { Accept: format, Authorization: 'Basic ...' } }
+     );
+     expect(obs.status).toBe(200);
+   }
+   ```
+
+4. **Error Condition Testing:**
+   - Test 404: Request nonexistent system ID
+   - Test 401: Request without auth
+   - Test 400: Invalid query parameters (e.g., `limit=99999`)
+
+**Advantages Over Local Deployment:**
+
+- ✅ No Docker setup required initially
+- ✅ Always running (24/7 availability)
+- ✅ Real network conditions (not localhost)
+- ✅ Live data (not static fixtures)
+- ✅ Part 3 features (WebSocket/MQTT)
+- ✅ Multiple concurrent systems
+- ✅ Production-ready performance baseline
+
+**Limitations:**
+
+- ⚠️ Cannot test write operations safely (shared server)
+- ⚠️ Limited to 6 systems / 28 datastreams (smaller dataset)
+- ⚠️ Looped replay data (not truly random/live for Android phones)
+- ⚠️ Network dependency (internet required)
+- ⚠️ Shared credentials (single user account)
+
+**Recommended Testing Strategy:**
+
+1. **Phase 1:** Use live server for initial read-only tests (GET operations)
+2. **Phase 2:** Deploy local OSH for write operation tests (POST/PUT/DELETE)
+3. **Phase 3:** Use both - live for CI/CD smoke tests, local for comprehensive integration tests
+4. **Phase 4:** Add to documentation as public demo endpoint
+
+**Live Server Data Summary:**
+- **Server URL:** http://45.55.99.236:8080/sensorhub/api
+- **Total Systems:** 6 (3 LIVE, 3 archived)
+- **Total DataStreams:** 28
+- **Total Observations:** Thousands (live streaming)
+- **Primary Use Case:** Drone telemetry + Android sensor data
+- **Geographic Location:** Taiwan (24.18°N, 120.64°E)
+- **Data Frequency:** High-rate IMU data, moderate GPS data
+- **Conformance:** 100% (33/33 conformance classes)
+
+#### Section 15.2: Key Insights for TypeScript Client Implementation
 
 **Synthesis of Actionable Guidance from OpenSensorHub Analysis**
 

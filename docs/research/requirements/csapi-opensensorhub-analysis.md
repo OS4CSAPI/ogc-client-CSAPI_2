@@ -2,23 +2,34 @@
 
 **Research Date:** January 31, 2026  
 **Repository:** https://github.com/opensensorhub/osh-core  
+**Live Demo Server:** http://45.55.99.236:8080/sensorhub/api  
 **Purpose:** Analyze server-side CSAPI implementation to inform TypeScript client library design
 
 ---
 
 ## Executive Summary
 
-OpenSensorHub (OSH) provides a **comprehensive, production-ready OGC API - Connected Systems server implementation** in Java. This analysis examines the osh-core repository to understand server behaviors, expectations, and patterns that must be handled by client libraries.
+OpenSensorHub (OSH) provides a **comprehensive, production-ready OGC API - Connected Systems server implementation** in Java. This analysis examines the osh-core repository to understand server behaviors, expectations, and patterns that must be handled by client libraries. Additionally, a **live demo server** is available for real-time testing and validation.
 
 **Key Findings:**
-- ✅ **Full Part 1 + Part 2 Coverage:** All 11 CSAPI resources implemented with CRUD operations
+- ✅ **Full Part 1 + Part 2 + Part 3 Coverage:** All 11 CSAPI resources implemented with CRUD operations
 - ✅ **Complete Conformance:** Supports OGC API Common, Features, and Connected Systems Parts 1, 2, 3
-- ✅ **Rich Format Support:** JSON, GeoJSON, SensorML JSON, SWE Common (JSON/Binary/Text), HTML
+- ✅ **Rich Format Support:** JSON, GeoJSON, SensorML JSON, SWE Common (JSON/Binary/Text/CSV/XML), HTML
 - ✅ **Robust Query Engine:** Complex filters (bbox, temporal, parent relationships, keywords)
-- ✅ **Production Features:** Pagination, async operations, error handling, real-time streaming
+- ✅ **Production Features:** Pagination, async operations, error handling, real-time streaming (WebSocket/MQTT)
 - ✅ **Extensive Test Fixtures:** Comprehensive examples available for client testing
+- ✅ **Live Demo Server:** Public instance with 6 active systems, 28 datastreams, live observations
 
 **Implementation Maturity:** Production-ready, actively maintained, reference implementation
+
+**Live Server Access:**
+- **URL:** http://45.55.99.236:8080/sensorhub/api
+- **Authentication:** HTTP Basic Auth (credentials provided separately)
+- **Systems:** 6 (3 LIVE replay, 3 archived) - Drones + Android sensors
+- **DataStreams:** 28 (telemetry, IMU, GPS, health status)
+- **Observations:** Thousands (live streaming with `validTime: [..., "now"]`)
+- **Conformance:** 33/33 conformance classes (100%)
+- **Use Case:** Real-time integration testing without local deployment
 
 ---
 
