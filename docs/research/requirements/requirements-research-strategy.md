@@ -908,6 +908,240 @@
 **Deliverable:** OpenSensorHub server behavior analysis and client implications (~6,500 lines)  
 **Status:** ✅ **COMPLETE** - Comprehensive production server analysis with all operations, conformance, query patterns, validation, formats, errors, pagination, relationships, edge cases, fixtures, performance, auth, and SWE structures documented
 
+#### Section 15.1: Key Insights for TypeScript Client Implementation
+
+**Synthesis of Actionable Guidance from OpenSensorHub Analysis**
+
+Based on the comprehensive OpenSensorHub server analysis, the following insights directly inform TypeScript client library design:
+
+##### Query Parameter Implementation
+
+**Must-Have Validation:**
+- `limit`: 1-10,000 range, default 100
+- `bbox`: Exactly 4 values [minLon, minLat, maxLon, maxLat]
+- Time parameters: ISO 8601 format (validate before sending)
+- Client-side validation prevents server errors and improves UX
+
+**Supported Query Patterns:**
+- Spatial: `bbox`, `geom` (GeoJSON geometry)
+- Temporal: `phenomenonTime`, `resultTime`, `validTime` (ISO 8601 intervals)
+- Hierarchical: `parent`, `system`, `foi`, `observedProperty`, `controlledProperty`
+- Text: `q` (keyword search, array of strings 1-50 chars)
+- Pagination: `limit`, `offset`
+- Hierarchical: `recursive` (boolean, default false)
+- Deletion: `cascade` (boolean, default false)
+
+##### Pagination Strategy
+
+**Implementation Pattern:**
+- OSH uses **limit+1 detection algorithm**
+- Follow `next` link relations from response
+- Provide AsyncGenerator for streaming results: `for await (const item of client.systems.paginate())`
+- Include `numberMatched` and `numberReturned` in responses
+- Default limit: 100, max: 10,000
+
+**TypeScript Pattern:**
+```typescript
+async *paginateAll<T>(baseUrl: string, params?: Record<string, string>): AsyncGenerator<T> {
+  let nextUrl: string | undefined = baseUrl;
+  while (nextUrl) {
+    const response = await fetch(nextUrl);
+    const data = await response.json();
+    for (const item of data.items) yield item;
+    nextUrl = data.links.find(l => l.rel === 'next')?.href;
+  }
+}
+```
+
+##### Error Handling
+
+**OSH Error Response Format:**
+```json
+{
+  "status": 400,
+  "message": "Invalid parameter value",
+  "details": "limit must be between 1 and 10,000"
+}
+```
+
+**Required Client Capabilities:**
+- Parse JSON error bodies
+- Type guards: `isNotFound()`, `isValidationError()`, `isAuthError()`
+- Include original response for debugging
+- Map status codes: 400 (validation), 401/403 (auth), 404 (not found), 409 (conflict), 422 (validation)
+
+##### Format Negotiation
+
+**Resource-Appropriate Formats:**
+- Systems/Deployments/FOIs: `application/geo+json` (spatial features)
+- Procedures: `application/sml+json` (SensorML)
+- DataStreams: `application/json` (default)
+- Observations: `application/om+json` (O&M)
+- Always accept JSON as fallback: `Accept: application/geo+json, application/json;q=0.9`
+
+**Negotiation Methods:**
+1. Accept header (preferred)
+2. `f` query parameter (alternative)
+
+##### Sub-Resource Navigation
+
+**Dual Access Patterns:**
+- Sub-resource paths: `/systems/{id}/datastreams`
+- Query parameters: `/datastreams?system={id}`
+- **Prefer link relations** from responses over URL construction
+
+**Link Following:**
+```typescript
+async followLink<T>(resource: { links?: Link[] }, rel: string): Promise<T[]> {
+  const link = resource.links?.find(l => l.rel === rel);
+  if (!link) throw new Error(`No link with rel="${rel}"`);
+  const response = await fetch(link.href);
+  return response.json().then(data => data.items);
+}
+```
+
+##### Conformance-Based Feature Detection
+
+**Check Capabilities on Initialization:**
+```typescript
+const conformance = await fetch('/conformance').then(r => r.json());
+const supportsControlStreams = conformance.conformsTo.includes(
+  'http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/control-stream'
+);
+```
+
+**Adaptive Behavior:**
+- Gracefully handle optional features (history, events)
+- Don't assume all servers support all conformance classes
+- Query `/conformance` endpoint to determine available features
+
+##### Bulk Operations
+
+**Observations Support Batch Insert:**
+- OSH accepts observation arrays in POST
+- Recommended batch size: 100-1,000
+- Maximum: 10,000
+- Add small delays (100ms) between batches
+
+**Fallback Strategy:**
+```typescript
+try {
+  await bulkInsert(observations); // Try array POST
+} catch (error) {
+  if (error.statusCode === 400) {
+    // Server doesn't support bulk - fall back to sequential
+    for (const obs of observations) await insert(obs);
+  }
+}
+```
+
+##### Caching Strategy
+
+**Resource-Specific TTLs:**
+- Metadata (systems, datastreams, procedures): 5 minutes
+- Static (conformance, collections): 1 hour
+- Dynamic (observations, commands): Never cache
+- Invalidate on write operations (POST/PUT/DELETE)
+
+##### Authentication Patterns
+
+**Multi-Strategy Support:**
+1. HTTP Basic: `Authorization: Basic base64(user:pass)`
+2. Bearer Token: `Authorization: Bearer {token}`
+3. API Key: `X-API-Key: {key}`
+4. OAuth 2.0 (server-dependent)
+
+**Strategy Pattern:**
+```typescript
+interface AuthStrategy {
+  applyAuth(request: RequestInit): void;
+}
+```
+
+##### Edge Cases from OSH
+
+**Important Behaviors:**
+- IDs are opaque (Base32 in OSH, may be UUIDs elsewhere) - treat as strings
+- Open-ended time intervals: `../..` (all time), `2024-01-01T00:00:00Z/..` (from date to now)
+- Observations are immutable (no PUT support)
+- Commands have status endpoints: `/commands/{id}/status`
+- System history: `/systems/{id}/history` (Part 3)
+- Async operations return 202 Accepted with Location header
+
+##### Performance Characteristics
+
+**Expected Response Times (OSH benchmarks):**
+- GET single resource: 20-100ms
+- List 100 items: 50-200ms
+- POST create: 100-500ms
+- Query 1000 observations: 200-1000ms
+
+**Optimization Strategies:**
+- Reuse HTTP connections (keep-alive)
+- Parallel requests for independent resources
+- Optimal batch sizes: 100-1000 observations
+- Cache metadata aggressively
+
+##### Testing with OSH
+
+**Integration Test Strategy:**
+- Deploy OSH locally via Docker
+- Use fixtures from `sensorhub-service-consys/src/test/resources/`
+- Test against real server behaviors (not just mocks)
+- Validate all CRUD operations
+- Test pagination with large datasets
+- Test error conditions (404, 400, 422)
+- Verify format negotiation
+
+**Example Test Patterns:**
+```typescript
+describe('Systems Client', () => {
+  it('should paginate through all systems', async () => {
+    const systems = [];
+    for await (const sys of client.systems.paginate({ limit: 5 })) {
+      systems.push(sys);
+      if (systems.length >= 10) break;
+    }
+    expect(systems.length).toBeGreaterThan(0);
+  });
+  
+  it('should handle 404 errors gracefully', async () => {
+    await expect(client.systems.get('nonexistent')).rejects.toThrow(CSAPIError);
+  });
+});
+```
+
+##### Critical Implementation Checklist
+
+**Must-Have Features:**
+- ✅ Query parameter validation (client-side)
+- ✅ Link-following pagination with AsyncGenerator
+- ✅ JSON error body parsing with type guards
+- ✅ Format negotiation per resource type
+- ✅ Sub-resource navigation via links
+- ✅ Conformance-based feature detection
+- ✅ Multi-strategy authentication
+- ✅ Smart caching with TTLs
+
+**Performance Features:**
+- ✅ Bulk observation insert (with fallback)
+- ✅ Connection reuse
+- ✅ Parallel independent requests
+- ✅ Metadata caching
+
+**Testing Requirements:**
+- ✅ Integration tests against OSH
+- ✅ Use real server fixtures
+- ✅ Test all CRUD operations
+- ✅ Test error conditions
+- ✅ Test pagination edge cases
+
+**Reference Implementation:**
+- OpenSensorHub is production-ready, use as reference
+- Test fixtures available in OSH repository
+- 100% CSAPI resource coverage (Parts 1, 2, 3)
+- Full conformance with all OGC API standards
+
 ---
 
 ### Section 16: Server Implementation Analysis - 52°North CSAPI ⏳
