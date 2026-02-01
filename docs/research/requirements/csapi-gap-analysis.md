@@ -10,11 +10,11 @@
 
 ## Executive Summary
 
-**Key Finding:** The first iteration **over-implemented parsing capabilities** that belonged outside the client library's responsibility. The library should focus on **HTTP operations, URL building, and basic response handling**—not deep format parsing/validation.
+**Key Finding:** The first iteration **incompletely implemented format parsing capabilities** that are core to CSAPI client library value proposition. The library must provide **format abstraction** so users work with canonical data models, not raw format structures.
 
-**Primary Issue:** Implemented extensive SensorML parsing (~1,500+ lines) that exceeded client library scope. Upstream libraries (WFS, WMS, etc.) do minimal format parsing—they fetch and pass through data.
+**Primary Issue:** Implemented partial SensorML parsing (~1,500+ lines) that covered common cases but lacked comprehensive format support, extensibility, and proper error handling. Format parsing was present but not done well enough.
 
-**Recommendation:** v2 should provide **thin wrappers around HTTP**, not comprehensive format parsers. Users handle complex parsing with dedicated libraries (SensorML parsers, SWE Common libraries, GeoJSON processors).
+**Recommendation:** v2 should provide **comprehensive format abstraction layer** with complete parsers for all CSAPI-defined formats (GeoJSON, SensorML JSON, SWE Common), robust validation, automatic format detection, and extensible architecture for future formats.
 
 ---
 
@@ -81,11 +81,11 @@
 
 ---
 
-## 2. What Shouldn't Have Been Included
+## 2. What Was Incompletely Implemented
 
 ### 2.1 SensorML Parsing (PRIMARY ISSUE)
 
-**Problem:** Client library implemented **comprehensive SensorML parsing** that belongs in a dedicated SensorML library.
+**Problem:** Client library implemented **partial SensorML parsing** without comprehensive coverage, proper extensibility, or robust error handling.
 
 **What Was Implemented:**
 ```typescript
@@ -235,60 +235,186 @@ function extractCommonProperties(
 }
 ```
 
-**Why This Is Wrong:**
+**Why This Implementation Was Insufficient:**
 
-1. **Not Client Library Responsibility:** Upstream ogc-client WFS/WMS libraries don't parse XML schemas—they return raw XML. Users handle parsing with xml2js or similar.
+1. **Incomplete Coverage:** Even with 1,500 lines, implementation covered only common cases:
+   - No support for AggregateProcess traversal (nested components)
+   - No connection/link resolution between processes
+   - No configuration mode handling (deployment contexts)
+   - No history parsing (configuration changes over time)
+   - Missing many SensorML 3.0 elements (modes, featureOfInterest, etc.)
+   - No support for TypedProcess extensions
+   - Limited handling of capabilities/characteristics structures
 
-2. **Excessive Complexity:** 1,500+ lines of SensorML-specific logic makes library unmaintainable. Each SensorML version change requires library updates.
+2. **Poor Error Handling:** Parser threw generic errors without specific guidance:
+   - "Expected PhysicalSystem" - but why did it get something else?
+   - No validation of position coordinate systems
+   - No handling of malformed SensorML from servers
+   - No graceful degradation for unknown elements
 
-3. **Incomplete Coverage:** Even with 1,500 lines, implementation is incomplete:
-   - No support for AggregateProcess traversal
-   - No connection/link resolution
-   - No configuration mode handling
-   - No history parsing
-   - Missing many SensorML 3.0 elements
+3. **No Format Versioning:** SensorML has multiple versions (2.0, 3.0) with different schemas:
+   - No version detection
+   - No version-specific parsing
+   - Would break when servers update SensorML versions
 
-4. **Wrong Abstraction Level:** Client library should return `Response<SensorML>` where `SensorML = unknown`. Users apply SensorML parser library if needed.
+4. **Rigid Architecture:** Hard to extend for new SensorML elements:
+   - No plugin system for custom parsers
+   - No way to handle server-specific extensions
+   - Tightly coupled to specific SensorML structure
 
-5. **Testing Burden:** 1,200+ lines of tests just for SensorML parsing. Tests should focus on HTTP operations, not format validation.
+5. **Insufficient Testing:** 1,200+ lines of tests but missing edge cases:
+   - No tests for malformed SensorML
+   - No tests for unknown elements
+   - No tests for version differences
+   - No tests for complex nested structures
 
 **What Should Have Been Done:**
 
 ```typescript
-// CORRECT APPROACH - Minimal parsing
+// CORRECT APPROACH - Comprehensive format abstraction
 export class SystemEndpoint {
-  async getSystem(id: string, options?: { format?: string }): Promise<System> {
+  constructor(
+    private http: HttpClient,
+    private formatRegistry: FormatRegistry
+  ) {
+    // Register parsers for all supported formats
+    this.formatRegistry.register('application/geo+json', new GeoJSONParser());
+    this.formatRegistry.register('application/sml+json', new SensorMLParser());
+  }
+
+  async getSystem(id: string, options?: GetSystemOptions): Promise<System> {
     const url = this.buildUrl(`/systems/${id}`, options);
     const response = await this.http.get(url);
     
-    // Minimal parsing - just return the response body
-    // If format is application/sml+json, return as-is
-    // If format is application/geo+json, return as-is
-    // User applies dedicated parser if they need deep introspection
+    // Automatic format detection and parsing
+    const contentType = response.headers['content-type'];
+    const parser = this.formatRegistry.getParser(contentType);
     
-    return response.data; // That's it!
+    if (!parser) {
+      throw new UnsupportedFormatError(
+        `No parser registered for format: ${contentType}`
+      );
+    }
+    
+    try {
+      // Parse to canonical System model
+      return parser.parse(response.data);
+    } catch (error) {
+      throw new FormatParseError(
+        `Failed to parse ${contentType} response`,
+        { cause: error, rawData: response.data }
+      );
+    }
   }
 }
 
-// Users handle complex parsing themselves
-import { parseSensorML } from '@ogc/sensorml-parser'; // Separate library
-
-const client = new CSAPIClient('https://server.com/api');
-const system = await client.systems.get('system-1', { format: 'application/sml+json' });
-
-// User decides how to parse
-if (needsDeepInspection) {
-  const parsed = parseSensorML(system); // Dedicated library
-  console.log(parsed.components, parsed.capabilities);
-} else {
-  // Use raw data directly
-  console.log(system.id, system.label);
+// Extensible parser architecture
+interface FormatParser<T> {
+  parse(data: unknown): T;
+  validate(data: unknown): ValidationResult;
+  serialize(obj: T): unknown;
 }
+
+// Comprehensive SensorML parser with full coverage
+class SensorMLParser implements FormatParser<System> {
+  parse(data: unknown): System {
+    const sml = this.validate(data);
+    
+    // Handle all SensorML types
+    switch (sml.type) {
+      case 'PhysicalSystem':
+        return this.parsePhysicalSystem(sml);
+      case 'PhysicalComponent':
+        return this.parsePhysicalComponent(sml);
+      case 'AggregateProcess':
+        return this.parseAggregateProcess(sml);
+      default:
+        throw new Error(`Unknown SensorML type: ${sml.type}`);
+    }
+  }
+  
+  private parsePhysicalSystem(sml: PhysicalSystem): System {
+    return {
+      id: sml.id || sml.uniqueId,
+      type: 'Feature',
+      geometry: this.extractGeometry(sml.position),
+      properties: {
+        featureType: 'System',
+        uid: sml.uniqueId,
+        name: sml.label,
+        description: sml.description,
+        // Extract ALL properties, not just common ones
+        validTime: sml.validTime,
+        contacts: sml.contacts,
+        documentation: sml.documentation,
+        capabilities: this.parseCapabilities(sml.capabilities),
+        characteristics: this.parseCharacteristics(sml.characteristics),
+        // Handle components recursively
+        components: sml.components?.map(c => this.parse(c)),
+        // Handle connections
+        connections: this.parseConnections(sml.connections),
+        // Handle modes
+        modes: sml.modes?.map(m => this.parseMode(m)),
+      },
+      links: this.extractLinks(sml)
+    };
+  }
+  
+  private extractGeometry(position?: Position): Geometry | null {
+    if (!position) return null;
+    
+    // Handle ALL SWE Common position types
+    switch (position.type) {
+      case 'Point':
+        return this.parsePointGeometry(position);
+      case 'Vector':
+        return this.parseVectorGeometry(position);
+      case 'DataRecord':
+        return this.parseDataRecordGeometry(position);
+      case 'Pose':
+        return this.parsePoseGeometry(position);
+      case 'Text':
+        return this.parseWKTGeometry(position);
+      default:
+        // Graceful degradation for unknown types
+        console.warn(`Unknown position type: ${position.type}`);
+        return null;
+    }
+  }
+  
+  validate(data: unknown): SensorMLProcess {
+    // Comprehensive validation with detailed error messages
+    const result = validateSensorML(data);
+    if (!result.valid) {
+      throw new SensorMLValidationError(
+        'Invalid SensorML structure',
+        { errors: result.errors, warnings: result.warnings }
+      );
+    }
+    return data as SensorMLProcess;
+  }
+}
+
+// Users work with canonical System model, not raw formats
+const client = new CSAPIClient('https://server.com/api');
+
+// Format is transparent - user gets System regardless of server format
+const system = await client.systems.get('system-1');
+console.log(system.properties.name); // Works whether GeoJSON or SensorML
+
+// Access parsed components directly
+if (system.properties.components) {
+  system.properties.components.forEach(comp => {
+    console.log(comp.properties.name, comp.geometry);
+  });
+}
+
+// Library handles format complexity internally
 ```
 
 ### 2.2 SWE Common Parsing
 
-**Problem:** Implemented partial SWE Common parsing for DataStream schemas and Observations.
+**Problem:** Implemented partial SWE Common parsing for DataStream schemas and Observations without comprehensive component coverage.
 
 **What Was Implemented:**
 ```typescript
@@ -308,7 +434,7 @@ parseSWE(data: Record<string, unknown>): DatastreamFeature {
       uid: sweDS.definition,
       name: sweDS.label,
       description: sweDS.description,
-      schema: schema, // Embedded schema
+      schema: schema, // Embedded schema - not parsed
     },
   } as DatastreamFeature;
 }
@@ -316,45 +442,143 @@ parseSWE(data: Record<string, unknown>): DatastreamFeature {
 // ObservationParser with result extraction
 parseSWE(data: Record<string, unknown>): Record<string, unknown> {
   // Parse SWE observation
-  return data;
+  return data; // Just returns raw data
 }
 ```
 
-**Why This Is Wrong:**
+**What Was Missing:**
 
-1. **Incomplete Implementation:** SWE Common has 30+ component types (Quantity, Count, Boolean, Text, Category, Time, DataRecord, DataArray, Vector, Matrix, DataChoice, Geometry, etc.). Implementation only handled a few.
+1. **Incomplete Component Coverage:** SWE Common has 30+ component types but implementation only handled DataRecord/DataArray:
+   - Missing: Quantity, Count, Boolean, Text, Category, Time
+   - Missing: Vector, Matrix, DataChoice, Geometry
+   - Missing: AbstractSimpleComponent extensions
+   - No recursive component parsing (DataRecord contains DataRecords)
 
-2. **Schema Complexity:** SWE Common schemas are recursive (DataRecord contains DataRecords). Parser would need to be comprehensive or not exist at all.
+2. **No Encoding Support:** SWE Common has 3 encodings but implementation only handled JSON partially:
+   - JSON encoding: partial support
+   - Text/CSV encoding: not implemented
+   - Binary encoding: not implemented
+   - No encoding detection/selection
 
-3. **Encoding Formats:** SWE Common has 3 encodings (JSON, Text/CSV, Binary). First iteration only handled JSON partially.
+3. **No Schema Interpretation:** DataStream schemas define observation structure but parser didn't use them:
+   - Schema embedded but not parsed
+   - No validation of observations against schema
+   - No automatic result decoding based on schema
+   - No UoM extraction from schema
+
+4. **No Result Decoding:** Observations have complex result structures:
+   - Scalar results (single value) - handled
+   - Vector results (array) - partial
+   - DataRecord results (object) - not parsed
+   - DataArray results (time series) - not parsed
 
 **What Should Have Been Done:**
 
 ```typescript
-// CORRECT - Return raw schema, user parses with SWE library
-async getDataStreamSchema(id: string): Promise<unknown> {
-  const url = `/datastreams/${id}/schema`;
-  const response = await this.http.get(url);
-  return response.data; // Raw SWE schema - user handles parsing
+// Comprehensive SWE Common parser
+class SWECommonParser {
+  parseComponent(component: SWEComponent): ParsedComponent {
+    switch (component.type) {
+      case 'Quantity':
+        return this.parseQuantity(component);
+      case 'Count':
+        return this.parseCount(component);
+      case 'Boolean':
+        return this.parseBoolean(component);
+      case 'Text':
+        return this.parseText(component);
+      case 'Category':
+        return this.parseCategory(component);
+      case 'Time':
+        return this.parseTime(component);
+      case 'DataRecord':
+        return this.parseDataRecord(component);
+      case 'DataArray':
+        return this.parseDataArray(component);
+      case 'Vector':
+        return this.parseVector(component);
+      case 'Matrix':
+        return this.parseMatrix(component);
+      case 'DataChoice':
+        return this.parseDataChoice(component);
+      case 'Geometry':
+        return this.parseGeometry(component);
+      default:
+        throw new Error(`Unknown SWE component type: ${component.type}`);
+    }
+  }
+  
+  // Use schema to decode observation results
+  decodeObservationResult(
+    result: unknown,
+    schema: SWEComponent,
+    encoding?: SWEEncoding
+  ): DecodedResult {
+    if (!encoding || encoding.type === 'JSON') {
+      return this.decodeJSONResult(result, schema);
+    } else if (encoding.type === 'Text') {
+      return this.decodeTextResult(result as string, schema, encoding);
+    } else if (encoding.type === 'Binary') {
+      return this.decodeBinaryResult(result as ArrayBuffer, schema, encoding);
+    }
+    throw new Error(`Unknown encoding type: ${encoding?.type}`);
+  }
 }
 
-// Users apply dedicated SWE parser
-import { SWECommonParser } from '@ogc/swe-common'; // Separate library
+// DataStream parser uses schema
+class DatastreamParser {
+  parseSWE(data: Record<string, unknown>): DatastreamFeature {
+    const sweDS = data as SWEDataStream;
+    
+    // Parse schema component fully
+    const schema = sweDS.elementType?.component
+      ? this.sweParser.parseComponent(sweDS.elementType.component)
+      : undefined;
+    
+    return {
+      type: 'Feature',
+      id: sweDS.id,
+      geometry: null,
+      properties: {
+        featureType: 'Datastream',
+        uid: sweDS.definition,
+        name: sweDS.label,
+        description: sweDS.description,
+        schema: schema, // Fully parsed schema
+        encoding: sweDS.encoding, // Include encoding info
+      },
+    };
+  }
+}
 
-const schema = await client.datastreams.getSchema('ds-1');
-const parser = new SWECommonParser(schema);
-
-// Use parser for observations
-const obs = await client.observations.list({ datastream: 'ds-1' });
-obs.forEach(o => {
-  const parsed = parser.decode(o.result); // Dedicated library handles complexity
-  console.log(parsed.temperature, parsed.humidity);
-});
+// Observation parser uses schema to decode results
+class ObservationParser {
+  parseObservation(
+    data: unknown,
+    datastream: Datastream
+  ): Observation {
+    const obs = data as RawObservation;
+    
+    // Decode result using datastream schema
+    const decodedResult = this.sweParser.decodeObservationResult(
+      obs.result,
+      datastream.properties.schema,
+      datastream.properties.encoding
+    );
+    
+    return {
+      id: obs.id,
+      phenomenonTime: obs.phenomenonTime,
+      resultTime: obs.resultTime,
+      result: decodedResult, // Structured, typed result
+    };
+  }
+}
 ```
 
 ### 2.3 Format Validation
 
-**Problem:** Implemented runtime schema validation with Ajv for SensorML and GeoJSON.
+**Problem:** Implemented basic validation with Ajv but missing comprehensive format-specific validation and detailed error messages.
 
 **What Was Implemented:**
 ```typescript
@@ -367,34 +591,21 @@ async function validateSensorMLProcess(
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  // Required property checks
+  // Basic required property checks
   if (!data.type) {
     errors.push('Missing required property: type');
   }
 
-  // Valid types check
+  // Basic valid types check
   const validTypes = ['PhysicalSystem', 'PhysicalComponent', 'SimpleProcess', 
                       'AggregateProcess', 'Deployment', 'DerivedProperty'];
   if (data.type && !validTypes.includes(data.type)) {
     errors.push(`Invalid type: ${data.type}`);
   }
 
-  // Identification warnings
+  // Generic warnings
   if (!data.uniqueId && !data.id) {
     warnings.push('Object should have uniqueId or id for identification');
-  }
-
-  // Description warnings
-  if (!data.label && !data.description) {
-    warnings.push('Object should have label or description for clarity');
-  }
-
-  // Position validation
-  if ('position' in data && data.position) {
-    const posValidation = validatePosition(data.position);
-    if (!posValidation.valid) {
-      errors.push(...(posValidation.errors || []));
-    }
   }
 
   return {
@@ -403,56 +614,171 @@ async function validateSensorMLProcess(
     warnings: warnings.length > 0 ? warnings : undefined,
   };
 }
-
-// Per-format validation in base parser
-validate(
-  data: T,
-  format: string
-): { valid: boolean; errors?: string[]; warnings?: string[] } {
-  if (format === 'geojson') {
-    return this.validateGeoJSON(data as any);
-  }
-  // Skip validation for other formats
-  return { valid: true };
-}
 ```
 
-**Why This Is Wrong:**
+**What Was Missing:**
 
-1. **Server Responsibility:** API servers validate requests before accepting them (400 Bad Request). Client shouldn't duplicate server validation.
+1. **Incomplete Validation Rules:** Only validated structure, not semantics:
+   - No coordinate system validation for positions
+   - No UoM code validation
+   - No uniqueId URI format validation
+   - No validTime range validation
+   - No capability/characteristic value validation
 
-2. **Inconsistent:** Only validates GeoJSON, not SensorML (despite having `validateSensorML` method that does basic checks).
+2. **Poor Error Messages:** Generic errors without actionable guidance:
+   - "Invalid type" - but what types are valid in this context?
+   - "Missing required property" - but which properties are required for this operation?
+   - No JSON path to error location
+   - No suggestions for fixing errors
 
-3. **TypeScript Provides Compile-Time Safety:** With proper types, many validation errors caught at compile time. Runtime validation only needed for external data (which comes from server—already validated).
+3. **No Format-Specific Validation:** Different formats have different rules:
+   - GeoJSON: strict GeoJSON spec compliance
+   - SensorML: version-specific validation (2.0 vs 3.0)
+   - SWE Common: component type-specific validation
 
-4. **Performance Overhead:** Ajv validation on every parse adds latency. Unnecessary for most use cases.
+4. **No Pre-Request Validation:** Should validate before sending to server:
+   - Create operations: validate required properties
+   - Update operations: validate allowed properties
+   - Query parameters: validate value formats
 
 **What Should Have Been Done:**
 
 ```typescript
-// CORRECT - Rely on TypeScript types + server validation
-async createSystem(system: SystemInput): Promise<System> {
-  // TypeScript ensures 'system' matches SystemInput interface at compile time
-  const response = await this.http.post('/systems', system);
+// Comprehensive validation system
+class FormatValidator {
+  // Validate with detailed, actionable errors
+  validate(data: unknown, schema: ValidationSchema): ValidationResult {
+    const errors: ValidationError[] = [];
+    const warnings: ValidationWarning[] = [];
+    
+    // Structural validation
+    const structuralErrors = this.validateStructure(data, schema);
+    errors.push(...structuralErrors);
+    
+    // Semantic validation
+    const semanticErrors = this.validateSemantics(data, schema);
+    errors.push(...semanticErrors);
+    
+    // Format-specific validation
+    const formatErrors = this.validateFormat(data, schema);
+    errors.push(...formatErrors);
+    
+    return {
+      valid: errors.length === 0,
+      errors: errors.map(e => ({
+        path: e.path, // JSON path to error location
+        message: e.message, // Human-readable message
+        code: e.code, // Error code for programmatic handling
+        expected: e.expected, // What was expected
+        actual: e.actual, // What was received
+        suggestion: e.suggestion, // How to fix it
+      })),
+      warnings: warnings.map(w => ({
+        path: w.path,
+        message: w.message,
+        suggestion: w.suggestion,
+      })),
+    };
+  }
   
-  // If server rejects (400), throw error with server's validation message
-  // No client-side validation needed
+  validateStructure(data: unknown, schema: ValidationSchema): ValidationError[] {
+    // Use JSON Schema validation with detailed errors
+    const ajv = new Ajv({ allErrors: true, verbose: true });
+    addFormats(ajv);
+    
+    const validate = ajv.compile(schema);
+    const valid = validate(data);
+    
+    if (!valid && validate.errors) {
+      return validate.errors.map(err => ({
+        path: err.instancePath,
+        message: err.message || 'Validation error',
+        code: 'STRUCTURE_ERROR',
+        expected: err.params,
+        actual: err.data,
+        suggestion: this.getSuggestion(err),
+      }));
+    }
+    
+    return [];
+  }
   
-  return response.data;
+  validateSemantics(data: unknown, schema: ValidationSchema): ValidationError[] {
+    const errors: ValidationError[] = [];
+    
+    // Validate uniqueId is valid URI
+    if (data.uniqueId && !this.isValidURI(data.uniqueId)) {
+      errors.push({
+        path: '/uniqueId',
+        message: 'uniqueId must be a valid URI',
+        code: 'INVALID_URI',
+        actual: data.uniqueId,
+        expected: 'Valid URI format',
+        suggestion: 'Use format: http://example.com/systems/system-1',
+      });
+    }
+    
+    // Validate position coordinate system
+    if (data.position && data.position.referenceFrame) {
+      if (!this.isValidCRS(data.position.referenceFrame)) {
+        errors.push({
+          path: '/position/referenceFrame',
+          message: 'Invalid coordinate reference system',
+          code: 'INVALID_CRS',
+          actual: data.position.referenceFrame,
+          expected: 'EPSG code or OGC CRS URI',
+          suggestion: 'Use format: http://www.opengis.net/def/crs/EPSG/0/4326',
+        });
+      }
+    }
+    
+    // Validate UoM codes
+    if (data.capabilities) {
+      data.capabilities.forEach((cap, i) => {
+        if (cap.uom && !this.isValidUoM(cap.uom)) {
+          errors.push({
+            path: `/capabilities/${i}/uom`,
+            message: 'Invalid unit of measure code',
+            code: 'INVALID_UOM',
+            actual: cap.uom,
+            expected: 'UCUM code or OGC UoM URI',
+            suggestion: 'Use UCUM codes: m, deg, Cel, etc.',
+          });
+        }
+      });
+    }
+    
+    return errors;
+  }
 }
 
-// Optional: Provide validation utility (separate from core client)
-import { validateSystem } from '@camptocamp/ogc-client/validators'; // Optional import
-
-const errors = validateSystem(systemData);
-if (errors.length > 0) {
-  console.warn('Validation warnings:', errors);
+// Pre-request validation
+class SystemEndpoint {
+  async createSystem(system: SystemInput): Promise<System> {
+    // Validate before sending to server
+    const validation = this.validator.validate(system, CREATE_SYSTEM_SCHEMA);
+    
+    if (!validation.valid) {
+      throw new ValidationError(
+        'Invalid system data',
+        { errors: validation.errors, warnings: validation.warnings }
+      );
+    }
+    
+    // Log warnings even if valid
+    if (validation.warnings && validation.warnings.length > 0) {
+      console.warn('System validation warnings:', validation.warnings);
+    }
+    
+    const response = await this.http.post('/systems', system);
+    return this.parseResponse(response);
+  }
 }
 ```
 
 ### 2.4 Format Detection
 
-**Problem:** Implemented auto-detection of formats from Content-Type headers and body structure.
+**Problem:** Implemented basic format detection but missing version detection, confidence scoring, and fallback strategies.
 
 **What Was Implemented:**
 ```typescript
@@ -477,60 +803,245 @@ export function detectFormat(
   // Fallback to body inspection
   return detectFormatFromBody(data);
 }
-
-export function detectFormatFromBody(data: unknown): FormatInfo {
-  if (!data || typeof data !== 'object') {
-    return { format: 'json', confidence: 'low', source: 'fallback' };
-  }
-
-  const obj = data as Record<string, unknown>;
-
-  // GeoJSON detection
-  if (obj.type === 'Feature' || obj.type === 'FeatureCollection') {
-    return { format: 'geojson', confidence: 'high', source: 'body' };
-  }
-
-  // SensorML detection
-  const sensorMLTypes = ['PhysicalSystem', 'PhysicalComponent', 'SimpleProcess', 
-                         'AggregateProcess', 'Deployment', 'DerivedProperty'];
-  if (typeof obj.type === 'string' && sensorMLTypes.includes(obj.type)) {
-    return { format: 'sensorml', confidence: 'high', source: 'body' };
-  }
-
-  // SWE Common detection
-  if (obj.type === 'DataRecord' || obj.type === 'DataArray' || obj.type === 'Vector') {
-    return { format: 'swe', confidence: 'medium', source: 'body' };
-  }
-
-  return { format: 'json', confidence: 'low', source: 'fallback' };
-}
 ```
 
-**Why This Is Wrong:**
+**What Was Missing:**
 
-1. **Content-Type Sufficient:** HTTP Content-Type header is authoritative. Body inspection unnecessary.
+1. **No Version Detection:** Formats have versions with different schemas:
+   - SensorML 2.0 vs 3.0 (different structure)
+   - GeoJSON (RFC 7946) vs legacy GeoJSON
+   - SWE Common 2.0 vs 2.1
+   - No version-specific parsing
 
-2. **Ambiguity:** Some SWE Common types (`DataRecord`) appear in multiple contexts. Detection unreliable.
+2. **Basic Confidence Scoring:** Only "high", "medium", "low" - not granular:
+   - No scoring algorithm
+   - No multiple indicator aggregation
+   - No confidence threshold handling
 
-3. **Performance:** Inspecting body structure on every response adds overhead.
+3. **No Fallback Strategies:** When detection fails:
+   - No graceful degradation
+   - No user override mechanism
+   - No "try multiple parsers" approach
+
+4. **Limited Body Inspection:** Only checks type field:
+   - Doesn't check namespace URIs
+   - Doesn't check schema locations
+   - Doesn't check encoding properties
+   - Could misidentify formats
 
 **What Should Have Been Done:**
 
 ```typescript
-// CORRECT - Trust Content-Type, let user specify if needed
-async getSystem(id: string, options?: { format?: string }): Promise<System> {
-  const format = options?.format || 'application/geo+json'; // Default
-  const url = this.buildUrl(`/systems/${id}`, { f: formatToParam(format) });
+// Comprehensive format detection system
+class FormatDetector {
+  detect(
+    contentType: string | null,
+    data: unknown,
+    context?: DetectionContext
+  ): FormatDetectionResult {
+    const indicators: FormatIndicator[] = [];
+    
+    // 1. Check Content-Type header (highest priority)
+    if (contentType) {
+      const headerIndicator = this.detectFromContentType(contentType);
+      if (headerIndicator) {
+        indicators.push({
+          format: headerIndicator.format,
+          version: headerIndicator.version,
+          confidence: 0.9, // High confidence from header
+          source: 'content-type',
+        });
+      }
+    }
+    
+    // 2. Check body structure
+    if (data && typeof data === 'object') {
+      const bodyIndicators = this.detectFromBody(data);
+      indicators.push(...bodyIndicators);
+    }
+    
+    // 3. Check context (endpoint, file extension, etc.)
+    if (context) {
+      const contextIndicators = this.detectFromContext(context);
+      indicators.push(...contextIndicators);
+    }
+    
+    // 4. Aggregate indicators with weighted scoring
+    const aggregated = this.aggregateIndicators(indicators);
+    
+    // 5. Apply confidence threshold
+    const bestMatch = aggregated[0];
+    if (bestMatch && bestMatch.confidence >= 0.7) {
+      return {
+        format: bestMatch.format,
+        version: bestMatch.version,
+        confidence: bestMatch.confidence,
+        alternatives: aggregated.slice(1),
+      };
+    }
+    
+    // 6. Fallback to JSON if uncertain
+    return {
+      format: 'json',
+      version: null,
+      confidence: 0.5,
+      alternatives: aggregated,
+    };
+  }
   
-  const response = await this.http.get(url, {
-    headers: { Accept: format }
-  });
+  private detectFromContentType(contentType: string): FormatIndicator | null {
+    // Parse media type with parameters
+    const [type, ...params] = contentType.split(';').map(s => s.trim());
+    const paramMap = new Map(
+      params.map(p => p.split('=').map(s => s.trim()) as [string, string])
+    );
+    
+    // GeoJSON detection
+    if (type === 'application/geo+json') {
+      return {
+        format: 'geojson',
+        version: paramMap.get('version') || 'rfc7946',
+        confidence: 0.95,
+        source: 'content-type',
+      };
+    }
+    
+    // SensorML detection with version
+    if (type === 'application/sml+json') {
+      return {
+        format: 'sensorml',
+        version: paramMap.get('version') || '3.0',
+        confidence: 0.95,
+        source: 'content-type',
+      };
+    }
+    
+    // SWE Common detection with version and encoding
+    if (type === 'application/swe+json') {
+      return {
+        format: 'swe-json',
+        version: paramMap.get('version') || '2.0',
+        confidence: 0.95,
+        source: 'content-type',
+      };
+    }
+    
+    return null;
+  }
   
-  // Return raw response - Content-Type tells user what they got
-  return {
-    data: response.data,
-    contentType: response.headers['content-type'],
-  };
+  private detectFromBody(data: object): FormatIndicator[] {
+    const indicators: FormatIndicator[] = [];
+    
+    // GeoJSON detection
+    if ('type' in data && ['Feature', 'FeatureCollection'].includes(data.type as string)) {
+      indicators.push({
+        format: 'geojson',
+        version: 'rfc7946',
+        confidence: 0.8,
+        source: 'body-structure',
+      });
+    }
+    
+    // SensorML detection with version
+    const sensorMLTypes = [
+      'PhysicalSystem', 'PhysicalComponent', 'SimpleProcess',
+      'AggregateProcess', 'Deployment', 'DerivedProperty'
+    ];
+    if ('type' in data && sensorMLTypes.includes(data.type as string)) {
+      // Check for version indicators
+      let version = '3.0'; // Default to latest
+      if ('definition' in data) version = '3.0';
+      if ('identifier' in data && !('definition' in data)) version = '2.0';
+      
+      indicators.push({
+        format: 'sensorml',
+        version,
+        confidence: 0.75,
+        source: 'body-structure',
+      });
+    }
+    
+    // SWE Common detection
+    const sweTypes = [
+      'DataRecord', 'DataArray', 'Vector', 'Matrix',
+      'Quantity', 'Count', 'Boolean', 'Text', 'Category', 'Time'
+    ];
+    if ('type' in data && sweTypes.includes(data.type as string)) {
+      indicators.push({
+        format: 'swe',
+        version: '2.0',
+        confidence: 0.7,
+        source: 'body-structure',
+      });
+    }
+    
+    return indicators;
+  }
+  
+  private aggregateIndicators(
+    indicators: FormatIndicator[]
+  ): AggregatedFormat[] {
+    // Group by format+version
+    const grouped = new Map<string, FormatIndicator[]>();
+    indicators.forEach(ind => {
+      const key = `${ind.format}:${ind.version || 'unknown'}`;
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key)!.push(ind);
+    });
+    
+    // Aggregate confidence scores
+    const aggregated = Array.from(grouped.entries()).map(([key, inds]) => {
+      // Weighted average of confidence scores
+      const totalConfidence = inds.reduce((sum, ind) => sum + ind.confidence, 0);
+      const avgConfidence = totalConfidence / inds.length;
+      
+      const [format, version] = key.split(':');
+      return {
+        format,
+        version: version === 'unknown' ? null : version,
+        confidence: avgConfidence,
+        sources: inds.map(i => i.source),
+      };
+    });
+    
+    // Sort by confidence descending
+    return aggregated.sort((a, b) => b.confidence - a.confidence);
+  }
+}
+
+// Parser uses detection with fallback
+class FormatParser {
+  parse(response: HttpResponse): ParsedData {
+    const detection = this.detector.detect(
+      response.headers['content-type'],
+      response.data,
+      { endpoint: response.url }
+    );
+    
+    // Try primary format
+    try {
+      const parser = this.getParser(detection.format, detection.version);
+      return parser.parse(response.data);
+    } catch (primaryError) {
+      // Try alternatives if primary fails
+      for (const alt of detection.alternatives || []) {
+        if (alt.confidence >= 0.5) {
+          try {
+            const altParser = this.getParser(alt.format, alt.version);
+            return altParser.parse(response.data);
+          } catch (altError) {
+            // Continue to next alternative
+          }
+        }
+      }
+      
+      // No parser succeeded
+      throw new FormatDetectionError(
+        'Could not determine data format',
+        { detection, primaryError }
+      );
+    }
+  }
 }
 ```
 
@@ -868,17 +1379,20 @@ export interface CSAPIClient {
 - Follow pagination links
 - Manage request/response headers
 
-**✅ Format Negotiation:**
-- Set Accept headers
-- Set Content-Type for requests
-- Respect f parameter for format selection
-- Return raw response with contentType metadata
+**✅ Format Abstraction:**
+- Automatic format detection (from Content-Type + body structure + context)
+- Format-specific parsing (GeoJSON, SensorML JSON, SWE Common JSON)
+- Format validation (pre-request validation, post-response validation)
+- Format version handling (detect and parse multiple format versions)
+- Format serialization (canonical model → format-specific representation)
+- Unified API (users work with canonical data models, not raw formats)
 
 **✅ Error Handling:**
 - Parse HTTP status codes
 - Extract OGC Exception Reports (XML)
-- Provide typed error classes
+- Provide typed error classes (FormatDetectionError, FormatParseError, ValidationError)
 - Include request context in errors
+- Detailed validation error messages with JSON paths and suggestions
 
 **✅ Conformance Detection:**
 - Fetch /conformance on initialization
@@ -893,18 +1407,23 @@ export interface CSAPIClient {
 - Handle datetime (ISO 8601)
 - Handle special characters
 
-**✅ Basic Response Handling:**
+**✅ Response Parsing:**
 - Parse JSON responses
 - Extract links from responses
 - Handle pagination (next/prev links)
 - Provide collection metadata (numberMatched, timeStamp)
+- Convert format-specific representations to canonical models
+- Extract geometry from SensorML position objects (all SWE Common position types)
+- Parse nested structures (components, connections, modes)
+- Decode observation results based on DataStream schemas
 
 **✅ TypeScript Types:**
-- Resource interfaces (System, Deployment, etc.)
+- Canonical resource interfaces (System, Deployment, etc.)
+- Format-specific type definitions (SensorML, SWE Common)
 - Query parameter types
 - Response collection types
 - Error types
-- Geometry types (from GeoJSON spec)
+- Complete type safety across all formats
 
 **✅ Convenience Methods:**
 - Fluent API for sub-resources
@@ -914,127 +1433,167 @@ export interface CSAPIClient {
 
 ### 4.2 NOT Client Library Responsibilities (OUT OF SCOPE)
 
-**❌ Format Parsing:**
-- SensorML structure introspection
-- SWE Common schema interpretation
-- GeoJSON geometry operations (beyond basic types)
-- Binary format decoding (SWE+Binary, Protobuf)
+**❌ Complex Geometry Operations:**
+- Coordinate system transformations (use Proj4js)
+- Geometry operations (buffer, intersection, etc. - use Turf.js)
+- Spatial analysis (use PostGIS or similar)
 
-**❌ Validation:**
-- Request body validation (TypeScript types sufficient)
-- SensorML structure validation
-- Schema constraint checking
-- UoM unit validation
-- Coordinate reference system transformation
-
-**❌ Data Transformation:**
-- SensorML → GeoJSON conversion
-- Observation format conversion (JSON → CSV → Binary)
-- Coordinate system transformations
-- Unit conversions
-- Geometry operations (buffer, intersection, etc.)
-
-**❌ Complex Parsing:**
-- Position extraction from SWE Common types
-- Recursive component traversal
-- Link resolution (href following)
-- Schema caching and management
-- Capability/Characteristic interpretation
+**❌ Data Transformation Beyond Format Parsing:**
+- Unit conversions (use convert-units or similar)
+- Time zone conversions (use date-fns-tz or similar)
+- Custom data aggregations
+- Statistical computations
 
 **❌ Server-Side Logic:**
-- Cascade delete implementation
-- Recursive query traversal
-- Access control enforcement
-- Resource validation rules
-- Conformance class dependencies
+- Cascade delete implementation (server responsibility)
+- Recursive query traversal (server responsibility)
+- Access control enforcement (server responsibility)
+- Resource validation rules (server responsibility)
+- Conformance class dependencies (server responsibility)
 
-### 4.3 Where to Draw the Line
+**❌ Domain-Specific Functionality:**
+- Sensor calibration algorithms
+- Data quality assessment
+- Observation interpolation
+- Prediction/forecasting
+
+### 4.3 Why Format Abstraction IS Library Responsibility
+
+**Justification 1: Spec Defines Multiple Formats as First-Class Citizens**
+
+CSAPI Part 1 and Part 2 specs define multiple formats with equal standing:
+- **GeoJSON** (application/geo+json) - mandatory for spatial resources
+- **SensorML JSON** (application/sml+json) - optional for systems/deployments/procedures
+- **SWE Common** (application/swe+json) - mandatory for observations/commands
+
+The spec requires format negotiation (Section 7.3) and format-specific behavior. The library MUST handle these formats to be spec-compliant.
+
+**Justification 2: Format Abstraction is Core Value Proposition**
+
+Without format abstraction, users must:
+```typescript
+// ❌ WITHOUT format abstraction - user burden
+const response = await client.systems.getRaw('system-1');
+const contentType = response.headers['content-type'];
+
+if (contentType === 'application/geo+json') {
+  const feature = response.data as Feature;
+  console.log(feature.properties.name, feature.geometry);
+} else if (contentType === 'application/sml+json') {
+  const sml = response.data as PhysicalSystem;
+  // User must understand SensorML structure
+  const position = sml.position;
+  let geometry;
+  if (position.type === 'Vector') {
+    geometry = { type: 'Point', coordinates: position.coordinates };
+  } else if (position.type === 'DataRecord') {
+    const lat = position.fields.find(f => f.name === 'lat')?.value;
+    const lon = position.fields.find(f => f.name === 'lon')?.value;
+    geometry = { type: 'Point', coordinates: [lon, lat] };
+  }
+  // ... more cases
+  console.log(sml.label, geometry);
+}
+```
+
+With format abstraction, library provides unified interface:
+```typescript
+// ✅ WITH format abstraction - clean API
+const system = await client.systems.get('system-1');
+// Format is transparent - always get canonical System model
+console.log(system.properties.name, system.geometry);
+```
+
+**Justification 3: Avoids Multi-Library Dependency Hell**
+
+Without format abstraction, users need:
+- `@turf/turf` for GeoJSON operations
+- `@ogc/sensorml-parser` for SensorML parsing
+- `@ogc/swe-common` for SWE Common parsing
+- `geojson` for type definitions
+- Custom glue code to integrate all libraries
+
+With format abstraction, single library handles everything:
+- `@camptocamp/ogc-client` - one dependency, unified API
+
+**Justification 4: Format Complexity is Not User Concern**
+
+Users care about **what data means**, not **how it's encoded**:
+- "Get system location" shouldn't require understanding SWE Common Vector/DataRecord/Pose
+- "Create deployment" shouldn't require learning SensorML structure
+- "Fetch observations" shouldn't require decoding SWE DataArray encoding
+
+Library hides format complexity, exposing clean domain API.
+
+**Justification 5: Validation Prevents Server Round-Trip Errors**
+
+Pre-request validation catches errors before network call:
+```typescript
+// ❌ WITHOUT validation - wasted HTTP request
+const system = {
+  // Missing required 'uid' property
+  name: 'Test System'
+};
+const response = await client.systems.create(system); // 400 Bad Request after network round-trip
+
+// ✅ WITH validation - immediate feedback
+const system = {
+  name: 'Test System'
+};
+const validation = client.systems.validate(system);
+if (!validation.valid) {
+  console.error('Invalid system:', validation.errors);
+  // [{ path: '/uid', message: 'Required property missing', suggestion: 'Add uid property with URI value' }]
+}
+```
+
+Validation = better UX, fewer server errors, faster development.
+
+### 4.4 Where to Draw the Line
 
 **Question:** Should library parse `response.data.features` from a FeatureCollection?
 
-**Answer:** **YES** - This is basic JSON access, not format parsing. Extracting `features` array from FeatureCollection is convenience, not parsing.
-
-```typescript
-// ✅ GOOD - Basic JSON extraction
-async listSystems(): Promise<System[]> {
-  const response = await this.http.get('/systems');
-  return response.data.features || response.data.items || [];
-}
-```
+**Answer:** **YES** - This is basic JSON access AND format abstraction. Users expect `listSystems()` to return `System[]`, not raw FeatureCollection.
 
 **Question:** Should library extract `lat/lon` from a SensorML Position object?
 
-**Answer:** **NO** - This is format-specific parsing. Users apply SensorML library if they need position extraction.
-
-```typescript
-// ❌ BAD - Format-specific parsing
-function extractPosition(position: Position): [number, number] {
-  if (position.type === 'DataRecord') {
-    const lat = position.fields.find(f => f.name === 'lat').value;
-    const lon = position.fields.find(f => f.name === 'lon').value;
-    return [lon, lat];
-  }
-  // ... more cases
-}
-
-// ✅ GOOD - Return raw position, let user parse
-async getSystem(id: string): Promise<System> {
-  const response = await this.http.get(`/systems/${id}`);
-  return response.data; // position field included as-is
-}
-```
+**Answer:** **YES** - This is format abstraction core responsibility. SensorML Position is CSAPI-defined format that library must parse to provide unified geometry access.
 
 **Question:** Should library validate that a System has a required `uid` property?
 
-**Answer:** **NO** - TypeScript interface ensures compile-time checking. Server validates at runtime. No client-side validation needed.
+**Answer:** **YES** - Pre-request validation prevents wasted HTTP requests and provides better developer experience with actionable error messages.
 
-```typescript
-// ❌ BAD - Runtime validation
-async createSystem(system: SystemInput): Promise<System> {
-  if (!system.uid) {
-    throw new Error('uid is required');
-  }
-  return this.http.post('/systems', system);
-}
+**Question:** Should library transform coordinates from EPSG:4326 to EPSG:3857?
 
-// ✅ GOOD - TypeScript interface + server validation
-interface SystemInput {
-  uid: string; // TypeScript enforces this at compile time
-  name: string;
-  description?: string;
-}
+**Answer:** **NO** - Coordinate transformation is geometry operation beyond format parsing. Users apply Proj4js for CRS transformations.
 
-async createSystem(system: SystemInput): Promise<System> {
-  // TypeScript ensures system.uid exists
-  // Server validates and returns 400 if invalid
-  return this.http.post('/systems', system);
-}
-```
+**Question:** Should library calculate distance between two systems?
+
+**Answer:** **NO** - Spatial analysis is domain-specific functionality beyond format abstraction. Users apply Turf.js for geometry operations.
 
 ---
 
 ## 5. Lessons Learned
 
-### 5.1 Scope Creep Prevention
+### 5.1 Format Abstraction Done Right
 
-**Lesson:** Define "thin client" vs "thick client" at project start.
+**Lesson:** Format abstraction is core library value - do it comprehensively or suffer user friction.
 
-**Indicators of Scope Creep:**
-- More than 500 lines in a single parser file
-- Imports from XML/JSON schema validation libraries (Ajv, json-schema)
-- Recursive data structure traversal
-- Format-specific type definitions (>20 interfaces for one format)
-- Tests focused on parsing logic (not HTTP operations)
+**Indicators of Good Format Abstraction:**
+- Users never write format-specific code
+- Single API works regardless of server format choices
+- Automatic format detection with fallbacks
+- Comprehensive format coverage (not partial)
+- Extensible for future formats
 
-**Prevention:**
-- Review upstream libraries (WFS, WMS, WMTS, EDR) for scope guidance
-- Set "lines of code" budget per module (~200-300 max)
-- Require justification for any format-specific logic
-- Ask: "Would a dedicated library handle this better?"
+**Implementation Strategy:**
+- Plugin architecture for format parsers
+- Comprehensive unit tests for each format
+- Version-specific parsing for format evolution
+- Detailed error messages for parse failures
+- Performance optimization (minimize parsing overhead)
 
-### 5.2 Format Handling Philosophy
-
-**Lesson:** Client library is a **transport layer**, not a **parsing layer**.
+### 5.2 Validation is Developer Experience
 
 **Transport Layer Responsibilities:**
 - Fetch data via HTTP
@@ -1418,32 +1977,73 @@ For each proposed feature, ask:
 
 ## 9. Conclusion
 
-**Primary Gap:** First iteration over-implemented format parsing (~1,500 lines SensorML, ~800 lines SWE, ~400 lines validation) that belongs outside client library scope.
+**Primary Gap:** First iteration **incompletely implemented** format parsing (~1,500 lines SensorML, ~800 lines SWE, ~400 lines validation) without comprehensive coverage, proper extensibility, and robust error handling.
 
-**Core Lesson:** Client library is **HTTP transport layer**, not **parsing layer**. Focus on:
-- Building URLs correctly
-- Executing requests with proper headers
-- Handling errors
-- Following links
-- Returning raw responses
+**Core Lesson:** Client library MUST provide **format abstraction layer** as core value proposition. CSAPI spec defines multiple formats (GeoJSON, SensorML JSON, SWE Common) as first-class citizens - library must handle all comprehensively.
 
-**Users** apply dedicated format libraries when needed:
-- `@ogc/sensorml-parser` for SensorML introspection
-- `@ogc/swe-common` for SWE Common parsing
-- `@turf/turf` for GeoJSON geometry operations
+**Why Format Abstraction is Library Responsibility:**
+1. **Spec Requirement:** CSAPI defines format negotiation and multiple mandatory/optional formats
+2. **User Experience:** Users should work with canonical models, not raw format structures
+3. **Avoid Dependency Hell:** Single library vs juggling @ogc/sensorml-parser + @ogc/swe-common + @turf/turf
+4. **Hide Complexity:** Format encoding details (SWE Vector/DataRecord/Pose) shouldn't leak to users
+5. **Enable Validation:** Pre-request validation prevents server errors and provides better DX
 
 **V2 Should:**
-- Remove all format parsing (cut ~3,000 lines)
-- Focus on HTTP operations (add ~500 lines URL building, ~300 lines error handling)
-- Provide convenience methods (add ~400 lines fluent API, pagination)
-- Total: ~3,000 lines (down from ~7,000 in v1)
+- **Comprehensive Format Parsing** (~3,000 lines):
+  - Complete SensorML parser (all types, all versions, all position formats)
+  - Complete SWE Common parser (all components, all encodings)
+  - GeoJSON parser with full type support
+- **Robust Validation** (~800 lines):
+  - Pre-request validation with actionable error messages
+  - Post-response validation for server data
+  - Format-specific validation rules
+  - JSON Schema + semantic validation
+- **Automatic Format Detection** (~400 lines):
+  - Content-Type + body structure + context detection
+  - Version detection for format evolution
+  - Confidence scoring with fallbacks
+  - Extensible for future formats
+- **HTTP Operations** (~1,200 lines):
+  - URL building, authentication, error handling
+  - Conformance detection, pagination, link following
+- **Convenience Methods** (~600 lines):
+  - Fluent API, async iterators, batch operations
+- **Total: ~6,000 lines** (comprehensive format abstraction + HTTP operations)
 
 **Success Criteria:**
-- ✅ Thin wrapper around HTTP (like upstream WFS/WMS/OGC API clients)
-- ✅ Users can fetch any resource in any format
-- ✅ No format-specific parsing beyond basic JSON access
-- ✅ Easy integration with dedicated parsing libraries
-- ✅ Maintainable (~3,000 lines total)
+- ✅ Format-transparent API (users never write format-specific code)
+- ✅ Comprehensive format coverage (not partial like v1)
+- ✅ Validation prevents server errors (better DX)
+- ✅ Extensible architecture (plugin system for formats)
+- ✅ Well-tested (~3,000 lines tests covering all formats and edge cases)
+- ✅ Performant (minimize parsing overhead)
+
+**Architecture:**
+```
+┌─────────────────────────────────────────────────────────┐
+│  User Application                                       │
+│  - Works with canonical models (System, Deployment)     │
+│  - Never touches format-specific structures             │
+└────────────────┬────────────────────────────────────────┘
+                 │
+┌────────────────▼────────────────────────────────────────┐
+│  @camptocamp/ogc-client CSAPI Module                    │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │  Format Abstraction Layer                       │   │
+│  │  - Automatic format detection                   │   │
+│  │  - GeoJSON/SensorML/SWE parsers                │   │
+│  │  - Validation (pre-request, post-response)      │   │
+│  │  - Canonical model conversion                   │   │
+│  └─────────────────┬───────────────────────────────┘   │
+│                    │                                     │
+│  ┌─────────────────▼───────────────────────────────┐   │
+│  │  HTTP Transport Layer                           │   │
+│  │  - URL building, authentication                 │   │
+│  │  - Request/response handling                    │   │
+│  │  - Error handling, conformance detection        │   │
+│  └─────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────┘
+```
 
 ---
 
