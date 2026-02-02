@@ -966,6 +966,12 @@ The GeoJSON handler is existing code in the library that parses GeoJSON Feature 
 
 **Implementation Type:** EXTENDING EXISTING CODE
 
+**References:**
+- [RFC 7946 (GeoJSON)](https://tools.ietf.org/html/rfc7946): Normative specification for GeoJSON format
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): CSAPI-specific GeoJSON property requirements
+- [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Vocabulary for systemType and property URIs
+- [RFC 8141 (URN Syntax)](https://tools.ietf.org/html/rfc8141): uniqueIdentifier format requirements
+
 ---
 
 ### SensorML Handler: Building New Format Parser
@@ -1008,9 +1014,11 @@ The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](ht
 - **Vocabulary resolution**: Automatic fetching of vocabulary terms from code spaces (SOSA, SSN, CF, QUDT)
 
 **References:**
-- [OGC SensorML 3.0 Standard](https://docs.ogc.org/is/23-000r1/23-000r1.html) (OGC 23-000r1)
-- [SensorML 3.0 JSON Schema](https://schemas.opengis.net/sensorml/3.0/)
-- [OGC Connected Systems API Part 1 - SensorML Encoding](https://docs.ogc.org/is/23-001/23-001.html#sensorml-encoding)
+- [OGC SensorML 3.0](https://docs.ogc.org/is/23-000r1/23-000r1.html): Normative specification for SensorML 3.0 format
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Requirements for SensorML encoding in CSAPI
+- [SensorML 3.0 JSON Schema](https://schemas.opengis.net/sensorml/3.0/): Official JSON schemas for validation
+- [CSAPI-Part1-requirements.md](../research/requirements/CSAPI-Part1-requirements.md): Client requirements for SensorML parsing
+- [UCUM Codes](http://unitsofmeasure.org/): Unit of measure code system
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -1088,9 +1096,11 @@ The SWE Common handler is new code we need to build to parse [OGC SWE Common 3.0
 - **Performance optimization**: Binary encoding for high-volume data
 
 **References:**
-- [OGC SWE Common 3.0 Standard](https://docs.ogc.org/is/23-011r1/23-011r1.html) (OGC 23-011r1)
-- [SWE Common 3.0 JSON Schema](https://schemas.opengis.net/sweCommon/3.0/)
-- [OGC Connected Systems API Part 2 - SWE Common Encoding](https://docs.ogc.org/is/23-002/23-002.html#swe-common-encoding)
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/08-094r1/08-094r1.html): Normative specification for SWE Common data encodings
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Requirements for SWE Common in DataStreams/Observations
+- [SWE Common 3.0 JSON Schema](https://schemas.opengis.net/sweCommon/3.0/): Official JSON schemas
+- [CSAPI-Part2-requirements.md](../research/requirements/CSAPI-Part2-requirements.md): Client requirements for SWE Common parsing
+- [upstream-PR114-analysis.md](../research/upstream/upstream-PR114-analysis.md): Implementation patterns for result parsing
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -1116,6 +1126,11 @@ The format detector is existing code that examines HTTP response headers (Conten
 6. **Charset detection**: BOM detection, heuristic analysis
 
 **Implementation Type:** EXTENDING EXISTING CODE
+
+**References:**
+- [RFC 6838 (Media Type Specifications)](https://tools.ietf.org/html/rfc6838): Media type format and registration
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): CSAPI media types for Part 1
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): CSAPI media types for Part 2 (SWE formats)
 
 ---
 
@@ -1159,6 +1174,13 @@ The validator is existing code that checks whether parsed documents conform to f
 - **Validation summaries**: Count of errors/warnings/info messages, validation pass/fail status
 
 **Implementation Type:** EXTENDING EXISTING CODE
+
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Validation requirements for Part 1 resources
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Validation requirements for Part 2 resources
+- [CSAPI-Part1-requirements.md](../research/requirements/CSAPI-Part1-requirements.md): Required properties and constraints
+- [CSAPI-Part2-requirements.md](../research/requirements/CSAPI-Part2-requirements.md): Schema conformance requirements
+- [RFC 8141 (URN Syntax)](https://tools.ietf.org/html/rfc8141): URI validation rules
 
 ---
 
