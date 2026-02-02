@@ -94,33 +94,46 @@ The GeoJSON handler is existing code in the library that parses GeoJSON Feature 
 
 ### SensorML Handler: Building New Format Parser
 
-The SensorML handler is new code we need to build to parse SensorML 2.0/2.1 format documents that describe sensor systems, components, and processes in detail. SensorML is an XML-based (with JSON encoding) format from the Sensor Web Enablement (SWE) standards family that provides rich metadata about sensors, actuators, and processing chains. CSAPI servers can return SensorML documents when describing Systems or Procedures, providing detailed technical specifications beyond what GeoJSON can express. We will build a parser that handles SensorML process models (SimpleProcess, PhysicalSystem, PhysicalComponent, AggregateProcess), component descriptions, capability/characteristic definitions, input/output specifications, configuration parameters, and temporal validity periods. The parser must convert SensorML documents into TypeScript objects that the library can work with, following the same architecture patterns as the existing GeoJSON and other format handlers. This new component represents one of the most complex format handling tasks in the project due to SensorML's hierarchical structure and extensive vocabulary.
+The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](https://docs.ogc.org/is/23-000r1/23-000r1.html) format documents that describe sensor systems, components, and processes in detail. SensorML 3.0 is the latest version of the JSON-native format from the Sensor Web Enablement (SWE) standards family, published in 2024, that provides rich metadata about sensors, actuators, and processing chains with significant improvements over the previous XML-based 2.x versions. CSAPI servers return SensorML 3.0 documents when describing Systems or Procedures, providing detailed technical specifications beyond what GeoJSON can express. We will build a parser that handles SensorML 3.0 system models (System, PhysicalComponent, PhysicalSystem), component descriptions, feature of interest definitions, capability/characteristic/constraint specifications, input/output specifications, configuration parameters, and temporal validity periods. The parser must convert SensorML 3.0 JSON documents into TypeScript objects that the library can work with, following the same architecture patterns as the existing GeoJSON and other format handlers. This new component represents one of the most complex format handling tasks in the project due to SensorML's hierarchical structure, extensive vocabulary, and integration with [SWE Common 3.0](https://docs.ogc.org/is/23-011r1/23-011r1.html) data components.
 
-**SensorML Document Types to Parse:**
-- **SimpleProcess**: Basic sensor/process with inputs/outputs, parameters, method description
-- **PhysicalSystem**: System composed of multiple components with connections and aggregation
-- **PhysicalComponent**: Individual sensor/actuator with detailed specifications
-- **AggregateProcess**: Logical grouping of processes with data flow connections
+**SensorML 3.0 Document Types to Parse:**
+- **System**: Abstract system description with common properties (identification, classification, characteristics, capabilities, contacts)
+- **PhysicalComponent**: Single physical sensor or actuator with detailed specifications, position, and operating characteristics
+- **PhysicalSystem**: Composite system made of multiple components with spatial/functional connections and aggregation properties
+- **SystemConfiguration**: Reusable configuration profiles with parameter settings and mode definitions
 
-**SensorML Elements to Extract:**
-- **Identification**: `uniqueID`, `longName`, `shortName`, `description`, `classifiers`
-- **Classification**: Type, intended application, sensor types
-- **Characteristics**: Observable properties, measurement ranges, resolution, accuracy
-- **Capabilities**: Operating conditions, survival range, response time
-- **Components/Connections**: Subsystems, data flow, physical connections
-- **Inputs/Outputs**: Data interfaces, observable properties, control inputs
-- **Parameters**: Configuration settings, calibration parameters
-- **History**: Events, deployments, calibrations, maintenance
-- **Documentation**: User manuals, datasheets, specifications
-- **Temporal Validity**: `validTime` for description version
+**SensorML 3.0 Elements to Extract:**
+- **Identification**: `uid` (unique identifier), `label`, `description`, `identifiers` (array of alternate identifiers)
+- **Classification**: `classifiers` array with type definitions, intended applications, sensor taxonomies
+- **ValidTime**: Temporal period when description is valid (ISO 8601 period)
+- **SecurityConstraints**: Access restrictions, usage limitations, classification levels
+- **Characteristics**: Observable properties, measurement ranges, resolution, accuracy, sensitivity (using SWE Common 3.0 DataRecord)
+- **Capabilities**: Operating conditions, survival ranges, response times, power requirements (using SWE Common 3.0 DataRecord)
+- **Constraints**: Physical or operational constraints limiting system use
+- **Contacts**: Responsible parties, manufacturers, operators with roles and contact information
+- **Documentation**: Links to user manuals, datasheets, specifications, images, videos
+- **FeaturesOfInterest**: What the system observes or controls (links to feature definitions)
+- **Inputs**: Data interfaces, observable properties, control inputs (using SWE Common 3.0 DataComponent definitions)
+- **Outputs**: Data outputs, actuated properties, status indicators (using SWE Common 3.0 DataComponent definitions)
+- **Parameters**: Configuration settings, calibration parameters, operational modes (using SWE Common 3.0 DataComponent definitions)
+- **Modes**: Operating modes with associated configurations and state transitions
+- **Components** (PhysicalSystem only): Array of component systems with roles and connections
+- **Connections** (PhysicalSystem only): Data flow and physical connections between components
+- **Position**: Location and orientation using GeoJSON Point or more complex positioning models
 
 **Parsing Complexity:**
 - Recursive component parsing for nested PhysicalSystems
-- Process chain traversal for AggregateProcess
-- SWE Common data component integration (inputs/outputs defined using SWE Common)
-- Unit of measure parsing (UCUM codes)
-- Reference resolution (external links to procedures, datasheets)
-- Position/location parsing (geographic coordinates, reference frames)
+- SWE Common 3.0 DataComponent integration (characteristics, capabilities, parameters, inputs, outputs all use SWE Common schemas)
+- Unit of measure parsing ([UCUM codes](http://unitsofmeasure.org/))
+- Reference resolution (external links to procedures, datasheets, feature definitions)
+- Position/location parsing (GeoJSON geometry plus orientation/reference frames)
+- Mode and configuration state management
+- Connection graph traversal for component relationships
+
+**References:**
+- [OGC SensorML 3.0 Standard](https://docs.ogc.org/is/23-000r1/23-000r1.html) (OGC 23-000r1)
+- [SensorML 3.0 JSON Schema](https://schemas.opengis.net/sensorml/3.0/)
+- [OGC Connected Systems API Part 1 - SensorML Encoding](https://docs.ogc.org/is/23-001/23-001.html#sensorml-encoding)
 
 **Implementation Type:** BUILDING NEW CODE
 
