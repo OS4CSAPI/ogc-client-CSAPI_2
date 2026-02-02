@@ -356,14 +356,21 @@ The Systems resource handler is new code we need to build to manage CSAPI System
 - Navigate system-datastream associations (Part 2)
 - Navigate system-controlstream associations (Part 2)
 
-**Query Features:**
-- Spatial filtering (bbox parameter)
-- Temporal filtering (validTime parameter)
-- Hierarchy traversal (recursive parameter)
-- Relationship filtering (parent, deployment, procedure, foi parameters)
-- Property filtering (id, uid, q, custom properties)
-- Pagination (limit, offset)
-- Format negotiation (GeoJSON vs SensorML)
+**Complete Query and Filtering Support:**
+
+This handler implements FULL query parameter support - NOT MVP scope. All filtering and pagination capabilities from the CSAPI specification are supported.
+
+- **Spatial filtering**: `bbox` parameter (2D and 3D bounding boxes)
+- **Temporal filtering**: `datetime` parameter for validTime filtering (ISO 8601 intervals: instant, closed interval, open start, open end)
+- **Hierarchy traversal**: `recursive` parameter (true = all descendants, false = direct children only)
+- **Relationship filtering**: `parent`, `deployment`, `procedure`, `foi` parameters for association-based queries
+- **ID filtering**: `id` parameter (supports comma-separated list for multiple IDs)
+- **UID filtering**: `uid` parameter (URN-based unique identifier filtering)
+- **Full-text search**: `q` parameter for searching across all text properties
+- **Property-based filtering**: Any system property can be used as query parameter (e.g., `systemType=sosa:Sensor`, `name=Weather*`)
+- **Pagination**: `limit` (1 to server maximum) and `offset` (non-negative integer) for predictable page navigation
+- **Format negotiation**: `f` parameter and Accept headers for GeoJSON vs SensorML-JSON format selection
+- **Combined filtering**: All query parameters work together with AND logic
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -404,14 +411,21 @@ The Deployments resource handler is new code we need to build to manage CSAPI De
 - Extract temporal extent (deployment period)
 - Validate validTime periods
 
-**Query Features:**
-- Spatial filtering (bbox for deployment area)
-- Temporal filtering (datetime or validTime for deployment period)
-- Hierarchy traversal (recursive for nested deployments)
-- Relationship filtering (system, parent)
-- Property filtering (id, uid, q)
-- Pagination (limit, offset)
-- Format: GeoJSON only
+**Complete Query and Filtering Support:**
+
+This handler implements FULL query parameter support - NOT MVP scope.
+
+- **Spatial filtering**: `bbox` parameter (2D and 3D for deployment footprint/volume)
+- **Temporal filtering**: `datetime` parameter for deployment validTime period filtering
+- **Hierarchy traversal**: `recursive` parameter for nested subdeployments
+- **Relationship filtering**: `system` parameter (deployments for specific systems), `parent` parameter
+- **ID filtering**: `id` parameter (multiple IDs supported)
+- **UID filtering**: `uid` parameter
+- **Full-text search**: `q` parameter
+- **Property-based filtering**: Any deployment property as query parameter
+- **Pagination**: `limit` and `offset`
+- **Format**: GeoJSON only (deployments always have spatial geometry)
+- **Combined filtering**: All parameters work together
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -612,12 +626,19 @@ The DataStreams resource handler is new code we need to build to manage CSAPI Da
 - Provide schema introspection for clients
 - Support schema evolution (versioning)
 
-**Query Features:**
-- Relationship filtering (system, observedProperty, foi, samplingFeature, procedure)
-- Temporal filtering (phenomenonTimeRange)
-- Property filtering (id, uid, q)
-- Pagination (limit, offset)
-- Format: JSON (schemas in SWE Common JSON)
+**Complete Query and Filtering Support:**
+
+This handler implements FULL query parameter support - NOT MVP scope.
+
+- **Relationship filtering**: `system`, `observedProperty`, `foi`, `samplingFeature`, `procedure` parameters for association-based discovery
+- **Temporal filtering**: `datetime` parameter for filtering by phenomenonTimeRange (datastream validity period)
+- **ID filtering**: `id` parameter (multiple datastream IDs)
+- **UID filtering**: `uid` parameter
+- **Full-text search**: `q` parameter across datastream names and descriptions
+- **Property-based filtering**: Any datastream property (e.g., `liveFeed=true`, `resultFormat=JSON`)
+- **Pagination**: `limit` and `offset` for paging through large datastream catalogs
+- **Format**: JSON (datastream metadata and SWE Common schemas in JSON)
+- **Combined filtering**: All parameters work together to narrow discovery
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -666,20 +687,32 @@ The Observations resource handler is new code we need to build to manage CSAPI O
 - Extract units of measure
 - Extract quality information
 
-**Temporal Query Features:**
-- phenomenonTime filtering (required for most queries)
+**Complete Temporal Query Features:**
+
+This handler implements FULL temporal filtering - NOT MVP scope. All temporal query patterns from CSAPI Part 2 are supported.
+
+- **phenomenonTime filtering** (when observation was made - PRIMARY temporal filter):
   - Single instant: `phenomenonTime=2024-01-15T12:00:00Z`
   - Closed interval: `phenomenonTime=2024-01-01/2024-01-31`
-  - Open start: `phenomenonTime=../2024-01-31`
-  - Open end: `phenomenonTime=2024-01-01/..`
-- resultTime filtering (when observation recorded)
-- Temporal binning (aggregate by time period)
+  - Open start (before end): `phenomenonTime=../2024-01-31`
+  - Open end (after start): `phenomenonTime=2024-01-01/..`
+  - Multiple disjoint intervals: `phenomenonTime=2024-01-01/2024-01-15,2024-02-01/2024-02-15`
+- **resultTime filtering**: When observation result became available (ISO 8601 intervals)
+- **Temporal binning/aggregation**: Group observations by time period (hour, day, month)
+- **Temporal resolution**: Filter by minimum time spacing between observations
 
-**Pagination Requirements:**
-- Cursor-based pagination (required for large result sets)
-- Limit parameter (max results per page, default 100, max 10000)
-- Next/previous links in response headers
-- Stable sorting (by phenomenonTime, then id)
+**Complete Pagination Support:**
+
+Both offset-based and cursor-based pagination fully implemented - NOT MVP scope.
+
+- **Offset-based pagination** (Part 1 style): `limit` + `offset` for predictable page numbers
+- **Cursor-based pagination** (Part 2 optimized): `limit` + `cursor` for efficient streaming of large time series
+  - Cursor tokens encode position in result set
+  - Stable across result set changes
+  - Required for datasets > 100K observations
+- **Limit parameter**: 1 to 10,000 (CSAPI Part 2 maximum)
+- **Next/prev links**: Link headers for navigation
+- **Stable sorting**: By phenomenonTime ascending, then by ID for deterministic ordering
 
 **Performance Considerations:**
 - Efficient parsing of large observation arrays
