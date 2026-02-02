@@ -17,7 +17,6 @@
 7. [Supporting Specifications](#supporting-specifications)
 8. [Requirements Research](#requirements-research)
 9. [Upstream Research](#upstream-research)
-10. [Implementation Examples](#implementation-examples)
 
 ---
 
@@ -382,15 +381,18 @@ Defines the complete implementation scope for CSAPI client library contribution 
 
 ### 52°North Server Implementation Analysis
 **URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-52north-analysis.md  
-**Type:** Internal research document
+**Type:** Internal research document  
+**Live Demo Server:** https://csa.demo.52north.org/ (⚠️ expired SSL certificate, Part 2 non-functional)
 
-Analyzes 52°North's Python-based CSAPI server implementation to understand multi-server compatibility requirements. Documents Python/pygeoapi architecture, partial conformance patterns, and differences from OpenSensorHub.
+Analyzes 52°North's Python-based CSAPI server implementation to understand multi-server compatibility requirements. Documents Python/pygeoapi architecture, partial conformance patterns, and differences from OpenSensorHub. Part 1 production-ready, Part 2 in active development.
 
 **Key Relevance:**
 - Multi-server compatibility requirements
 - Server capability variation handling
 - Pagination pattern differences between implementations
 - Format support variations across servers
+- Python/pygeoapi architecture patterns
+- Adaptive behavior based on conformance detection
 
 ---
 
@@ -493,16 +495,18 @@ Identifies gaps, errors, and lessons from first implementation attempt. Document
 
 ### OpenSensorHub Server Analysis
 **URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-opensensorhub-analysis.md  
-**Type:** Internal research document
+**Type:** Internal research document  
+**Live Demo Server:** http://45.55.99.236:8080/sensorhub/api
 
-Comprehensive analysis of OpenSensorHub's production-ready Java CSAPI server implementation. Documents full Part 1 + Part 2 + Part 3 coverage, rich format support, robust query engine, and provides extensive test fixtures.
+Comprehensive analysis of OpenSensorHub's production-ready Java CSAPI server implementation. Documents full Part 1 + Part 2 + Part 3 coverage, rich format support, robust query engine, and provides extensive test fixtures. Includes access to live demo server with 6 active systems, 28 datastreams, and thousands of observations with real-time streaming.
 
 **Key Relevance:**
 - Primary server implementation to test against
 - Complete conformance baseline
 - Real-world format examples
 - Query pattern validation
-- Live demo server for testing
+- Live demo server for real-time testing and validation
+- Production-ready reference implementation
 
 ---
 
@@ -851,37 +855,6 @@ Documents URL building patterns and practices used in ogc-client. Covers base UR
 - Query parameter encoding for CSAPI-specific parameters
 - Nested resource path building (e.g., /systems/{id}/subsystems)
 - Array parameter handling (comma-separated IDs)
-
----
-
-## Implementation Examples
-
-### OGC CSAPI Test Server
-**URL:** TBD (reference implementation when available)
-
-Official OGC reference implementation of CSAPI specification.
-
-**Key Relevance:**
-- Validation of our implementation against spec-compliant server
-- Source of test fixtures and example responses
-- Edge cases and conformance class examples
-- Performance characteristics baseline
-- Real-world data schemas and patterns
-
----
-
-### 52°North SensorWeb Community
-**Home:** https://52north.org/software/software-projects/sos/  
-**GitHub:** https://github.com/52North
-
-Open source community with extensive OGC sensor web implementations (SOS, SensorML, SWE Common).
-
-**Key Relevance:**
-- Reference implementations of earlier SWE standards (SensorML 2.0, SWE Common 2.0)
-- Java parsers for SensorML/SWE Common (architecture reference, not direct reuse)
-- Real-world deployment examples and lessons learned
-- Test data and fixtures from operational systems
-- Community expertise on sensor web standards
 
 ---
 
