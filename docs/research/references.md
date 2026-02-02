@@ -15,8 +15,9 @@
 5. [Code Repositories](#code-repositories)
 6. [Vocabularies and Ontologies](#vocabularies-and-ontologies)
 7. [Supporting Specifications](#supporting-specifications)
-8. [Upstream Research](#upstream-research)
-9. [Implementation Examples](#implementation-examples)
+8. [Requirements Research](#requirements-research)
+9. [Upstream Research](#upstream-research)
+10. [Implementation Examples](#implementation-examples)
 
 ---
 
@@ -360,6 +361,339 @@ Standard for describing REST APIs. OGC API standards provide OpenAPI definitions
 - Could enable dynamic client generation or runtime validation
 - Alternative to hard-coded URL patterns (future enhancement)
 - Useful for testing against compliant servers
+
+---
+
+## Requirements Research
+
+### Full Implementation Scope Definition
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/contribution-definition.md  
+**Type:** Internal research document
+
+Defines the complete implementation scope for CSAPI client library contribution to camptocamp/ogc-client, covering all resources (Part 1 + Part 2) and full format abstraction capabilities. Establishes that the implementation includes ALL CSAPI resources with comprehensive format parsing.
+
+**Key Relevance:**
+- Establishes complete vs partial implementation scope
+- Defines feature completeness requirements
+- Production-ready implementation goals
+- Format abstraction layer requirements
+
+---
+
+### 52°North Server Implementation Analysis
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-52north-analysis.md  
+**Type:** Internal research document
+
+Analyzes 52°North's Python-based CSAPI server implementation to understand multi-server compatibility requirements. Documents Python/pygeoapi architecture, partial conformance patterns, and differences from OpenSensorHub.
+
+**Key Relevance:**
+- Multi-server compatibility requirements
+- Server capability variation handling
+- Pagination pattern differences between implementations
+- Format support variations across servers
+
+---
+
+### Conformance and Capability Requirements
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-conformance-capabilities.md  
+**Type:** Internal research document
+
+Documents all conformance classes from CSAPI Part 1 and Part 2, detection mechanisms via /conformance endpoint, and capability discovery patterns. Defines minimum viable server configuration and graceful degradation strategies.
+
+**Key Relevance:**
+- Conformance class detection implementation
+- hasConnectedSystems method requirements
+- Runtime capability discovery
+- Client adaptation to server capabilities
+
+---
+
+### C++ Client Analysis
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-cpp-analysis.md  
+**Type:** Internal research document
+
+Analysis of ConnectedSystemsAPI-CPP repository reveals it's an abandoned skeleton project with no meaningful implementation. Documents why this isn't a useful reference for design patterns.
+
+**Key Relevance:**
+- Negative example - what not to do
+- Validates approach of studying Python clients instead
+- Documents state of C++ CSAPI ecosystem (nonexistent)
+
+---
+
+### CRUD Operations Requirements
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-crud-operations.md  
+**Type:** Internal research document
+
+Documents all Create, Read, Update, Delete operations across CSAPI resources, HTTP method mappings, request/response requirements, and operation-specific constraints. Establishes which resources support full CRUD vs read-only.
+
+**Key Relevance:**
+- Complete CRUD operation matrix
+- HTTP method to operation mapping
+- Request body requirements for write operations
+- Client API design for transactional operations
+
+---
+
+### Data Type and Schema Requirements
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-datatype-schema-requirements.md  
+**Type:** Internal research document
+
+Defines TypeScript type system requirements based on OpenAPI 3.1 schema analysis. Covers 100+ schema definitions including resource types, SWE Common data components, and supporting structures.
+
+**Key Relevance:**
+- 50+ TypeScript interfaces needed
+- Hierarchical type system with inheritance
+- Union types for polymorphic structures
+- Generic types for collections and responses
+
+---
+
+### Common Format Requirements
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-format-requirements-3.1.md  
+**Type:** Internal research document
+
+Documents common format requirements and negotiation mechanisms applying across all CSAPI resources. Defines required vs optional formats, media type identifiers, and format negotiation strategies.
+
+**Key Relevance:**
+- Format negotiation implementation patterns
+- Accept header vs query parameter strategies
+- Minimum viable format support
+- Parsing vs pass-through requirements
+
+---
+
+### Comprehensive Format Requirements
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-format-requirements.md  
+**Type:** Internal research document
+
+Comprehensive analysis of GeoJSON, SensorML, and SWE Common format requirements for CSAPI client library covering both Part 1 and Part 2 resources.
+
+**Key Relevance:**
+- Complete format parsing requirements
+- GeoJSON CSAPI extensions
+- SensorML 3.0 parsing needs
+- SWE Common encoding handling (JSON/Text/Binary)
+
+---
+
+### Gap Analysis from Previous Iteration
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-gap-analysis.md  
+**Type:** Internal research document
+
+Identifies gaps, errors, and lessons from first implementation attempt. Documents incomplete format parsing that led to rejection and defines comprehensive format abstraction requirements for v2.
+
+**Key Relevance:**
+- Lessons from failed iteration
+- Format abstraction importance
+- Completeness requirements
+- Error handling improvements needed
+
+---
+
+### OpenSensorHub Server Analysis
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-opensensorhub-analysis.md  
+**Type:** Internal research document
+
+Comprehensive analysis of OpenSensorHub's production-ready Java CSAPI server implementation. Documents full Part 1 + Part 2 + Part 3 coverage, rich format support, robust query engine, and provides extensive test fixtures.
+
+**Key Relevance:**
+- Primary server implementation to test against
+- Complete conformance baseline
+- Real-world format examples
+- Query pattern validation
+- Live demo server for testing
+
+---
+
+### oscar-viewer Client Application Analysis
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-oscarviewer-analysis.md  
+**Type:** Internal research document
+
+Analyzes oscar-viewer TypeScript React application for radiation detection monitoring. Documents production-grade patterns, TypeScript usage insights, and property-based discovery patterns.
+
+**Key Relevance:**
+- Real-world TypeScript CSAPI usage
+- Multi-server federated query patterns
+- Property-based datastream identification
+- Real-time subscription patterns with Redux
+
+---
+
+### OSHConnect-Python Client Analysis (Detailed)
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-oshconnect-python-analysis.md  
+**Type:** Internal research document
+
+Detailed analysis of OSHConnect-Python's stateful, streaming-first approach with builder patterns and Pydantic models. Compares to OWSLib's stateless approach.
+
+**Key Relevance:**
+- Stateful vs stateless architecture decisions
+- Builder pattern for query construction
+- Real-time streaming (WebSocket/MQTT) integration
+- Type safety with runtime validation
+
+---
+
+### OSHConnect-Python Client Analysis (Summary)
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/OSHConnect-Python-Analysis.md  
+**Type:** Internal research document
+
+Summary analysis of OSHConnect-Python demonstrating builder patterns, generic type system, Pydantic validation, and comprehensive CRUD operations for all CSAPI resources.
+
+**Key Relevance:**
+- Builder pattern reference implementation
+- Request construction patterns
+- Generic type system design
+- Real-time streaming integration
+
+---
+
+### osh-viewer Client Application Analysis
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-oshviewer-analysis.md  
+**Type:** Internal research document
+
+Analyzes osh-viewer Vue.js web client to understand real-world CSAPI usage patterns. Documents read-heavy operations, System → Datastreams → Observations navigation, and format preferences.
+
+**Key Relevance:**
+- Common workflow patterns
+- Offset-based pagination defaults
+- Format selection strategy (SWE+JSON vs SWE+Binary)
+- Object-oriented wrapper patterns
+
+---
+
+### OWSLib CSAPI Implementation Analysis
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-owslib-analysis.md  
+**Type:** Internal research document
+
+Analyzes OWSLib's mature Python CSAPI implementation with class-per-resource architecture, consistent CRUD operations, and complete coverage of all 11 resource types.
+
+**Key Relevance:**
+- Mature client library reference
+- Class-per-resource architecture patterns
+- Consistent naming conventions
+- Comprehensive query parameter validation
+- Authentication abstraction patterns
+
+---
+
+### CSAPI Part 1 Requirements
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-part1-requirements.md  
+**Type:** Internal research document
+
+Comprehensive analysis of OGC API – Connected Systems Part 1 standard extracting ALL requirements for TypeScript client implementation. Documents 5 resource types, 11 conformance classes, 70+ operations, and dual format support.
+
+**Key Relevance:**
+- Complete Part 1 specification analysis
+- Systems, Deployments, Procedures, Sampling Features, Properties
+- GeoJSON and SensorML format requirements
+- 30+ query parameters for filtering
+- Sub-resource navigation patterns
+
+---
+
+### CSAPI Part 2 Requirements
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-part2-requirements.md  
+**Type:** Internal research document
+
+Comprehensive analysis of OGC API – Connected Systems Part 2 standard for dynamic data. Documents DataStreams, Observations, Control Streams, Commands with schema operations, temporal queries, and pagination modes.
+
+**Key Relevance:**
+- Complete Part 2 specification analysis
+- Schema-driven observation ingestion
+- Temporal query parameters and intervals
+- Cursor-based pagination for high-volume data
+- Command submission and status tracking
+- SWE Common encoding requirements
+
+---
+
+### Query Parameter Requirements
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-query-parameters.md  
+**Type:** Internal research document
+
+Catalogs ALL query parameters from CSAPI Part 1 and Part 2 with encoding rules, validation requirements, and parameter combination rules. Classifies parameters by type (spatial, temporal, pagination, format, relationship).
+
+**Key Relevance:**
+- Complete query parameter catalog
+- Parameter encoding and validation rules
+- Resource-specific applicability
+- Parameter combination logic
+- Client API query building interface
+
+---
+
+### Sub-Resource Navigation Requirements
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-subresource-navigation.md  
+**Type:** Internal research document
+
+Documents all nested navigation patterns including relationship endpoints, nesting depth, query parameter support on nested endpoints, and bidirectional relationship navigation.
+
+**Key Relevance:**
+- Nested endpoint URL construction
+- Sub-resource relationship matrix
+- Query parameter support on nested paths
+- Canonical vs relationship URL patterns
+- Link relation types for navigation
+
+---
+
+### Usage Scenarios and Priorities
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-usage-scenarios.md  
+**Type:** Internal research document
+
+Identifies 15 core real-world usage scenarios, 6 essential workflows, 8 common error patterns, and recommends 17 convenience methods to simplify client library usage.
+
+**Key Relevance:**
+- Prioritized usage scenarios
+- Common workflow patterns
+- Error handling requirements
+- Convenience method design
+- Performance recommendations
+
+---
+
+### Lessons Learned from Previous Iterations
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/lessons-learned-analysis.md  
+**Type:** Internal research document
+
+Documents what worked, what didn't, and what to improve from previous CSAPI implementation attempts. Identifies over-engineered vs under-engineered components and likely rejection points.
+
+**Key Relevance:**
+- Mistakes to avoid from previous attempts
+- Over-engineering warnings
+- Under-engineering gaps
+- Maintenance and testing lessons
+- PR review considerations
+
+---
+
+### Requirements Research Strategy
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/requirements-research-strategy.md  
+**Type:** Internal research document
+
+Defines systematic research-first methodology for identifying ALL functional requirements before writing specification. Lists requirement sources and research approach.
+
+**Key Relevance:**
+- Comprehensive requirement discovery methodology
+- Research-before-implementation approach
+- Requirement source identification
+- Gap prevention strategy
+
+---
+
+### Upstream Library Expectations
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/upstream-expectations.md  
+**Type:** Internal research document
+
+Defines what camptocamp/ogc-client expects from CSAPI implementation based on patterns from WFS, WMS, WMTS, EDR implementations. Documents endpoint-oriented API expectations.
+
+**Key Relevance:**
+- Upstream integration requirements
+- Established patterns to follow
+- Quality standards and conventions
+- Format abstraction alignment with existing parsers
+- Web Worker support requirements
 
 ---
 
