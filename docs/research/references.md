@@ -37,6 +37,23 @@ Defines the core CSAPI resources representing physical and logical assets in obs
 
 ---
 
+### OGC API - Connected Systems - Part 1: OpenAPI Specification
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml  
+**Format:** OpenAPI 3.1 (YAML)  
+**Status:** Bundled specification (all references resolved)
+
+Machine-readable OpenAPI definition of the CSAPI Part 1 REST API. Describes all endpoints, query parameters, request/response schemas, and error codes for Systems, Deployments, Procedures, Sampling Features, and Properties resources.
+
+**Key Relevance:**
+- Definitive source for endpoint paths and HTTP methods
+- Query parameter validation rules and constraints
+- Response schema definitions for all Part 1 resources
+- Error response formats and status codes
+- Could enable runtime API validation or dynamic client generation
+- Reference for implementing URL builder methods in CSAPIQueryBuilder
+
+---
+
 ### OGC API - Connected Systems - Part 2: Dynamic Data
 **URL:** https://docs.ogc.org/is/23-002/23-002.html  
 **Document ID:** OGC 23-002  
@@ -51,6 +68,24 @@ Extends Part 1 with dynamic observation and control data resources: DataStreams,
 - Establishes schema requirements for DataStreams and ControlStreams
 - Defines bulk operations for observations and commands
 - Specifies SWE Common 3.0 encoding requirements for observation results
+
+---
+
+### OGC API - Connected Systems - Part 2: OpenAPI Specification
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml  
+**Format:** OpenAPI 3.1 (YAML)  
+**Status:** Bundled specification (all references resolved)
+
+Machine-readable OpenAPI definition of the CSAPI Part 2 REST API. Describes all endpoints, query parameters, request/response schemas, and error codes for DataStreams, Observations, Control Streams, and Commands resources.
+
+**Key Relevance:**
+- Definitive source for endpoint paths and HTTP methods for dynamic data
+- Temporal query parameter definitions with ISO 8601 interval formats
+- Schema endpoint definitions for DataStreams and ControlStreams
+- Observation result encoding specifications (JSON, Text, Binary)
+- Command submission, status tracking, and result retrieval patterns
+- Pagination parameter constraints (limit: 1-10000, cursor format)
+- Reference for implementing URL builder methods for Part 2 resources
 
 ---
 
@@ -340,21 +375,6 @@ Official OGC reference implementation of CSAPI specification.
 - Edge cases and conformance class examples
 - Performance characteristics baseline
 - Real-world data schemas and patterns
-
----
-
-### SensorThings API
-**Home:** https://www.ogc.org/standard/sensorthings/  
-**GitHub:** https://github.com/opengeospatial/sensorthings
-
-Predecessor IoT API standard for sensors and observations. Different architecture (ODATA-based) but similar domain.
-
-**Key Relevance:**
-- Conceptual similarities help understand CSAPI resource relationships
-- Different query patterns (ODATA vs REST/CSAPI) highlight design decisions
-- Many existing deployments may migrate to CSAPI
-- Lessons learned from client implementations
-- NOT directly compatible - requires translation layer
 
 ---
 
