@@ -8,7 +8,7 @@
 
 ## Main Component: Unified OGC API Access
 
-The Camptocamp OGC Client Library uses the `OgcApiEndpoint` class as the main component for all OGC API standards. Developers use this same class to interact with CSAPI servers by pointing it at a CSAPI-compliant endpoint. The `OgcApiEndpoint` automatically detects CSAPI capabilities by checking the server's conformance classes and exposes the appropriate methods for working with sensors, observations, and control streams. This unified approach means developers don't need to learn different APIs for different OGC standards - they use the same patterns whether accessing Features, Tiles, Records, EDR, or CSAPI data. The CSAPI implementation extends `OgcApiEndpoint` following the exact same pattern already established for EDR support.
+The Camptocamp OGC Client Library uses the `OgcApiEndpoint` class as the main component for all OGC API standards. Developers use this same class to interact with CSAPI servers by pointing it at a CSAPI-compliant endpoint. The `OgcApiEndpoint` automatically detects CSAPI capabilities by checking the server's conformance classes and exposes the appropriate methods for working with sensors, observations, and control streams with COMPLETE query, filtering, and pagination support - NOT MVP Scope. This unified approach means developers don't need to learn different APIs for different OGC standards - they use the same patterns whether accessing Features, Tiles, Records, EDR, or CSAPI data with full access to all query parameters, all filtering capabilities (spatial, temporal, hierarchical, relationship-based, property-based, full-text), and both pagination modes (offset-based and cursor-based for high-volume data). The CSAPI implementation extends `OgcApiEndpoint` following the exact same pattern already established for EDR support, providing developers with comprehensive access to all CSAPI capabilities through a familiar, consistent interface.
 
 ---
 
@@ -43,8 +43,10 @@ The collections reader is existing code that fetches and parses the `/collection
 - Links to CSAPI-specific operations (create, update, delete, schema endpoints for Part 2 resources)
 - Temporal extent for observation collections
 - Spatial extent for systems and deployment collections
-- Available query parameters and filtering capabilities
-- Supported formats (GeoJSON, SensorML, SWE Common)
+- ALL available query parameters and COMPLETE filtering capabilities (spatial: bbox 2D/3D; temporal: datetime, phenomenonTime, resultTime, executionTime, issueTime with all ISO 8601 interval types; hierarchical: recursive; relationship: parent, system, deployment, procedure, foi, observedProperty, controlledProperty, baseProperty, objectType; common: id, uid, q, property filters; pagination: limit 1-10000, offset, cursor)
+- Supported formats (GeoJSON, SensorML 3.0, SWE Common 3.0 JSON/Text/Binary)
+- Pagination modes (offset-based and cursor-based for high-volume observations and commands)
+- Schema information (DataStream/ControlStream schema availability)
 
 **Implementation Type:** EXTENDING EXISTING CODE
 
