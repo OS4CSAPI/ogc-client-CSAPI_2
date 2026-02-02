@@ -1077,18 +1077,18 @@ Both offset-based and cursor-based pagination fully implemented - NOT MVP scope.
 
 ### Background Processing: Extending Existing Web Worker Pattern
 
-The background processing component uses existing Web Worker infrastructure in the library to move heavy parsing and validation work off the main thread, keeping browser UIs responsive. For CSAPI, we will extend this worker to handle CSAPI-specific operations: SensorML parsing (complex XML/JSON traversal), SWE Common parsing (especially binary encoding decoding), large observation result set processing, bulk command validation, and schema validation. The existing library uses a worker pattern where computationally expensive operations are offloaded to a Web Worker that runs in parallel, returning results asynchronously. The extension will add CSAPI message types to the worker's message handler and integrate the new format parsers (SensorML, SWE Common) into the worker context. This maintains the library's performance characteristics when dealing with large datasets or complex formats. The same code also provides a fallback for non-worker environments (Node.js, older browsers).
+The background processing component extends the existing Web Worker infrastructure in the Camptocamp OGC Client Library (`src/worker/worker.ts`, `src/worker/utils.ts`, `src/worker/index.ts`) to move heavy parsing and validation work off the main thread, keeping browser UIs responsive. The upstream library currently uses this worker pattern to parse XML capabilities documents for WMS, WFS, and WMTS services, offloading computationally expensive XML parsing and processing to a Web Worker that runs in parallel and returns results asynchronously via message passing (`sendTaskRequest()` and `addTaskHandler()` utilities). The library provides a fallback mechanism (`enableFallbackWithoutWorker()`) for non-worker environments like Node.js or older browsers, where the same code runs synchronously on the main thread. For CSAPI, we will extend this proven worker pattern by adding new CSAPI-specific message types to handle: SensorML 3.0 parsing (complex hierarchical JSON document traversal with recursive PhysicalSystem component trees), SWE Common 3.0 parsing (especially binary encoding decoding with IEEE 754 floats and multi-byte integers), large observation result set processing (thousands of observations with schema validation), bulk command validation, and comprehensive schema validation operations. The extension will integrate the new CSAPI format parsers (SensorML Handler, SWE Common Handler) into the worker context following the same architecture patterns already established for WMS/WFS/WMTS capabilities parsing. This maintains the library's performance characteristics when dealing with large CSAPI datasets or complex format parsing operations.
 
 **COMPLETE CSAPI Operations to Move to Worker - NOT MVP Scope:**
 
 This worker extension implements FULL offloading of computationally expensive CSAPI operations to maintain UI responsiveness.
 
 **Format Parsing (Heavy Operations):**
-- **SensorML 3.0 parsing**: Complex recursive PhysicalSystem component trees with deep nesting
-- **SWE Common 3.0 parsing**: Binary encoding decoding (IEEE 754 float, multi-byte integers, byte order handling)
-- **Large observation arrays**: Parsing thousands of observations with result validation against DataStream schemas
-- **Large command arrays**: Bulk command parameter validation and encoding
-- **GeoJSON feature collections**: Large spatial datasets with CSAPI property extraction
+- **SensorML 3.0 parsing**: Complex hierarchical JSON document parsing with recursive PhysicalSystem component trees, deep nesting, SWE Common DataComponent integration
+- **SWE Common 3.0 parsing**: Binary encoding decoding (IEEE 754 float, multi-byte integers, byte order handling), Text/CSV parsing, JSON encoding with schema-driven validation
+- **Large observation arrays**: Parsing thousands of observations with result validation against DataStream schemas (range checks, unit validation, quality indicators)
+- **Large command arrays**: Bulk command parameter validation against ControlStream schemas and encoding for transmission
+- **GeoJSON feature collections**: Large spatial datasets with CSAPI-specific property extraction (Systems, Deployments, Procedures, Sampling Features)
 
 **Validation Operations (CPU-Intensive):**
 - **Schema validation**: Complex SWE Common DataComponent schema validation with constraint checking
