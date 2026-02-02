@@ -1341,41 +1341,6 @@ The API documentation component extends the existing TypeDoc documentation to co
 // Example: Format negotiation (requesting GeoJSON vs SensorML)
 ```
 
-**COMPLETE Migration Guides - NOT MVP Scope:**
-
-**From 52°North JavaScript Client:**
-- Conceptual mapping (52°North client concepts → ogc-client concepts)
-- API method mapping (52°North methods → ogc-client methods)
-- Query parameter mapping (52°North query API → ogc-client URL builder)
-- Code examples (side-by-side comparisons for common operations)
-- Feature differences (capabilities in ogc-client not in 52°North, and vice versa)
-- Performance considerations (worker thread usage, caching strategies)
-
-**From Python OGC API Clients (OWSLib, pygeoapi client):**
-- Language differences (Python patterns → TypeScript patterns)
-- Async patterns (Python async/await → JavaScript Promises/async-await)
-- Type safety (Python type hints → TypeScript interfaces)
-- API method mapping (Python client methods → ogc-client methods)
-- Code examples (Python examples → equivalent TypeScript)
-- Installation and setup (Python pip → JavaScript npm)
-
-**From Direct HTTP/Fetch Approaches:**
-- Abstraction benefits (raw fetch → ogc-client methods)
-- Query construction (manual URL building → URL builder)
-- Format parsing (manual JSON parsing → format handlers)
-- Error handling (raw HTTP errors → typed errors with validation)
-- Pagination handling (manual link following → automatic pagination)
-- Code examples (fetch code → equivalent ogc-client code)
-- Performance benefits (worker threads, caching, connection pooling)
-
-**From SensorThings API:**
-- Conceptual differences (SensorThings → CSAPI resource mapping)
-- Query differences (SensorThings $filter → CSAPI query parameters)
-- Association patterns (SensorThings navigation → CSAPI relationship parameters)
-- Format differences (SensorThings JSON → CSAPI GeoJSON/SensorML/SWE Common)
-- Feature mapping (SensorThings entities → CSAPI resources)
-- Migration strategy (gradual migration path, compatibility layers)
-
 **Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI docs to existing TypeDoc setup)
 
 ---
