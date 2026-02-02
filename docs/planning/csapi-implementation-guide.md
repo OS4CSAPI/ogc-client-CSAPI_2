@@ -474,7 +474,7 @@ The CSAPIQueryBuilder includes Systems resource methods to manage CSAPI System r
 **References:**
 - [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative specification for Systems resources and CRUD operations
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Systems endpoint definitions
-- [CSAPI-Part1-requirements.md](../research/requirements/CSAPI-Part1-requirements.md): Detailed client implementation requirements for Systems resource methods
+- [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Detailed client implementation requirements for Systems resource methods
 - [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Semantic definitions for system types and relationships
 - [RFC 7946 (GeoJSON)](https://tools.ietf.org/html/rfc7946): Format specification for encoding Systems as GeoJSON Features
 
@@ -520,7 +520,7 @@ The CSAPIQueryBuilder includes Deployments resource methods to manage CSAPI Depl
 **References:**
 - [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative specification for Deployments resources
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Deployments endpoint definitions
-- [CSAPI-Part1-requirements.md](../research/requirements/CSAPI-Part1-requirements.md): Client implementation requirements for Deployments including spatial/temporal queries
+- [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client implementation requirements for Deployments including spatial/temporal queries
 - [RFC 7946 (GeoJSON)](https://tools.ietf.org/html/rfc7946): Format for encoding Deployments with spatial extents
 
 ---
@@ -569,7 +569,7 @@ The CSAPIQueryBuilder includes Procedures resource methods to manage CSAPI Proce
 **References:**
 - [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative specification for Procedures resources and methodologies
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Procedures endpoint definitions
-- [CSAPI-Part1-requirements.md](../research/requirements/CSAPI-Part1-requirements.md): Client requirements for Procedures including SensorML format support
+- [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client requirements for Procedures including SensorML format support
 - [OGC SensorML 3.0](https://docs.ogc.org/is/23-000r1/23-000r1.html): Format for detailed procedure descriptions
 
 ---
@@ -619,7 +619,7 @@ The CSAPIQueryBuilder includes Sampling Features resource methods to manage CSAP
 **References:**
 - [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative specification for Sampling Features resources
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Sampling Features endpoint definitions
-- [CSAPI-Part1-requirements.md](../research/requirements/CSAPI-Part1-requirements.md): Client requirements for Sampling Features navigation
+- [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client requirements for Sampling Features navigation
 - [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Semantic definitions for sampling feature types and relationships
 - [RFC 7946 (GeoJSON)](https://tools.ietf.org/html/rfc7946): Format for encoding Sampling Features with geometries
 
@@ -657,7 +657,7 @@ The CSAPIQueryBuilder includes Properties resource methods to manage CSAPI Prope
 **References:**
 - [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative specification for Properties resources
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Properties endpoint definitions
-- [CSAPI-Part1-requirements.md](../research/requirements/CSAPI-Part1-requirements.md): Client requirements for Properties navigation
+- [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client requirements for Properties navigation
 - [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Semantic definitions for observable and actuatable properties
 
 ---
@@ -721,9 +721,9 @@ The CSAPIQueryBuilder includes DataStreams resource methods to manage CSAPI Data
 **References:**
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Normative specification for DataStreams resources and schema operations
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): DataStreams endpoint definitions
-- [CSAPI-Part2-requirements.md](../research/requirements/CSAPI-Part2-requirements.md): Client implementation requirements for DataStreams including schema handling
+- [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client implementation requirements for DataStreams including schema handling
 - [OGC SWE Common 3.0](https://docs.ogc.org/is/08-094r1/08-094r1.html): Format for result schemas and data encoding
-- [upstream-PR114-analysis.md](../research/upstream/upstream-PR114-analysis.md): Architectural patterns for DataStreams implementation
+- [pr114-analysis.md](../research/upstream/pr114-analysis.md): Architectural patterns for DataStreams implementation
 
 ---
 
@@ -803,9 +803,9 @@ The CSAPIQueryBuilder includes Observations resource methods to manage CSAPI Obs
 **References:**
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Normative specification for Observations resources and temporal queries
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Observations endpoint definitions
-- [CSAPI-Part2-requirements.md](../research/requirements/CSAPI-Part2-requirements.md): Client requirements for Observations including pagination and bulk operations
+- [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for Observations including pagination and bulk operations
 - [OGC SWE Common 3.0](https://docs.ogc.org/is/08-094r1/08-094r1.html): Format for observation result encodings (JSON, Text, Binary)
-- [upstream-PR114-analysis.md](../research/upstream/upstream-PR114-analysis.md): Performance patterns for high-volume observation handling
+- [pr114-analysis.md](../research/upstream/pr114-analysis.md): Performance patterns for high-volume observation handling
 
 ---
 
@@ -863,9 +863,9 @@ The CSAPIQueryBuilder includes Control Streams resource methods to manage CSAPI 
 **References:**
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Normative specification for ControlStreams resources
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): ControlStreams endpoint definitions
-- [CSAPI-Part2-requirements.md](../research/requirements/CSAPI-Part2-requirements.md): Client requirements for ControlStreams and actuation capabilities
+- [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for ControlStreams and actuation capabilities
 - [OGC SWE Common 3.0](https://docs.ogc.org/is/08-094r1/08-094r1.html): Format for control parameter schemas
-- [upstream-PR114-analysis.md](../research/upstream/upstream-PR114-analysis.md): Architectural patterns mirroring DataStreams for control
+- [pr114-analysis.md](../research/upstream/pr114-analysis.md): Architectural patterns mirroring DataStreams for control
 
 ---
 
@@ -949,9 +949,9 @@ The CSAPIQueryBuilder includes Commands resource methods to manage CSAPI Command
 **References:**
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Normative specification for Commands resources and lifecycle management
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Commands endpoint definitions
-- [CSAPI-Part2-requirements.md](../research/requirements/CSAPI-Part2-requirements.md): Client requirements for Commands including status tracking and feasibility
+- [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for Commands including status tracking and feasibility
 - [OGC SWE Common 3.0](https://docs.ogc.org/is/08-094r1/08-094r1.html): Format for command parameter encodings
-- [upstream-PR114-analysis.md](../research/upstream/upstream-PR114-analysis.md): Patterns for command submission and status polling
+- [pr114-analysis.md](../research/upstream/pr114-analysis.md): Patterns for command submission and status polling
 
 ---
 
@@ -1030,7 +1030,7 @@ The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](ht
 - [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Requirements for SensorML encoding in CSAPI
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): SensorML media type definitions
 - [SensorML 3.0 JSON Schema](https://schemas.opengis.net/sensorml/3.0/): Official JSON schemas for validation
-- [CSAPI-Part1-requirements.md](../research/requirements/CSAPI-Part1-requirements.md): Client requirements for SensorML parsing
+- [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client requirements for SensorML parsing
 - [UCUM Codes](http://unitsofmeasure.org/): Unit of measure code system
 
 **Implementation Type:** BUILDING NEW CODE
@@ -1113,8 +1113,8 @@ The SWE Common handler is new code we need to build to parse [OGC SWE Common 3.0
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Requirements for SWE Common in DataStreams/Observations
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): SWE Common media type definitions
 - [SWE Common 3.0 JSON Schema](https://schemas.opengis.net/sweCommon/3.0/): Official JSON schemas
-- [CSAPI-Part2-requirements.md](../research/requirements/CSAPI-Part2-requirements.md): Client requirements for SWE Common parsing
-- [upstream-PR114-analysis.md](../research/upstream/upstream-PR114-analysis.md): Implementation patterns for result parsing
+- [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for SWE Common parsing
+- [pr114-analysis.md](../research/upstream/pr114-analysis.md): Implementation patterns for result parsing
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -1196,8 +1196,8 @@ The validator is existing code that checks whether parsed documents conform to f
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Part 1 schema definitions for validation
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Validation requirements for Part 2 resources
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Part 2 schema definitions for validation
-- [CSAPI-Part1-requirements.md](../research/requirements/CSAPI-Part1-requirements.md): Required properties and constraints
-- [CSAPI-Part2-requirements.md](../research/requirements/CSAPI-Part2-requirements.md): Schema conformance requirements
+- [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Required properties and constraints
+- [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Schema conformance requirements
 - [RFC 8141 (URN Syntax)](https://tools.ietf.org/html/rfc8141): URI validation rules
 
 ---
@@ -1253,9 +1253,9 @@ The background processing component extends the existing Web Worker infrastructu
 **Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI message handlers to existing worker)
 
 **References:**
-- [upstream-PR114-analysis.md](../research/upstream/upstream-PR114-analysis.md): Worker patterns for EDR implementation
+- [pr114-analysis.md](../research/upstream/pr114-analysis.md): Worker patterns for EDR implementation
 - [upstream-worker-architecture.md](../research/upstream/upstream-worker-architecture.md): Existing worker infrastructure details
-- [CSAPI-Part2-requirements.md](../research/requirements/CSAPI-Part2-requirements.md): Performance requirements for large observation datasets
+- [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Performance requirements for large observation datasets
 
 ---
 
