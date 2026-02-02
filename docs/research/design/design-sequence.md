@@ -7,9 +7,12 @@ This document defines the optimal order for designing each CSAPI component to mi
 ### Phase 1: Foundation & Integration
 Components that establish how CSAPI is accessed and what capabilities are available.
 
-- [ ] **1. OgcApiEndpoint Integration** (`ogcapiendpoint-integration/`)
+- [x] **1. OgcApiEndpoint Integration** (`ogcapiendpoint-integration/`)
+  - ✅ **RESEARCH COMPLETE**
   - Entry point for everything; defines how CSAPI is accessed
   - Establishes the `endpoint.csapi(collectionId)` factory method pattern
+  - Analysis: Factory method, caching, type system all documented
+  - Implementation: ~65 lines across 3 files (endpoint.ts, info.ts, index.ts)
   - Dependencies: None
 
 - [ ] **2. Conformance Reader** (`conformance-reader/`)
