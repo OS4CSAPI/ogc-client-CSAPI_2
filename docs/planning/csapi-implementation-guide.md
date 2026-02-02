@@ -87,6 +87,14 @@ This implementation provides **COMPLETE CSAPI Parts 1 & 2 support** including:
 
 **This is NOT an MVP** - this is a production-ready, specification-complete implementation suitable for enterprise use.
 
+**References:**
+- [OGC API - Connected Systems Part 1: Feature Resources](https://docs.ogc.org/is/23-001/23-001.html) - Standard defining Systems, Deployments, Procedures, Sampling Features, Properties
+- [OGC API - Connected Systems Part 2: Dynamic Data](https://docs.ogc.org/is/23-002/23-002.html) - Standard defining DataStreams, Observations, Control Streams, Commands
+- [Full Implementation Scope Definition](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/contribution-definition.md) - Complete vs partial implementation rationale
+- [CSAPI Part 1 Requirements](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-part1-requirements.md) - Comprehensive Part 1 requirements analysis
+- [CSAPI Part 2 Requirements](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-part2-requirements.md) - Comprehensive Part 2 requirements analysis
+- [Upstream Library Expectations](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/upstream-expectations.md) - What camptocamp/ogc-client expects from implementations
+
 ---
 
 ## Architecture Overview
