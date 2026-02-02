@@ -215,6 +215,12 @@ The conformance reader is existing code in `OgcApiEndpoint` that checks which OG
 
 **Implementation Type:** EXTENDING EXISTING CODE (~7 lines in `info.ts`)
 
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html) - Conformance classes for Part 1 resources
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html) - Conformance classes for Part 2 resources
+- [Conformance and Capability Requirements](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-conformance-capabilities.md) - All conformance classes and detection mechanisms
+- [Integration with Existing Code](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/integration-analysis.md) - Exact code changes to info.ts
+
 ---
 
 ### Collections Reader: Extending Metadata Parsing
@@ -231,6 +237,11 @@ The collections reader is existing code that fetches and parses the `/collection
 - Schema information (DataStream/ControlStream schema availability)
 
 **Implementation Type:** EXTENDING EXISTING CODE (~6 lines in `endpoint.ts`)
+
+**References:**
+- [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/) - Semantic foundation for featureType values (sosa:System, sosa:Deployment, etc.)
+- [OGC API - Features](https://docs.ogc.org/is/17-069r4/17-069r4.html) - Collections endpoint patterns CSAPI extends
+- [Architecture Patterns Analysis](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/architecture-patterns-analysis.md) - Collection capability determination patterns
 
 ---
 
@@ -309,6 +320,13 @@ if (await endpoint.hasConnectedSystems) {
 ```
 
 **Implementation Type:** EXTENDING EXISTING CODE (~48 lines total across 2-3 files)
+
+**References:**
+- [PR #114 (EDR Implementation) Analysis](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/pr114-analysis.md) - **PRIMARY REFERENCE** - Direct blueprint for factory method pattern
+- [Integration with Existing Code](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/integration-analysis.md) - Line-by-line integration requirements for endpoint.ts, info.ts, index.ts
+- [QueryBuilder Pattern Analysis](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/querybuilder-pattern-analysis.md) - Factory method lifecycle, caching strategy, state management
+- [File Organization Strategy](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/file-organization-analysis.md) - Where to place integration code
+- [camptocamp/ogc-client Repository](https://github.com/camptocamp/ogc-client) - Upstream repository to integrate with
 
 ---
 
