@@ -1460,6 +1460,8 @@ The API documentation component extends the existing TypeDoc documentation to co
 
 **Integration Footprint:** Total modifications to existing files: ~48 lines across 2 files (endpoint.ts: ~35 lines, info.ts: ~7 lines, index.ts: ~6 lines for exports). This minimal footprint follows the proven EDR integration pattern.
 
+**Scope Understanding:** While the summary lists "3 components building new code" (architecturally accurate), the CSAPIQueryBuilder component represents ~70% of the new code volume (~10,000-14,000 lines of code) because it implements URL construction for 9 distinct CSAPI resource types with approximately 60-70 unique URL patterns covering full CRUD operations, nested resource access, schema endpoints, and comprehensive query parameter support. The document body contains 9 detailed "resource handler" sections (Systems, Deployments, Procedures, Sampling Features, Properties, DataStreams, Observations, Control Streams, Commands) which all describe the functional methods within this single CSAPIQueryBuilder class. This consolidated single-class architecture follows the upstream EDR pattern (one QueryBuilder per API family) but delivers functionally extensive capabilities across all CSAPI resources. Clients evaluating scope should understand that while architecturally elegant (3 new classes vs 12), the functional scope is substantial - implementing complete CSAPI Part 1 and Part 2 specifications with full query, filter, and pagination support across all resource types.
+
 ### Estimated Scope:
 - **Extending existing code:** ~20% of effort (9 small extensions following established patterns, ~50 total lines modified)
 - **Building new code:** ~80% of effort (CSAPIQueryBuilder with ~60-70 URL patterns, 2 complex format parsers)
