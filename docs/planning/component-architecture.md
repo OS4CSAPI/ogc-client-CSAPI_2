@@ -123,21 +123,28 @@ This URL builder implements FULL query parameter support for CSAPI Parts 1 and 2
 
 ### GeoJSON Handler: Extending Existing Parser
 
-The GeoJSON handler is existing code in the library that parses GeoJSON Feature and FeatureCollection documents, supporting all seven geometry types (Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, GeometryCollection). For CSAPI, we will extend this handler to recognize CSAPI-specific feature types through the `featureType` property and extract CSAPI resource properties from the feature `properties` object. CSAPI Part 1 resources (Systems, Deployments, Procedures, Sampling Features) are encoded as GeoJSON features with additional semantic properties like `systemType`, `assetType`, `uniqueIdentifier`, `validTime`, and association links to related resources. The extension will add type checking for these CSAPI properties and validation rules specific to CSAPI feature types, while maintaining compatibility with generic GeoJSON handling for other OGC API standards. This approach leverages the existing GeoJSON infrastructure while adding CSAPI-aware semantics on top.
+The GeoJSON handler is existing code in the library that parses GeoJSON Feature and FeatureCollection documents, supporting all seven geometry types (Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, GeometryCollection). For CSAPI, we will extend this handler with COMPLETE recognition and extraction of ALL CSAPI-specific properties - NOT MVP Scope. The extension will recognize CSAPI-specific feature types through the `featureType` property and extract all CSAPI resource properties from the feature `properties` object. CSAPI Part 1 resources (Systems, Deployments, Procedures, Sampling Features) are encoded as GeoJSON features with additional semantic properties like `systemType`, `assetType`, `uniqueIdentifier`, `validTime`, and association links to related resources. The extension will add comprehensive type checking for all these CSAPI properties and complete validation rules specific to each CSAPI feature type, while maintaining compatibility with generic GeoJSON handling for other OGC API standards. This approach leverages the existing GeoJSON infrastructure while adding CSAPI-aware semantics on top.
 
-**CSAPI-Specific GeoJSON Properties:**
+**COMPLETE CSAPI-Specific GeoJSON Properties - NOT MVP Scope:**
 - Systems: `systemType` (URI), `assetType` (enum), `uniqueIdentifier` (URI), `validTime` (period), association arrays (`subsystems`, `deployments`, `procedures`, `samplingFeatures`, `datastreams`, `controlstreams`)
 - Deployments: `deployedSystems` (array), `validTime` (period), spatial/temporal extent
 - Procedures: `procedureType` (URI), `methodKind` (URI), `attachedTo` (link to system)
 - Sampling Features: `samplingFeatureType` (URI), `sampledFeature` (link), `relatedSamplingFeature` (links)
 - All resources: `id`, `name`, `description`, `links` (HATEOAS navigation)
 
-**Validation Requirements:**
-- `uniqueIdentifier` must be valid URI (preferably URN)
-- `systemType` must be from SOSA/SSN vocabulary (`sosa:Sensor`, `sosa:Platform`, etc.)
-- `validTime` must be ISO 8601 temporal period or instant
-- Association arrays must contain valid resource links or inline features
-- Geometry must be valid per RFC 7946 (WGS84 coordinates)
+**COMPLETE Validation Requirements - NOT MVP Scope:**
+- `uniqueIdentifier` must be valid URI (preferably URN format following RFC 8141)
+- `systemType` must be from SOSA/SSN vocabulary (`sosa:Sensor`, `sosa:Platform`, `sosa:Actuator`, `sosa:Sampler`, etc.) with URI validation
+- `validTime` must be ISO 8601 temporal period or instant with full interval support (start/end, start/duration, open-ended)
+- Association arrays must contain valid resource links (href + rel) or inline features (embedded GeoJSON) with referential integrity checking
+- Geometry must be valid per RFC 7946 (WGS84 coordinates, right-hand rule for polygons, coordinate array structure)
+- All required properties present for each resource type (id, name, links minimum for all types)
+- All enumeration values from allowed lists (assetType, procedureType, samplingFeatureType)
+- All URIs properly formatted and dereferenceable where applicable
+- Spatial extent validation (bbox must be valid WGS84 bounds)
+- Temporal extent validation (all ISO 8601 formats with timezone handling)
+- Link relation validation (IANA relations + CSAPI-specific relations)
+- Property data type validation (strings, numbers, booleans, arrays, objects match schema)
 
 **Implementation Type:** EXTENDING EXISTING CODE
 
@@ -145,7 +152,7 @@ The GeoJSON handler is existing code in the library that parses GeoJSON Feature 
 
 ### SensorML Handler: Building New Format Parser
 
-The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](https://docs.ogc.org/is/23-000r1/23-000r1.html) format documents that describe sensor systems, components, and processes in detail. SensorML 3.0 is the latest version of the JSON-native format from the Sensor Web Enablement (SWE) standards family, published in 2024, that provides rich metadata about sensors, actuators, and processing chains with significant improvements over the previous XML-based 2.x versions. CSAPI servers return SensorML 3.0 documents when describing Systems or Procedures, providing detailed technical specifications beyond what GeoJSON can express. We will build a parser that handles SensorML 3.0 system models (System, PhysicalComponent, PhysicalSystem), component descriptions, feature of interest definitions, capability/characteristic/constraint specifications, input/output specifications, configuration parameters, and temporal validity periods. The parser must convert SensorML 3.0 JSON documents into TypeScript objects that the library can work with, following the same architecture patterns as the existing GeoJSON and other format handlers. This new component represents one of the most complex format handling tasks in the project due to SensorML's hierarchical structure, extensive vocabulary, and integration with [SWE Common 3.0](https://docs.ogc.org/is/23-011r1/23-011r1.html) data components.
+The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](https://docs.ogc.org/is/23-000r1/23-000r1.html) format documents that describe sensor systems, components, and processes in detail with COMPLETE support for ALL SensorML 3.0 elements - NOT MVP Scope. SensorML 3.0 is the latest version of the JSON-native format from the Sensor Web Enablement (SWE) standards family, published in 2024, that provides rich metadata about sensors, actuators, and processing chains with significant improvements over the previous XML-based 2.x versions. CSAPI servers return SensorML 3.0 documents when describing Systems or Procedures, providing detailed technical specifications beyond what GeoJSON can express. We will build a comprehensive parser that handles all SensorML 3.0 system models (System, PhysicalComponent, PhysicalSystem, SystemConfiguration), all component descriptions, all feature of interest definitions, all capability/characteristic/constraint specifications, all input/output specifications, all configuration parameters, all operational modes, all component connections, and temporal validity periods. The parser must convert SensorML 3.0 JSON documents into TypeScript objects that the library can work with, following the same architecture patterns as the existing GeoJSON and other format handlers. This new component represents one of the most complex format handling tasks in the project due to SensorML's hierarchical structure, extensive vocabulary, and deep integration with [SWE Common 3.0](https://docs.ogc.org/is/23-011r1/23-011r1.html) data components.
 
 **SensorML 3.0 Document Types to Parse:**
 - **System**: Abstract system description with common properties (identification, classification, characteristics, capabilities, contacts)
@@ -172,14 +179,20 @@ The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](ht
 - **Connections** (PhysicalSystem only): Data flow and physical connections between components
 - **Position**: Location and orientation using GeoJSON Point or more complex positioning models
 
-**Parsing Complexity:**
-- Recursive component parsing for nested PhysicalSystems
-- SWE Common 3.0 DataComponent integration (characteristics, capabilities, parameters, inputs, outputs all use SWE Common schemas)
-- Unit of measure parsing ([UCUM codes](http://unitsofmeasure.org/))
-- Reference resolution (external links to procedures, datasheets, feature definitions)
-- Position/location parsing (GeoJSON geometry plus orientation/reference frames)
-- Mode and configuration state management
-- Connection graph traversal for component relationships
+**COMPLETE Parsing Capabilities - NOT MVP Scope:**
+- **Recursive component parsing**: Unlimited depth traversal for nested PhysicalSystems with full component hierarchy preservation
+- **SWE Common 3.0 DataComponent integration**: Complete parsing of all DataComponent types used in characteristics, capabilities, parameters, inputs, outputs (DataRecord, DataArray, Quantity, Count, Boolean, Text, Time, Category, Vector, Matrix, all range types, DataChoice, GeometryData)
+- **Unit of measure parsing**: Full UCUM code support ([UCUM codes](http://unitsofmeasure.org/)) with unit validation, scale factors, offsets
+- **Reference resolution**: External link dereferencing for procedures, datasheets, feature definitions, documentation, images, videos with HTTP/HTTPS fetching and caching
+- **Position/location parsing**: Complete GeoJSON geometry support plus orientation (quaternions, euler angles, direction cosines), reference frames (EPSG codes, custom frames), dynamic positioning (velocity, acceleration)
+- **Mode and configuration state management**: All operational modes with state definitions, transitions, associated configurations, parameter value sets
+- **Connection graph traversal**: Complete component connection mapping (data flow, physical connections, control connections) with port matching and graph analysis
+- **Vocabulary resolution**: Automatic fetching and caching of vocabulary terms from code spaces (SOSA, SSN, CF, QUDT)
+- **Schema validation**: Full validation against SensorML 3.0 JSON Schema with detailed error reporting
+- **Temporal validity**: Complete ISO 8601 temporal period parsing with timezone handling
+- **Security constraints**: Classification level parsing, access restrictions, usage limitations
+- **Contact information**: All contact types with vCard formatting
+- **Documentation links**: Media type detection, thumbnail generation, content previewing
 
 **References:**
 - [OGC SensorML 3.0 Standard](https://docs.ogc.org/is/23-000r1/23-000r1.html) (OGC 23-000r1)
@@ -192,7 +205,7 @@ The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](ht
 
 ### SWE Common Handler: Building New Format Parser
 
-The SWE Common handler is new code we need to build to parse [OGC SWE Common 3.0](https://docs.ogc.org/is/23-011r1/23-011r1.html) format documents that define observation data schemas and encode actual observation results. SWE Common 3.0 is the latest version of the data encoding standard from the Sensor Web Enablement family, published in 2024, that describes structured measurement data with units, quality information, and constraints using a modernized JSON-native approach. CSAPI Part 2 uses SWE Common 3.0 extensively for DataStream schemas (defining what properties are observed and result structure) and Observation results (actual measurement values). We will build parsers for three SWE Common 3.0 encodings: JSON (human-readable structured data), Text (CSV-style compact encoding), and Binary (efficient encoding for high-volume streaming). The handler must parse DataComponent schemas (Quantity, Count, Boolean, Text, Time, Category, CategoryRange, QuantityRange, TimeRange, DataRecord, DataArray, Vector, Matrix, GeometryData), extract values from encoded results, validate measurements against schemas including quality indicators and constraints, and convert between different encodings. This is the second most complex format handling component after SensorML due to the variety of encoding formats and the need for schema-driven validation.
+The SWE Common handler is new code we need to build to parse [OGC SWE Common 3.0](https://docs.ogc.org/is/23-011r1/23-011r1.html) format documents that define observation data schemas and encode actual observation results with COMPLETE support for ALL data components and ALL three encodings - NOT MVP Scope. SWE Common 3.0 is the latest version of the data encoding standard from the Sensor Web Enablement family, published in 2024, that describes structured measurement data with units, quality information, and constraints using a modernized JSON-native approach. CSAPI Part 2 uses SWE Common 3.0 extensively for DataStream schemas (defining what properties are observed and result structure) and Observation results (actual measurement values). We will build comprehensive parsers for all three SWE Common 3.0 encodings: JSON (human-readable structured data), Text (CSV-style compact encoding with configurable delimiters), and Binary (efficient encoding for high-volume streaming with multiple data types and byte orders). The handler must parse all DataComponent schemas (Quantity, Count, Boolean, Text, Time, Category, CategoryRange, QuantityRange, TimeRange, DataRecord, DataArray, Vector, Matrix, DataChoice, GeometryData), extract values from all encoded result formats, validate all measurements against schemas including quality indicators and constraints, and convert between all different encodings bidirectionally. This is the second most complex format handling component after SensorML due to the variety of encoding formats, the need for schema-driven validation, and the performance requirements for high-volume streaming data.
 
 **SWE Common 3.0 Data Components to Parse:**
 
@@ -240,22 +253,30 @@ The SWE Common handler is new code we need to build to parse [OGC SWE Common 3.0
 - Block compression support
 - Little-endian and big-endian byte order support
 
-**Schema Validation Requirements:**
-- Result structure must match DataStream schema (DataComponent definitions)
-- Values must be within allowed ranges (AllowedValues, AllowedIntervals, AllowedTimes constraints)
-- Units of measure must match schema specification ([UCUM codes](http://unitsofmeasure.org/))
-- Array dimensions must match schema element count specifications
-- Quality indicators must follow schema (nilValues, quality DataRecord)
-- Timestamps must follow ISO 8601 format with optional reference frame
-- Categorical values must come from defined code space
-- Text patterns must match defined constraints (regex patterns)
+**COMPLETE Schema Validation Requirements - NOT MVP Scope:**
+- **Result structure validation**: Complete matching of result structure against DataStream schema (all DataComponent definitions, nested structures, choice discriminators)
+- **Range validation**: All values within allowed ranges (AllowedValues enumeration lists, AllowedIntervals numeric/temporal ranges, AllowedTimes temporal constraints, AllowedTokens text patterns with regex)
+- **Unit validation**: Complete UCUM code validation ([UCUM codes](http://unitsofmeasure.org/)) with unit conversion support, scale factors, offsets
+- **Array validation**: Array dimensions match schema element count specifications (fixed or variable size), homogeneous element types, nested array support
+- **Quality validation**: All quality indicators follow schema (nilValues with reason codes, quality DataRecord with multiple quality measures, uncertainty values)
+- **Temporal validation**: All timestamps follow ISO 8601 format with optional reference frame (UTC, TAI, GPS time), timezone handling, leap second support
+- **Categorical validation**: All categorical values from defined code space with vocabulary dereferencing, code validation
+- **Text validation**: All text patterns match defined constraints (regex patterns, length limits, character sets)
+- **Geometry validation**: GeometryData follows GeoJSON spec (coordinate structure, geometry types, CRS handling)
+- **Matrix validation**: Matrix dimensions match schema (rows × columns), data type consistency, numeric precision
+- **Vector validation**: Vector components match coordinate reference system, dimension count, axis order
+- **Choice validation**: DataChoice discriminator present, selected option matches discriminator, option structure validation
 
-**Advanced 3.0 Features:**
-- **NilValues**: Representation of missing/invalid data with reason codes
-- **Quality**: Associated quality indicators (accuracy, precision, confidence)
-- **Constraints**: AllowedValues, AllowedIntervals, AllowedTimes, AllowedTokens for validation
-- **ReferenceFrames**: Temporal and spatial reference frame definitions
-- **CodeSpaces**: Controlled vocabularies for categorical values
+**COMPLETE Advanced 3.0 Features Support - NOT MVP Scope:**
+- **NilValues**: Complete representation of missing/invalid data with all reason codes (inapplicable, missing, template, unknown, withheld, BelowDetectionRange, AboveDetectionRange), reason text, custom codes
+- **Quality**: All associated quality indicators (accuracy measures, precision values, confidence intervals, data quality flags, quality DataRecord with multiple quality dimensions)
+- **Constraints**: Complete support for AllowedValues (enumeration lists, code lists), AllowedIntervals (numeric ranges, temporal ranges, open/closed bounds), AllowedTimes (temporal constraints, ISO 8601 intervals), AllowedTokens (text patterns, regex validation, character sets)
+- **ReferenceFrames**: Complete temporal reference frame definitions (UTC, TAI, GPS time, custom frames) and spatial reference frame definitions (EPSG codes, WKT, custom CRS, axis order handling)
+- **CodeSpaces**: Complete controlled vocabulary support with vocabulary dereferencing (HTTP/HTTPS fetching), caching, code validation, hierarchical code lists
+- **Encoding conversion**: Bidirectional conversion between all three encodings (JSON ↔ Text ↔ Binary) with schema preservation
+- **Streaming support**: Incremental parsing for large datasets, memory-efficient processing, chunked encoding/decoding
+- **Performance optimization**: Binary encoding for high-volume data, text encoding for human readability, compression support (gzip, deflate)
+- **Type coercion**: Automatic type conversion with precision preservation (integer to float, timestamp to ISO string, etc.)
 
 **References:**
 - [OGC SWE Common 3.0 Standard](https://docs.ogc.org/is/23-011r1/23-011r1.html) (OGC 23-011r1)
@@ -268,20 +289,26 @@ The SWE Common handler is new code we need to build to parse [OGC SWE Common 3.0
 
 ### Format Detector: Extending Existing Content Negotiation
 
-The format detector is existing code that examines HTTP response headers (Content-Type) and document structure to determine what format a server returned. For CSAPI, we will extend this detector to recognize three new media types used by CSAPI servers: `application/sml+json` (SensorML-JSON encoding), `application/swe+json` (SWE Common JSON encoding), and `application/swe+text` (SWE Common Text/CSV encoding). The extension will add these media types to the library's format registry and route them to the appropriate new format handlers (SensorML handler, SWE Common handler). This follows the existing pattern where the detector checks Content-Type headers first, then falls back to document structure analysis if headers are missing or ambiguous. The extension maintains the library's existing format abstraction architecture where developers work with parsed TypeScript objects regardless of the wire format.
+The format detector is existing code that examines HTTP response headers (Content-Type) and document structure to determine what format a server returned. For CSAPI, we will extend this detector with COMPLETE recognition of ALL CSAPI media types with comprehensive fallback detection - NOT MVP Scope. The extension will recognize all new media types used by CSAPI servers: `application/sml+json` (SensorML-JSON encoding), `application/swe+json` (SWE Common JSON encoding), `application/swe+text` (SWE Common Text/CSV encoding), and `application/swe+binary` (SWE Common Binary encoding). The extension will add these media types to the library's format registry and route them to the appropriate new format handlers (SensorML handler, SWE Common handler) with complete parameter parsing (charset, boundary, encoding parameters). This follows the existing pattern where the detector checks Content-Type headers first, then falls back to comprehensive document structure analysis if headers are missing or ambiguous. The extension maintains the library's existing format abstraction architecture where developers work with parsed TypeScript objects regardless of the wire format.
 
-**New Media Types to Detect:**
-- `application/sml+json` → Route to SensorML Handler
-- `application/swe+json` → Route to SWE Common Handler (JSON encoding)
-- `application/swe+text` → Route to SWE Common Handler (Text encoding)
-- `application/swe+binary` → Route to SWE Common Handler (Binary encoding)
-- `application/geo+json` with CSAPI `featureType` → Route to GeoJSON Handler with CSAPI extensions
+**COMPLETE Media Type Recognition - NOT MVP Scope:**
+- `application/sml+json` → Route to SensorML Handler (with charset detection)
+- `application/swe+json` → Route to SWE Common Handler (JSON encoding, charset detection)
+- `application/swe+text` → Route to SWE Common Handler (Text encoding, delimiter detection, charset handling)
+- `application/swe+binary` → Route to SWE Common Handler (Binary encoding, byte order detection, data type detection)
+- `application/geo+json` with CSAPI `featureType` → Route to GeoJSON Handler with CSAPI extensions (all Part 1 resource types)
+- All media type parameters: charset (UTF-8, UTF-16, ISO-8859-1, etc.), version, encoding, boundary for multipart
 
-**Detection Strategy:**
-1. Check Content-Type header (primary method)
-2. Examine root JSON properties (fallback for missing headers)
-3. Look for format-specific identifiers (SensorML `PhysicalSystem`, SWE Common `DataRecord`)
-4. Validate against format schema constraints
+**COMPLETE Detection Strategy - NOT MVP Scope:**
+1. **Content-Type header parsing** (primary method): Full media type parsing with parameter extraction, quality factor handling (q values), wildcard matching, charset detection
+2. **Accept header negotiation**: Server-driven content negotiation with quality factors, format preference ordering, fallback format selection
+3. **Document structure analysis** (fallback for missing headers): Root JSON property examination (SensorML: `type: PhysicalSystem`, SWE Common: `type: DataRecord`, CSAPI GeoJSON: `featureType` property), schema pattern matching, namespace detection
+4. **Format-specific identifiers**: SensorML (all process types: PhysicalSystem, PhysicalComponent, System, SystemConfiguration), SWE Common (all component types: DataRecord, DataArray, Quantity, Vector, Matrix, etc.), CSAPI GeoJSON (all resource types: System, Deployment, Procedure, SamplingFeature)
+5. **Schema validation**: Validate against format JSON schemas with detailed error reporting, ambiguous format resolution through validation
+6. **Binary format detection**: Magic numbers, byte order marks (BOM), structure signatures, data type patterns
+7. **Text encoding detection**: Delimiter patterns (comma, tab, pipe, custom), quote character detection, escape sequence recognition, line ending detection (CRLF, LF, CR)
+8. **Charset detection**: BOM detection (UTF-8, UTF-16 LE/BE, UTF-32 LE/BE), heuristic analysis for common encodings, encoding validation
+9. **Error handling**: Graceful degradation for unknown formats, detailed error messages for malformed content, format suggestion for common mistakes
 
 **Implementation Type:** EXTENDING EXISTING CODE
 
@@ -289,9 +316,9 @@ The format detector is existing code that examines HTTP response headers (Conten
 
 ### Validator: Extending Existing Validation Framework
 
-The validator is existing code that checks whether parsed documents conform to format specifications and semantic constraints. For CSAPI, we will extend this validator to check CSAPI-specific requirements: required properties for each resource type, valid enumeration values (systemType, assetType), URI format validation (uniqueIdentifier must be URN), temporal validity constraints (validTime periods), spatial constraint validation (geometry must be WGS84), association integrity (linked resources must exist or be valid references), and schema conformance for Part 2 resources (Observation results must match DataStream schema, Command parameters must match ControlStream schema). The extension will add CSAPI validation rules to the existing validation pipeline, reporting errors and warnings through the same error handling mechanism used for other formats. This maintains consistency in how the library reports validation failures across all OGC API standards.
+The validator is existing code that checks whether parsed documents conform to format specifications and semantic constraints. For CSAPI, we will extend this validator with COMPLETE validation of ALL CSAPI requirements across all resource types - NOT MVP Scope. The extension will check all CSAPI-specific requirements: all required properties for each resource type, all valid enumeration values (systemType, assetType, procedureType, samplingFeatureType, all Part 2 resource types), complete URI format validation (uniqueIdentifier must be URN, all vocabulary URIs must be valid), all temporal validity constraints (validTime periods with ISO 8601 compliance, timezone handling), all spatial constraint validation (geometry must be WGS84, coordinate validation, bbox validation), complete association integrity (linked resources must exist or be valid references, referential integrity across all relationship types), and comprehensive schema conformance for Part 2 resources (Observation results must match DataStream schema with all constraints, Command parameters must match ControlStream schema with all validation rules). The extension will add comprehensive CSAPI validation rules to the existing validation pipeline, reporting detailed errors and warnings through the same error handling mechanism used for other formats with enhanced context information. This maintains consistency in how the library reports validation failures across all OGC API standards while providing CSAPI-specific validation detail.
 
-**CSAPI Validation Rules:**
+**COMPLETE CSAPI Validation Rules - NOT MVP Scope:**
 
 **Part 1 Resource Validation:**
 - Systems: `uniqueIdentifier` (required URI), `systemType` (required, from SOSA vocabulary), `name` (required string), `location` (required for mobile systems)
@@ -306,8 +333,25 @@ The validator is existing code that checks whether parsed documents conform to f
 - Control Streams: schema validation (parameter schema must be valid SWE Common), system association (required)
 - Commands: parameter validation (must conform to ControlStream schema), execution time validation
 
-**Cross-Reference Validation:**
-- Association links must reference existing resources or be valid URIs
+**COMPLETE Cross-Reference Validation - NOT MVP Scope:**
+- **Association links**: All links must have valid href (absolute or relative URI), valid rel (IANA or CSAPI relation type), optional type (media type), optional title
+- **Resource references**: Referenced resources must exist in collection or be valid external URIs with optional dereferencing and existence checking
+- **Hierarchical integrity**: Parent-child relationships are consistent (system subsystems, deployment subdeployments), no circular references, depth limits respected
+- **Relationship consistency**: Bidirectional relationships are consistent (system ↔ deployment, system ↔ datastream, datastream ↔ observation), orphaned resources detected
+- **Vocabulary references**: All vocabulary URIs dereferenceable (observedProperty, controlledProperty, systemType, procedureType), vocabulary terms exist in vocabulary
+- **Schema references**: DataStream schema valid SWE Common DataComponent, ControlStream schema valid SWE Common DataComponent, schemas dereferenceable if external
+- **Spatial references**: CRS codes valid (EPSG codes or URIs), geometry coordinates within valid ranges (latitude -90 to 90, longitude -180 to 180)
+- **Temporal references**: Reference frames valid (UTC, TAI, GPS time), timezones valid (IANA timezone database), ISO 8601 compliance
+- **Unit references**: UCUM codes valid, custom units properly defined with conversion factors
+- **External references**: HTTP/HTTPS links reachable (optional validation), media types match content, documentation links valid
+
+**Validation Error Reporting:**
+- **Error severity**: Error (invalid/unusable), Warning (questionable/suboptimal), Info (recommendations)
+- **Error context**: JSON path to error location, line/column numbers, surrounding context
+- **Error messages**: Clear description of problem, expected vs actual values, suggested fixes
+- **Error codes**: Machine-readable error codes for programmatic handling
+- **Batch validation**: All errors collected and reported together, not failing on first error
+- **Validation summaries**: Count of errors/warnings/info messages, validation pass/fail status, performance metrics
 - Subsystem references must create valid hierarchies (no circular references)
 - Deployment-system associations must be bidirectional
 - DataStream-system associations must be valid
