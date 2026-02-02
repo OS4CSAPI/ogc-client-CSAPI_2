@@ -185,6 +185,14 @@ This implementation provides **COMPLETE CSAPI Parts 1 & 2 support** including:
 4. **Minimal Integration:** ~48 lines of modifications to existing files maintain upstream compatibility
 5. **Worker Offloading:** Heavy parsing/validation operations run off main thread for UI responsiveness
 
+**References:**
+- [Architecture Patterns Analysis](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/architecture-patterns-analysis.md) - Consistent patterns used in ogc-client for adding new OGC API support
+- [PR #114 (EDR Implementation) Analysis](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/pr114-analysis.md) - Direct blueprint for CSAPI implementation, factory method pattern
+- [QueryBuilder Pattern Analysis](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/querybuilder-pattern-analysis.md) - Core pattern for CSAPIQueryBuilder implementation
+- [Integration with Existing Code](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/integration-analysis.md) - Exact code changes required for integration
+- [CSAPI Architecture Decisions](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/csapi-architecture-analysis.md) - Architectural choices for implementing 9 resource types
+- [OGC API - Common](https://docs.ogc.org/is/19-072/19-072.html) - Foundation specification for all OGC API standards
+
 ---
 
 ## Service Discovery Components
