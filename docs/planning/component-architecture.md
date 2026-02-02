@@ -901,22 +901,38 @@ Both offset-based and cursor-based pagination fully implemented - NOT MVP scope.
 
 The background processing component uses existing Web Worker infrastructure in the library to move heavy parsing and validation work off the main thread, keeping browser UIs responsive. For CSAPI, we will extend this worker to handle CSAPI-specific operations: SensorML parsing (complex XML/JSON traversal), SWE Common parsing (especially binary encoding decoding), large observation result set processing, bulk command validation, and schema validation. The existing library uses a worker pattern where computationally expensive operations are offloaded to a Web Worker that runs in parallel, returning results asynchronously. The extension will add CSAPI message types to the worker's message handler and integrate the new format parsers (SensorML, SWE Common) into the worker context. This maintains the library's performance characteristics when dealing with large datasets or complex formats. The same code also provides a fallback for non-worker environments (Node.js, older browsers).
 
-**CSAPI Operations to Move to Worker:**
-- SensorML document parsing (complex recursive structure)
-- SWE Common binary decoding (byte buffer processing)
-- Large observation array parsing (thousands of observations)
-- Bulk command parameter validation
-- Schema validation (complex SWE Common schemas)
-- Recursive system hierarchy traversal
-- Large GeoJSON feature collection parsing
+**COMPLETE CSAPI Operations to Move to Worker - NOT MVP Scope:**
+
+This worker extension implements FULL offloading of computationally expensive CSAPI operations to maintain UI responsiveness.
+
+**Format Parsing (Heavy Operations):**
+- **SensorML 3.0 parsing**: Complex recursive PhysicalSystem component trees with deep nesting
+- **SWE Common 3.0 parsing**: Binary encoding decoding (IEEE 754 float, multi-byte integers, byte order handling)
+- **Large observation arrays**: Parsing thousands of observations with result validation against DataStream schemas
+- **Large command arrays**: Bulk command parameter validation and encoding
+- **GeoJSON feature collections**: Large spatial datasets with CSAPI property extraction
+
+**Validation Operations (CPU-Intensive):**
+- **Schema validation**: Complex SWE Common DataComponent schema validation with constraint checking
+- **Observation result validation**: Validate observation results against DataStream result schemas (range checks, unit validation, quality indicators)
+- **Command parameter validation**: Validate command parameters against ControlStream parameter schemas
+- **Cross-reference validation**: Check resource association integrity across hierarchies
+
+**Query Operations (Memory/CPU Intensive):**
+- **Recursive hierarchy traversal**: Deep system/deployment trees with all descendants (potentially hundreds/thousands of nodes)
+- **Spatial filtering**: bbox intersection calculations across large feature collections
+- **Temporal filtering**: phenomenonTime/resultTime interval matching across large observation sets
 
 **Worker Message Types to Add:**
-- `PARSE_SENSORML`: Input SensorML JSON/XML, output parsed object
-- `PARSE_SWE_RESULT`: Input SWE encoded result + schema, output parsed values
-- `VALIDATE_OBSERVATIONS`: Input observations + schema, output validation results
-- `VALIDATE_COMMANDS`: Input commands + schema, output validation results
-- `PARSE_OBSERVATION_ARRAY`: Input large array, output parsed observations
-- `TRAVERSE_HIERARCHY`: Input system + recursive flag, output full tree
+- `PARSE_SENSORML_3`: Input SensorML 3.0 JSON, output parsed System/PhysicalComponent/PhysicalSystem object
+- `PARSE_SWE_RESULT`: Input SWE Common encoded result (JSON/Text/Binary) + schema, output validated parsed values
+- `PARSE_SWE_BINARY`: Input Base64 binary block + schema, output decoded observation array
+- `VALIDATE_OBSERVATIONS`: Input observation array + DataStream schema, output validation results with errors/warnings
+- `VALIDATE_COMMANDS`: Input command array + ControlStream schema, output validation results
+- `PARSE_OBSERVATION_ARRAY`: Input large observation array (1000s of obs), output parsed and validated observations
+- `TRAVERSE_HIERARCHY`: Input system ID + recursive flag, output complete hierarchy tree with all relationships
+- `FILTER_SPATIAL`: Input feature collection + bbox, output filtered features (spatial intersection)
+- `FILTER_TEMPORAL`: Input observation array + temporal interval, output filtered observations
 
 **Performance Benefits:**
 - Prevent main thread blocking during large data operations
@@ -939,49 +955,87 @@ The background processing component uses existing Web Worker infrastructure in t
 
 The test coverage component extends the existing Jest test suite to cover all CSAPI functionality. For CSAPI, we will add test suites for every new component: format parsers (SensorML, SWE Common), resource handlers (Systems, DataStreams, Observations, Commands, etc.), query builders, validators, and integration tests against real CSAPI servers. The library has established testing patterns including unit tests (isolated component tests), integration tests (multi-component interaction), fixture-based tests (using example documents from the spec), and live server tests (optional tests against real endpoints). The extension will add CSAPI test fixtures (GeoJSON features, SensorML documents, SWE Common results), mock CSAPI responses, and test utilities specific to CSAPI validation. Test coverage should match the existing library standard (>80% code coverage).
 
-**CSAPI Test Suites to Create:**
+**COMPLETE CSAPI Test Suites to Create - NOT MVP Scope:**
 
-**Format Parser Tests:**
-- GeoJSON CSAPI extensions (system properties, deployment metadata)
-- SensorML parser (all process types, components, characteristics)
-- SWE Common parser (all data components, all encodings)
-- Format detector (media type recognition)
-- Validator (all CSAPI validation rules)
+This testing extension implements COMPREHENSIVE test coverage for all CSAPI functionality to match the existing library standard (>80% code coverage).
 
-**Resource Handler Tests:**
-- Systems (CRUD operations, hierarchy, relationships)
-- Deployments (CRUD, spatial/temporal queries)
-- Procedures (read operations, SensorML parsing)
-- Sampling Features (CRUD, spatial queries)
-- Properties (read operations, vocabulary integration)
-- DataStreams (CRUD, schema operations)
-- Observations (CRUD, temporal queries, bulk operations, pagination)
-- Control Streams (CRUD, parameter schemas)
-- Commands (CRUD, status tracking, execution)
+**Format Parser Tests (Complete Coverage):**
+- **GeoJSON CSAPI extensions**: All Part 1 resource types (Systems, Deployments, Procedures, Sampling Features), all CSAPI-specific properties, all geometry types, validation rules
+- **SensorML 3.0 parser**: All system models (System, PhysicalComponent, PhysicalSystem, SystemConfiguration), all elements (identification, classification, characteristics, capabilities, constraints, contacts, FeaturesOfInterest, modes, components, connections), recursive component parsing, SWE Common integration
+- **SWE Common 3.0 parser**: All data components (Quantity, Count, Boolean, Text, Time, Category, QuantityRange, CategoryRange, TimeRange, DataRecord, DataArray, Vector, Matrix, DataChoice, GeometryData), all encodings (JSON, Text, Binary with endianness), constraint validation, quality indicators, nil values
+- **Format detector**: All CSAPI media types (application/sml+json, application/swe+json, application/swe+text, application/swe+binary), fallback detection, error handling
+- **Validator**: All Part 1 validation rules (required properties, enumeration values, URI formats, temporal constraints, spatial constraints, association integrity), all Part 2 validation rules (schema conformance, result validation, parameter validation), cross-reference validation
 
-**Query Builder Tests:**
-- URL construction for all endpoints
-- Query parameter encoding (spatial, temporal, relationship)
-- Nested endpoint navigation
-- Format negotiation
-- Pagination links
+**Resource Handler Tests (All CRUD Operations + All Query Parameters):**
+- **Systems**: Create/read/update/delete, subsystem hierarchy (recursive queries), all query parameters (bbox, datetime, parent, deployment, procedure, foi, id, uid, q, property filters, recursive), pagination (limit, offset), format negotiation (GeoJSON vs SensorML), error cases
+- **Deployments**: CRUD, subdeployment hierarchy, all query parameters (bbox, datetime, system, parent, id, uid, q, property filters, recursive), pagination, format (GeoJSON only), error cases
+- **Procedures**: CRUD, all query parameters (system, id, uid, q, property filters), pagination, format negotiation (GeoJSON vs SensorML), error cases
+- **Sampling Features**: CRUD, all query parameters (bbox, system, foi, relatedSamplingFeature, id, uid, q, property filters), pagination, format (GeoJSON), error cases
+- **Properties**: Read operations, all query parameters (system, baseProperty, id, uid, q, property filters), pagination, format (JSON), error cases
+- **DataStreams**: CRUD, schema operations, all query parameters (system, observedProperty, foi, samplingFeature, procedure, datetime, id, uid, q, property filters), pagination, error cases
+- **Observations**: CRUD, all temporal queries (phenomenonTime with all interval types, resultTime, temporal binning), all query parameters (foi, id), both pagination modes (offset-based, cursor-based), large result sets (1000s-10000s of observations), bulk operations, all encodings (JSON, Text, Binary), error cases
+- **Control Streams**: CRUD, schema operations, all query parameters (system, controlledProperty, id, uid, q, property filters), pagination, error cases
+- **Commands**: CRUD, status tracking, result retrieval, all temporal queries (issueTime, executionTime with all interval types), status filtering, both pagination modes, bulk operations, synchronous vs asynchronous execution, error cases
 
-**Integration Tests:**
-- End-to-end workflows (discover systems → query observations)
-- Cross-resource navigation (system → datastreams → observations)
-- Format round-tripping (parse → validate → serialize)
-- Error handling (server errors, validation errors, network errors)
+**Query Builder Tests (All Query Parameters + All Combinations):**
+- **Canonical endpoints**: URL construction for all 9 resource types
+- **Nested endpoints**: All nesting patterns (systems/subsystems, systems/datastreams, datastreams/observations, controlstreams/commands)
+- **Query parameter encoding**: All spatial parameters (bbox 2D/3D, coordinate validation), all temporal parameters (datetime, phenomenonTime, resultTime, executionTime, issueTime with all interval formats), all relationship parameters (parent, system, deployment, procedure, foi, observedProperty, controlledProperty, baseProperty), all common parameters (id with multiple values, uid, q, property filters), hierarchical parameters (recursive), pagination (limit, offset, cursor), format negotiation (f parameter, Accept headers)
+- **Combined filtering**: Multiple query parameters together (AND logic), parameter precedence, edge cases
+- **Schema endpoints**: DataStream schema URL, ControlStream schema URL
+- **Status/result endpoints**: Command status URL, command result URL
+- **Error cases**: Invalid parameter values, malformed URLs, unsupported combinations
 
-**Test Fixtures to Create:**
-- Example CSAPI responses from spec
-- Real server responses (52°North, pygeoapi, etc.)
-- Edge cases (empty collections, malformed data)
-- Large datasets (pagination testing)
+**Integration Tests (End-to-End Workflows):**
+- **Discovery workflows**: Connect to server → check conformance → list collections → filter by resource type → retrieve resources
+- **Observation workflows**: Discover systems → find datastreams → query observations with temporal filters → paginate results → parse SWE Common results
+- **Command workflows**: Discover systems → find control streams → check feasibility → submit commands → track status → retrieve results
+- **Cross-resource navigation**: System → deployments → procedures → sampling features → datastreams → observations (following all relationship links)
+- **Format round-tripping**: Parse GeoJSON → validate → modify → serialize → parse again (verify consistency)
+- **Hierarchical queries**: Recursive system traversal with large hierarchies, recursive deployment traversal
+- **Error handling**: Server errors (4xx, 5xx), validation errors (schema mismatches, invalid data), network errors (timeouts, connection failures), malformed responses
 
-**Live Server Tests:**
-- Optional tests against public CSAPI endpoints
-- Skipped by default (require network access)
-- Useful for validation against real implementations
+**Test Fixtures to Create (Complete Coverage):**
+- **Specification examples**: All example responses from CSAPI Parts 1 & 2 specification documents
+- **Real server responses**: Sample responses from all known public implementations (52°North SensorThings/CSAPI, pygeoapi, OGC test server, vendor implementations)
+- **Edge cases**: Empty collections, minimal resources, malformed data (for error handling tests), boundary conditions (max limits, extreme coordinates, edge temporal values)
+- **Large datasets**: Paginated collections (100s of items), large observation sets (1000s-10000s of results for pagination testing), complex hierarchies (deep system/deployment nesting)
+- **All format variations**: GeoJSON (all Part 1 resource types with all property combinations), SensorML 3.0 (all system types, all components, all encodings), SWE Common 3.0 (all data components, all three encodings: JSON/Text/Binary with various data types)
+- **Error responses**: All HTTP error codes (400, 404, 409, 500, etc.), all validation error types, malformed content-type headers
+- **Schema fixtures**: All DataStream schema examples (various observable types, all SWE Common component types), all ControlStream parameter schemas (all controllable property types)
+
+**Live Server Test Suite (Complete Real-World Validation - NOT MVP Scope):**
+
+This extension adds comprehensive live server testing capabilities for CSAPI to match the existing OGC API testing pattern (Features, Tiles, Records, EDR).
+
+**Test Server Coverage:**
+- **Public test servers**: All known public CSAPI implementations (official OGC test server, vendor implementations like 52°North, community implementations like pygeoapi)
+- **Test endpoints configuration**: Configurable server list in test fixtures with expected capabilities for each server
+- **Server selection**: Environment-based server selection for CI/CD pipelines, optional execution (skipped by default, require network access)
+
+**Complete Operation Coverage:**
+- **Service discovery**: Conformance checking (all CSAPI conformance classes), collection listing (all resource types), capability negotiation
+- **All Part 1 Resources**: Systems (CRUD, hierarchy, all query parameters), Deployments (CRUD, spatial/temporal queries, all parameters), Procedures (read, all query parameters), Sampling Features (CRUD, spatial queries, all parameters), Properties (read, all query parameters)
+- **All Part 2 Resources**: DataStreams (CRUD, schema retrieval, all query parameters), Observations (CRUD, temporal queries, both pagination modes, large result sets, all encodings), Control Streams (CRUD, schema retrieval, all parameters), Commands (CRUD, status tracking, result retrieval, temporal queries, both pagination modes)
+- **Advanced Queries**: All spatial filters (2D/3D bbox), all temporal filters (all interval types for datetime, phenomenonTime, resultTime, executionTime, issueTime), all relationship filters (parent, system, deployment, procedure, foi, observedProperty, controlledProperty, baseProperty), hierarchical queries (recursive traversal), full-text search (q parameter), property-based filtering
+- **All Formats**: GeoJSON parsing (all Part 1 resources), SensorML 3.0 parsing (all system types, all components), SWE Common 3.0 parsing (all data components, all encodings: JSON/Text/Binary)
+- **Cross-resource workflows**: Complete navigation chains following all relationships (system → deployments → procedures → sampling features → datastreams → observations)
+- **Error conditions**: Handling server errors (4xx, 5xx), validation failures, network issues (timeouts, connection failures)
+
+**Performance Testing:**
+- **Large result sets**: Query performance with 1000s-10000s of observations, pagination performance (offset-based and cursor-based), streaming performance for large datasets
+- **Complex queries**: Performance with multiple query parameters, hierarchical query performance with deep nesting, recursive query performance
+- **Format parsing**: Parsing performance for large SensorML documents (complex hierarchies), parsing performance for large SWE Common results (all encodings), binary encoding performance vs JSON encoding
+- **Concurrent operations**: Multiple simultaneous queries, worker thread performance under load
+- **Memory usage**: Memory profile for large datasets, memory leak detection
+
+**Test Coverage Targets:**
+- **Code coverage**: >80% statement coverage for all new code, >80% branch coverage for all new code, 100% coverage for all public API methods
+- **Resource coverage**: 100% of all CSAPI resource types, 100% of all query parameters, 100% of all format types (GeoJSON, SensorML 3.0, SWE Common 3.0 all encodings)
+- **Error coverage**: All error conditions documented in CSAPI specification
+- **Live server coverage**: At least 3 different CSAPI server implementations tested
+
+**NOT MVP Scope** - Complete test infrastructure with performance testing, multi-server validation, and comprehensive coverage targets.
 
 **Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI test suites to existing Jest framework)
 
@@ -991,34 +1045,179 @@ The test coverage component extends the existing Jest test suite to cover all CS
 
 ### API Documentation: Extending Existing TypeDoc Documentation
 
-The API documentation component extends the existing TypeDoc documentation to cover all CSAPI additions. For CSAPI, we will add documentation for new TypeScript interfaces and types (CSAPI resource models, query options, schemas), new methods on OgcApiEndpoint (hasConnectedSystems, csapiCollections, etc.), usage examples for each resource type, format handler documentation, and migration guides for users of other CSAPI clients. The library uses TypeDoc to generate API documentation from TypeScript source code comments, providing type-aware documentation with cross-references and examples. The extension will add comprehensive JSDoc comments to all new code, following the existing documentation standards and style. This ensures CSAPI features are discoverable and understandable for library users.
+The API documentation component extends the existing TypeDoc documentation to cover all CSAPI additions with COMPLETE coverage - NOT MVP Scope. For CSAPI, we will add comprehensive documentation for all new TypeScript interfaces and types, all new methods on OgcApiEndpoint, extensive usage examples for every resource type and query pattern, complete format handler documentation, and detailed migration guides for users of other CSAPI clients. The library uses TypeDoc to generate API documentation from TypeScript source code comments, providing type-aware documentation with cross-references and examples. The extension will add comprehensive JSDoc comments to all new code, following the existing documentation standards and style. This ensures CSAPI features are discoverable and understandable for library users.
 
-**Documentation to Add:**
+**COMPLETE Type Documentation - NOT MVP Scope:**
 
-**Type Documentation:**
-- CSAPI resource interfaces (System, Deployment, Procedure, SamplingFeature, Property, DataStream, Observation, ControlStream, Command)
-- Query option interfaces (spatial filters, temporal filters, relationship filters)
-- Schema interfaces (SWE Common DataComponent types)
-- Format-specific types (SensorML process models)
+**All Resource Interfaces:**
+- **Part 1 Resources**: System (all properties, hierarchy relationships, deployment associations), Deployment (all properties, spatial/temporal extents, nested deployments), Procedure (all properties, SensorML integration), SamplingFeature (all properties, geometry types, relationships), Property (all properties, vocabulary integration, base property relationships)
+- **Part 2 Resources**: DataStream (all properties, schema structure, observable property associations), Observation (all properties, result types, all encoding formats), ControlStream (all properties, parameter schema structure, controllable property associations), Command (all properties, all status values, result formats, synchronous vs asynchronous patterns)
+- **Shared Types**: Links (all relation types, CSAPI-specific relations), Collection metadata (CSAPI-specific extent formats, temporal properties), Association objects (all relationship types with URIs and inline embedding)
 
-**Method Documentation:**
-- OgcApiEndpoint CSAPI methods (detection, collections, resource access)
-- Resource handler methods (CRUD operations, queries, navigation)
-- Format parser methods (parse, validate, serialize)
-- Query builder methods (URL construction, parameter encoding)
+**All Query Option Interfaces:**
+- **Spatial Filters**: Bbox (2D and 3D with coordinate validation), spatial relationship parameters (foi, samplingFeature relationships)
+- **Temporal Filters**: Datetime (all ISO 8601 interval formats: instant, start/end, start/duration, open-ended), phenomenonTime (observation time-of-measurement with all interval types), resultTime (observation availability time), executionTime (command execution period), issueTime (command submission time)
+- **Relationship Filters**: Parent (hierarchical resources), system (system associations), deployment (deployment associations), procedure (procedure associations), foi (feature of interest associations), observedProperty (observable property associations), controlledProperty (controllable property associations), baseProperty (property hierarchy), objectType (object type filtering)
+- **Common Filters**: Id (multi-value ID filtering with array support), uid (unique identifier exact match), q (full-text search across all text fields), property filters (arbitrary property name=value filtering)
+- **Hierarchical Options**: Recursive (boolean for deep traversal, applies to systems and deployments)
+- **Pagination Options**: Limit (1 to 10,000), offset (numeric offset for offset-based pagination), cursor (opaque token for cursor-based pagination)
+- **Format Options**: F parameter (format selection with all CSAPI media types), Accept header (content negotiation)
 
-**Usage Examples:**
-- Discovering CSAPI servers
-- Querying systems and deployments
-- Accessing observation data
-- Submitting commands
-- Parsing SensorML descriptions
-- Working with SWE Common schemas
+**All Schema Interfaces:**
+- **SWE Common DataComponents**: Quantity (numeric with unit-of-measure, optional quality indicators), Count (integer values), Boolean (true/false), Text (string with optional constraints), Time (ISO 8601 timestamps), Category (enumerated text from vocabulary), QuantityRange (min/max numeric), CategoryRange (min/max enumerated), TimeRange (temporal intervals), DataRecord (structured object with named fields), DataArray (homogeneous arrays with size), Vector (spatial coordinates with reference frame), Matrix (2D numeric arrays), DataChoice (union types with discriminator), GeometryData (GML geometry encoding)
+- **Encoding Formats**: JSON encoding (native JSON types), Text encoding (delimited text with separator configuration), Binary encoding (packed binary with byte order, data types, padding)
+- **Constraint Types**: AllowedValues (enumeration lists), AllowedIntervals (numeric/temporal ranges), AllowedTokens (text patterns), AllowedTimes (temporal constraints)
+- **Quality Indicators**: Quality measures, uncertainty values, nil values (with reason codes)
 
-**Migration Guides:**
-- For users of 52°North JavaScript client
-- For users of Python OGC API clients
-- For users of direct HTTP/fetch approaches
+**All Format-Specific Types:**
+- **SensorML Process Models**: System (abstract sensor system), PhysicalComponent (individual sensor/actuator with detailed characteristics), PhysicalSystem (composite system with multiple components and connections)
+- **SensorML Elements**: Identification (all identifier types: short name, long name, manufacturer, model, serial number), Classification (all classifier types: sensor type, intended application), Characteristics (all characteristic types: physical, electrical, operational), Capabilities (measurement capabilities: measurement range, resolution, accuracy), Constraints (operational constraints: operating range, survival range), Contacts (all contact types: manufacturer, operator, owner), FeaturesOfInterest (observed features with geometry), Modes (operational modes with state definitions), Components (nested component structure with roles), Connections (links between component ports)
+- **Unit-of-Measure**: UOM code (UCUM codes), scale (linear scale factors), offset (zero-offset values)
+
+**COMPLETE Method Documentation - NOT MVP Scope:**
+
+**OgcApiEndpoint CSAPI Methods:**
+- **Detection**: hasConnectedSystems() (check for CSAPI conformance classes), getCSAPIConformanceClasses() (list all CSAPI classes supported)
+- **Collections**: csapiCollections() (get all CSAPI collections), getSystemCollections() (filter for system collections), getDataStreamCollections() (filter for datastream collections)
+- **Resource Access**: All CRUD methods for all 9 resource types (getSystems, createSystem, updateSystem, deleteSystem patterns), schema retrieval (getDataStreamSchema, getControlStreamSchema), relationship navigation (getSystemDeployments, getSystemDataStreams, etc.)
+- **Query Methods**: All query parameter support for all resource types, pagination handling (both offset and cursor modes), format negotiation (GeoJSON, SensorML, SWE Common selection)
+
+**Resource Handler Methods:**
+- **Systems Handler**: CRUD operations (create, read, update, delete with all options), hierarchy navigation (getSubsystems with recursive option, getParentSystem), relationship methods (getDeployments, getProcedures, getSamplingFeatures, getDataStreams, getControlStreams), query methods (all spatial, temporal, hierarchical, relationship filters), format methods (GeoJSON vs SensorML serialization)
+- **Deployments Handler**: CRUD operations, hierarchy navigation (getSubdeployments with recursive, getParentDeployment), relationship methods (getSystems, getProcedures), query methods (all spatial, temporal, hierarchical, relationship filters)
+- **Procedures Handler**: Read operations (get, list with all query parameters), relationship methods (getSystems using this procedure), format methods (SensorML parsing and validation)
+- **Sampling Features Handler**: CRUD operations, relationship methods (getRelatedSamplingFeatures, getSystems, getDataStreams), query methods (all spatial and relationship filters)
+- **Properties Handler**: Read operations (get, list with hierarchy navigation), vocabulary methods (getBaseProperty for hierarchy, getObservableProperties, getControllableProperties), query methods (all relationship and property filters)
+- **DataStreams Handler**: CRUD operations, schema methods (getSchema, validateObservation against schema), relationship methods (getSystem, getObservations), query methods (all temporal, relationship, and property filters)
+- **Observations Handler**: CRUD operations with bulk support, query methods (all temporal filters with phenomenonTime/resultTime, pagination with both modes), format methods (parse/serialize for JSON/Text/Binary encodings), aggregation methods (temporal binning, statistical summaries)
+- **Control Streams Handler**: CRUD operations, schema methods (getSchema, validateCommand against schema), relationship methods (getSystem, getCommands), query methods (all relationship and property filters)
+- **Commands Handler**: CRUD operations, execution methods (submit, cancel, synchronous vs asynchronous patterns), status methods (getStatus, trackStatus with polling), result methods (getResult, validateResult against schema), query methods (all temporal filters with issueTime/executionTime, status filtering, pagination with both modes)
+
+**Format Parser Methods:**
+- **GeoJSON Parser**: parse() (GeoJSON to resource object with CSAPI property recognition), serialize() (resource object to GeoJSON), validate() (schema validation for all CSAPI resource types), extractGeometry() (geometry extraction and transformation)
+- **SensorML Parser**: parse() (SensorML JSON to process model with all element types), serialize() (process model to SensorML JSON), validate() (schema validation for all process types), extractCapabilities() (capability extraction for filtering), extractCharacteristics() (characteristic extraction), resolveReferences() (resolve xlink references)
+- **SWE Common Parser**: parseDataComponent() (parse any data component type with encoding detection), parseJSON() (JSON encoding), parseText() (text encoding with delimiter handling), parseBinary() (binary encoding with byte order and data types), serialize() (component to encoding), validate() (schema and constraint validation), extractValues() (value extraction with type coercion)
+- **Format Detector**: detectFormat() (media type detection from content-type or content), selectParser() (choose appropriate parser), negotiateFormat() (format negotiation using Accept header)
+- **Validator**: validateResource() (validate any resource type against schema), validateQuery() (validate query parameters), validateSchema() (validate SWE Common schema), validateObservation() (validate observation against DataStream schema), validateCommand() (validate command against ControlStream schema), getValidationErrors() (detailed error reporting with field paths)
+
+**Query Builder Methods:**
+- **URL Construction**: buildSystemsURL() (all query parameters), buildDeploymentsURL(), buildProceduresURL(), buildSamplingFeaturesURL(), buildPropertiesURL(), buildDataStreamsURL(), buildObservationsURL(), buildControlStreamsURL(), buildCommandsURL() (all 9 resource types with full parameter support)
+- **Nested Endpoints**: buildSubsystemsURL() (systems/{id}/subsystems), buildSystemDataStreamsURL() (systems/{id}/datastreams), buildDataStreamObservationsURL() (datastreams/{id}/observations), buildControlStreamCommandsURL() (controlstreams/{id}/commands)
+- **Schema Endpoints**: buildDataStreamSchemaURL() (datastreams/{id}/schema), buildControlStreamSchemaURL() (controlstreams/{id}/schema)
+- **Status/Result Endpoints**: buildCommandStatusURL() (commands/{id}/status), buildCommandResultURL() (commands/{id}/result)
+- **Parameter Encoding**: encodeBbox() (2D/3D spatial encoding), encodeDatetime() (all ISO 8601 interval formats), encodePropertyFilters() (arbitrary property encoding), encodeRelationships() (URI encoding for relationship parameters)
+- **Pagination Methods**: encodeOffsetPagination() (limit + offset), encodeCursorPagination() (cursor token), parseNextLink() (extract pagination parameters from links)
+
+**COMPLETE Usage Examples - NOT MVP Scope:**
+
+**Discovery Workflows:**
+```typescript
+// Example: Discovering CSAPI servers with capability detection
+// Example: Listing all system collections with metadata
+// Example: Checking conformance classes for Part 1 vs Part 2 support
+// Example: Detecting supported query parameters and formats
+```
+
+**System and Deployment Workflows:**
+```typescript
+// Example: Querying systems with spatial filter (bbox)
+// Example: Querying systems with temporal filter (deployment time)
+// Example: Querying system hierarchy with recursive traversal
+// Example: Creating new system with all properties
+// Example: Updating system properties
+// Example: Deleting system
+// Example: Navigating from system to subsystems
+// Example: Navigating from system to deployments
+// Example: Navigating from system to datastreams
+// Example: Parsing SensorML description from system
+```
+
+**Observation Data Workflows:**
+```typescript
+// Example: Finding datastreams for a system
+// Example: Getting datastream schema
+// Example: Querying observations with phenomenonTime filter (last 24 hours)
+// Example: Querying observations with resultTime filter
+// Example: Paginating through large observation sets (offset-based)
+// Example: Paginating through large observation sets (cursor-based)
+// Example: Parsing SWE Common results (JSON encoding)
+// Example: Parsing SWE Common results (Text encoding with delimiters)
+// Example: Parsing SWE Common results (Binary encoding)
+// Example: Creating observations in bulk
+// Example: Temporal binning of observations (hourly, daily aggregates)
+```
+
+**Command Workflows:**
+```typescript
+// Example: Finding control streams for a system
+// Example: Getting control stream parameter schema
+// Example: Checking command feasibility
+// Example: Submitting synchronous command with immediate result
+// Example: Submitting asynchronous command with status tracking
+// Example: Polling command status until completion
+// Example: Retrieving command result
+// Example: Canceling pending command
+// Example: Querying commands by issue time
+// Example: Querying commands by execution time
+// Example: Filtering commands by status
+```
+
+**Format Parsing Workflows:**
+```typescript
+// Example: Parsing SensorML 3.0 PhysicalComponent with all elements
+// Example: Parsing SensorML 3.0 PhysicalSystem with nested components
+// Example: Validating SensorML against schema
+// Example: Extracting capabilities from SensorML for filtering
+// Example: Parsing SWE Common DataRecord schema
+// Example: Parsing SWE Common DataArray schema with size constraints
+// Example: Validating observation against DataStream schema
+// Example: Converting between SWE Common encodings (JSON ↔ Text ↔ Binary)
+```
+
+**Advanced Query Workflows:**
+```typescript
+// Example: Combining multiple query parameters (bbox + datetime + property filters)
+// Example: Full-text search across systems (q parameter)
+// Example: Property-based filtering (custom properties)
+// Example: Relationship-based queries (systems by procedure, datastreams by foi)
+// Example: Recursive hierarchy traversal (all subsystems at any depth)
+// Example: Format negotiation (requesting GeoJSON vs SensorML)
+```
+
+**COMPLETE Migration Guides - NOT MVP Scope:**
+
+**From 52°North JavaScript Client:**
+- Conceptual mapping (52°North client concepts → ogc-client concepts)
+- API method mapping (52°North methods → ogc-client methods)
+- Query parameter mapping (52°North query API → ogc-client URL builder)
+- Code examples (side-by-side comparisons for common operations)
+- Feature differences (capabilities in ogc-client not in 52°North, and vice versa)
+- Performance considerations (worker thread usage, caching strategies)
+
+**From Python OGC API Clients (OWSLib, pygeoapi client):**
+- Language differences (Python patterns → TypeScript patterns)
+- Async patterns (Python async/await → JavaScript Promises/async-await)
+- Type safety (Python type hints → TypeScript interfaces)
+- API method mapping (Python client methods → ogc-client methods)
+- Code examples (Python examples → equivalent TypeScript)
+- Installation and setup (Python pip → JavaScript npm)
+
+**From Direct HTTP/Fetch Approaches:**
+- Abstraction benefits (raw fetch → ogc-client methods)
+- Query construction (manual URL building → URL builder)
+- Format parsing (manual JSON parsing → format handlers)
+- Error handling (raw HTTP errors → typed errors with validation)
+- Pagination handling (manual link following → automatic pagination)
+- Code examples (fetch code → equivalent ogc-client code)
+- Performance benefits (worker threads, caching, connection pooling)
+
+**From SensorThings API:**
+- Conceptual differences (SensorThings → CSAPI resource mapping)
+- Query differences (SensorThings $filter → CSAPI query parameters)
+- Association patterns (SensorThings navigation → CSAPI relationship parameters)
+- Format differences (SensorThings JSON → CSAPI GeoJSON/SensorML/SWE Common)
+- Feature mapping (SensorThings entities → CSAPI resources)
+- Migration strategy (gradual migration path, compatibility layers)
 
 **Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI docs to existing TypeDoc setup)
 
