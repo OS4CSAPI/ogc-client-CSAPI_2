@@ -141,32 +141,38 @@ The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](ht
 
 ### SWE Common Handler: Building New Format Parser
 
-The SWE Common handler is new code we need to build to parse SWE Common 2.0 format documents that define observation data schemas and encode actual observation results. SWE Common is the data encoding standard from the Sensor Web Enablement family that describes structured measurement data with units, quality information, and constraints. CSAPI Part 2 uses SWE Common extensively for DataStream schemas (defining what properties are observed and result structure) and Observation results (actual measurement values). We will build parsers for three SWE Common encodings: JSON (human-readable structured data), Text (CSV-style compact encoding), and Binary (efficient encoding for high-volume streaming). The handler must parse DataComponent schemas (Quantity, Count, Boolean, Text, Time, Category, DataRecord, DataArray, Vector, Matrix), extract values from encoded results, validate measurements against schemas, and convert between different encodings. This is the second most complex format handling component after SensorML due to the variety of encoding formats and the need for schema-driven validation.
+The SWE Common handler is new code we need to build to parse [OGC SWE Common 3.0](https://docs.ogc.org/is/23-011r1/23-011r1.html) format documents that define observation data schemas and encode actual observation results. SWE Common 3.0 is the latest version of the data encoding standard from the Sensor Web Enablement family, published in 2024, that describes structured measurement data with units, quality information, and constraints using a modernized JSON-native approach. CSAPI Part 2 uses SWE Common 3.0 extensively for DataStream schemas (defining what properties are observed and result structure) and Observation results (actual measurement values). We will build parsers for three SWE Common 3.0 encodings: JSON (human-readable structured data), Text (CSV-style compact encoding), and Binary (efficient encoding for high-volume streaming). The handler must parse DataComponent schemas (Quantity, Count, Boolean, Text, Time, Category, CategoryRange, QuantityRange, TimeRange, DataRecord, DataArray, Vector, Matrix, GeometryData), extract values from encoded results, validate measurements against schemas including quality indicators and constraints, and convert between different encodings. This is the second most complex format handling component after SensorML due to the variety of encoding formats and the need for schema-driven validation.
 
-**SWE Common Data Components to Parse:**
+**SWE Common 3.0 Data Components to Parse:**
 
 **Simple Components:**
-- **Quantity**: Numeric measurement with unit (temperature, pressure, voltage)
-- **Count**: Integer count value (particle count, event count)
+- **Quantity**: Numeric measurement with unit of measure and optional constraints (temperature, pressure, voltage)
+- **Count**: Integer count value with optional constraints (particle count, event count)
 - **Boolean**: True/false indicator (on/off status, alarm state)
-- **Text**: String value (station ID, observation notes)
-- **Time**: ISO 8601 timestamp (observation time, event time)
-- **Category**: Categorical value from controlled vocabulary (weather condition, quality flag)
+- **Text**: String value with optional pattern constraints (station ID, observation notes)
+- **Time**: ISO 8601 timestamp with optional temporal reference frame (observation time, event time)
+- **Category**: Categorical value from controlled vocabulary with code space (weather condition, quality flag)
+
+**Range Components (new in 3.0):**
+- **QuantityRange**: Range of numeric values with units (temperature range, acceptable operating range)
+- **CategoryRange**: Range of categorical values (quality range indicators)
+- **TimeRange**: Temporal interval (observation period, validity period)
 
 **Complex Components:**
-- **DataRecord**: Structured record containing multiple fields (multi-property observation)
-- **DataArray**: Array of measurements (time series, profile, trajectory)
-- **Vector**: Positional vector (3D location, velocity, acceleration)
-- **Matrix**: Matrix of values (covariance matrix, transformation matrix)
-- **DataChoice**: Choice between alternative structures (different measurement modes)
+- **DataRecord**: Structured record containing multiple named fields (multi-property observation)
+- **DataArray**: Array of measurements with variable or fixed element count (time series, profile, trajectory)
+- **Vector**: Positional vector with coordinate reference system (3D location, velocity, acceleration)
+- **Matrix**: Matrix of values with specified dimensions (covariance matrix, transformation matrix)
+- **DataChoice**: Choice between alternative structures with selection criteria (different measurement modes, conditional observations)
+- **GeometryData**: Geometric data encoded using GeoJSON geometry types (spatial observations, coverage areas)
 
-**SWE Common Encodings to Support:**
+**SWE Common 3.0 Encodings to Support:**
 
 **JSON Encoding** (human-readable):
 ```json
 {
-  "temperature": {"uom": "Cel", "value": 23.5},
-  "humidity": {"uom": "%", "value": 65.2}
+  "temperature": {"uom": {"code": "Cel"}, "value": 23.5},
+  "humidity": {"uom": {"code": "%"}, "value": 65.2}
 }
 ```
 
@@ -177,18 +183,33 @@ The SWE Common handler is new code we need to build to parse SWE Common 2.0 form
 ```
 
 **Binary Encoding** (efficient streaming):
-- IEEE 754 floating point
+- IEEE 754 floating point (32-bit, 64-bit)
 - Integer encodings (signed/unsigned, 8/16/32/64-bit)
 - Base64 encoded blocks
 - Block compression support
+- Little-endian and big-endian byte order support
 
 **Schema Validation Requirements:**
-- Result structure must match DataStream schema
-- Values must be within allowed ranges (if constraints defined)
-- Units of measure must match schema specification
-- Array dimensions must match schema
-- Quality indicators must follow schema
-- Timestamps must follow ISO 8601 format
+- Result structure must match DataStream schema (DataComponent definitions)
+- Values must be within allowed ranges (AllowedValues, AllowedIntervals, AllowedTimes constraints)
+- Units of measure must match schema specification ([UCUM codes](http://unitsofmeasure.org/))
+- Array dimensions must match schema element count specifications
+- Quality indicators must follow schema (nilValues, quality DataRecord)
+- Timestamps must follow ISO 8601 format with optional reference frame
+- Categorical values must come from defined code space
+- Text patterns must match defined constraints (regex patterns)
+
+**Advanced 3.0 Features:**
+- **NilValues**: Representation of missing/invalid data with reason codes
+- **Quality**: Associated quality indicators (accuracy, precision, confidence)
+- **Constraints**: AllowedValues, AllowedIntervals, AllowedTimes, AllowedTokens for validation
+- **ReferenceFrames**: Temporal and spatial reference frame definitions
+- **CodeSpaces**: Controlled vocabularies for categorical values
+
+**References:**
+- [OGC SWE Common 3.0 Standard](https://docs.ogc.org/is/23-011r1/23-011r1.html) (OGC 23-011r1)
+- [SWE Common 3.0 JSON Schema](https://schemas.opengis.net/sweCommon/3.0/)
+- [OGC Connected Systems API Part 2 - SWE Common Encoding](https://docs.ogc.org/is/23-002/23-002.html#swe-common-encoding)
 
 **Implementation Type:** BUILDING NEW CODE
 
