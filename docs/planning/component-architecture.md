@@ -470,12 +470,18 @@ The Procedures resource handler is new code we need to build to manage CSAPI Pro
 - Parse SensorML method descriptions
 - Extract parameter definitions
 
-**Query Features:**
-- Relationship filtering (system parameter)
-- Text search (q parameter for methodology descriptions)
-- Property filtering (id, uid, custom properties)
-- Pagination (limit, offset)
-- Format negotiation (GeoJSON vs SensorML)
+**Complete Query and Filtering Support:**
+
+This handler implements FULL query parameter support - NOT MVP scope.
+
+- **Relationship filtering**: `system` parameter (procedures used by specific systems)
+- **Full-text search**: `q` parameter for searching procedure names, descriptions, methodology details
+- **ID filtering**: `id` parameter (multiple procedure IDs)
+- **UID filtering**: `uid` parameter
+- **Property-based filtering**: Any procedure property (e.g., `procedureType=sosa:SensingProcedure`, `methodKind=observation`)
+- **Pagination**: `limit` and `offset` for paging through procedure catalogs
+- **Format negotiation**: `f` parameter and Accept headers for GeoJSON vs SensorML-JSON format selection
+- **Combined filtering**: All parameters work together
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -521,12 +527,19 @@ The Sampling Features resource handler is new code we need to build to manage CS
 - Related sampling features (hierarchical relationships)
 - Observations at this sampling feature (Part 2)
 
-**Query Features:**
-- Spatial filtering (bbox parameter)
-- Relationship filtering (system, foi, relatedSamplingFeature)
-- Property filtering (id, uid, q)
-- Pagination (limit, offset)
-- Format: GeoJSON
+**Complete Query and Filtering Support:**
+
+This handler implements FULL query parameter support - NOT MVP scope.
+
+- **Spatial filtering**: `bbox` parameter (2D and 3D for sampling location/volume)
+- **Relationship filtering**: `system` (sampling features for specific systems), `foi` (by feature of interest), `relatedSamplingFeature` (related features)
+- **ID filtering**: `id` parameter (multiple sampling feature IDs)
+- **UID filtering**: `uid` parameter
+- **Full-text search**: `q` parameter across all text properties
+- **Property-based filtering**: Any sampling feature property (e.g., `samplingFeatureType=SF_SamplingPoint`, `samplingMethod=grab`)
+- **Pagination**: `limit` and `offset`
+- **Format**: GeoJSON (sampling features always have spatial geometry)
+- **Combined filtering**: All parameters work together
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -559,12 +572,18 @@ The Properties resource handler is new code we need to build to manage CSAPI Pro
 - ControlStreams controlling this property (Part 2)
 - Property hierarchies (baseProperty/subProperty relationships)
 
-**Query Features:**
-- Text search (q parameter for property names/descriptions)
-- Relationship filtering (system, baseProperty)
-- Property filtering (id, uid)
-- Pagination (limit, offset)
-- Format: JSON only (no GeoJSON for properties)
+**Complete Query and Filtering Support:**
+
+This handler implements FULL query parameter support - NOT MVP scope.
+
+- **Full-text search**: `q` parameter for searching property labels, descriptions, definitions
+- **Relationship filtering**: `system` (properties observable by specific systems), `baseProperty` (child properties of a base property)
+- **ID filtering**: `id` parameter (multiple property IDs)
+- **UID filtering**: `uid` parameter (definition URIs)
+- **Property-based filtering**: Any property metadata field (e.g., `label=Temperature`, `units=Cel`)
+- **Pagination**: `limit` and `offset` for paging through property vocabularies
+- **Format**: JSON only (properties don't have spatial geometry)
+- **Combined filtering**: All parameters work together
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -774,11 +793,18 @@ The Control Streams resource handler is new code we need to build to manage CSAP
 - Provide schema introspection for clients
 - Support schema evolution
 
-**Query Features:**
-- Relationship filtering (system, controlledProperty)
-- Property filtering (id, uid, q)
-- Pagination (limit, offset)
-- Format: JSON (schemas in SWE Common JSON)
+**Complete Query and Filtering Support:**
+
+This handler implements FULL query parameter support - NOT MVP scope.
+
+- **Relationship filtering**: `system` (control streams for specific systems), `controlledProperty` (by controlled property URI)
+- **ID filtering**: `id` parameter (multiple control stream IDs)
+- **UID filtering**: `uid` parameter
+- **Full-text search**: `q` parameter across names and descriptions
+- **Property-based filtering**: Any control stream property (e.g., `executionMode=asynchronous`, `supportsFeasibility=true`)
+- **Pagination**: `limit` and `offset`
+- **Format**: JSON (control stream metadata and SWE Common parameter schemas in JSON)
+- **Combined filtering**: All parameters work together
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -831,11 +857,28 @@ The Commands resource handler is new code we need to build to manage CSAPI Comma
 - `completionTime`: When execution finished
 - `resultQuality`: Quality indicators for result
 
-**Temporal Query Features:**
-- issueTime filtering (when command submitted)
-- executionTime filtering (when command scheduled)
-- Status-based filtering
-- Temporal range queries
+**Complete Temporal Query Features:**
+
+This handler implements FULL temporal filtering - NOT MVP scope. All temporal query patterns from CSAPI Part 2 are supported.
+
+- **issueTime filtering** (when command was issued - PRIMARY temporal filter):
+  - Single instant: `issueTime=2024-01-15T12:00:00Z`
+  - Closed interval: `issueTime=2024-01-01/2024-01-31`
+  - Open start: `issueTime=../2024-01-31`
+  - Open end: `issueTime=2024-01-01/..`
+- **executionTime filtering**: When command should be/was executed (ISO 8601 intervals)
+- **Status filtering**: `status` parameter with multiple values (pending, accepted, executing, completed, failed, cancelled)
+- **Relationship filtering**: `controlstream` parameter (commands for specific control stream)
+
+**Complete Pagination Support:**
+
+Both offset-based and cursor-based pagination fully implemented - NOT MVP scope.
+
+- **Offset-based pagination**: `limit` + `offset` for predictable page numbers
+- **Cursor-based pagination**: `limit` + `cursor` for efficient streaming of command histories
+- **Limit parameter**: 1 to 10,000 (CSAPI Part 2 maximum)
+- **Next/prev links**: Link headers for navigation
+- **Stable sorting**: By issueTime ascending, then by ID
 
 **Command Lifecycle Management:**
 - Submit command (validate parameters)
