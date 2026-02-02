@@ -1382,35 +1382,35 @@ The API documentation component extends the existing TypeDoc documentation to co
 
 ## Summary: Build vs Extend Breakdown
 
-### Components Extending Existing Code (9 components):
+### Components Extending Existing Code (8 components):
 1. **Conformance Reader** - Add CSAPI conformance class checks
-2. **Collections Reader** - Parse CSAPI collection metadata
+2. **Collections Reader** - Parse CSAPI collection metadata with FULL query/filter/pagination support
 3. **GeoJSON Handler** - Recognize CSAPI feature types and properties
 4. **Format Detector** - Add SensorML and SWE Common media types
-5. **Validator** - Add CSAPI validation rules
+5. **Validator** - Add CSAPI validation rules (COMPLETE validation for all formats)
 6. **Background Processing** - Add CSAPI operations to Web Worker
-7. **Test Coverage** - Add CSAPI test suites to Jest framework
-8. **API Documentation** - Add CSAPI docs to TypeDoc
+7. **Test Coverage** - Add CSAPI test suites to Jest framework (fixture-based testing)
+8. **API Documentation** - Add CSAPI docs to TypeDoc (JSDoc comments written as code is developed)
 
-### Components Building New Code (13 components):
-1. **URL Builder** - New CSAPI query builder (following EDRQueryBuilder pattern)
-2. **SensorML Handler** - New format parser for SensorML 2.0/2.1
-3. **SWE Common Handler** - New format parser for SWE Common 2.0 (JSON/Text/Binary)
-4. **Systems Resource Handler** - New resource manager with CRUD and hierarchy
-5. **Deployments Resource Handler** - New resource manager with CRUD
-6. **Procedures Resource Handler** - New resource manager with CRUD
-7. **Sampling Features Resource Handler** - New resource manager with CRUD
-8. **Properties Resource Handler** - New resource manager (read-only)
-9. **DataStreams Resource Handler** - New resource manager with schema operations
-10. **Observations Resource Handler** - New resource manager with temporal queries and pagination
-11. **Control Streams Resource Handler** - New resource manager with parameter schemas
-12. **Commands Resource Handler** - New resource manager with status and results
+### Components Building New Code (12 components):
+1. **URL Builder** - New CSAPI query builder with FULL query/filter/pagination support (following EDRQueryBuilder pattern)
+2. **SensorML Handler** - New format parser for SensorML 2.0/2.1 (COMPLETE support for all encodings)
+3. **SWE Common Handler** - New format parser for SWE Common 2.0 (COMPLETE support: JSON/Text/Binary encodings, all data types)
+4. **Systems Resource Handler** - New resource manager with CRUD and hierarchy (FULL query support)
+5. **Deployments Resource Handler** - New resource manager with CRUD (FULL query support)
+6. **Procedures Resource Handler** - New resource manager with CRUD (FULL query support)
+7. **Sampling Features Resource Handler** - New resource manager with CRUD (FULL query support)
+8. **Properties Resource Handler** - New resource manager (read-only, FULL query support)
+9. **DataStreams Resource Handler** - New resource manager with schema operations (FULL query support)
+10. **Observations Resource Handler** - New resource manager with FULL temporal queries and pagination (NOT MVP)
+11. **Control Streams Resource Handler** - New resource manager with parameter schemas (FULL query support)
+12. **Commands Resource Handler** - New resource manager with status and results (FULL query support)
 
 ### Estimated Scope:
 - **Extending existing code:** ~30% of effort (building on established patterns)
 - **Building new code:** ~70% of effort (new format parsers, new resource managers, new schemas)
 - **Total estimated lines of code:** ~20,000-25,000 lines
-- **Total estimated time:** 8-10 weeks for complete implementation
+- **Total estimated time:** 8-10 weeks for complete FULL implementation (NOT MVP)
 
 ---
 
