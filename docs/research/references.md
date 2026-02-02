@@ -15,7 +15,8 @@
 5. [Code Repositories](#code-repositories)
 6. [Vocabularies and Ontologies](#vocabularies-and-ontologies)
 7. [Supporting Specifications](#supporting-specifications)
-8. [Implementation Examples](#implementation-examples)
+8. [Upstream Research](#upstream-research)
+9. [Implementation Examples](#implementation-examples)
 
 ---
 
@@ -359,6 +360,163 @@ Standard for describing REST APIs. OGC API standards provide OpenAPI definitions
 - Could enable dynamic client generation or runtime validation
 - Alternative to hard-coded URL patterns (future enhancement)
 - Useful for testing against compliant servers
+
+---
+
+## Upstream Research
+
+### Architecture Patterns Analysis
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/architecture-patterns-analysis.md  
+**Type:** Internal research document
+
+Documents the consistent architectural patterns used in camptocamp/ogc-client for adding new OGC API support. Analyzes endpoint extension patterns, collection capability determination, type organization, conformance checking, and shared utilities.
+
+**Key Relevance:**
+- Blueprint for how CSAPI should integrate with OgcApiEndpoint
+- Pattern documentation for maintaining upstream consistency
+- Guides architectural decisions for CSAPI implementation
+- Reference for code organization and file structure
+
+---
+
+### Code Reuse vs Duplication Strategy
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/code-reuse-analysis.md  
+**Type:** Internal research document
+
+Defines when to reuse upstream utilities versus duplicate code for CSAPI implementation. Balances DRY principle against isolation and maintainability, with complete dependency mapping.
+
+**Key Relevance:**
+- Governs which shared utilities we import vs duplicate
+- Minimizes coupling to upstream code for easier PR review
+- Documents acceptable dependencies and isolation requirements
+- Provides import guidelines for CSAPI development
+
+---
+
+### CSAPI Architecture Decisions
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/csapi-architecture-analysis.md  
+**Type:** Internal research document
+
+Documents architectural choices for implementing 9 CSAPI resource types within ogc-client patterns. Addresses Part 1 vs Part 2 architecture, sub-resource handling, shared vs unique implementations, and SWE Common/SensorML integration.
+
+**Key Relevance:**
+- Architectural decisions specific to CSAPI's complexity (9 resource types)
+- Resource type organization strategy
+- Part 1 (metadata) vs Part 2 (dynamic data) separation
+- Foundation for CSAPIQueryBuilder design
+
+---
+
+### Error Handling Design Analysis
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/error-handling-analysis.md  
+**Type:** Internal research document
+
+Documents error handling patterns in ogc-client to guide CSAPI error strategy. Covers error classes, validation errors, missing resource errors, conformance errors, and distinguishes user errors from library errors.
+
+**Key Relevance:**
+- Error handling patterns to follow for consistency
+- CSAPI-specific error scenarios (validation, schema mismatches)
+- Error message design guidelines
+- Integration with existing EndpointError patterns
+
+---
+
+### File Organization Strategy
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/file-organization-analysis.md  
+**Type:** Internal research document
+
+Documents file organization patterns in ogc-client to guide CSAPI implementation structure. Analyzes EDR file structure, test organization, fixture organization, export strategy, naming conventions, and import path patterns.
+
+**Key Relevance:**
+- Where to place CSAPIQueryBuilder, types, helpers, tests
+- Fixture organization for 9 resource types
+- Export strategy from src/ogc-api/csapi/index.ts
+- Maintains repository organization consistency
+
+---
+
+### Format Negotiation Architecture
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/format-negotiation-analysis.md  
+**Type:** Internal research document
+
+Documents format negotiation patterns in ogc-client for handling multiple response formats. Covers Accept header strategy, query parameter format selection, link-based discovery, and format detection. Defines CSAPI format strategy for GeoJSON, SensorML, and SWE Common.
+
+**Key Relevance:**
+- How to implement format negotiation for CSAPI resources
+- Media type handling: application/sml+json, application/swe+json, etc.
+- Format detection and content type parsing
+- Integration with format handlers
+
+---
+
+### Integration with Existing Code
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/integration-analysis.md  
+**Type:** Internal research document
+
+Documents the exact code changes required to integrate CSAPI into ogc-client. Analyzes EDR integration pattern and specifies precise modifications to endpoint.ts (~35 lines), info.ts (~7 lines), and index.ts (~6 lines).
+
+**Key Relevance:**
+- Line-by-line integration requirements
+- Minimizing diff size for PR review
+- Shared models and utilities reuse
+- Implementation roadmap for core file modifications
+
+---
+
+### PR #114 (EDR Implementation) Analysis
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/pr114-analysis.md  
+**Type:** Internal research document
+
+Critical analysis of the merged EDR implementation PR (camptocamp/ogc-client#114). This is the direct blueprint for CSAPI implementation. Documents the factory method pattern, EDRQueryBuilder class structure, and integration approach.
+
+**Key Relevance:**
+- **PRIMARY REFERENCE** - Direct pattern to follow for CSAPI
+- Confirms terminology: "QueryBuilder" not "navigator"
+- Factory method signature and caching strategy
+- File organization and test patterns
+- Exact integration approach that upstream accepted
+
+---
+
+### QueryBuilder Pattern Analysis
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/querybuilder-pattern-analysis.md  
+**Type:** Internal research document
+
+Documents the QueryBuilder pattern used in ogc-client for API-specific query operations. Corrects terminology (was incorrectly called "navigator"), explains QueryBuilder lifecycle, state management, caching strategy, and resource availability checking.
+
+**Key Relevance:**
+- Core pattern for CSAPIQueryBuilder implementation
+- State management and caching requirements
+- Interface vs implementation separation
+- Lifecycle from factory instantiation to URL building
+
+---
+
+### TypeScript Type System Design
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/typescript-types-analysis.md  
+**Type:** Internal research document
+
+Documents TypeScript type organization and design patterns used in ogc-client. Covers type hierarchy, query parameter type patterns, resource type modeling, shared vs specific parameters, type safety strategies, and type definition location.
+
+**Key Relevance:**
+- Type system design for CSAPI resources and query parameters
+- Interface definition patterns for CSAPIQueryBuilder
+- Parameter type organization (spatial, temporal, relationship, etc.)
+- Type safety enforcement for query construction
+
+---
+
+### URL Building Architecture
+**URL:** https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/url-building-analysis.md  
+**Type:** Internal research document
+
+Documents URL building patterns and practices used in ogc-client. Covers base URL strategy, query parameter assembly, URL encoding, parameter modeling, array parameters, base path construction, and resource path structure.
+
+**Key Relevance:**
+- URL construction patterns for CSAPIQueryBuilder methods
+- Query parameter encoding for CSAPI-specific parameters
+- Nested resource path building (e.g., /systems/{id}/subsystems)
+- Array parameter handling (comma-separated IDs)
 
 ---
 
