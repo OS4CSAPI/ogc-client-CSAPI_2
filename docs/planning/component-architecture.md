@@ -30,6 +30,13 @@ The conformance reader is existing code in `OgcApiEndpoint` that checks which OG
 - Part 2 Control Streams: `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/req/controlstream`
 - Part 2 Commands: `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/req/command`
 
+**Recommended Development Workflow:**
+1. Write method signature for new conformance detection methods
+2. Add JSDoc comments with description, return types, examples
+3. Implement the detection logic
+4. Write tests verifying conformance class detection
+5. Update as you go - don't defer documentation to later
+
 **Implementation Type:** EXTENDING EXISTING CODE
 
 ---
@@ -47,6 +54,13 @@ The collections reader is existing code that fetches and parses the `/collection
 - Supported formats (GeoJSON, SensorML 3.0, SWE Common 3.0 JSON/Text/Binary)
 - Pagination modes (offset-based and cursor-based for high-volume observations and commands)
 - Schema information (DataStream/ControlStream schema availability)
+
+**Recommended Development Workflow:**
+1. Write method signature for new collection filter methods
+2. Add JSDoc comments documenting parameters, return types, filter behavior
+3. Implement the parsing and filtering logic
+4. Write tests with sample collection metadata
+5. Document as you code to maintain clarity on CSAPI-specific metadata
 
 **Implementation Type:** EXTENDING EXISTING CODE
 
@@ -117,6 +131,13 @@ This URL builder implements FULL query parameter support for CSAPI Parts 1 and 2
 - HTTP Accept header: `application/json`, `application/geo+json`, `application/sml+json`, `application/swe+json`, `application/swe+text`
 - Format-specific parameters for Part 2: `obsFormat` (observation encoding), `cmdFormat` (command encoding)
 
+**Recommended Development Workflow:**
+1. Write method signatures for each URL construction method (buildSystemsURL, etc.)
+2. Add comprehensive JSDoc with all parameters, examples of constructed URLs
+3. Implement URL construction and parameter encoding
+4. Write tests for each endpoint and parameter combination
+5. Document edge cases and parameter validation rules as you discover them
+
 **Implementation Type:** BUILDING NEW CODE (following EDRQueryBuilder pattern)
 
 ---
@@ -147,6 +168,13 @@ The GeoJSON handler is existing code in the library that parses GeoJSON Feature 
 - Temporal extent validation (all ISO 8601 formats with timezone handling)
 - Link relation validation (IANA relations + CSAPI-specific relations)
 - Property data type validation (strings, numbers, booleans, arrays, objects match schema)
+
+**Recommended Development Workflow:**
+1. Write method signatures for CSAPI property extraction methods
+2. Add JSDoc documenting which CSAPI properties are handled, validation rules
+3. Implement parsing logic for each resource type
+4. Write tests with sample CSAPI GeoJSON features
+5. Document CSAPI-specific validation rules as you implement them
 
 **Implementation Type:** EXTENDING EXISTING CODE
 
@@ -200,6 +228,14 @@ The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](ht
 - [OGC SensorML 3.0 Standard](https://docs.ogc.org/is/23-000r1/23-000r1.html) (OGC 23-000r1)
 - [SensorML 3.0 JSON Schema](https://schemas.opengis.net/sensorml/3.0/)
 - [OGC Connected Systems API Part 1 - SensorML Encoding](https://docs.ogc.org/is/23-001/23-001.html#sensorml-encoding)
+
+**Recommended Development Workflow:**
+1. Write TypeScript interfaces for SensorML types (PhysicalSystem, PhysicalComponent, etc.)
+2. Add comprehensive JSDoc to each interface documenting all properties and relationships
+3. Implement parser methods with JSDoc showing examples of input/output
+4. Write tests for each SensorML element type as you implement parsing
+5. Document complex parsing logic (recursion, SWE Common integration) inline
+6. Add usage examples to JSDoc for common scenarios (parsing system with components)
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -285,6 +321,15 @@ The SWE Common handler is new code we need to build to parse [OGC SWE Common 3.0
 - [SWE Common 3.0 JSON Schema](https://schemas.opengis.net/sweCommon/3.0/)
 - [OGC Connected Systems API Part 2 - SWE Common Encoding](https://docs.ogc.org/is/23-002/23-002.html#swe-common-encoding)
 
+**Recommended Development Workflow:**
+1. Write TypeScript interfaces for each DataComponent type (Quantity, DataRecord, etc.)
+2. Add detailed JSDoc with encoding examples (JSON/Text/Binary)
+3. Implement parser for each encoding format with comprehensive documentation
+4. Write tests for each component type and encoding as you implement
+5. Document schema validation rules, constraint handling inline
+6. Add JSDoc examples showing encoding conversion workflows
+7. Document performance considerations for binary encoding
+
 **Implementation Type:** BUILDING NEW CODE
 
 ---
@@ -311,6 +356,13 @@ The format detector is existing code that examines HTTP response headers (Conten
 7. **Text encoding detection**: Delimiter patterns (comma, tab, pipe, custom), quote character detection, escape sequence recognition, line ending detection (CRLF, LF, CR)
 8. **Charset detection**: BOM detection (UTF-8, UTF-16 LE/BE, UTF-32 LE/BE), heuristic analysis for common encodings, encoding validation
 9. **Error handling**: Graceful degradation for unknown formats, detailed error messages for malformed content, format suggestion for common mistakes
+
+**Recommended Development Workflow:**
+1. Write method signatures for CSAPI media type detection
+2. Add JSDoc documenting each media type, detection strategy, fallback behavior
+3. Implement detection logic with inline comments for complex heuristics
+4. Write tests for each media type and edge cases (missing headers, ambiguous content)
+5. Document media type routing decisions as you implement them
 
 **Implementation Type:** EXTENDING EXISTING CODE
 
@@ -358,6 +410,14 @@ The validator is existing code that checks whether parsed documents conform to f
 - Deployment-system associations must be bidirectional
 - DataStream-system associations must be valid
 - Observation-DataStream associations must be valid
+
+**Recommended Development Workflow:**
+1. Write method signatures for each validation rule category
+2. Add JSDoc documenting what is validated, error codes returned, examples
+3. Implement validation logic with clear error messages
+4. Write tests with valid and invalid data for each rule
+5. Document complex validation rules (cross-references, schema conformance) inline
+6. Add JSDoc examples showing how to handle validation errors
 
 **Implementation Type:** EXTENDING EXISTING CODE
 
@@ -418,6 +478,14 @@ This handler implements FULL query parameter support - NOT MVP scope. All filter
 - **Format negotiation**: `f` parameter and Accept headers for GeoJSON vs SensorML-JSON format selection
 - **Combined filtering**: All query parameters work together with AND logic
 
+**Recommended Development Workflow:**
+1. Write method signatures for all CRUD and query methods
+2. Add comprehensive JSDoc with parameter descriptions, return types, examples
+3. Implement each method with inline documentation for complex logic
+4. Write tests for each operation as you implement (CRUD, queries, navigation)
+5. Document query parameter combinations and behavior
+6. Add JSDoc examples for common workflows (create system, query hierarchy)
+
 **Implementation Type:** BUILDING NEW CODE
 
 ---
@@ -472,6 +540,14 @@ This handler implements FULL query parameter support - NOT MVP scope.
 - **Pagination**: `limit` and `offset`
 - **Format**: GeoJSON only (deployments always have spatial geometry)
 - **Combined filtering**: All parameters work together
+
+**Recommended Development Workflow:**
+1. Write method signatures for CRUD and spatial/temporal query methods
+2. Add JSDoc with parameter descriptions, spatial/temporal filter examples
+3. Implement each operation with documentation for extent handling
+4. Write tests for spatial queries, temporal queries, hierarchy
+5. Document bbox and datetime parameter formats as you implement
+6. Add JSDoc examples for deployment tracking workflows
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -528,6 +604,14 @@ This handler implements FULL query parameter support - NOT MVP scope.
 - **Pagination**: `limit` and `offset` for paging through procedure catalogs
 - **Format negotiation**: `f` parameter and Accept headers for GeoJSON vs SensorML-JSON format selection
 - **Combined filtering**: All parameters work together
+
+**Recommended Development Workflow:**
+1. Write method signatures for read operations and query methods
+2. Add JSDoc documenting SensorML integration, system associations
+3. Implement read and query logic with format negotiation
+4. Write tests for GeoJSON and SensorML parsing
+5. Document procedure type filtering and relationship queries
+6. Add JSDoc examples showing procedure discovery workflows
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -587,6 +671,14 @@ This handler implements FULL query parameter support - NOT MVP scope.
 - **Format**: GeoJSON (sampling features always have spatial geometry)
 - **Combined filtering**: All parameters work together
 
+**Recommended Development Workflow:**
+1. Write method signatures for CRUD and spatial query methods
+2. Add JSDoc with geometry types, relationship parameters, examples
+3. Implement operations with spatial filter handling
+4. Write tests for different geometry types and spatial queries
+5. Document sampling feature relationships as you implement
+6. Add JSDoc examples for feature-of-interest workflows
+
 **Implementation Type:** BUILDING NEW CODE
 
 ---
@@ -630,6 +722,14 @@ This handler implements FULL query parameter support - NOT MVP scope.
 - **Pagination**: `limit` and `offset` for paging through property vocabularies
 - **Format**: JSON only (properties don't have spatial geometry)
 - **Combined filtering**: All parameters work together
+
+**Recommended Development Workflow:**
+1. Write method signatures for read and vocabulary navigation methods
+2. Add JSDoc documenting vocabulary integration, hierarchy navigation
+3. Implement read operations with baseProperty relationship handling
+4. Write tests for observable/controllable property filtering
+5. Document vocabulary URI dereferencing as you implement
+6. Add JSDoc examples for property discovery workflows
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -704,6 +804,14 @@ This handler implements FULL query parameter support - NOT MVP scope.
 - **Pagination**: `limit` and `offset` for paging through large datastream catalogs
 - **Format**: JSON (datastream metadata and SWE Common schemas in JSON)
 - **Combined filtering**: All parameters work together to narrow discovery
+
+**Recommended Development Workflow:**
+1. Write method signatures for CRUD, schema operations, observation navigation
+2. Add comprehensive JSDoc with schema handling examples, validation rules
+3. Implement each operation with schema integration documentation
+4. Write tests for schema retrieval, validation, observations
+5. Document SWE Common schema interpretation as you implement
+6. Add JSDoc examples for datastream creation and observation workflows
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -786,6 +894,14 @@ Both offset-based and cursor-based pagination fully implemented - NOT MVP scope.
 - Memory-efficient handling of large result sets
 - Caching of DataStream schemas
 
+**Recommended Development Workflow:**
+1. Write method signatures for CRUD, query, bulk operations, pagination
+2. Add detailed JSDoc with temporal filter examples, pagination modes, encoding formats
+3. Implement operations with inline documentation for complex temporal queries
+4. Write tests for each encoding format, pagination mode, temporal filter
+5. Document performance considerations for large datasets
+6. Add JSDoc examples for time-series queries, bulk ingestion
+
 **Implementation Type:** BUILDING NEW CODE
 
 ---
@@ -851,6 +967,14 @@ This handler implements FULL query parameter support - NOT MVP scope.
 - **Pagination**: `limit` and `offset`
 - **Format**: JSON (control stream metadata and SWE Common parameter schemas in JSON)
 - **Combined filtering**: All parameters work together
+
+**Recommended Development Workflow:**
+1. Write method signatures for CRUD, schema operations, command navigation
+2. Add JSDoc with parameter schema examples, validation rules
+3. Implement operations with schema integration documentation
+4. Write tests for schema retrieval, command parameter validation
+5. Document controllable property associations as you implement
+6. Add JSDoc examples for control stream setup and command workflows
 
 **Implementation Type:** BUILDING NEW CODE
 
@@ -937,6 +1061,14 @@ Both offset-based and cursor-based pagination fully implemented - NOT MVP scope.
 - Synchronous: POST returns 200 with immediate result
 - Asynchronous: POST returns 201 with status URL, client polls for completion
 
+**Recommended Development Workflow:**
+1. Write method signatures for CRUD, execution, status tracking, result retrieval
+2. Add comprehensive JSDoc with status state machine, async patterns, examples
+3. Implement operations with detailed status tracking documentation
+4. Write tests for sync/async execution, status polling, error handling
+5. Document temporal filters for command history as you implement
+6. Add JSDoc examples for command submission, status tracking, result retrieval workflows
+
 **Implementation Type:** BUILDING NEW CODE
 
 ---
@@ -990,6 +1122,14 @@ This worker extension implements FULL offloading of computationally expensive CS
 - Provide synchronous fallback implementation
 - Maintain same API surface
 - Graceful degradation in environments without Web Worker support
+
+**Recommended Development Workflow:**
+1. Write message handler signatures for each CSAPI worker operation
+2. Add JSDoc documenting message format, performance benefits, error handling
+3. Implement worker handlers with fallback logic
+4. Write tests for worker operations and fallback scenarios
+5. Document performance characteristics as you measure them
+6. Add JSDoc examples showing when operations run in workers
 
 **Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI message handlers to existing worker)
 
