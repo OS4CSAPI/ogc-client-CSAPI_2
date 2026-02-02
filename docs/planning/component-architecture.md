@@ -1359,8 +1359,8 @@ The API documentation component extends the existing TypeDoc documentation to co
 
 ### Components Building New Code (12 components):
 1. **URL Builder** - New CSAPI query builder with FULL query/filter/pagination support (following EDRQueryBuilder pattern)
-2. **SensorML Handler** - New format parser for SensorML 2.0/2.1 (COMPLETE support for all encodings)
-3. **SWE Common Handler** - New format parser for SWE Common 2.0 (COMPLETE support: JSON/Text/Binary encodings, all data types)
+2. **SensorML Handler** - New format parser for SensorML 3.0 (COMPLETE support: JSON-native format, all system models)
+3. **SWE Common Handler** - New format parser for SWE Common 3.0 (COMPLETE support: JSON/Text/Binary encodings, all data types)
 4. **Systems Resource Handler** - New resource manager with CRUD and hierarchy (FULL query support)
 5. **Deployments Resource Handler** - New resource manager with CRUD (FULL query support)
 6. **Procedures Resource Handler** - New resource manager with CRUD (FULL query support)
