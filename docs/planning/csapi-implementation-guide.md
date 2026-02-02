@@ -469,6 +469,12 @@ The CSAPIQueryBuilder includes Systems resource methods to manage CSAPI System r
 
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Systems support: `bbox`, `datetime`, `recursive`, `parent`, `deployment`, `procedure`, `foi`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
 
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative specification for Systems resources and CRUD operations
+- [CSAPI-Part1-requirements.md](../research/requirements/CSAPI-Part1-requirements.md): Detailed client implementation requirements for Systems resource methods
+- [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Semantic definitions for system types and relationships
+- [RFC 7946 (GeoJSON)](https://tools.ietf.org/html/rfc7946): Format specification for encoding Systems as GeoJSON Features
+
 ---
 
 #### Deployments Resource Methods
@@ -507,6 +513,11 @@ The CSAPIQueryBuilder includes Deployments resource methods to manage CSAPI Depl
 - Validate validTime periods
 
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Deployments support: `bbox`, `datetime`, `recursive`, `system`, `parent`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative specification for Deployments resources
+- [CSAPI-Part1-requirements.md](../research/requirements/CSAPI-Part1-requirements.md): Client implementation requirements for Deployments including spatial/temporal queries
+- [RFC 7946 (GeoJSON)](https://tools.ietf.org/html/rfc7946): Format for encoding Deployments with spatial extents
 
 ---
 
@@ -550,6 +561,11 @@ The CSAPIQueryBuilder includes Procedures resource methods to manage CSAPI Proce
 - Extract parameter definitions
 
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Procedures support: `system`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative specification for Procedures resources and methodologies
+- [CSAPI-Part1-requirements.md](../research/requirements/CSAPI-Part1-requirements.md): Client requirements for Procedures including SensorML format support
+- [OGC SensorML 3.0](https://docs.ogc.org/is/23-000r1/23-000r1.html): Format for detailed procedure descriptions
 
 ---
 
@@ -595,6 +611,12 @@ The CSAPIQueryBuilder includes Sampling Features resource methods to manage CSAP
 
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Sampling Features support: `bbox`, `system`, `foi`, `relatedSamplingFeature`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
 
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative specification for Sampling Features resources
+- [CSAPI-Part1-requirements.md](../research/requirements/CSAPI-Part1-requirements.md): Client requirements for Sampling Features navigation
+- [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Semantic definitions for sampling feature types and relationships
+- [RFC 7946 (GeoJSON)](https://tools.ietf.org/html/rfc7946): Format for encoding Sampling Features with geometries
+
 ---
 
 #### Properties Resource Methods
@@ -625,6 +647,11 @@ The CSAPIQueryBuilder includes Properties resource methods to manage CSAPI Prope
 - Property hierarchies (baseProperty/subProperty relationships)
 
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Properties support: `system`, `baseProperty`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative specification for Properties resources
+- [CSAPI-Part1-requirements.md](../research/requirements/CSAPI-Part1-requirements.md): Client requirements for Properties navigation
+- [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Semantic definitions for observable and actuatable properties
 
 ---
 
@@ -683,6 +710,12 @@ The CSAPIQueryBuilder includes DataStreams resource methods to manage CSAPI Data
 - Support schema evolution (versioning)
 
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). DataStreams support: `system`, `observedProperty`, `foi`, `samplingFeature`, `procedure`, `datetime`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+
+**References:**
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Normative specification for DataStreams resources and schema operations
+- [CSAPI-Part2-requirements.md](../research/requirements/CSAPI-Part2-requirements.md): Client implementation requirements for DataStreams including schema handling
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/08-094r1/08-094r1.html): Format for result schemas and data encoding
+- [upstream-PR114-analysis.md](../research/upstream/upstream-PR114-analysis.md): Architectural patterns for DataStreams implementation
 
 ---
 
@@ -759,6 +792,12 @@ The CSAPIQueryBuilder includes Observations resource methods to manage CSAPI Obs
 
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Observations support: `phenomenonTime`, `resultTime`, `foi`, `id`, `limit`, `offset`, `cursor`, `f`, `obsFormat`.
 
+**References:**
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Normative specification for Observations resources and temporal queries
+- [CSAPI-Part2-requirements.md](../research/requirements/CSAPI-Part2-requirements.md): Client requirements for Observations including pagination and bulk operations
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/08-094r1/08-094r1.html): Format for observation result encodings (JSON, Text, Binary)
+- [upstream-PR114-analysis.md](../research/upstream/upstream-PR114-analysis.md): Performance patterns for high-volume observation handling
+
 ---
 
 #### Control Streams Resource Methods
@@ -811,6 +850,12 @@ The CSAPIQueryBuilder includes Control Streams resource methods to manage CSAPI 
 - Support schema evolution
 
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Control Streams support: `system`, `controlledProperty`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+
+**References:**
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Normative specification for ControlStreams resources
+- [CSAPI-Part2-requirements.md](../research/requirements/CSAPI-Part2-requirements.md): Client requirements for ControlStreams and actuation capabilities
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/08-094r1/08-094r1.html): Format for control parameter schemas
+- [upstream-PR114-analysis.md](../research/upstream/upstream-PR114-analysis.md): Architectural patterns mirroring DataStreams for control
 
 ---
 
@@ -890,6 +935,12 @@ The CSAPIQueryBuilder includes Commands resource methods to manage CSAPI Command
 - Asynchronous: POST returns 201 with status URL, client polls for completion
 
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Commands support: `issueTime`, `executionTime`, `status`, `controlstream`, `id`, `limit`, `offset`, `cursor`, `f`, `cmdFormat`.
+
+**References:**
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Normative specification for Commands resources and lifecycle management
+- [CSAPI-Part2-requirements.md](../research/requirements/CSAPI-Part2-requirements.md): Client requirements for Commands including status tracking and feasibility
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/08-094r1/08-094r1.html): Format for command parameter encodings
+- [upstream-PR114-analysis.md](../research/upstream/upstream-PR114-analysis.md): Patterns for command submission and status polling
 
 ---
 
