@@ -66,9 +66,88 @@ The collections reader is existing code that fetches and parses the `/collection
 
 ---
 
-### URL Builder: Building New CSAPI Query Construction
+### OgcApiEndpoint Integration: Extending Main Endpoint Class
 
-The URL builder is new code we need to build specifically for CSAPI operations, following the pattern established by the existing `EDRQueryBuilder` class. CSAPI requires constructing URLs for complex operations like querying Systems with spatial/temporal filters, creating Observations in DataStreams, retrieving historical observations with temporal ranges, and sending Commands to Control Streams - operations that don't exist in Features or EDR. We will build a new `CSAPIQueryBuilder` class (or similar) that handles these CSAPI-specific URL construction needs while following the same architecture patterns used by EDR's query builder in the upstream repository. This new component will be instantiated and managed internally by `OgcApiEndpoint`, keeping the developer-facing API simple and consistent. Building this as a separate, focused module aligns with the project goal of maintaining clean separation of concerns while integrating naturally into the existing codebase.
+The OgcApiEndpoint integration adds the CSAPI factory method to the main `OgcApiEndpoint` class following the exact pattern established by EDR support (PR #114). This integration adds approximately 35 lines to `src/ogc-api/endpoint.ts` to expose CSAPI functionality through a single developer-facing method. Developers access all CSAPI capabilities through `endpoint.csapi(collectionId)` which returns a `CSAPIQueryBuilder` instance containing all URL-building methods for the 9 CSAPI resource types. The factory method includes conformance checking (`hasConnectedSystems`), collection metadata fetching, QueryBuilder instantiation, and caching for performance. This minimal integration approach maintains the library's architecture principle of composition over inheritance - no subclassing, just a factory method that returns a specialized query builder. The integration also includes adding the `csapiCollections` getter for filtering collections that support CSAPI resources, and a private cache field for QueryBuilder instances.
+
+**Integration Points in OgcApiEndpoint:**
+
+**1. Import Statement (1 line):**
+```typescript
+import CSAPIQueryBuilder from './csapi/url_builder.js';
+```
+
+**2. Cache Field (2 lines):**
+```typescript
+private collection_id_to_csapi_builder_: Map<string, CSAPIQueryBuilder> = new Map();
+```
+
+**3. Collections Getter (~6 lines):**
+```typescript
+get csapiCollections(): Promise<string[]> {
+  return Promise.all([this.data, this.hasConnectedSystems])
+    .then(([data, hasCSAPI]) => (hasCSAPI ? data : { collections: [] }))
+    .then(parseCollections)
+    .then((collections) => collections.map((collection) => collection.name));
+}
+```
+
+**4. Conformance Getter (~6 lines):**
+```typescript
+get hasConnectedSystems(): Promise<boolean> {
+  return Promise.all([this.conformanceClasses]).then(checkHasConnectedSystems);
+}
+```
+
+**5. Factory Method (~17 lines):**
+```typescript
+public async csapi(collection_id: string): Promise<CSAPIQueryBuilder> {
+  if (!this.hasConnectedSystems) {
+    throw new EndpointError('Endpoint does not support Connected Systems API');
+  }
+  const cache = this.collection_id_to_csapi_builder_;
+  if (cache.has(collection_id)) {
+    return cache.get(collection_id);
+  }
+  const collection = await this.getCollectionInfo(collection_id);
+  const result = new CSAPIQueryBuilder(collection);
+  cache.set(collection_id, result);
+  return result;
+}
+```
+
+**Developer Usage Pattern:**
+```typescript
+import { OgcApiEndpoint } from '@camptocamp/ogc-client';
+
+const endpoint = new OgcApiEndpoint('https://server.com/api');
+await endpoint.isReady();
+
+// Check if endpoint supports CSAPI
+if (await endpoint.hasConnectedSystems) {
+  // Get CSAPI query builder for a collection
+  const csapi = await endpoint.csapi('sensors-collection');
+  
+  // Use builder methods to construct URLs for all 9 resource types
+  const systemsUrl = csapi.getSystems({ bbox: [...], recursive: true });
+  const observationsUrl = csapi.getObservations(datastreamId, { phenomenonTime: '2024-01-01/..' });
+}
+```
+
+**Recommended Development Workflow:**
+1. Write method signatures for factory method and getters
+2. Add comprehensive JSDoc documenting conformance checking, caching, and usage pattern
+3. Implement integration following EDR pattern exactly
+4. Write tests verifying conformance detection, factory method, caching behavior
+5. Document the ~35 line diff to endpoint.ts as you implement
+
+**Implementation Type:** EXTENDING EXISTING CODE
+
+---
+
+### CSAPIQueryBuilder: Building New Query Construction Class
+
+The CSAPIQueryBuilder is new code we need to build as a single comprehensive class containing URL-building methods for all 9 CSAPI resource types, following the pattern established by the existing `EDRQueryBuilder` class. This QueryBuilder class is instantiated by the `OgcApiEndpoint.csapi()` factory method and provides developers with all the methods needed to construct URLs for CSAPI operations: querying Systems with spatial/temporal filters, creating Observations in DataStreams, retrieving historical observations with temporal ranges, sending Commands to Control Streams, and accessing all other CSAPI resources. The class consolidates URL construction for approximately 60-70 unique URL patterns across Part 1 resources (Systems, Deployments, Procedures, Sampling Features, Properties) and Part 2 resources (DataStreams, Observations, Control Streams, Commands), including canonical endpoints, nested resource endpoints, schema endpoints, and special-purpose endpoints like command status/result tracking. This single-class design follows the upstream repository's architecture pattern where one QueryBuilder per API family handles all URL construction for that API, keeping the implementation focused and maintainable rather than splitting across multiple handler classes. The following sections detail the URL construction requirements for each of the 9 resource types as methods within this one CSAPIQueryBuilder class.
 
 **URL Construction Requirements:**
 - Canonical resource endpoints: `/systems`, `/deployments`, `/procedures`, `/samplingFeatures`, `/properties`, `/datastreams`, `/observations`, `/controlstreams`, `/commands`
@@ -1347,35 +1426,45 @@ The API documentation component extends the existing TypeDoc documentation to co
 
 ## Summary: Build vs Extend Breakdown
 
-### Components Extending Existing Code (8 components):
-1. **Conformance Reader** - Add CSAPI conformance class checks
-2. **Collections Reader** - Parse CSAPI collection metadata with FULL query/filter/pagination support
-3. **GeoJSON Handler** - Recognize CSAPI feature types and properties
-4. **Format Detector** - Add SensorML and SWE Common media types
-5. **Validator** - Add CSAPI validation rules (COMPLETE validation for all formats)
-6. **Background Processing** - Add CSAPI operations to Web Worker
-7. **Test Coverage** - Add CSAPI test suites to Jest framework (fixture-based testing)
-8. **API Documentation** - Add CSAPI docs to TypeDoc (JSDoc comments written as code is developed)
+### Components Extending Existing Code (9 components):
+1. **Conformance Reader** - Add CSAPI conformance class checks (`hasConnectedSystems` getter, ~7 lines in info.ts)
+2. **Collections Reader** - Parse CSAPI collection metadata with FULL query/filter/pagination support (`csapiCollections` getter, ~6 lines in endpoint.ts)
+3. **OgcApiEndpoint Integration** - Add `csapi(collectionId)` factory method to main endpoint class (~35 lines in endpoint.ts following EDR pattern)
+4. **GeoJSON Handler** - Recognize CSAPI feature types and properties (extend existing GeoJSON parser)
+5. **Format Detector** - Add SensorML 3.0 and SWE Common 3.0 media types (extend existing content negotiation)
+6. **Validator** - Add CSAPI validation rules (COMPLETE validation for all formats, extend existing validation framework)
+7. **Background Processing** - Add CSAPI operations to Web Worker (extend existing worker with new message types)
+8. **Test Coverage** - Add CSAPI test suites to Jest framework (fixture-based testing, extend existing test infrastructure)
+9. **API Documentation** - Add CSAPI docs to TypeDoc (JSDoc comments written as code is developed, extend existing documentation)
 
-### Components Building New Code (12 components):
-1. **URL Builder** - New CSAPI query builder with FULL query/filter/pagination support (following EDRQueryBuilder pattern)
-2. **SensorML Handler** - New format parser for SensorML 3.0 (COMPLETE support: JSON-native format, all system models)
-3. **SWE Common Handler** - New format parser for SWE Common 3.0 (COMPLETE support: JSON/Text/Binary encodings, all data types)
-4. **Systems Resource Handler** - New resource manager with CRUD and hierarchy (FULL query support)
-5. **Deployments Resource Handler** - New resource manager with CRUD (FULL query support)
-6. **Procedures Resource Handler** - New resource manager with CRUD (FULL query support)
-7. **Sampling Features Resource Handler** - New resource manager with CRUD (FULL query support)
-8. **Properties Resource Handler** - New resource manager (read-only, FULL query support)
-9. **DataStreams Resource Handler** - New resource manager with schema operations (FULL query support)
-10. **Observations Resource Handler** - New resource manager with FULL temporal queries and pagination (NOT MVP)
-11. **Control Streams Resource Handler** - New resource manager with parameter schemas (FULL query support)
-12. **Commands Resource Handler** - New resource manager with status and results (FULL query support)
+### Components Building New Code (3 components):
+1. **CSAPIQueryBuilder** - New query builder class with URL-building methods for all 9 CSAPI resource types (following EDRQueryBuilder pattern from PR #114)
+   - Systems methods (getSystems, createSystem, updateSystem, deleteSystem, getSubsystems, getSystemHistory, etc.)
+   - Deployments methods (getDeployments, createDeployment, updateDeployment, deleteDeployment, getSubdeployments, etc.)
+   - Procedures methods (getProcedures, createProcedure, updateProcedure, deleteProcedure, etc.)
+   - Sampling Features methods (getSamplingFeatures, createSamplingFeature, updateSamplingFeature, deleteSamplingFeature, etc.)
+   - Properties methods (getProperties, getProperty - read-only)
+   - DataStreams methods (getDataStreams, createDataStream, updateDataStream, deleteDataStream, getDataStreamSchema, etc.)
+   - Observations methods (getObservations, createObservations, bulkCreateObservations, etc.)
+   - Control Streams methods (getControlStreams, createControlStream, updateControlStream, deleteControlStream, getControlStreamSchema, etc.)
+   - Commands methods (getCommands, createCommand, getCommandStatus, getCommandResult, cancelCommand, etc.)
+   - FULL query parameter support across all methods (spatial, temporal, hierarchical, relationship, property filtering, pagination)
+2. **SensorML Handler** - New format parser for SensorML 3.0 (COMPLETE support: JSON-native format, all system models, recursive component parsing, SWE Common integration)
+3. **SWE Common Handler** - New format parser for SWE Common 3.0 (COMPLETE support: JSON/Text/Binary encodings, all data component types, schema validation, bidirectional conversion)
+
+### Architectural Notes:
+
+**QueryBuilder Pattern:** Following the upstream EDR pattern (PR #114), CSAPI uses a single QueryBuilder class accessed via a factory method on OgcApiEndpoint. Developers call `endpoint.csapi(collectionId)` to get a CSAPIQueryBuilder instance containing all 9 resource type methods. This maintains the library's architecture principle of composition over inheritance.
+
+**Resource Handlers as Methods:** The 9 "resource handlers" documented in detail sections are actually methods within the CSAPIQueryBuilder class, not separate standalone components. This follows the same pattern as EDR where `EDRQueryBuilder` contains methods like `getCubeUrl()`, `getCorridorUrl()`, etc.
+
+**Integration Footprint:** Total modifications to existing files: ~48 lines across 2 files (endpoint.ts: ~35 lines, info.ts: ~7 lines, index.ts: ~6 lines for exports). This minimal footprint follows the proven EDR integration pattern.
 
 ### Estimated Scope:
-- **Extending existing code:** ~30% of effort (building on established patterns)
-- **Building new code:** ~70% of effort (new format parsers, new resource managers, new schemas)
-- **Total estimated lines of code:** ~20,000-25,000 lines
-- **Total estimated time:** 8-10 weeks for complete FULL implementation (NOT MVP)
+- **Extending existing code:** ~20% of effort (9 small extensions following established patterns, ~50 total lines modified)
+- **Building new code:** ~80% of effort (CSAPIQueryBuilder with ~60-70 URL patterns, 2 complex format parsers)
+- **Total estimated lines of code:** ~15,000-20,000 lines (reduced from initial estimate due to single QueryBuilder class vs 9 separate handlers)
+- **Total estimated time:** 6-8 weeks for complete FULL implementation (NOT MVP)
 
 ---
 
