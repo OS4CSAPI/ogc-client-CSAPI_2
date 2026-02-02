@@ -1029,7 +1029,7 @@ The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](ht
 - [OGC SensorML 3.0](https://docs.ogc.org/is/23-000/23-000.html): Normative specification for SensorML 3.0 format
 - [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Requirements for SensorML encoding in CSAPI
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): SensorML media type definitions
-- [SensorML 3.0 JSON Schema](https://schemas.opengis.net/sensorml/3.0/): Official JSON schemas for validation
+- [SensorML 3.0 JSON Schema](https://schemas.opengis.net/sensorML/3.0/): Official JSON schemas for validation
 - [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client requirements for SensorML parsing
 - [UCUM Codes](http://unitsofmeasure.org/): Unit of measure code system
 
