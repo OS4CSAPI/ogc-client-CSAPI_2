@@ -1139,7 +1139,7 @@ This worker extension implements FULL offloading of computationally expensive CS
 
 ### Test Coverage: Extending Existing Test Suite
 
-The test coverage component extends the existing Jest test suite to cover all CSAPI functionality. For CSAPI, we will add test suites for every new component: format parsers (SensorML, SWE Common), resource handlers (Systems, DataStreams, Observations, Commands, etc.), query builders, validators, and integration tests against real CSAPI servers. The library has established testing patterns including unit tests (isolated component tests), integration tests (multi-component interaction), fixture-based tests (using example documents from the spec), and live server tests (optional tests against real endpoints). The extension will add CSAPI test fixtures (GeoJSON features, SensorML documents, SWE Common results), mock CSAPI responses, and test utilities specific to CSAPI validation. Test coverage should match the existing library standard (>80% code coverage).
+The test coverage component extends the existing Jest test suite to cover all CSAPI functionality. For CSAPI, we will add test suites for every new component: format parsers (SensorML, SWE Common), resource handlers (Systems, DataStreams, Observations, Commands, etc.), query builders, validators, and integration tests. The library has established testing patterns including unit tests (isolated component tests), integration tests (multi-component interaction), and fixture-based tests (using example documents from the spec). The extension will add CSAPI test fixtures (GeoJSON features, SensorML documents, SWE Common results), mock CSAPI responses, and test utilities specific to CSAPI validation. Test coverage should match the existing library standard (>80% code coverage).
 
 **COMPLETE CSAPI Test Suites to Create - NOT MVP Scope:**
 
@@ -1183,45 +1183,16 @@ This testing extension implements COMPREHENSIVE test coverage for all CSAPI func
 
 **Test Fixtures to Create (Complete Coverage):**
 - **Specification examples**: All example responses from CSAPI Parts 1 & 2 specification documents
-- **Real server responses**: Sample responses from all known public implementations (52°North SensorThings/CSAPI, pygeoapi, OGC test server, vendor implementations)
 - **Edge cases**: Empty collections, minimal resources, malformed data (for error handling tests), boundary conditions (max limits, extreme coordinates, edge temporal values)
 - **Large datasets**: Paginated collections (100s of items), large observation sets (1000s-10000s of results for pagination testing), complex hierarchies (deep system/deployment nesting)
 - **All format variations**: GeoJSON (all Part 1 resource types with all property combinations), SensorML 3.0 (all system types, all components, all encodings), SWE Common 3.0 (all data components, all three encodings: JSON/Text/Binary with various data types)
 - **Error responses**: All HTTP error codes (400, 404, 409, 500, etc.), all validation error types, malformed content-type headers
 - **Schema fixtures**: All DataStream schema examples (various observable types, all SWE Common component types), all ControlStream parameter schemas (all controllable property types)
 
-**Live Server Test Suite (Complete Real-World Validation - NOT MVP Scope):**
-
-This extension adds comprehensive live server testing capabilities for CSAPI to match the existing OGC API testing pattern (Features, Tiles, Records, EDR).
-
-**Test Server Coverage:**
-- **Public test servers**: All known public CSAPI implementations (official OGC test server, vendor implementations like 52°North, community implementations like pygeoapi)
-- **Test endpoints configuration**: Configurable server list in test fixtures with expected capabilities for each server
-- **Server selection**: Environment-based server selection for CI/CD pipelines, optional execution (skipped by default, require network access)
-
-**Complete Operation Coverage:**
-- **Service discovery**: Conformance checking (all CSAPI conformance classes), collection listing (all resource types), capability negotiation
-- **All Part 1 Resources**: Systems (CRUD, hierarchy, all query parameters), Deployments (CRUD, spatial/temporal queries, all parameters), Procedures (read, all query parameters), Sampling Features (CRUD, spatial queries, all parameters), Properties (read, all query parameters)
-- **All Part 2 Resources**: DataStreams (CRUD, schema retrieval, all query parameters), Observations (CRUD, temporal queries, both pagination modes, large result sets, all encodings), Control Streams (CRUD, schema retrieval, all parameters), Commands (CRUD, status tracking, result retrieval, temporal queries, both pagination modes)
-- **Advanced Queries**: All spatial filters (2D/3D bbox), all temporal filters (all interval types for datetime, phenomenonTime, resultTime, executionTime, issueTime), all relationship filters (parent, system, deployment, procedure, foi, observedProperty, controlledProperty, baseProperty), hierarchical queries (recursive traversal), full-text search (q parameter), property-based filtering
-- **All Formats**: GeoJSON parsing (all Part 1 resources), SensorML 3.0 parsing (all system types, all components), SWE Common 3.0 parsing (all data components, all encodings: JSON/Text/Binary)
-- **Cross-resource workflows**: Complete navigation chains following all relationships (system → deployments → procedures → sampling features → datastreams → observations)
-- **Error conditions**: Handling server errors (4xx, 5xx), validation failures, network issues (timeouts, connection failures)
-
-**Performance Testing:**
-- **Large result sets**: Query performance with 1000s-10000s of observations, pagination performance (offset-based and cursor-based), streaming performance for large datasets
-- **Complex queries**: Performance with multiple query parameters, hierarchical query performance with deep nesting, recursive query performance
-- **Format parsing**: Parsing performance for large SensorML documents (complex hierarchies), parsing performance for large SWE Common results (all encodings), binary encoding performance vs JSON encoding
-- **Concurrent operations**: Multiple simultaneous queries, worker thread performance under load
-- **Memory usage**: Memory profile for large datasets, memory leak detection
-
 **Test Coverage Targets:**
 - **Code coverage**: >80% statement coverage for all new code, >80% branch coverage for all new code, 100% coverage for all public API methods
 - **Resource coverage**: 100% of all CSAPI resource types, 100% of all query parameters, 100% of all format types (GeoJSON, SensorML 3.0, SWE Common 3.0 all encodings)
 - **Error coverage**: All error conditions documented in CSAPI specification
-- **Live server coverage**: At least 3 different CSAPI server implementations tested
-
-**NOT MVP Scope** - Complete test infrastructure with performance testing, multi-server validation, and comprehensive coverage targets.
 
 **Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI test suites to existing Jest framework)
 
