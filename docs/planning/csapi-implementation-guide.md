@@ -722,7 +722,7 @@ The CSAPIQueryBuilder includes DataStreams resource methods to manage CSAPI Data
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for DataStreams resources and schema operations
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): DataStreams endpoint definitions
 - [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client implementation requirements for DataStreams including schema handling
-- [OGC SWE Common 3.0](https://docs.ogc.org/is/12-000r2/12-000r2.html): Format for result schemas and data encoding
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/24-014/24-014.html): Format for result schemas and data encoding
 - [pr114-analysis.md](../research/upstream/pr114-analysis.md): Architectural patterns for DataStreams implementation
 
 ---
@@ -804,7 +804,7 @@ The CSAPIQueryBuilder includes Observations resource methods to manage CSAPI Obs
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for Observations resources and temporal queries
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Observations endpoint definitions
 - [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for Observations including pagination and bulk operations
-- [OGC SWE Common 3.0](https://docs.ogc.org/is/12-000r2/12-000r2.html): Format for observation result encodings (JSON, Text, Binary)
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/24-014/24-014.html): Format for observation result encodings (JSON, Text, Binary)
 - [pr114-analysis.md](../research/upstream/pr114-analysis.md): Performance patterns for high-volume observation handling
 
 ---
@@ -864,7 +864,7 @@ The CSAPIQueryBuilder includes Control Streams resource methods to manage CSAPI 
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for ControlStreams resources
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): ControlStreams endpoint definitions
 - [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for ControlStreams and actuation capabilities
-- [OGC SWE Common 3.0](https://docs.ogc.org/is/12-000r2/12-000r2.html): Format for control parameter schemas
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/24-014/24-014.html): Format for control parameter schemas
 - [pr114-analysis.md](../research/upstream/pr114-analysis.md): Architectural patterns mirroring DataStreams for control
 
 ---
@@ -950,7 +950,7 @@ The CSAPIQueryBuilder includes Commands resource methods to manage CSAPI Command
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for Commands resources and lifecycle management
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Commands endpoint definitions
 - [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for Commands including status tracking and feasibility
-- [OGC SWE Common 3.0](https://docs.ogc.org/is/12-000r2/12-000r2.html): Format for command parameter encodings
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/24-014/24-014.html): Format for command parameter encodings
 - [pr114-analysis.md](../research/upstream/pr114-analysis.md): Patterns for command submission and status polling
 
 ---
@@ -1039,7 +1039,7 @@ The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](ht
 
 ### SWE Common Handler: Building New Format Parser
 
-The SWE Common handler is new code we need to build to parse [OGC SWE Common 3.0](https://docs.ogc.org/is/23-011r1/23-011r1.html) format documents that define observation data schemas and encode actual observation results. SWE Common 3.0 is the latest version of the data encoding standard from the Sensor Web Enablement family, published in 2024, that describes structured measurement data with units, quality information, and constraints using a modernized JSON-native approach. CSAPI Part 2 uses SWE Common 3.0 extensively for DataStream schemas (defining what properties are observed and result structure) and Observation results (actual measurement values). We will build parsers for all three SWE Common 3.0 encodings: JSON (human-readable structured data), Text (CSV-style compact encoding), and Binary (efficient encoding for high-volume streaming). The handler must parse DataComponent schemas, extract values from encoded result formats, validate measurements against schemas, and convert between different encodings.
+The SWE Common handler is new code we need to build to parse [OGC SWE Common 3.0](https://docs.ogc.org/is/24-014/24-014.html) format documents that define observation data schemas and encode actual observation results. SWE Common 3.0 is the latest version of the data encoding standard from the Sensor Web Enablement family, published in 2024, that describes structured measurement data with units, quality information, and constraints using a modernized JSON-native approach. CSAPI Part 2 uses SWE Common 3.0 extensively for DataStream schemas (defining what properties are observed and result structure) and Observation results (actual measurement values). We will build parsers for all three SWE Common 3.0 encodings: JSON (human-readable structured data), Text (CSV-style compact encoding), and Binary (efficient encoding for high-volume streaming). The handler must parse DataComponent schemas, extract values from encoded result formats, validate measurements against schemas, and convert between different encodings.
 
 **SWE Common 3.0 Data Components to Parse:**
 
@@ -1109,7 +1109,7 @@ The SWE Common handler is new code we need to build to parse [OGC SWE Common 3.0
 - **Performance optimization**: Binary encoding for high-volume data
 
 **References:**
-- [OGC SWE Common 3.0](https://docs.ogc.org/is/12-000r2/12-000r2.html): Normative specification for SWE Common data encodings
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/24-014/24-014.html): Normative specification for SWE Common data encodings
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Requirements for SWE Common in DataStreams/Observations
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): SWE Common media type definitions
 - [SWE Common 3.0 JSON Schema](https://schemas.opengis.net/sweCommon/3.0/): Official JSON schemas
