@@ -472,7 +472,7 @@ The CSAPIQueryBuilder includes Systems resource methods to manage CSAPI System r
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Systems support: `bbox`, `datetime`, `recursive`, `parent`, `deployment`, `procedure`, `foi`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
 
 **References:**
-- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative specification for Systems resources and CRUD operations
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative specification for Systems resources and CRUD operations
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Systems endpoint definitions
 - [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Detailed client implementation requirements for Systems resource methods
 - [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Semantic definitions for system types and relationships
@@ -518,7 +518,7 @@ The CSAPIQueryBuilder includes Deployments resource methods to manage CSAPI Depl
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Deployments support: `bbox`, `datetime`, `recursive`, `system`, `parent`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
 
 **References:**
-- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative specification for Deployments resources
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative specification for Deployments resources
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Deployments endpoint definitions
 - [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client implementation requirements for Deployments including spatial/temporal queries
 - [RFC 7946 (GeoJSON)](https://tools.ietf.org/html/rfc7946): Format for encoding Deployments with spatial extents
@@ -567,10 +567,10 @@ The CSAPIQueryBuilder includes Procedures resource methods to manage CSAPI Proce
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Procedures support: `system`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
 
 **References:**
-- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative specification for Procedures resources and methodologies
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative specification for Procedures resources and methodologies
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Procedures endpoint definitions
 - [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client requirements for Procedures including SensorML format support
-- [OGC SensorML 3.0](https://docs.ogc.org/is/23-000r1/23-000r1.html): Format for detailed procedure descriptions
+- [OGC SensorML 3.0](https://docs.ogc.org/is/23-000/23-000.html): Format for detailed procedure descriptions
 
 ---
 
@@ -617,7 +617,7 @@ The CSAPIQueryBuilder includes Sampling Features resource methods to manage CSAP
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Sampling Features support: `bbox`, `system`, `foi`, `relatedSamplingFeature`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
 
 **References:**
-- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative specification for Sampling Features resources
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative specification for Sampling Features resources
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Sampling Features endpoint definitions
 - [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client requirements for Sampling Features navigation
 - [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Semantic definitions for sampling feature types and relationships
@@ -655,7 +655,7 @@ The CSAPIQueryBuilder includes Properties resource methods to manage CSAPI Prope
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Properties support: `system`, `baseProperty`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
 
 **References:**
-- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative specification for Properties resources
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative specification for Properties resources
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Properties endpoint definitions
 - [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client requirements for Properties navigation
 - [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Semantic definitions for observable and actuatable properties
@@ -719,10 +719,10 @@ The CSAPIQueryBuilder includes DataStreams resource methods to manage CSAPI Data
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). DataStreams support: `system`, `observedProperty`, `foi`, `samplingFeature`, `procedure`, `datetime`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
 
 **References:**
-- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Normative specification for DataStreams resources and schema operations
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for DataStreams resources and schema operations
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): DataStreams endpoint definitions
 - [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client implementation requirements for DataStreams including schema handling
-- [OGC SWE Common 3.0](https://docs.ogc.org/is/08-094r1/08-094r1.html): Format for result schemas and data encoding
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/12-000r2/12-000r2.html): Format for result schemas and data encoding
 - [pr114-analysis.md](../research/upstream/pr114-analysis.md): Architectural patterns for DataStreams implementation
 
 ---
@@ -801,10 +801,10 @@ The CSAPIQueryBuilder includes Observations resource methods to manage CSAPI Obs
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Observations support: `phenomenonTime`, `resultTime`, `foi`, `id`, `limit`, `offset`, `cursor`, `f`, `obsFormat`.
 
 **References:**
-- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Normative specification for Observations resources and temporal queries
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for Observations resources and temporal queries
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Observations endpoint definitions
 - [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for Observations including pagination and bulk operations
-- [OGC SWE Common 3.0](https://docs.ogc.org/is/08-094r1/08-094r1.html): Format for observation result encodings (JSON, Text, Binary)
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/12-000r2/12-000r2.html): Format for observation result encodings (JSON, Text, Binary)
 - [pr114-analysis.md](../research/upstream/pr114-analysis.md): Performance patterns for high-volume observation handling
 
 ---
@@ -861,10 +861,10 @@ The CSAPIQueryBuilder includes Control Streams resource methods to manage CSAPI 
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Control Streams support: `system`, `controlledProperty`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
 
 **References:**
-- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Normative specification for ControlStreams resources
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for ControlStreams resources
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): ControlStreams endpoint definitions
 - [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for ControlStreams and actuation capabilities
-- [OGC SWE Common 3.0](https://docs.ogc.org/is/08-094r1/08-094r1.html): Format for control parameter schemas
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/12-000r2/12-000r2.html): Format for control parameter schemas
 - [pr114-analysis.md](../research/upstream/pr114-analysis.md): Architectural patterns mirroring DataStreams for control
 
 ---
@@ -947,10 +947,10 @@ The CSAPIQueryBuilder includes Commands resource methods to manage CSAPI Command
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Commands support: `issueTime`, `executionTime`, `status`, `controlstream`, `id`, `limit`, `offset`, `cursor`, `f`, `cmdFormat`.
 
 **References:**
-- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Normative specification for Commands resources and lifecycle management
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for Commands resources and lifecycle management
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Commands endpoint definitions
 - [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for Commands including status tracking and feasibility
-- [OGC SWE Common 3.0](https://docs.ogc.org/is/08-094r1/08-094r1.html): Format for command parameter encodings
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/12-000r2/12-000r2.html): Format for command parameter encodings
 - [pr114-analysis.md](../research/upstream/pr114-analysis.md): Patterns for command submission and status polling
 
 ---
@@ -979,7 +979,7 @@ The GeoJSON handler is existing code in the library that parses GeoJSON Feature 
 
 **References:**
 - [RFC 7946 (GeoJSON)](https://tools.ietf.org/html/rfc7946): Normative specification for GeoJSON format
-- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): CSAPI-specific GeoJSON property requirements
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): CSAPI-specific GeoJSON property requirements
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): GeoJSON schema definitions for Part 1 resources
 - [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Vocabulary for systemType and property URIs
 - [RFC 8141 (URN Syntax)](https://tools.ietf.org/html/rfc8141): uniqueIdentifier format requirements
@@ -988,7 +988,7 @@ The GeoJSON handler is existing code in the library that parses GeoJSON Feature 
 
 ### SensorML Handler: Building New Format Parser
 
-The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](https://docs.ogc.org/is/23-000r1/23-000r1.html) format documents that describe sensor systems, components, and processes in detail. SensorML 3.0 is the latest version of the JSON-native format from the Sensor Web Enablement (SWE) standards family, published in 2024, that provides rich metadata about sensors, actuators, and processing chains. CSAPI servers return SensorML 3.0 documents when describing Systems or Procedures, providing detailed technical specifications beyond what GeoJSON can express. We will build a parser that handles SensorML 3.0 system models (System, PhysicalComponent, PhysicalSystem, SystemConfiguration), component descriptions, capability specifications, input/output specifications, configuration parameters, operational modes, component connections, and temporal validity periods. The parser must convert SensorML 3.0 JSON documents into TypeScript objects that the library can work with.
+The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](https://docs.ogc.org/is/23-000/23-000.html) format documents that describe sensor systems, components, and processes in detail. SensorML 3.0 is the latest version of the JSON-native format from the Sensor Web Enablement (SWE) standards family, published in 2024, that provides rich metadata about sensors, actuators, and processing chains. CSAPI servers return SensorML 3.0 documents when describing Systems or Procedures, providing detailed technical specifications beyond what GeoJSON can express. We will build a parser that handles SensorML 3.0 system models (System, PhysicalComponent, PhysicalSystem, SystemConfiguration), component descriptions, capability specifications, input/output specifications, configuration parameters, operational modes, component connections, and temporal validity periods. The parser must convert SensorML 3.0 JSON documents into TypeScript objects that the library can work with.
 
 **SensorML 3.0 Document Types to Parse:**
 - **System**: Abstract system description with common properties (identification, classification, characteristics, capabilities, contacts)
@@ -1026,8 +1026,8 @@ The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](ht
 - **Vocabulary resolution**: Automatic fetching of vocabulary terms from code spaces (SOSA, SSN, CF, QUDT)
 
 **References:**
-- [OGC SensorML 3.0](https://docs.ogc.org/is/23-000r1/23-000r1.html): Normative specification for SensorML 3.0 format
-- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Requirements for SensorML encoding in CSAPI
+- [OGC SensorML 3.0](https://docs.ogc.org/is/23-000/23-000.html): Normative specification for SensorML 3.0 format
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Requirements for SensorML encoding in CSAPI
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): SensorML media type definitions
 - [SensorML 3.0 JSON Schema](https://schemas.opengis.net/sensorml/3.0/): Official JSON schemas for validation
 - [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client requirements for SensorML parsing
@@ -1109,8 +1109,8 @@ The SWE Common handler is new code we need to build to parse [OGC SWE Common 3.0
 - **Performance optimization**: Binary encoding for high-volume data
 
 **References:**
-- [OGC SWE Common 3.0](https://docs.ogc.org/is/08-094r1/08-094r1.html): Normative specification for SWE Common data encodings
-- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Requirements for SWE Common in DataStreams/Observations
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/12-000r2/12-000r2.html): Normative specification for SWE Common data encodings
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Requirements for SWE Common in DataStreams/Observations
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): SWE Common media type definitions
 - [SWE Common 3.0 JSON Schema](https://schemas.opengis.net/sweCommon/3.0/): Official JSON schemas
 - [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for SWE Common parsing
@@ -1143,9 +1143,9 @@ The format detector is existing code that examines HTTP response headers (Conten
 
 **References:**
 - [RFC 6838 (Media Type Specifications)](https://tools.ietf.org/html/rfc6838): Media type format and registration
-- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): CSAPI media types for Part 1
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): CSAPI media types for Part 1
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Part 1 media type definitions
-- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): CSAPI media types for Part 2 (SWE formats)
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): CSAPI media types for Part 2 (SWE formats)
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Part 2 media type definitions
 
 ---
@@ -1192,9 +1192,9 @@ The validator is existing code that checks whether parsed documents conform to f
 **Implementation Type:** EXTENDING EXISTING CODE
 
 **References:**
-- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Validation requirements for Part 1 resources
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Validation requirements for Part 1 resources
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Part 1 schema definitions for validation
-- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Validation requirements for Part 2 resources
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Validation requirements for Part 2 resources
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Part 2 schema definitions for validation
 - [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Required properties and constraints
 - [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Schema conformance requirements
@@ -1318,9 +1318,9 @@ The test coverage component extends the existing Jest test suite to cover all CS
 **Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI test suites to existing Jest framework)
 
 **References:**
-- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Specification examples for test fixtures
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Specification examples for test fixtures
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Part 1 endpoint testing specifications
-- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Part 2 examples for observation/command tests
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Part 2 examples for observation/command tests
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Part 2 endpoint testing specifications
 
 ---
@@ -1343,9 +1343,9 @@ The API documentation component extends the existing TypeDoc documentation to co
 **Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI docs to existing TypeDoc setup)
 
 **References:**
-- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative references for documentation
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative references for documentation
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): API reference documentation source
-- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Part 2 specification references
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Part 2 specification references
 - [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Part 2 API reference documentation source
 
 ---
