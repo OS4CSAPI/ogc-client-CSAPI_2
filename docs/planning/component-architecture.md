@@ -57,12 +57,63 @@ The URL builder is new code we need to build specifically for CSAPI operations, 
 **URL Construction Requirements:**
 - Canonical resource endpoints: `/systems`, `/deployments`, `/procedures`, `/samplingFeatures`, `/properties`, `/datastreams`, `/observations`, `/controlstreams`, `/commands`
 - Nested resource endpoints: `/systems/{id}/subsystems`, `/systems/{id}/datastreams`, `/datastreams/{id}/observations`, `/controlstreams/{id}/commands`
-- Query parameter encoding: spatial filters (bbox), temporal filters (datetime, phenomenonTime, resultTime), relationship filters (parent, procedure, foi), pagination (limit, offset, cursor)
-- Format negotiation: `f` parameter and Accept headers for GeoJSON, SensorML-JSON, SWE Common formats
-- Recursive queries: `recursive=true` for hierarchical systems and deployments
 - Schema endpoints: `/datastreams/{id}/schema`, `/controlstreams/{id}/schema`
 - Bulk operations: POST with arrays of observations or commands
 - Command status/result endpoints: `/commands/{id}/status`, `/commands/{id}/result`
+
+**Complete Query Parameter Support:**
+
+This URL builder implements FULL query parameter support for CSAPI Parts 1 and 2, including all standard OGC API parameters and all CSAPI-specific extensions. This is NOT an MVP - we support the complete filtering and pagination capabilities defined in the CSAPI specifications.
+
+**Standard OGC API Parameters:**
+- `bbox`: Spatial bounding box filter (2D and 3D) for Systems, Deployments, Sampling Features
+- `datetime`: Temporal filter using ISO 8601 intervals for validTime filtering
+- `limit`: Maximum results per page (1 to 10,000 for Part 2)
+- `offset`: Skip N results for pagination
+- `f`: Format negotiation (json, geojson, sml+json, swe+json, swe+text)
+
+**CSAPI Common Parameters (Part 1):**
+- `id`: Filter by resource ID (multiple IDs supported as comma-separated list)
+- `uid`: Filter by unique identifier (URN-based filtering)
+- `q`: Full-text search across resource properties
+- `{propertyName}`: Filter by any resource property (e.g., `name=Weather%20Station`, `systemType=sosa:Sensor`)
+
+**CSAPI Hierarchical Parameters:**
+- `recursive`: Boolean flag for hierarchical queries (subsystems, subdeployments)
+  - `recursive=false`: Direct children only (default)
+  - `recursive=true`: All descendants at all nesting levels
+
+**CSAPI Relationship Parameters (Part 1):**
+- `parent`: Filter by parent system/deployment ID
+- `procedure`: Filter resources by associated procedure
+- `foi`: Filter by feature of interest
+- `observedProperty`: Filter by observed property URI
+- `controlledProperty`: Filter by controlled property URI
+- `system`: Filter resources by associated system
+- `baseProperty`: Filter properties by base property (hierarchy)
+- `objectType`: Filter by resource type
+
+**CSAPI Temporal Parameters (Part 2):**
+- `phenomenonTime`: When observation was made (ISO 8601 interval, primary temporal filter for observations)
+- `resultTime`: When observation result became available
+- `executionTime`: When command should be/was executed
+- `issueTime`: When command was issued
+
+**Pagination Modes:**
+- **Offset-based** (Part 1): `limit` + `offset` for predictable page navigation
+- **Cursor-based** (Part 2): `limit` + `cursor` for efficient large dataset streaming
+- **Temporal windowing** (Part 2): `phenomenonTime` intervals for time-series data
+
+**Advanced Filtering Capabilities:**
+- **Multiple ID filtering**: `id=sys1,sys2,sys3` (OR logic)
+- **Property-based filtering**: Any resource property can be used as query parameter
+- **Combined filters**: All parameters can be combined (AND logic between different parameter types)
+- **Nested endpoint filtering**: All query parameters work on nested endpoints (e.g., `/systems/{id}/subsystems?bbox=...&recursive=true`)
+
+**Format Negotiation:**
+- Query parameter: `f=json|geojson|sml+json|swe+json|swe+text|html`
+- HTTP Accept header: `application/json`, `application/geo+json`, `application/sml+json`, `application/swe+json`, `application/swe+text`
+- Format-specific parameters for Part 2: `obsFormat` (observation encoding), `cmdFormat` (command encoding)
 
 **Implementation Type:** BUILDING NEW CODE (following EDRQueryBuilder pattern)
 
