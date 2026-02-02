@@ -296,6 +296,8 @@ From the [Implementation Guide](../../../planning/csapi-implementation-guide.md#
 ### 2. Analysis Report
 **File:** `ogcapiendpoint-integration-analysis.md` (to be created in this folder)
 
+**Important:** The analysis report MUST include the [Development Standards](../../../planning/csapi-implementation-guide.md#development-standards) section from the implementation guide. All design decisions should follow these standards for code quality, documentation, and testing.
+
 **Required Sections:**
 1. **Executive Summary**
    - Key findings in 3-5 bullets
