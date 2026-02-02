@@ -1234,6 +1234,11 @@ The background processing component extends the existing Web Worker infrastructu
 
 **Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI message handlers to existing worker)
 
+**References:**
+- [upstream-PR114-analysis.md](../research/upstream/upstream-PR114-analysis.md): Worker patterns for EDR implementation
+- [upstream-worker-architecture.md](../research/upstream/upstream-worker-architecture.md): Existing worker infrastructure details
+- [CSAPI-Part2-requirements.md](../research/requirements/CSAPI-Part2-requirements.md): Performance requirements for large observation datasets
+
 ---
 
 ## Testing Components
@@ -1295,6 +1300,12 @@ The test coverage component extends the existing Jest test suite to cover all CS
 
 **Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI test suites to existing Jest framework)
 
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Specification examples for test fixtures
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Part 2 examples for observation/command tests
+- [upstream-testing-patterns.md](../research/upstream/upstream-testing-patterns.md): Existing test infrastructure patterns
+- [CSAPI-testing-strategy.md](../research/requirements/CSAPI-testing-strategy.md): Testing approach and coverage goals
+
 ---
 
 ## Documentation Components
@@ -1313,6 +1324,12 @@ The API documentation component extends the existing TypeDoc documentation to co
 - **Error Handling**: Common error scenarios and how to handle them
 
 **Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI docs to existing TypeDoc setup)
+
+**References:**
+- [upstream-documentation-patterns.md](../research/upstream/upstream-documentation-patterns.md): TypeDoc conventions and style guide
+- [CSAPI-developer-guide.md](../research/requirements/CSAPI-developer-guide.md): User-facing documentation requirements
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001r2/23-001r2.html): Normative references for documentation
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002r2/23-002r2.html): Part 2 specification references
 
 ---
 
