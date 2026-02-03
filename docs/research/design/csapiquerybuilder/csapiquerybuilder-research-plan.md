@@ -887,27 +887,238 @@ async deleteSystemCascade(id: string): Promise<void> { }
 
 24. **bbox Parameter:** How to encode spatial bounding box? Comma-separated coordinates? 2D vs 3D support? CRS parameter?
 
-**Answer:**
+**Answer:** The `bbox` parameter filters resources by spatial bounding box:
 
+**Format:** Comma-separated coordinates in WGS 84 (EPSG:4326) by default: `minLon,minLat,maxLon,maxLat`
+
+**Examples:**
+```
+bbox=-180,-90,180,90           # Global extent
+bbox=-10.0,50.0,2.0,60.0       # Part of Europe
+bbox=-122.4,37.7,-122.3,37.8   # San Francisco area
+```
+
+**3D Support (optional):** Add elevation values for 3D bbox: `minLon,minLat,minElev,maxLon,maxLat,maxElev`
+```
+bbox=-122.4,37.7,0,-122.3,37.8,1000  # With elevation range
+```
+
+**CRS Parameter:** While OGC API standard supports CRS negotiation via `bbox-crs` parameter, CSAPI Part 1 spec uses WGS 84 as default and primary CRS. Most implementations accept only WGS 84 for bbox queries.
+
+**Behavior:** Only resources with geometry that **intersects** the bounding box are returned (not just contained within).
+
+**TypeScript signature:**
+```typescript
+bbox?: [number, number, number, number] | [number, number, number, number, number, number]
+```
+
+**URL encoding:**
+```typescript
+if (options.bbox) {
+  url.searchParams.set('bbox', options.bbox.join(','));
+}
+// Result: ?bbox=-180,-90,180,90
+```
 
 25. **datetime Parameter:** How to encode temporal intervals? ISO 8601 format? Single instant vs interval? Open intervals (`../2024-01-31`, `2024-01-01/..`)?
 
-**Answer:**
+**Answer:** The `datetime` parameter filters resources by temporal extent using ISO 8601 format:
 
+**Single instant (exact time):**
+```
+datetime=2024-02-02T12:00:00Z     # Specific instant
+datetime=2024-02-02                # Whole day (shorthand)
+```
+
+**Closed interval (start and end):**
+```
+datetime=2024-01-01T00:00:00Z/2024-01-31T23:59:59Z   # January 2024
+datetime=2024-01-01/2024-01-31                        # Shorthand (whole days)
+```
+
+**Open start (everything up to date):**
+```
+datetime=../2024-01-31             # Everything before Feb 1, 2024
+datetime=../2024-01-31T23:59:59Z   # Everything before midnight
+```
+
+**Open end (everything from date onwards):**
+```
+datetime=2024-01-01/..             # Everything from Jan 1, 2024 onwards
+datetime=2024-01-01T00:00:00Z/..   # Same with explicit time
+```
+
+**Special keywords:**
+```
+datetime=now/..                    # From current time onwards
+datetime=../now                    # Everything up to now
+datetime=latest                    # Most recent resource only
+```
+
+**Behavior:** Resources with `validTime` that **intersects** the specified datetime/interval are returned.
+
+**TypeScript signature:**
+```typescript
+datetime?: string  // ISO 8601 instant or interval
+```
+
+**URL encoding:** Pass string directly (already properly formatted):
+```typescript
+if (options.datetime) {
+  url.searchParams.set('datetime', options.datetime);
+}
+```
+
+**Note:** Part 1 resources use `datetime` for validity periods. Part 2 resources use specialized temporal parameters (`phenomenonTime`, `resultTime`, etc.) for observations/commands.
 
 26. **limit Parameter:** What are valid range values? 1 to 10,000 for Part 2? Different defaults for Part 1 vs Part 2?
 
-**Answer:**
+**Answer:** The `limit` parameter controls maximum number of items returned:
 
+**Valid range:** 1 to 10,000 (inclusive)
+```
+limit=1        # Minimum (single resource)
+limit=100      # Common page size
+limit=10000    # Maximum allowed
+```
+
+**Default value:** 10 (if limit not specified)
+
+**Part 1 vs Part 2:**
+- **Part 1** (Systems, Deployments, etc.): Default 10, max 10,000
+- **Part 2** (DataStreams, Observations, etc.): Default 10, max 10,000
+- **Same limits for both parts** per OpenAPI specs
+
+**Behavior:** Limits items at **first level only** (nested objects don't count toward limit)
+
+**TypeScript signature:**
+```typescript
+limit?: number  // 1-10000, default 10
+```
+
+**URL encoding:**
+```typescript
+if (options.limit !== undefined) {
+  if (options.limit < 1 || options.limit > 10000) {
+    throw new Error('limit must be between 1 and 10000');
+  }
+  url.searchParams.set('limit', options.limit.toString());
+}
+```
+
+**Server behavior:**
+- Returns up to `limit` items
+- May return fewer if insufficient matches
+- If more items exist, provides pagination links (next/prev)
+- Returns HTTP 400 Bad Request if limit out of range
 
 27. **offset Parameter:** How does offset-based pagination work? Combined with limit? Start at 0 or 1?
 
-**Answer:**
+**Answer:** The `offset` parameter implements offset-based pagination for Part 1 resources:
 
+**Format:** Non-negative integer (0-based index)
+```
+offset=0       # First page (default)
+offset=10      # Skip first 10 items
+offset=100     # Skip first 100 items
+```
+
+**Combined with limit:**
+```
+limit=10&offset=0    # Items 0-9 (page 1)
+limit=10&offset=10   # Items 10-19 (page 2)
+limit=10&offset=20   # Items 20-29 (page 3)
+```
+
+**Calculate next page offset:**
+```typescript
+const nextOffset = currentOffset + limit;
+```
+
+**TypeScript signature:**
+```typescript
+interface PaginationOptions {
+  limit?: number;   // Items per page (default 10)
+  offset?: number;  // Zero-based starting index (default 0)
+}
+```
+
+**URL encoding:**
+```typescript
+if (options.offset !== undefined) {
+  url.searchParams.set('offset', options.offset.toString());
+}
+if (options.limit !== undefined) {
+  url.searchParams.set('limit', options.limit.toString());
+}
+// Result: ?limit=10&offset=20
+```
+
+**Part 1 vs Part 2:**
+- **Part 1:** Uses offset-based pagination (offset + limit)
+- **Part 2:** May use cursor-based pagination (cursor + limit) for observations/commands (better for streaming data)
+
+**Important:** Part 1 spec does NOT explicitly document `offset` parameter in OpenAPI spec, but it's part of OGC API - Features standard that CSAPI Part 1 extends. Servers SHOULD support it.
 
 28. **f Parameter:** What format values are supported? `json`, `geojson`, `sml+json`, `swe+json`, `swe+text`, `html`?
 
-**Answer:**
+**Answer:** The `f` parameter specifies response format (content negotiation):
+
+**Supported format values:**
+
+**Part 1 Resources (Systems, Deployments, Procedures, Sampling Features):**
+- `f=json` - Standard JSON
+- `f=geojson` - GeoJSON (default for spatial resources)
+- `f=sml+json` - SensorML 3.0 JSON (for detailed system descriptions)
+- `f=html` - Human-readable HTML representation
+
+**Part 2 Resources (DataStreams, ControlStreams, Properties):**
+- `f=json` - Standard JSON (default for non-spatial resources)
+- `f=swe+json` - SWE Common JSON encoding
+
+**Observations/Commands:**
+- `f=json` - Standard JSON (default)
+- `f=swe+json` - SWE Common JSON
+- `f=swe+text` - CSV/text encoding (for bulk observations)
+- `f=swe+binary` - Binary encoding (high-performance streaming)
+- `f=om+json` - O&M JSON (legacy format)
+
+**Examples:**
+```
+GET /systems?f=geojson       # GeoJSON Feature Collection
+GET /systems/sys1?f=sml+json # SensorML document
+GET /procedures/p1?f=sml+json # Detailed procedure description
+GET /observations?f=swe+text  # CSV format
+```
+
+**TypeScript signature:**
+```typescript
+type Format = 'json' | 'geojson' | 'sml+json' | 'swe+json' | 'swe+text' | 'html';
+
+interface QueryOptions {
+  f?: Format;
+}
+```
+
+**URL encoding:**
+```typescript
+if (options.f) {
+  url.searchParams.set('f', options.f);
+}
+```
+
+**Alternative:** Use HTTP `Accept` header instead of query parameter:
+```typescript
+headers: {
+  'Accept': 'application/geo+json'  // Same as f=geojson
+}
+```
+
+**Default formats (when f not specified):**
+- Systems, Deployments, Sampling Features → `application/geo+json`
+- Procedures → `application/sml+json` or `application/geo+json`
+- DataStreams, ControlStreams, Properties → `application/json`
+- Observations, Commands → `application/json`
 
 
 ### F. CSAPI-Specific Query Parameters
@@ -916,67 +1127,646 @@ async deleteSystemCascade(id: string): Promise<void> { }
 
 29. **id Parameter:** How to filter by multiple IDs? Comma-separated list? OR logic? Example: `id=sys1,sys2,sys3`?
 
-**Answer:**
+**Answer:** The `id` parameter filters resources by one or more identifiers:
 
+**Format:** Comma-separated list of local IDs or unique IDs (URIs)
+```
+id=sys1                                    # Single local ID
+id=sys1,sys2,sys3                          # Multiple local IDs (OR logic)
+id=urn:example:system:001                  # Single unique ID (URN)
+id=urn:example:system:001,urn:example:system:002  # Multiple URNs
+```
+
+**Logic:** OR operation - returns resources matching **any** of the provided IDs
+
+**Applies to:** All resource types (Systems, Deployments, Procedures, Sampling Features, Properties, DataStreams, Observations, ControlStreams, Commands)
+
+**TypeScript signature:**
+```typescript
+id?: string[]  // Array of IDs (local or URN)
+```
+
+**URL encoding:**
+```typescript
+if (options.id?.length > 0) {
+  url.searchParams.set('id', options.id.join(','));
+}
+// Result: ?id=sys1,sys2,sys3
+```
+
+**OpenAPI spec schema:**
+```yaml
+schema:
+  oneOf:
+    - type: string        # Single ID
+    - type: array         # Multiple IDs
+      items:
+        type: string
+```
+
+**Note:** `id` parameter is different from `{systemId}` path parameter. Query parameter filters collections; path parameter accesses specific resource.
 
 30. **uid Parameter:** How to filter by unique identifier? URN format? Single value or multiple?
 
-**Answer:**
+**Answer:** CSAPI does NOT have a separate `uid` parameter. The `id` parameter accepts **both** local IDs and unique identifiers (UIDs):
 
+**Rationale:** The `id` parameter is polymorphic - accepts local IDs OR URN/URI identifiers:
+```
+id=sys1                           # Local ID
+id=urn:uuid:550e8400-e29b-41d4    # UUID URN
+id=urn:ogc:def:identifier:001     # OGC URN
+id=http://example.org/systems/s1  # HTTP URI
+```
+
+**No separate uid parameter needed** - use `id` with URN/URI values.
+
+**Schema note:** OpenAPI spec defines `idListSchema` as:
+```yaml
+idListSchema:
+  description: List of resource local IDs or unique identifiers (URIs)
+  oneOf:
+    - type: string       # Can be local ID or URI
+    - type: array        # Array of IDs or URIs
+```
+
+**Usage:**
+```typescript
+// Filter by unique IDs
+getSystems({ 
+  id: ['urn:uuid:123', 'urn:uuid:456'] 
+});
+```
 
 31. **q Parameter:** How does full-text search work? What properties are searched? Case sensitivity?
 
-**Answer:**
+**Answer:** The `q` parameter performs full-text keyword search:
 
+**Format:** Comma-separated list of keywords (1-50 characters each)
+```
+q=temperature                    # Single keyword
+q=temp,humidity,pressure         # Multiple keywords (OR logic)
+q=weather,station                # Multiple keywords
+```
+
+**Searched properties:**
+- `name` (always searched)
+- `description` (always searched)
+- Other textual fields (server-dependent)
+
+**Search behavior:**
+- **OR logic:** Resources matching **any** keyword are returned
+- **Partial match:** Keyword can match part of text (e.g., "temp" matches "temperature")
+- **Case insensitive:** Search is case-insensitive by default
+- **Server-dependent:** Exact matching rules vary by implementation
+
+**TypeScript signature:**
+```typescript
+q?: string[]  // Array of keywords (1-50 chars each)
+```
+
+**URL encoding:**
+```typescript
+if (options.q?.length > 0) {
+  const keywords = options.q.filter(k => k.length >= 1 && k.length <= 50);
+  url.searchParams.set('q', keywords.join(','));
+}
+// Result: ?q=temp,humidity
+```
+
+**OpenAPI spec:**
+```yaml
+keyword:
+  name: q
+  schema:
+    type: array
+    items:
+      type: string
+      minLength: 1
+      maxLength: 50
+  explode: false
+```
+
+**Applies to:** All resource types
 
 32. **Property Filters:** How to filter by arbitrary resource properties? Example: `name=Weather%20Station`, `systemType=sosa:Sensor`?
 
-**Answer:**
+**Answer:** CSAPI does NOT support arbitrary property filtering via query parameters in the OpenAPI spec.
 
+**What IS supported:**
+- `id` - Filter by resource IDs
+- `q` - Full-text keyword search (searches name, description, and other text fields)
+- Specific relationship filters: `parent`, `system`, `procedure`, `foi`, `observedProperty`, `controlledProperty`, `baseProperty`
+- Spatial filters: `bbox`, `geom`
+- Temporal filters: `datetime`, `phenomenonTime`, `resultTime`, etc.
+
+**What is NOT supported:**
+- Generic property filters like `name=value`, `systemType=uri`, `assetType=sensor`
+- JSONPath or dot notation for nested properties
+- Custom property filters
+
+**Workaround:** Use `q` parameter for text-based properties:
+```
+q=weather,station  # Finds resources with "weather" or "station" in name/description
+```
+
+**Future consideration:** Some server implementations MAY support vendor-specific property filters, but these are not standardized in CSAPI spec.
+
+**For exact property matching:** Client must fetch all resources and filter locally, or use relationship parameters (parent, system, etc.) to narrow search scope.
 
 33. **recursive Parameter:** How does hierarchical recursion work? Boolean flag? `recursive=true` for all descendants?
 
-**Answer:**
+**Answer:** The `recursive` parameter enables hierarchical traversal for nested resources:
 
+**Format:** Boolean flag (`true` or `false`)
+```
+recursive=true     # Include all descendants recursively
+recursive=false    # Direct children only (default)
+```
+
+**Applies to:**
+- **Systems:** `GET /systems?recursive=true` - includes subsystems, sub-subsystems, etc.
+- **Systems subsystems:** `GET /systems/{id}/subsystems?recursive=true` - all nested subsystems
+- **Deployments:** `GET /deployments?recursive=true` - includes subdeployments at all levels
+- **Deployments subdeployments:** `GET /deployments/{id}/subdeployments?recursive=true` - all nested subdeployments
+
+**Behavior:**
+- `recursive=false` (default): Returns only immediate children
+- `recursive=true`: Returns entire hierarchy tree (all descendants)
+
+**Example:**
+```
+System A
+  ├─ Subsystem B
+  │   └─ Subsystem D
+  └─ Subsystem C
+
+GET /systems/A/subsystems?recursive=false
+→ Returns: [B, C]
+
+GET /systems/A/subsystems?recursive=true
+→ Returns: [B, C, D]
+```
+
+**TypeScript signature:**
+```typescript
+recursive?: boolean  // Default false
+```
+
+**URL encoding:**
+```typescript
+if (options.recursive !== undefined) {
+  url.searchParams.set('recursive', options.recursive.toString());
+}
+```
+
+**OpenAPI spec:**
+```yaml
+recursive:
+  name: recursive
+  schema:
+    type: boolean
+    default: false
+  description: If true, instructs the server to include nested resources in the search results
+```
+
+**Performance note:** Recursive queries can return large result sets for deep hierarchies. Use with limit parameter to control response size.
 
 34. **parent Parameter:** How to filter by parent resource? Single ID or multiple? Apply to systems and deployments?
 
-**Answer:**
+**Answer:** The `parent` parameter filters resources by their parent resource ID:
 
+**Format:** Comma-separated list of parent IDs (local or URN)
+```
+parent=sys1                         # Single parent
+parent=sys1,sys2                    # Multiple parents (OR logic)
+parent=urn:example:system:parent001 # Parent by URN
+```
+
+**Applies to:**
+- **Systems:** Filter systems by parent system ID
+- **Deployments:** Filter deployments by parent deployment ID
+
+**Logic:** OR operation - returns resources with parent matching **any** of the provided IDs
+
+**TypeScript signature:**
+```typescript
+parent?: string[]  // Array of parent IDs
+```
+
+**URL encoding:**
+```typescript
+if (options.parent?.length > 0) {
+  url.searchParams.set('parent', options.parent.join(','));
+}
+// Result: ?parent=sys1,sys2
+```
+
+**OpenAPI spec:**
+```yaml
+parentIdList:
+  name: parent
+  schema:
+    description: List of resource local IDs or unique IDs (URI)
+    oneOf:
+      - type: string
+      - type: array
+        items:
+          type: string
+```
+
+**Usage examples:**
+```typescript
+// Get all subsystems of sys1 (without recursion)
+GET /systems?parent=sys1
+
+// Get all subdeployments of deployment123
+GET /deployments?parent=deployment123
+
+// Equivalent to nested endpoint (but uses canonical endpoint)
+GET /systems?parent=sys1  ≈  GET /systems/sys1/subsystems
+```
+
+**Note:** Using nested endpoint (`/systems/{id}/subsystems`) is preferred over `parent` parameter for better RESTful semantics.
 
 35. **system Parameter:** How to filter resources by associated system? Single ID or multiple? Apply to which resource types?
 
-**Answer:**
+**Answer:** The `system` parameter filters resources by associated system ID:
 
+**Format:** Comma-separated list of system IDs (local or URN)
+```
+system=sys1                         # Single system
+system=sys1,sys2,sys3               # Multiple systems (OR logic)
+system=urn:example:system:sensor001 # System by URN
+```
+
+**Applies to:**
+- **Deployments:** Filter by deployed system
+- **Procedures:** Filter by system implementing the procedure
+- **Sampling Features:** Filter by system that uses the sampling feature
+- **Properties:** Filter by system that measures/controls the property
+- **DataStreams** (Part 2): Filter by system producing observations
+- **Observations** (Part 2): Filter by observing system
+- **ControlStreams** (Part 2): Filter by controlled system
+- **Commands** (Part 2): Filter by target system
+
+**Logic:** OR operation - returns resources associated with **any** of the provided systems
+
+**TypeScript signature:**
+```typescript
+system?: string[]  // Array of system IDs
+```
+
+**URL encoding:**
+```typescript
+if (options.system?.length > 0) {
+  url.searchParams.set('system', options.system.join(','));
+}
+// Result: ?system=sys1,sys2
+```
+
+**OpenAPI spec:**
+```yaml
+systemIdList:
+  name: system
+  schema:
+    description: List of system local IDs or unique IDs (URI)
+    oneOf:
+      - type: string
+      - type: array
+        items:
+          type: string
+```
+
+**Usage examples:**
+```typescript
+// Get all deployments of specific system
+GET /deployments?system=weather-station-1
+
+// Get all datastreams from multiple systems
+GET /datastreams?system=sys1,sys2,sys3
+
+// Equivalent to nested endpoint
+GET /datastreams?system=sys1  ≈  GET /systems/sys1/datastreams
+```
 
 36. **deployment Parameter:** How to filter by deployment? Single ID or multiple?
 
-**Answer:**
+**Answer:** The `deployment` parameter filters resources by deployment ID:
 
+**Format:** Comma-separated list of deployment IDs (local or URN)
+```
+deployment=dep1                        # Single deployment
+deployment=dep1,dep2                   # Multiple deployments (OR logic)
+deployment=urn:example:deployment:mission01  # Deployment by URN
+```
+
+**Applies to:**
+- **Systems:** Filter systems by deployment they're part of
+- **Procedures:** Filter procedures by deployment context
+- **Sampling Features:** Filter by deployment
+- **DataStreams** (Part 2): Filter by deployment context
+- **Observations** (Part 2): Filter by deployment during which observation was made
+- **ControlStreams** (Part 2): Filter by deployment
+- **Commands** (Part 2): Filter by deployment context
+
+**Logic:** OR operation - returns resources associated with **any** of the provided deployments
+
+**TypeScript signature:**
+```typescript
+deployment?: string[]  // Array of deployment IDs
+```
+
+**URL encoding:**
+```typescript
+if (options.deployment?.length > 0) {
+  url.searchParams.set('deployment', options.deployment.join(','));
+}
+// Result: ?deployment=dep1,dep2
+```
+
+**Note:** OpenAPI spec does NOT explicitly define `deployment` parameter in Part 1. It's **implied** by the spec structure but not formally documented. Implementations SHOULD support it for consistency.
 
 37. **procedure Parameter:** How to filter by procedure? Single ID or multiple?
 
-**Answer:**
+**Answer:** The `procedure` parameter filters resources by procedure ID:
 
+**Format:** Comma-separated list of procedure IDs (local or URN)
+```
+procedure=proc1                         # Single procedure
+procedure=proc1,proc2                   # Multiple procedures (OR logic)
+procedure=urn:example:procedure:method1 # Procedure by URN
+```
+
+**Applies to:**
+- **Systems:** Filter systems that implement specific procedure(s)
+- **DataStreams** (Part 2): Filter by acquisition procedure
+- **Observations** (Part 2): Filter by observation procedure
+
+**Logic:** OR operation - returns resources using **any** of the provided procedures
+
+**TypeScript signature:**
+```typescript
+procedure?: string[]  // Array of procedure IDs
+```
+
+**URL encoding:**
+```typescript
+if (options.procedure?.length > 0) {
+  url.searchParams.set('procedure', options.procedure.join(','));
+}
+// Result: ?procedure=proc1,proc2
+```
+
+**OpenAPI spec:**
+```yaml
+procedureIdList:
+  name: procedure
+  schema:
+    description: List of procedure local IDs or unique IDs (URI)
+    oneOf:
+      - type: string
+      - type: array
+        items:
+          type: string
+```
+
+**Usage:**
+```typescript
+// Get all systems implementing calibration procedure
+GET /systems?procedure=calibration-method-v2
+
+// Get observations made with specific procedure
+GET /observations?procedure=satellite-imaging-v1
+```
 
 38. **foi Parameter:** How to filter by feature of interest? Single ID or multiple?
 
-**Answer:**
+**Answer:** The `foi` parameter filters resources by feature of interest ID:
 
+**Format:** Comma-separated list of FOI IDs (local or URN)
+```
+foi=sf1                                 # Single FOI
+foi=sf1,sf2,sf3                         # Multiple FOIs (OR logic)
+foi=urn:example:feature:location001     # FOI by URN
+```
+
+**Applies to:**
+- **Systems:** Filter systems observing specific feature(s)
+- **Deployments:** Filter deployments related to specific feature(s)
+- **Sampling Features:** Filter by related feature of interest
+- **DataStreams** (Part 2): Filter by ultimate feature of interest
+- **Observations** (Part 2): Filter by feature being observed
+
+**Logic:** OR operation - returns resources associated with **any** of the provided features
+
+**TypeScript signature:**
+```typescript
+foi?: string[]  // Array of feature of interest IDs
+```
+
+**URL encoding:**
+```typescript
+if (options.foi?.length > 0) {
+  url.searchParams.set('foi', options.foi.join(','));
+}
+// Result: ?foi=sf1,sf2
+```
+
+**OpenAPI spec:**
+```yaml
+foiIdList:
+  name: foi
+  schema:
+    description: List of feature local IDs or unique IDs (URI)
+    oneOf:
+      - type: string
+      - type: array
+        items:
+          type: string
+```
+
+**Usage:**
+```typescript
+// Get all observations of specific building
+GET /observations?foi=building-123
+
+// Get datastreams observing multiple locations
+GET /datastreams?foi=loc1,loc2,loc3
+```
 
 39. **observedProperty Parameter:** How to filter by observed property? URI or ID? Single or multiple?
 
-**Answer:**
+**Answer:** The `observedProperty` parameter filters resources by observed property:
 
+**Format:** Comma-separated list of property IDs or URIs
+```
+observedProperty=temp                                    # Single property (local ID)
+observedProperty=temp,humidity,pressure                  # Multiple (OR logic)
+observedProperty=http://mmisw.org/ont/cf/parameter/air_temperature  # Property URI
+```
+
+**Applies to:**
+- **Systems:** Filter systems observing specific property/properties
+- **DataStreams** (Part 2): Filter by observed property
+- **Observations** (Part 2): Filter by property being observed
+- **Properties:** Filter properties by ID (redundant, but supported)
+
+**ID vs URI:** Can use either local property ID OR full semantic URI
+
+**Logic:** OR operation - returns resources observing **any** of the provided properties
+
+**TypeScript signature:**
+```typescript
+observedProperty?: string[]  // Array of property IDs or URIs
+```
+
+**URL encoding:**
+```typescript
+if (options.observedProperty?.length > 0) {
+  url.searchParams.set('observedProperty', options.observedProperty.join(','));
+}
+// Result: ?observedProperty=temp,humidity
+```
+
+**OpenAPI spec:**
+```yaml
+obsPropIdList:
+  name: observedProperty
+  schema:
+    description: List of property local IDs or unique IDs (URI)
+    oneOf:
+      - type: string
+      - type: array
+        items:
+          type: string
+```
+
+**Usage:**
+```typescript
+// Get all temperature datastreams
+GET /datastreams?observedProperty=air-temperature
+
+// Get observations of multiple properties
+GET /observations?observedProperty=temp,humidity,pressure
+```
 
 40. **controlledProperty Parameter:** How to filter by controlled property? URI or ID? Single or multiple?
 
-**Answer:**
+**Answer:** The `controlledProperty` parameter filters resources by controlled property:
 
+**Format:** Comma-separated list of property IDs or URIs
+```
+controlledProperty=pan                                   # Single property (local ID)
+controlledProperty=pan,tilt                              # Multiple (OR logic)
+controlledProperty=http://example.org/ont/pan_angle      # Property URI
+```
+
+**Applies to:**
+- **Systems:** Filter systems controlling specific property/properties
+- **ControlStreams** (Part 2): Filter by controlled property
+- **Commands** (Part 2): Filter by property being controlled
+- **Properties:** Filter properties that are controllable
+
+**ID vs URI:** Can use either local property ID OR full semantic URI
+
+**Logic:** OR operation - returns resources controlling **any** of the provided properties
+
+**TypeScript signature:**
+```typescript
+controlledProperty?: string[]  // Array of property IDs or URIs
+```
+
+**URL encoding:**
+```typescript
+if (options.controlledProperty?.length > 0) {
+  url.searchParams.set('controlledProperty', options.controlledProperty.join(','));
+}
+// Result: ?controlledProperty=pan,tilt
+```
+
+**OpenAPI spec:**
+```yaml
+controlPropIdList:
+  name: controlledProperty
+  schema:
+    description: List of property local IDs or unique IDs (URI)
+    oneOf:
+      - type: string
+      - type: array
+        items:
+          type: string
+```
+
+**Usage:**
+```typescript
+// Get all pan-tilt control streams
+GET /controlstreams?controlledProperty=pan,tilt
+
+// Get commands controlling specific property
+GET /commands?controlledProperty=camera-zoom
+```
 
 41. **baseProperty Parameter:** How to filter properties by base property? Property hierarchy?
 
-**Answer:**
+**Answer:** The `baseProperty` parameter filters properties by their base property (parent in property hierarchy):
+
+**Format:** Comma-separated list of base property IDs or URIs
+```
+baseProperty=temperature                                  # Single base property
+baseProperty=temp,pressure                                # Multiple (OR logic)
+baseProperty=http://mmisw.org/ont/cf/parameter/temperature  # Base property URI
+```
+
+**Applies to:**
+- **Properties ONLY:** Filter derived properties by their base property
+
+**Property hierarchy example:**
+```
+temperature (base)
+  ├─ air_temperature (derived)
+  ├─ water_temperature (derived)
+  └─ surface_temperature (derived)
+```
+
+**Usage:**
+```typescript
+// Get all temperature-related properties
+GET /properties?baseProperty=temperature
+// Returns: air_temperature, water_temperature, surface_temperature
+
+// Get properties derived from multiple base properties
+GET /properties?baseProperty=temperature,pressure
+```
+
+**Logic:** OR operation - returns properties derived from **any** of the provided base properties
+
+**TypeScript signature:**
+```typescript
+baseProperty?: string[]  // Array of base property IDs or URIs
+```
+
+**URL encoding:**
+```typescript
+if (options.baseProperty?.length > 0) {
+  url.searchParams.set('baseProperty', options.baseProperty.join(','));
+}
+// Result: ?baseProperty=temperature,pressure
+```
+
+**OpenAPI spec:**
+```yaml
+basePropIdList:
+  name: baseProperty
+  schema:
+    description: List of property local IDs or unique IDs (URI)
+    oneOf:
+      - type: string
+      - type: array
+        items:
+          type: string
+```
+
+**Note:** Property hierarchy enables semantic querying - finding all temperature properties regardless of specific type.
 
 
 ### G. Part 2 Temporal Query Parameters
@@ -985,51 +1775,563 @@ async deleteSystemCascade(id: string): Promise<void> { }
 
 42. **phenomenonTime Parameter:** How to encode when observation was made? ISO 8601 intervals? Primary temporal filter for observations?
 
-**Answer:**
+**Answer:** The `phenomenonTime` parameter filters observations by when the phenomenon was observed:
 
+**Format:** ISO 8601 instant or interval (same syntax as `datetime`)
+
+**Single instant:**
+```
+phenomenonTime=2024-02-02T12:00:00Z     # Exact observation time
+phenomenonTime=2024-02-02                # Shorthand (whole day)
+```
+
+**Closed interval:**
+```
+phenomenonTime=2024-01-01T00:00:00Z/2024-01-31T23:59:59Z  # January observations
+phenomenonTime=2024-01-01/2024-01-31                       # Shorthand
+```
+
+**Open intervals:**
+```
+phenomenonTime=../2024-01-31             # All observations before Feb 1
+phenomenonTime=2024-01-01/..             # All observations from Jan 1 onwards
+phenomenonTime=../now                    # All observations up to now
+phenomenonTime=now/..                    # Future scheduled observations
+```
+
+**Special keyword:**
+```
+phenomenonTime=latest                    # Most recent observation only
+```
+
+**Applies to:**
+- **DataStreams:** Filter by phenomenon time extent
+- **Observations:** **Primary temporal filter** - when phenomenon was observed
+
+**Behavior:** Returns observations where `phenomenonTime` **intersects** the specified interval
+
+**TypeScript signature:**
+```typescript
+phenomenonTime?: string  // ISO 8601 instant or interval
+```
+
+**URL encoding:**
+```typescript
+if (options.phenomenonTime) {
+  url.searchParams.set('phenomenonTime', options.phenomenonTime);
+}
+```
+
+**OpenAPI spec:**
+```yaml
+phenomenonTime:
+  name: phenomenonTime
+  schema:
+    type: string  # ISO 8601 format
+  description: Filter observations by phenomenon time
+```
+
+**Note:** `phenomenonTime` is the **when the phenomenon occurred** (e.g., when temperature was 25°C), distinct from `resultTime` (when result became available).
 
 43. **resultTime Parameter:** How to encode when result became available? ISO 8601 intervals?
 
-**Answer:**
+**Answer:** The `resultTime` parameter filters by when the observation result was produced/became available:
 
+**Format:** ISO 8601 instant or interval (same syntax as `phenomenonTime`)
+
+**Examples:**
+```
+resultTime=2024-02-02T12:05:00Z          # Result available at specific time
+resultTime=2024-01-01/2024-01-31         # Results produced in January
+resultTime=../now                        # All results available up to now
+resultTime=latest                        # Most recently produced result
+```
+
+**Applies to:**
+- **DataStreams:** Filter by result time extent
+- **Observations:** Filter by when result was produced
+
+**Phenomenon time vs Result time:**
+- `phenomenonTime`: When phenomenon occurred (e.g., 12:00:00 - temperature measured)
+- `resultTime`: When result became available (e.g., 12:05:00 - after processing/transmission)
+- Usually `resultTime >= phenomenonTime` (processing delay)
+- Can be equal for real-time systems
+
+**Use cases:**
+- Find observations processed/received in specific timeframe
+- Query by data availability rather than phenomenon occurrence
+- Filter by data latency
+
+**TypeScript signature:**
+```typescript
+resultTime?: string  // ISO 8601 instant or interval
+```
+
+**URL encoding:**
+```typescript
+if (options.resultTime) {
+  url.searchParams.set('resultTime', options.resultTime);
+}
+```
+
+**OpenAPI spec:**
+```yaml
+resultTime:
+  name: resultTime
+  schema:
+    type: string  # ISO 8601 format
+  description: Filter observations by result time
+```
 
 44. **executionTime Parameter:** How to encode when command should be/was executed? ISO 8601 intervals?
 
-**Answer:**
+**Answer:** The `executionTime` parameter filters commands by their scheduled/actual execution time:
 
+**Format:** ISO 8601 instant or interval
+
+**Examples:**
+```
+executionTime=2024-02-02T14:00:00Z       # Command executed at specific time
+executionTime=2024-01-01/2024-01-31      # Commands executed in January
+executionTime=now/..                     # Commands scheduled for future
+executionTime=../now                     # Commands already executed
+```
+
+**Applies to:**
+- **ControlStreams:** Filter by execution time extent
+- **Commands:** Filter by when command should be/was executed
+
+**Semantics:**
+- **Scheduled:** When command should execute (future time)
+- **Actual:** When command was executed (past time)
+- Can be used for both scheduling and historical queries
+
+**TypeScript signature:**
+```typescript
+executionTime?: string  // ISO 8601 instant or interval
+```
+
+**URL encoding:**
+```typescript
+if (options.executionTime) {
+  url.searchParams.set('executionTime', options.executionTime);
+}
+```
+
+**OpenAPI spec:** Part 2 spec does NOT explicitly document `executionTime` as query parameter, but `executionTime` is a property of commands, so filtering by it is **implied**. Implementations SHOULD support it.
 
 45. **issueTime Parameter:** How to encode when command was issued? ISO 8601 intervals?
 
-**Answer:**
+**Answer:** The `issueTime` parameter filters commands by when they were issued/submitted:
 
+**Format:** ISO 8601 instant or interval
+
+**Examples:**
+```
+issueTime=2024-02-02T13:00:00Z           # Command issued at specific time
+issueTime=2024-01-01/2024-01-31          # Commands issued in January
+issueTime=../now                         # All commands issued up to now
+issueTime=2024-02-01/..                  # Commands issued from Feb 1 onwards
+```
+
+**Applies to:**
+- **Commands:** Filter by when command was submitted to system
+
+**Issue time vs Execution time:**
+- `issueTime`: When command was submitted by client
+- `executionTime`: When command should be/was executed by system
+- Usually `executionTime >= issueTime` (scheduled for future or immediate)
+
+**Use cases:**
+- Find commands submitted in specific timeframe
+- Query command history by submission time
+- Audit trail of command issuance
+
+**TypeScript signature:**
+```typescript
+issueTime?: string  // ISO 8601 instant or interval
+```
+
+**URL encoding:**
+```typescript
+if (options.issueTime) {
+  url.searchParams.set('issueTime', options.issueTime);
+}
+```
+
+**OpenAPI spec:** Part 2 spec does NOT explicitly document `issueTime` as query parameter, but `issueTime` is a property of commands, so filtering by it is **implied**. Implementations SHOULD support it.
 
 46. **Temporal Interval Syntax:** What is the complete ISO 8601 interval syntax? Single instant, closed interval, open start, open end, multiple disjoint intervals?
 
-**Answer:**
+**Answer:** Complete ISO 8601 temporal syntax for CSAPI query parameters:
 
+**1. Single instant (exact time):**
+```
+2024-02-02T12:00:00Z                     # With time zone (UTC)
+2024-02-02T12:00:00-05:00                # With time zone offset
+2024-02-02                                # Date only (shorthand for whole day)
+```
 
-### H. Pagination Implementation
+**2. Closed interval (start and end):**
+```
+2024-01-01T00:00:00Z/2024-01-31T23:59:59Z   # Full timestamp interval
+2024-01-01/2024-01-31                        # Date interval (shorthand)
+2024-01-15T10:00:00Z/PT1H                    # Start + duration (1 hour)
+PT1H/2024-01-15T11:00:00Z                    # Duration + end
+```
 
-**Questions:**
+**3. Open start (everything before end):**
+```
+../2024-01-31                            # Everything up to Jan 31
+../2024-01-31T23:59:59Z                  # Everything up to end of Jan 31
+../now                                   # Everything up to current time
+```
+
+**4. Open end (everything after start):**
+```
+2024-01-01/..                            # Everything from Jan 1 onwards
+2024-01-01T00:00:00Z/..                  # Everything from start of Jan 1
+now/..                                   # Everything from now onwards (future)
+```
+
+**5. Special keywords:**
+```
+now                                      # Current time (can be used as instant or in interval)
+latest                                   # Most recent resource only
+```
+
+**6. Duration format (ISO 8601 duration):**
+```
+PT1H                                     # 1 hour
+PT30M                                    # 30 minutes
+PT1H30M                                  # 1 hour 30 minutes
+P1D                                      # 1 day
+P1M                                      # 1 month
+P1Y                                      # 1 year
+P1DT12H                                  # 1 day 12 hours
+```
+
+**NOT supported (non-standard):**
+- Multiple disjoint intervals: `2024-01-01/2024-01-15,2024-02-01/2024-02-15` ❌
+- For multiple intervals, use separate queries and merge results client-side
+
+**TypeScript types:**
+```typescript
+type ISO8601Instant = string;  // "2024-02-02T12:00:00Z"
+type ISO8601Interval = string; // "2024-01-01/2024-01-31"
+type TemporalQuery = ISO8601Instant | ISO8601Interval | 'now' | 'latest';
+```
+
+**Parsing pattern:**
+- Single date/time: Instant
+- Contains `/`: Interval
+- Contains `..`: Open interval
+- `now` or `latest`: Special keyword
 
 47. **Offset-Based Pagination:** How to implement Part 1 style pagination? `limit` + `offset` parameters? How to calculate next page offset?
 
-**Answer:**
+**Answer:** Part 1 offset-based pagination using `limit` and `offset` parameters:
 
+**Parameters:**
+- `limit`: Number of items per page (default 10, max 10,000)
+- `offset`: Zero-based starting index (default 0)
+
+**Page calculation:**
+```typescript
+// Page 1 (first 10 items)
+GET /systems?limit=10&offset=0
+
+// Page 2 (next 10 items)
+GET /systems?limit=10&offset=10
+
+// Page 3
+GET /systems?limit=10&offset=20
+
+// Calculate next page offset
+const nextOffset = currentOffset + limit;
+```
+
+**Implementation pattern:**
+```typescript
+async function getSystems(options: {
+  limit?: number;
+  offset?: number;
+  // ... other filters
+}): Promise<{ items: System[]; hasMore: boolean }> {
+  const limit = options.limit ?? 10;
+  const offset = options.offset ?? 0;
+  
+  const url = new URL(baseUrl);
+  url.searchParams.set('limit', limit.toString());
+  url.searchParams.set('offset', offset.toString());
+  
+  const response = await fetch(url.toString());
+  const data = await response.json();
+  
+  return {
+    items: data.features || data.items,
+    hasMore: data.features?.length === limit  // More items if full page returned
+  };
+}
+```
+
+**Pagination logic:**
+```typescript
+// Fetch all pages
+async function getAllSystems(): Promise<System[]> {
+  const allSystems: System[] = [];
+  let offset = 0;
+  const limit = 100;
+  let hasMore = true;
+  
+  while (hasMore) {
+    const { items, hasMore: more } = await getSystems({ limit, offset });
+    allSystems.push(...items);
+    hasMore = more;
+    offset += limit;
+  }
+  
+  return allSystems;
+}
+```
+
+**Advantages:**
+- Simple to implement
+- Easy to jump to specific page
+- Predictable page sizes
+
+**Disadvantages:**
+- Performance degrades with large offsets (database skips many rows)
+- Inconsistent results if data changes between requests (items added/deleted)
+- Not ideal for real-time streaming data
+
+**Part 1 resources using offset pagination:**
+- Systems
+- Deployments
+- Procedures
+- Sampling Features
+- Properties
 
 48. **Cursor-Based Pagination:** How to implement Part 2 style pagination? `limit` + `cursor` parameters? How to extract cursor from responses?
 
-**Answer:**
+**Answer:** Part 2 MAY use cursor-based pagination for streaming data (observations, commands):
 
+**Parameters:**
+- `limit`: Number of items per page (default 10, max 10,000)
+- `cursor`: Opaque pagination token (from previous response)
+
+**Pattern:**
+```typescript
+// First request (no cursor)
+GET /observations?limit=100
+
+// Subsequent requests (with cursor from previous response)
+GET /observations?limit=100&cursor=eyJpZCI6MTIzLCJ0aW1lIjoiMjAyNC0wMS0zMVQyMzo1OTo1OVoifQ==
+```
+
+**Response structure (with pagination metadata):**
+```json
+{
+  "items": [ /* observations */ ],
+  "links": [
+    {
+      "rel": "next",
+      "href": "https://api.example.com/observations?limit=100&cursor=xyz123"
+    },
+    {
+      "rel": "prev",
+      "href": "https://api.example.com/observations?limit=100&cursor=abc456"
+    }
+  ]
+}
+```
+
+**Implementation:**
+```typescript
+async function getObservations(options: {
+  limit?: number;
+  cursor?: string;
+  // ... other filters
+}): Promise<{
+  items: Observation[];
+  nextCursor?: string;
+  hasMore: boolean;
+}> {
+  const limit = options.limit ?? 10;
+  const url = new URL(baseUrl);
+  url.searchParams.set('limit', limit.toString());
+  
+  if (options.cursor) {
+    url.searchParams.set('cursor', options.cursor);
+  }
+  
+  const response = await fetch(url.toString());
+  const data = await response.json();
+  
+  // Extract next cursor from Link header or response body
+  const nextLink = data.links?.find((l: any) => l.rel === 'next');
+  const nextCursor = nextLink ? new URL(nextLink.href).searchParams.get('cursor') : undefined;
+  
+  return {
+    items: data.items,
+    nextCursor: nextCursor ?? undefined,
+    hasMore: !!nextCursor
+  };
+}
+```
+
+**Advantages:**
+- Efficient for large datasets (no skipping rows)
+- Consistent results even if data changes
+- Ideal for streaming/real-time data
+- No performance degradation
+
+**Disadvantages:**
+- Cannot jump to arbitrary page
+- Must traverse sequentially
+- Cursors are opaque (server-specific encoding)
+
+**Note:** CSAPI Part 2 spec does NOT explicitly require cursor-based pagination. It's an **implementation choice** - servers MAY use offset or cursor pagination for Part 2 resources.
+
+**Fallback:** If server doesn't provide cursor, use offset pagination for Part 2 resources.
 
 49. **Pagination Limits:** What are the limit constraints? Min 1, max 10,000 for Part 2? Different for Part 1?
 
-**Answer:**
+**Answer:** Pagination limits are **consistent across Part 1 and Part 2**:
 
+**Constraints:**
+- **Minimum:** 1 (single item)
+- **Maximum:** 10,000 (ten thousand items)
+- **Default:** 10 (if not specified)
+
+**OpenAPI spec (both Part 1 and Part 2):**
+```yaml
+limit:
+  name: limit
+  schema:
+    type: integer
+    minimum: 1
+    maximum: 10000
+    default: 10
+```
+
+**Validation:**
+```typescript
+function validateLimit(limit?: number): number {
+  const value = limit ?? 10;
+  
+  if (value < 1) {
+    throw new Error('limit must be at least 1');
+  }
+  
+  if (value > 10000) {
+    throw new Error('limit cannot exceed 10000');
+  }
+  
+  return value;
+}
+```
+
+**Server behavior:**
+- `limit` < 1: Server returns HTTP 400 Bad Request
+- `limit` > 10,000: Server returns HTTP 400 Bad Request
+- No `limit` specified: Server uses default (10)
+- Server MAY return fewer items than limit (if insufficient matches)
+
+**Practical recommendations:**
+- **Interactive UIs:** Use limit=10-50 for responsive pagination
+- **Batch processing:** Use limit=1000-10000 for efficient bulk retrieval
+- **Streaming data:** Use smaller limits (100-500) with cursor pagination
+- **Export/download:** Multiple requests with limit=10000 to minimize round trips
+
+**Part 1 vs Part 2 - No difference:**
+- Part 1 (Systems, Deployments, etc.): min 1, max 10,000, default 10
+- Part 2 (DataStreams, Observations, etc.): min 1, max 10,000, default 10
 
 50. **Link Headers:** Should QueryBuilder parse Link headers for next/prev pages? Or leave to handlers?
 
-**Answer:**
+**Answer:** QueryBuilder should **parse links from response body**, NOT Link headers:
+
+**CSAPI response structure (JSON body):**
+```json
+{
+  "items": [ /* resources */ ],
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://api.example.com/systems?limit=10&offset=0",
+      "type": "application/json"
+    },
+    {
+      "rel": "next",
+      "href": "https://api.example.com/systems?limit=10&offset=10",
+      "type": "application/json"
+    },
+    {
+      "rel": "prev",
+      "href": "https://api.example.com/systems?limit=10&offset=0",
+      "type": "application/json"
+    }
+  ]
+}
+```
+
+**Recommended approach:**
+```typescript
+interface PaginatedResponse<T> {
+  items: T[];
+  links?: Array<{
+    rel: string;
+    href: string;
+    type?: string;
+  }>;
+}
+
+async function getSystems(options?: QueryOptions): Promise<PaginatedResponse<System>> {
+  const url = buildSystemsUrl(options);
+  const response = await fetch(url);
+  const data = await response.json();
+  
+  return {
+    items: data.features || data.items,
+    links: data.links  // Return links from response body
+  };
+}
+
+// Helper to extract next page URL
+function getNextPageUrl(response: PaginatedResponse<any>): string | undefined {
+  return response.links?.find(l => l.rel === 'next')?.href;
+}
+
+// Helper to fetch next page
+async function getNextPage<T>(response: PaginatedResponse<T>): Promise<PaginatedResponse<T> | undefined> {
+  const nextUrl = getNextPageUrl(response);
+  if (!nextUrl) return undefined;
+  
+  const nextResponse = await fetch(nextUrl);
+  return await nextResponse.json();
+}
+```
+
+**Why body links over HTTP Link headers:**
+1. **OGC API standard:** Specifies links in JSON response body
+2. **Typed:** Links in body are part of JSON schema (type-safe)
+3. **Consistent:** All OGC APIs use body links
+4. **Metadata:** Body links include `type`, `title`, `uid` (not in HTTP headers)
+5. **Cross-origin:** Body links work with CORS (headers may be filtered)
+
+**HTTP Link headers (if present):**
+Some servers MAY include HTTP Link headers for backwards compatibility:
+```
+Link: <https://api.example.com/systems?limit=10&offset=10>; rel="next"
+Link: <https://api.example.com/systems?limit=10&offset=0>; rel="prev"
+```
+
+**Recommendation:**
+- **Primary:** Parse links from response body
+- **Fallback:** Parse Link headers if body links not present
+- **Return:** Expose links to caller (don't hide pagination logic)
+- **Helpers:** Provide utility methods for common pagination patterns
 
 
 ### I. Systems Resource Methods
@@ -1038,22 +2340,285 @@ async deleteSystemCascade(id: string): Promise<void> { }
 
 51. **Systems Endpoints:** What are ALL Systems endpoints? List all, get by ID, query, subsystems, by deployment, by procedure, in collection?
 
-**Answer:**
+**Answer:** Complete list of Systems endpoints from OpenAPI Part 1 spec:
 
+**Canonical endpoints:**
+- `GET /systems` - List/query all top-level systems
+- `POST /systems` - Create new top-level system
+- `GET /systems/{systemId}` - Get specific system by ID
+- `PUT /systems/{systemId}` - Replace system (complete update)
+- `DELETE /systems/{systemId}` - Delete system (with optional cascade)
+
+**Hierarchical endpoints:**
+- `GET /systems/{systemId}/subsystems` - List subsystems of specific system
+- `POST /systems/{systemId}/subsystems` - Add subsystem to specific system
+
+**Association endpoints:**
+- `GET /systems/{systemId}/deployments` - List deployments of specific system (association navigation)
+- `GET /systems/{systemId}/samplingFeatures` - List sampling features of specific system
+- `GET /systems/{systemId}/datastreams` - List datastreams of specific system (Part 2)
+- `GET /systems/{systemId}/controlstreams` - List control streams of specific system (Part 2)
+
+**Query by relationship (canonical endpoint with filters):**
+- `GET /systems?deployment={id}` - Systems in specific deployment
+- `GET /systems?procedure={id}` - Systems implementing specific procedure
+- `GET /systems?foi={id}` - Systems observing specific feature
+- `GET /systems?parent={id}` - Subsystems of specific parent (alternative to nested)
+
+**History (if supported by server):**
+- `GET /systems/{systemId}/history` - Historical versions of system description
+
+**Total: 13+ distinct endpoint patterns for Systems**
 
 52. **Systems Query Parameters:** What query parameters apply to Systems? bbox, datetime, recursive, parent, deployment, procedure, foi, id, uid, q, properties, limit, offset, f?
 
-**Answer:**
+**Answer:** Query parameters for Systems endpoints from OpenAPI Part 1 spec:
 
+**Spatial filters:**
+- `bbox` - Bounding box (comma-separated: minLon,minLat,maxLon,maxLat)
+- `geom` - WKT geometry for spatial intersection
+
+**Temporal filters:**
+- `datetime` - ISO 8601 instant/interval for validity period
+
+**Identifier filters:**
+- `id` - Comma-separated list of local IDs or URNs
+
+**Text search:**
+- `q` - Comma-separated keywords for full-text search
+
+**Relationship filters:**
+- `parent` - Filter by parent system ID (for hierarchical queries)
+- `deployment` - Filter by deployment ID
+- `procedure` - Filter by procedure ID
+- `foi` - Filter by feature of interest ID
+- `observedProperty` - Filter by observed property
+- `controlledProperty` - Filter by controlled property
+
+**Hierarchical control:**
+- `recursive` - Boolean flag (true = include all descendants)
+
+**Pagination:**
+- `limit` - Max items per page (1-10000, default 10)
+- `offset` - Zero-based starting index (default 0)
+
+**Format negotiation:**
+- `f` - Response format (json, geojson, sml+json, html)
+
+**Complete TypeScript interface:**
+```typescript
+interface SystemQueryOptions {
+  // Spatial
+  bbox?: [number, number, number, number];
+  geom?: string;  // WKT geometry
+  
+  // Temporal
+  datetime?: string;  // ISO 8601
+  
+  // Identifiers
+  id?: string[];
+  
+  // Text search
+  q?: string[];
+  
+  // Relationships
+  parent?: string[];
+  deployment?: string[];
+  procedure?: string[];
+  foi?: string[];
+  observedProperty?: string[];
+  controlledProperty?: string[];
+  
+  // Hierarchical
+  recursive?: boolean;
+  
+  // Pagination
+  limit?: number;
+  offset?: number;
+  
+  // Format
+  f?: 'json' | 'geojson' | 'sml+json' | 'html';
+}
+```
+
+**Note:** Not all parameters apply to all endpoints (e.g., `parent` doesn't make sense for `/systems/{id}/subsystems`).
 
 53. **Subsystems Hierarchy:** How to query subsystems? Recursive flag? `/systems/{id}/subsystems?recursive=true`?
 
-**Answer:**
+**Answer:** Subsystems can be queried via nested endpoint with recursive flag:
 
+**Nested endpoint (preferred):**
+```
+GET /systems/{systemId}/subsystems
+GET /systems/{systemId}/subsystems?recursive=true
+GET /systems/{systemId}/subsystems?recursive=false
+```
+
+**Canonical endpoint with parent filter (alternative):**
+```
+GET /systems?parent={systemId}
+GET /systems?parent={systemId}&recursive=true
+```
+
+**Recursive behavior:**
+
+**Non-recursive (recursive=false or omitted):**
+```
+System A
+  ├─ Subsystem B
+  │   └─ Subsystem D
+  └─ Subsystem C
+
+GET /systems/A/subsystems
+Returns: [B, C]  (direct children only)
+```
+
+**Recursive (recursive=true):**
+```
+System A
+  ├─ Subsystem B
+  │   └─ Subsystem D
+  └─ Subsystem C
+
+GET /systems/A/subsystems?recursive=true
+Returns: [B, C, D]  (all descendants)
+```
+
+**Method signatures:**
+```typescript
+// Direct children only
+async getSubsystems(
+  parentId: string,
+  options?: Omit<SystemQueryOptions, 'parent'>
+): Promise<System[]>
+
+// With recursive flag
+async getSubsystems(
+  parentId: string,
+  options?: SystemQueryOptions & { recursive?: boolean }
+): Promise<System[]>
+```
+
+**Implementation:**
+```typescript
+async getSubsystems(
+  parentId: string,
+  options?: SystemQueryOptions
+): Promise<System[]> {
+  const baseUrl = this.getResourceLink('systems');
+  const url = new URL(`${baseUrl}/${parentId}/subsystems`);
+  
+  // Add recursive parameter
+  if (options?.recursive !== undefined) {
+    url.searchParams.set('recursive', options.recursive.toString());
+  }
+  
+  // Add other query parameters
+  this.addStandardQueryParams(url, options);
+  
+  return this.fetchResource<System[]>(url.toString());
+}
+```
+
+**Use cases:**
+- **Non-recursive:** UI tree view with lazy loading (load one level at a time)
+- **Recursive:** Export/analysis needing complete system hierarchy
+- **Performance:** Recursive queries can return large datasets - use `limit` to control size
 
 54. **Systems CRUD:** What CRUD operations for Systems? POST `/systems`, PUT/PATCH `/systems/{id}`, DELETE `/systems/{id}?cascade=true`?
 
-**Answer:**
+**Answer:** Complete CRUD operations for Systems from OpenAPI Part 1 spec:
+
+**CREATE (POST):**
+```
+POST /systems
+Content-Type: application/geo+json | application/sml+json
+Body: System resource (without ID - server assigns)
+
+Response: 201 Created
+Location: https://api.example.com/systems/{new-id}
+```
+
+**CREATE subsystem (POST to nested):**
+```
+POST /systems/{parentId}/subsystems
+Content-Type: application/geo+json | application/sml+json
+Body: Subsystem resource
+
+Response: 201 Created
+Location: https://api.example.com/systems/{new-subsystem-id}
+```
+
+**READ (GET):**
+```
+GET /systems/{systemId}
+Accept: application/geo+json | application/sml+json
+
+Response: 200 OK
+Body: System resource
+```
+
+**UPDATE - Replace (PUT):**
+```
+PUT /systems/{systemId}
+Content-Type: application/geo+json | application/sml+json
+Body: Complete system resource
+
+Response: 204 No Content (or 200 OK with body)
+```
+
+**UPDATE - Partial (PATCH):**
+```
+PATCH /systems/{systemId}
+Content-Type: application/merge-patch+json
+Body: Partial system properties to update
+
+Response: 204 No Content (or 200 OK with body)
+```
+
+**Note:** OpenAPI spec defines PUT but NOT PATCH. PATCH support is **implementation-dependent**.
+
+**DELETE:**
+```
+DELETE /systems/{systemId}
+
+Response: 204 No Content (success)
+         409 Conflict (has dependents, cascade required)
+```
+
+**DELETE with cascade:**
+```
+DELETE /systems/{systemId}?cascade=true
+
+Response: 204 No Content
+Deletes: System + subsystems + datastreams + observations + controlstreams + commands
+```
+
+**Method signatures:**
+```typescript
+// Create
+async createSystem(body: SystemInput): Promise<System>
+async createSubsystem(parentId: string, body: SystemInput): Promise<System>
+
+// Read
+async getSystem(systemId: string, options?: { datetime?: string, f?: Format }): Promise<System>
+
+// Update
+async updateSystem(systemId: string, body: SystemInput): Promise<System>
+async patchSystem(systemId: string, updates: Partial<SystemInput>): Promise<System>
+
+// Delete
+async deleteSystem(systemId: string, options?: { cascade?: boolean }): Promise<void>
+```
+
+**Response codes:**
+- 200 OK - Successful GET/PUT/PATCH with body
+- 201 Created - Successful POST (with Location header)
+- 204 No Content - Successful DELETE or PUT/PATCH without body
+- 400 Bad Request - Validation error
+- 404 Not Found - System doesn't exist
+- 409 Conflict - Cannot delete (has dependents)
+- 422 Unprocessable Entity - Semantic validation error
 
 
 ### J. Deployments Resource Methods
@@ -1062,22 +2627,219 @@ async deleteSystemCascade(id: string): Promise<void> { }
 
 55. **Deployments Endpoints:** What are ALL Deployments endpoints? List all, get by ID, query, subdeployments, by system, in collection?
 
-**Answer:**
+**Answer:** Complete list of Deployments endpoints from OpenAPI Part 1 spec:
 
+**Canonical endpoints:**
+- `GET /deployments` - List/query all top-level deployments
+- `POST /deployments` - Create new top-level deployment
+- `GET /deployments/{deploymentId}` - Get specific deployment by ID
+- `PUT /deployments/{deploymentId}` - Replace deployment (complete update)
+- `DELETE /deployments/{deploymentId}` - Delete deployment
+
+**Hierarchical endpoints:**
+- `GET /deployments/{deploymentId}/subdeployments` - List subdeployments of specific deployment
+- `POST /deployments/{deploymentId}/subdeployments` - Add subdeployment to specific deployment
+
+**Association endpoints (reverse navigation):**
+- `GET /systems/{systemId}/deployments` - List deployments of specific system
+
+**Query by relationship (canonical endpoint with filters):**
+- `GET /deployments?system={id}` - Deployments containing specific system
+- `GET /deployments?foi={id}` - Deployments at specific feature of interest
+- `GET /deployments?parent={id}` - Subdeployments of specific parent
+
+**History (if supported):**
+- `GET /deployments/{deploymentId}/history` - Historical versions
+
+**Total: 10+ distinct endpoint patterns for Deployments**
 
 56. **Deployments Query Parameters:** What query parameters apply to Deployments? bbox, datetime, system, recursive, parent, id, uid, q, properties, limit, offset, f?
 
-**Answer:**
+**Answer:** Query parameters for Deployments endpoints from OpenAPI Part 1 spec:
 
+**Spatial filters:**
+- `bbox` - Bounding box for deployment location
+- `geom` - WKT geometry for spatial intersection
+
+**Temporal filters:**
+- `datetime` - ISO 8601 instant/interval for deployment validity period
+
+**Identifier filters:**
+- `id` - Comma-separated list of local IDs or URNs
+
+**Text search:**
+- `q` - Comma-separated keywords for full-text search
+
+**Relationship filters:**
+- `parent` - Filter by parent deployment ID (for hierarchical queries)
+- `system` - Filter by deployed system ID
+- `foi` - Filter by feature of interest ID
+- `observedProperty` - Filter by observed property (systems in deployment)
+- `controlledProperty` - Filter by controlled property (systems in deployment)
+
+**Hierarchical control:**
+- `recursive` - Boolean flag (true = include all subdeployments recursively)
+
+**Pagination:**
+- `limit` - Max items per page (1-10000, default 10)
+- `offset` - Zero-based starting index (default 0)
+
+**Format negotiation:**
+- `f` - Response format (json, geojson, html)
+
+**TypeScript interface:**
+```typescript
+interface DeploymentQueryOptions {
+  // Spatial
+  bbox?: [number, number, number, number];
+  geom?: string;
+  
+  // Temporal
+  datetime?: string;
+  
+  // Identifiers
+  id?: string[];
+  
+  // Text search
+  q?: string[];
+  
+  // Relationships
+  parent?: string[];
+  system?: string[];
+  foi?: string[];
+  observedProperty?: string[];
+  controlledProperty?: string[];
+  
+  // Hierarchical
+  recursive?: boolean;
+  
+  // Pagination
+  limit?: number;
+  offset?: number;
+  
+  // Format
+  f?: 'json' | 'geojson' | 'html';
+}
+```
 
 57. **Subdeployments Hierarchy:** How to query subdeployments? Recursive flag? `/deployments/{id}/subdeployments?recursive=true`?
 
-**Answer:**
+**Answer:** Subdeployments can be queried via nested endpoint with recursive flag:
 
+**Nested endpoint (preferred):**
+```
+GET /deployments/{deploymentId}/subdeployments
+GET /deployments/{deploymentId}/subdeployments?recursive=true
+```
+
+**Canonical endpoint with parent filter (alternative):**
+```
+GET /deployments?parent={deploymentId}
+GET /deployments?parent={deploymentId}&recursive=true
+```
+
+**Recursive behavior (same as Systems):**
+```
+Deployment A
+  ├─ Subdeployment B
+  │   └─ Subdeployment D
+  └─ Subdeployment C
+
+GET /deployments/A/subdeployments
+Returns: [B, C]  (direct children only)
+
+GET /deployments/A/subdeployments?recursive=true
+Returns: [B, C, D]  (all descendants)
+```
+
+**Method signature:**
+```typescript
+async getSubdeployments(
+  parentId: string,
+  options?: DeploymentQueryOptions
+): Promise<Deployment[]> {
+  const baseUrl = this.getResourceLink('deployments');
+  const url = new URL(`${baseUrl}/${parentId}/subdeployments`);
+  
+  if (options?.recursive !== undefined) {
+    url.searchParams.set('recursive', options.recursive.toString());
+  }
+  
+  this.addStandardQueryParams(url, options);
+  return this.fetchResource<Deployment[]>(url.toString());
+}
+```
+
+**Use cases:**
+- **Mission planning:** Nested deployments for complex missions (e.g., Arctic mission with multiple platform deployments)
+- **Hierarchical campaigns:** Multi-level deployment structures (campaign → mission → platform)
 
 58. **Deployments CRUD:** What CRUD operations for Deployments? POST, PUT/PATCH, DELETE with cascade?
 
-**Answer:**
+**Answer:** Complete CRUD operations for Deployments from OpenAPI Part 1 spec:
+
+**CREATE (POST):**
+```
+POST /deployments
+Content-Type: application/geo+json
+Body: Deployment resource (without ID)
+
+Response: 201 Created
+Location: https://api.example.com/deployments/{new-id}
+```
+
+**CREATE subdeployment:**
+```
+POST /deployments/{parentId}/subdeployments
+Content-Type: application/geo+json
+Body: Subdeployment resource
+
+Response: 201 Created
+```
+
+**READ (GET):**
+```
+GET /deployments/{deploymentId}
+Accept: application/geo+json
+
+Response: 200 OK
+Body: Deployment resource
+```
+
+**UPDATE - Replace (PUT):**
+```
+PUT /deployments/{deploymentId}
+Content-Type: application/geo+json
+Body: Complete deployment resource
+
+Response: 204 No Content
+```
+
+**DELETE:**
+```
+DELETE /deployments/{deploymentId}
+
+Response: 204 No Content (success)
+         409 Conflict (has subdeployments or other dependents)
+```
+
+**Method signatures:**
+```typescript
+// Create
+async createDeployment(body: DeploymentInput): Promise<Deployment>
+async createSubdeployment(parentId: string, body: DeploymentInput): Promise<Deployment>
+
+// Read
+async getDeployment(deploymentId: string, options?: { f?: Format }): Promise<Deployment>
+
+// Update
+async updateDeployment(deploymentId: string, body: DeploymentInput): Promise<Deployment>
+
+// Delete
+async deleteDeployment(deploymentId: string): Promise<void>
+```
+
+**Note:** OpenAPI spec does NOT define `cascade` parameter for Deployments DELETE. Deletion fails (409 Conflict) if deployment has subdeployments or other dependencies.
 
 
 ### K. Procedures Resource Methods
@@ -1086,22 +2848,202 @@ async deleteSystemCascade(id: string): Promise<void> { }
 
 59. **Procedures Endpoints:** What are ALL Procedures endpoints? List all, get by ID, query, by system, in collection?
 
-**Answer:**
+**Answer:** Complete list of Procedures endpoints from OpenAPI Part 1 spec:
 
+**Canonical endpoints:**
+- `GET /procedures` - List/query all procedures
+- `POST /procedures` - Create new procedure
+- `GET /procedures/{procedureId}` - Get specific procedure by ID
+- `PUT /procedures/{procedureId}` - Replace procedure (complete update)
+- `DELETE /procedures/{procedureId}` - Delete procedure
+
+**Query by relationship (canonical endpoint with filters):**
+- `GET /procedures?system={id}` - Procedures implemented by specific system
+
+**No nested endpoints:** Procedures don't have hierarchical structure (no subprocedures)
+
+**No association endpoints:** No reverse navigation from systems to procedures (use canonical with filter)
+
+**History (if supported):**
+- `GET /procedures/{procedureId}/history` - Historical versions of procedure
+
+**Total: 6 distinct endpoint patterns for Procedures**
+
+**Note:** Procedures are often **shared resources** (multiple systems implement same procedure), so they're typically managed separately from systems.
 
 60. **Procedures Query Parameters:** What query parameters apply to Procedures? system, id, uid, q, properties, limit, offset, f?
 
-**Answer:**
+**Answer:** Query parameters for Procedures endpoints from OpenAPI Part 1 spec:
 
+**NO spatial/temporal filters:** Procedures are abstract methods (not spatially/temporally bound)
+
+**Identifier filters:**
+- `id` - Comma-separated list of local IDs or URNs
+
+**Text search:**
+- `q` - Comma-separated keywords for full-text search
+
+**Relationship filters:**
+- `system` - Filter by system ID (procedures implemented by system)
+
+**Pagination:**
+- `limit` - Max items per page (1-10000, default 10)
+- `offset` - Zero-based starting index (default 0)
+
+**Format negotiation:**
+- `f` - Response format (json, geojson, sml+json, html)
+
+**TypeScript interface:**
+```typescript
+interface ProcedureQueryOptions {
+  // Identifiers
+  id?: string[];
+  
+  // Text search
+  q?: string[];
+  
+  // Relationships
+  system?: string[];
+  
+  // Pagination
+  limit?: number;
+  offset?: number;
+  
+  // Format
+  f?: 'json' | 'geojson' | 'sml+json' | 'html';
+}
+```
+
+**Simplified compared to Systems/Deployments:** No bbox, datetime, parent, recursive (procedures are simple resources)
 
 61. **Procedures CRUD:** What CRUD operations for Procedures? POST, PUT/PATCH, DELETE?
 
-**Answer:**
+**Answer:** Complete CRUD operations for Procedures from OpenAPI Part 1 spec:
 
+**CREATE (POST):**
+```
+POST /procedures
+Content-Type: application/sml+json | application/geo+json
+Body: Procedure resource (without ID)
+
+Response: 201 Created
+Location: https://api.example.com/procedures/{new-id}
+```
+
+**READ (GET):**
+```
+GET /procedures/{procedureId}
+Accept: application/sml+json | application/geo+json
+
+Response: 200 OK
+Body: Procedure resource (detailed SensorML description)
+```
+
+**UPDATE - Replace (PUT):**
+```
+PUT /procedures/{procedureId}
+Content-Type: application/sml+json
+Body: Complete procedure resource
+
+Response: 204 No Content
+```
+
+**DELETE:**
+```
+DELETE /procedures/{procedureId}
+
+Response: 204 No Content (success)
+         409 Conflict (procedure in use by systems/datastreams)
+```
+
+**Method signatures:**
+```typescript
+// Create
+async createProcedure(body: ProcedureInput): Promise<Procedure>
+
+// Read
+async getProcedure(procedureId: string, options?: { f?: Format }): Promise<Procedure>
+
+// Update
+async updateProcedure(procedureId: string, body: ProcedureInput): Promise<Procedure>
+
+// Delete
+async deleteProcedure(procedureId: string): Promise<void>
+```
+
+**Important:** Procedures are often **referenced** by multiple systems. Deleting a procedure may fail (409 Conflict) if systems/datastreams reference it. No cascade delete for procedures.
 
 62. **SensorML Format:** How to handle SensorML format for Procedures? `f=sml+json` parameter?
 
-**Answer:**
+**Answer:** Procedures support SensorML 3.0 JSON format for detailed method descriptions:
+
+**Format negotiation via query parameter:**
+```
+GET /procedures/{id}?f=sml+json
+GET /procedures/{id}?f=geojson
+GET /procedures/{id}?f=json
+```
+
+**Format negotiation via Accept header:**
+```
+GET /procedures/{id}
+Accept: application/sml+json
+
+GET /procedures/{id}
+Accept: application/geo+json
+```
+
+**SensorML format characteristics:**
+- **Detailed:** Complete procedure specification (inputs, outputs, parameters, algorithms)
+- **Semantic:** Rich metadata with definitions and ontology links
+- **Structured:** Hierarchical process description
+- **Standard:** SensorML 3.0 JSON encoding
+
+**GeoJSON format characteristics:**
+- **Simple:** Basic procedure information (name, description, links)
+- **Lightweight:** Minimal metadata
+- **Spatial:** Can include geometry if procedure is location-specific
+
+**Method signature:**
+```typescript
+async getProcedure(
+  procedureId: string,
+  options?: { f?: 'sml+json' | 'geojson' | 'json' }
+): Promise<Procedure>
+```
+
+**Implementation:**
+```typescript
+async getProcedure(
+  procedureId: string,
+  options?: { f?: Format }
+): Promise<Procedure> {
+  const baseUrl = this.getResourceLink('procedures');
+  const url = new URL(`${baseUrl}/${procedureId}`);
+  
+  // Add format parameter
+  if (options?.f) {
+    url.searchParams.set('f', options.f);
+  }
+  
+  // Alternatively, use Accept header
+  const headers: Record<string, string> = {};
+  if (options?.f === 'sml+json') {
+    headers['Accept'] = 'application/sml+json';
+  } else if (options?.f === 'geojson') {
+    headers['Accept'] = 'application/geo+json';
+  }
+  
+  const response = await fetch(url.toString(), { headers });
+  return await response.json();
+}
+```
+
+**Use cases:**
+- **SensorML:** Detailed procedure documentation, calibration specs, algorithm descriptions
+- **GeoJSON:** Quick procedure lookup, UI display, simple queries
+
+**Default:** Server returns GeoJSON by default if no format specified
 
 
 ### L. Sampling Features Resource Methods
@@ -1110,17 +3052,140 @@ async deleteSystemCascade(id: string): Promise<void> { }
 
 63. **Sampling Features Endpoints:** What are ALL Sampling Features endpoints? List all, get by ID, query, by system, by foi, in collection?
 
-**Answer:**
+**Answer:** Complete list of Sampling Features endpoints from OpenAPI Part 1 spec:
 
+**Canonical endpoints:**
+- `GET /samplingFeatures` - List/query all sampling features
+- `POST /samplingFeatures` - Create new sampling feature
+- `GET /samplingFeatures/{featureId}` - Get specific sampling feature by ID
+- `PUT /samplingFeatures/{featureId}` - Replace sampling feature (complete update)
+- `DELETE /samplingFeatures/{featureId}` - Delete sampling feature
+
+**Association endpoints (reverse navigation):**
+- `GET /systems/{systemId}/samplingFeatures` - List sampling features of specific system
+
+**Query by relationship (canonical endpoint with filters):**
+- `GET /samplingFeatures?system={id}` - Sampling features used by specific system
+- `GET /samplingFeatures?foi={id}` - Sampling features related to specific feature of interest
+
+**No hierarchical structure:** Sampling features don't have parent-child relationships (flat structure)
+
+**History (if supported):**
+- `GET /samplingFeatures/{featureId}/history` - Historical versions
+
+**Total: 7 distinct endpoint patterns for Sampling Features**
 
 64. **Sampling Features Query Parameters:** What query parameters apply to Sampling Features? bbox, system, foi, relatedSamplingFeature, id, uid, q, properties, limit, offset, f?
 
-**Answer:**
+**Answer:** Query parameters for Sampling Features endpoints from OpenAPI Part 1 spec:
 
+**Spatial filters:**
+- `bbox` - Bounding box (sampling features have locations)
+- `geom` - WKT geometry for spatial intersection
+
+**NO temporal filter:** Sampling features don't have temporal extent (use system/deployment datetime instead)
+
+**Identifier filters:**
+- `id` - Comma-separated list of local IDs or URNs
+
+**Text search:**
+- `q` - Comma-separated keywords for full-text search
+
+**Relationship filters:**
+- `system` - Filter by system ID (sampling features used by system)
+- `foi` - Filter by ultimate feature of interest ID
+
+**Pagination:**
+- `limit` - Max items per page (1-10000, default 10)
+- `offset` - Zero-based starting index (default 0)
+
+**Format negotiation:**
+- `f` - Response format (json, geojson, html)
+
+**TypeScript interface:**
+```typescript
+interface SamplingFeatureQueryOptions {
+  // Spatial
+  bbox?: [number, number, number, number];
+  geom?: string;
+  
+  // Identifiers
+  id?: string[];
+  
+  // Text search
+  q?: string[];
+  
+  // Relationships
+  system?: string[];
+  foi?: string[];
+  
+  // Pagination
+  limit?: number;
+  offset?: number;
+  
+  // Format
+  f?: 'json' | 'geojson' | 'html';
+}
+```
+
+**Note:** OpenAPI spec does NOT define `relatedSamplingFeature` parameter. Sampling feature relationships are typically expressed via `foi` parameter or geometry relationships.
 
 65. **Sampling Features CRUD:** What CRUD operations for Sampling Features? POST, PUT/PATCH, DELETE?
 
-**Answer:**
+**Answer:** Complete CRUD operations for Sampling Features from OpenAPI Part 1 spec:
+
+**CREATE (POST):**
+```
+POST /samplingFeatures
+Content-Type: application/geo+json
+Body: Sampling feature resource (without ID)
+
+Response: 201 Created
+Location: https://api.example.com/samplingFeatures/{new-id}
+```
+
+**READ (GET):**
+```
+GET /samplingFeatures/{featureId}
+Accept: application/geo+json
+
+Response: 200 OK
+Body: Sampling feature resource (GeoJSON Feature)
+```
+
+**UPDATE - Replace (PUT):**
+```
+PUT /samplingFeatures/{featureId}
+Content-Type: application/geo+json
+Body: Complete sampling feature resource
+
+Response: 204 No Content
+```
+
+**DELETE:**
+```
+DELETE /samplingFeatures/{featureId}
+
+Response: 204 No Content (success)
+         409 Conflict (feature referenced by observations/datastreams)
+```
+
+**Method signatures:**
+```typescript
+// Create
+async createSamplingFeature(body: SamplingFeatureInput): Promise<SamplingFeature>
+
+// Read
+async getSamplingFeature(featureId: string, options?: { f?: Format }): Promise<SamplingFeature>
+
+// Update
+async updateSamplingFeature(featureId: string, body: SamplingFeatureInput): Promise<SamplingFeature>
+
+// Delete
+async deleteSamplingFeature(featureId: string): Promise<void>
+```
+
+**Important:** Sampling features are often **shared resources** (multiple observations/datastreams reference same sampling feature). Deleting may fail (409 Conflict) if referenced. No cascade delete.
 
 
 ### M. Properties Resource Methods
@@ -1129,22 +3194,186 @@ async deleteSystemCascade(id: string): Promise<void> { }
 
 66. **Properties Endpoints:** What are ALL Properties endpoints? List all, get by ID, query, by system, by base property, in collection?
 
-**Answer:**
+**Answer:** Complete list of Properties endpoints from OpenAPI Part 1 spec:
 
+**Canonical endpoints (READ-ONLY):**
+- `GET /properties` - List/query all properties
+- `GET /properties/{propId}` - Get specific property by ID
+
+**Query by relationship (canonical endpoint with filters):**
+- `GET /properties?system={id}` - Properties observed/controlled by specific system
+- `GET /properties?baseProperty={id}` - Properties derived from specific base property (hierarchy)
+- `GET /properties?objectType={uri}` - Properties of specific object type
+
+**NO CREATE/UPDATE/DELETE:** Properties are **read-only** (managed by server, not user-editable)
+
+**NO nested endpoints:** Properties are flat resources (no sub-properties via nested paths)
+
+**NO association endpoints:** No reverse navigation from systems to properties
+
+**Total: 4 endpoint patterns for Properties (all read-only)**
+
+**Rationale:** Properties define the vocabulary of observable/controllable phenomena. They're typically managed centrally (not created by individual users).
 
 67. **Properties Query Parameters:** What query parameters apply to Properties? system, baseProperty, id, uid, q, properties, limit, offset, f?
 
-**Answer:**
+**Answer:** Query parameters for Properties endpoints from OpenAPI Part 1 spec:
 
+**NO spatial/temporal filters:** Properties are abstract concepts (not spatially/temporally bound)
+
+**Identifier filters:**
+- `id` - Comma-separated list of local IDs or URNs
+
+**Text search:**
+- `q` - Comma-separated keywords for full-text search
+
+**Relationship filters:**
+- `system` - Filter by system ID (properties measured/controlled by system)
+- `baseProperty` - Filter by base property ID (for hierarchy queries)
+- `objectType` - Filter by object type URI (semantic classification)
+
+**Pagination:**
+- `limit` - Max items per page (1-10000, default 10)
+- `offset` - Zero-based starting index (default 0)
+
+**Format negotiation:**
+- `f` - Response format (json, html)
+
+**TypeScript interface:**
+```typescript
+interface PropertyQueryOptions {
+  // Identifiers
+  id?: string[];
+  
+  // Text search
+  q?: string[];
+  
+  // Relationships
+  system?: string[];
+  baseProperty?: string[];
+  objectType?: string[];  // URIs
+  
+  // Pagination
+  limit?: number;
+  offset?: number;
+  
+  // Format
+  f?: 'json' | 'html';
+}
+```
+
+**Note:** Properties don't use GeoJSON format (no spatial component).
 
 68. **Properties Read-Only:** Are Properties read-only (GET only)? No CRUD operations?
 
-**Answer:**
+**Answer:** Yes, Properties are **READ-ONLY** resources:
 
+**Supported operations:**
+```
+GET /properties               ✓ List all properties
+GET /properties/{propId}      ✓ Get specific property
+```
+
+**NOT supported:**
+```
+POST /properties              ✗ Cannot create properties
+PUT /properties/{propId}      ✗ Cannot update properties
+DELETE /properties/{propId}   ✗ Cannot delete properties
+```
+
+**Method signatures:**
+```typescript
+// Only read operations
+async getProperties(options?: PropertyQueryOptions): Promise<Property[]>
+async getProperty(propId: string, options?: { f?: Format }): Promise<Property>
+
+// No create/update/delete methods
+```
+
+**Rationale:**
+1. **Vocabulary management:** Properties define standard terminology (centrally managed)
+2. **Semantic consistency:** Prevents users from creating conflicting property definitions
+3. **Interoperability:** Ensures consistent property URIs across systems
+4. **Ontology-driven:** Properties typically derived from standard ontologies (CF, QUDT, etc.)
+
+**Server management:** Properties are typically:
+- Pre-populated from standard vocabularies
+- Managed by administrators (not regular API users)
+- Updated through server configuration (not API calls)
+
+**For custom properties:** Servers MAY provide admin endpoints outside CSAPI spec, but this is implementation-specific.
 
 69. **Property Hierarchy:** How to query property hierarchies? `baseProperty` parameter for parent-child relationships?
 
-**Answer:**
+**Answer:** Property hierarchies are queried using `baseProperty` parameter:
+
+**Hierarchy example:**
+```
+temperature (base)
+  ├─ air_temperature (derived)
+  ├─ water_temperature (derived)
+  └─ surface_temperature (derived)
+
+pressure (base)
+  ├─ air_pressure (derived)
+  └─ water_pressure (derived)
+```
+
+**Query derived properties:**
+```
+GET /properties?baseProperty=temperature
+Returns: [air_temperature, water_temperature, surface_temperature]
+
+GET /properties?baseProperty=temperature,pressure
+Returns: [air_temperature, water_temperature, surface_temperature, air_pressure, water_pressure]
+```
+
+**Query specific property:**
+```
+GET /properties/air_temperature
+Response:
+{
+  "id": "air_temperature",
+  "name": "Air Temperature",
+  "definition": "http://mmisw.org/ont/cf/parameter/air_temperature",
+  "baseProperty@link": {
+    "href": "https://api.example.com/properties/temperature",
+    "uid": "http://mmisw.org/ont/cf/parameter/temperature"
+  },
+  "objectType": "http://www.w3.org/ns/ssn/Property"
+}
+```
+
+**Method signature:**
+```typescript
+async getProperties(options?: {
+  baseProperty?: string[];  // Filter by base property
+  // ... other options
+}): Promise<Property[]>
+```
+
+**Implementation:**
+```typescript
+async getProperties(options?: PropertyQueryOptions): Promise<Property[]> {
+  const url = new URL(this.getResourceLink('properties'));
+  
+  // Add baseProperty filter
+  if (options?.baseProperty?.length > 0) {
+    url.searchParams.set('baseProperty', options.baseProperty.join(','));
+  }
+  
+  this.addStandardQueryParams(url, options);
+  return this.fetchResource<Property[]>(url.toString());
+}
+```
+
+**Use cases:**
+- **Semantic search:** Find all temperature-related properties
+- **Property discovery:** Explore property vocabulary
+- **UI filtering:** Group properties by category
+- **Query expansion:** Query observations for any temperature type
+
+**Note:** Hierarchy is **single-level** (base → derived). No multi-level hierarchies in CSAPI spec.
 
 
 ### N. DataStreams Resource Methods
