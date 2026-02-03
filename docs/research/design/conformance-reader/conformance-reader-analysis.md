@@ -931,43 +931,24 @@ Component 2 (Conformance Reader) is a **simple, self-contained addition** requir
 
 ---
 
-## Development Standards Reference
+## Development Standards
 
-All implementation work for Component 2 must adhere to the project's development standards:
+All implementation work for Component 2 must adhere to established project patterns:
 
-### Code Style Guide
-**Reference:** [docs/development-standards/code-style-guide.md](../../../development-standards/code-style-guide.md)
-
-**Key Requirements:**
+### Code Consistency
 - Follow existing TypeScript patterns in info.ts and endpoint.ts
-- Use consistent destructured array parameters (same as EDR)
+- Use consistent destructured array parameters (same as EDR pattern)
 - Match existing naming conventions (`checkHas*`, `has*`)
-- Use JSDoc comments for public functions
-- Follow 2-space indentation
-- No semicolons (project style)
+- Follow existing code style (2-space indentation, no semicolons)
+- Use JSDoc comments on public getters (follow existing getter documentation style)
 
-### Testing Standards
-**Reference:** [docs/development-standards/testing-standards.md](../../../development-standards/testing-standards.md)
-
-**Key Requirements:**
+### Testing Requirements
 - Write unit tests for `checkHasConnectedSystems()` in info.spec.ts
 - Write integration tests for `hasConnectedSystems` getter in endpoint.spec.ts
 - Test positive cases (Part 1, Part 2, both)
-- Test negative cases (empty, wrong classes, undefined)
+- Test negative cases (empty array, wrong classes, undefined)
 - Test edge cases (malformed URIs, case sensitivity)
-- Achieve ≥90% code coverage
-- Use fixtures from fixtures/ogc-api/ directory
-
-### Documentation Standards
-**Reference:** [docs/development-standards/documentation-standards.md](../../../development-standards/documentation-standards.md)
-
-**Key Requirements:**
-- Add JSDoc to `checkHasConnectedSystems()` function
-- Document parameters, return values, and purpose
-- Include usage examples in JSDoc
-- Update API documentation (TypeDoc)
-- Update CHANGELOG.md with new feature
-- Update README.md if exposing public API
+- Use fixtures from fixtures/ogc-api/ directory (follow existing fixture patterns)
 
 ### Development Workflow
 - Create feature branch from main
@@ -975,14 +956,12 @@ All implementation work for Component 2 must adhere to the project's development
 - Run all tests locally (`npm test`)
 - Run linting (`npm run lint`)
 - Commit with descriptive message
-- Create pull request referencing Component 2 research
+- Create pull request
 
 **Quality Gates:**
 - ✅ All tests passing
 - ✅ No TypeScript errors
 - ✅ No linting errors
-- ✅ Code coverage ≥90%
-- ✅ Documentation updated
-- ✅ Follows existing patterns exactly
+- ✅ Follows existing patterns exactly (especially EDR pattern)
 
 ---
