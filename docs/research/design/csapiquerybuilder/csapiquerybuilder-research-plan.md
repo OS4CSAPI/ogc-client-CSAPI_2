@@ -3382,27 +3382,294 @@ async getProperties(options?: PropertyQueryOptions): Promise<Property[]> {
 
 70. **DataStreams Endpoints:** What are ALL DataStreams endpoints? List all, get by ID, query, by system, schema endpoint, in collection?
 
-**Answer:**
+**Answer:** Complete list of DataStreams endpoints from OpenAPI Part 2 spec:
 
+**Canonical endpoints:**
+- `GET /datastreams` - List/query all datastreams
+- `POST /datastreams` - Create new datastream
+- `GET /datastreams/{datastreamId}` - Get specific datastream by ID
+- `PUT /datastreams/{datastreamId}` - Replace datastream (complete update)
+- `DELETE /datastreams/{datastreamId}` - Delete datastream
+
+**Association endpoints (reverse navigation):**
+- `GET /systems/{systemId}/datastreams` - List datastreams of specific system
+- `POST /systems/{systemId}/datastreams` - Create datastream for specific system
+
+**Schema endpoint:**
+- `GET /datastreams/{datastreamId}/schema` - Get observation schema for datastream
+- Format negotiation: `?f=json`, `?f=proto`, `?f=swe+json`
+
+**Observations endpoint (nested):**
+- `GET /datastreams/{datastreamId}/observations` - Get observations from datastream (key endpoint!)
+- `POST /datastreams/{datastreamId}/observations` - Add observations to datastream (bulk insert)
+
+**No hierarchical structure:** DataStreams are flat (no subdatastreams)
+
+**Total: 9 distinct endpoint patterns for DataStreams**
 
 71. **DataStreams Query Parameters:** What query parameters apply to DataStreams? system, observedProperty, foi, samplingFeature, procedure, datetime, id, uid, q, properties, limit, offset, f?
 
-**Answer:**
+**Answer:** Query parameters for DataStreams endpoints from OpenAPI Part 2 spec:
 
+**NO spatial filters:** DataStreams don't have spatial extent (use system or feature of interest for spatial queries)
+
+**Temporal filters:**
+- `phenomenonTime` - Filter by phenomenon time extent (ISO 8601 instant/interval)
+- `resultTime` - Filter by result time extent (ISO 8601 instant/interval)
+
+**Identifier filters:**
+- `id` - Comma-separated list of local IDs or URNs
+
+**Text search:**
+- `q` - Comma-separated keywords for full-text search
+
+**Relationship filters:**
+- `system` - Filter by system ID (datastreams from specific system)
+- `observedProperty` - Filter by observed property ID or URI
+- `foi` - Filter by feature of interest ID
+- `procedure` - Filter by procedure ID (implied, not formally documented)
+- `deployment` - Filter by deployment (implied, not formally documented)
+
+**Pagination:**
+- `limit` - Max items per page (1-10000, default 10)
+- `offset` - Zero-based starting index (default 0) OR
+- `cursor` - Cursor token for cursor-based pagination (server-dependent)
+
+**Format negotiation:**
+- `f` - Response format (json, html)
+
+**TypeScript interface:**
+```typescript
+interface DataStreamQueryOptions {
+  // Temporal
+  phenomenonTime?: string;
+  resultTime?: string;
+  
+  // Identifiers
+  id?: string[];
+  
+  // Text search
+  q?: string[];
+  
+  // Relationships
+  system?: string[];
+  observedProperty?: string[];
+  foi?: string[];
+  procedure?: string[];  // implied
+  deployment?: string[];  // implied
+  
+  // Pagination
+  limit?: number;
+  offset?: number;
+  cursor?: string;  // for cursor-based pagination
+  
+  // Format
+  f?: 'json' | 'html';
+}
+```
+
+**Note:** OpenAPI spec does NOT define `samplingFeature` as query parameter (use `foi` instead).
 
 72. **Schema Endpoint:** How to construct schema endpoint URL? `/datastreams/{id}/schema`? What format?
 
-**Answer:**
+**Answer:** Schema endpoint provides observation structure for a datastream:
 
+**Endpoint pattern:**
+```
+GET /datastreams/{datastreamId}/schema
+GET /datastreams/{datastreamId}/schema?f=json
+GET /datastreams/{datastreamId}/schema?f=proto
+GET /datastreams/{datastreamId}/schema?f=swe+json
+```
+
+**Format negotiation:**
+- `f=json` - JSON Schema format (default)
+- `f=proto` - Protocol Buffers schema
+- `f=swe+json` - SWE Common JSON schema
+
+**Response structure (JSON Schema format):**
+```json
+{
+  "obsFormat": "application/json",
+  "resultSchema": {
+    "type": "DataRecord",
+    "fields": [
+      {
+        "name": "temp",
+        "type": "Quantity",
+        "definition": "http://mmisw.org/ont/cf/parameter/air_temperature",
+        "label": "Air Temperature",
+        "uom": {"code": "Cel"}
+      },
+      {
+        "name": "humidity",
+        "type": "Quantity",
+        "definition": "http://mmisw.org/ont/cf/parameter/relative_humidity",
+        "label": "Relative Humidity",
+        "uom": {"code": "%"}
+      }
+    ]
+  }
+}
+```
+
+**Method signature:**
+```typescript
+async getDataStreamSchema(
+  datastreamId: string,
+  options?: { f?: 'json' | 'proto' | 'swe+json' }
+): Promise<DataStreamSchema>
+```
+
+**Implementation:**
+```typescript
+async getDataStreamSchema(
+  datastreamId: string,
+  options?: { f?: string }
+): Promise<DataStreamSchema> {
+  const baseUrl = this.getResourceLink('datastreams');
+  const url = new URL(`${baseUrl}/${datastreamId}/schema`);
+  
+  if (options?.f) {
+    url.searchParams.set('f', options.f);
+  }
+  
+  const response = await fetch(url.toString());
+  return await response.json();
+}
+```
+
+**Use cases:**
+- **Client validation:** Parse schema before submitting observations
+- **UI generation:** Auto-generate forms from schema
+- **Data parsing:** Understand observation structure
+
+**Schema format:** SWE Common Data Record schema (fields, types, units, constraints)
 
 73. **DataStreams CRUD:** What CRUD operations for DataStreams? POST, PUT/PATCH, DELETE with cascade?
 
-**Answer:**
+**Answer:** Complete CRUD operations for DataStreams from OpenAPI Part 2 spec:
 
+**CREATE (POST):**
+```
+POST /datastreams
+Content-Type: application/json
+Body: DataStream resource with schema
+
+Response: 201 Created
+Location: https://api.example.com/datastreams/{new-id}
+```
+
+**CREATE for specific system:**
+```
+POST /systems/{systemId}/datastreams
+Content-Type: application/json
+Body: DataStream resource
+
+Response: 201 Created
+```
+
+**READ (GET):**
+```
+GET /datastreams/{datastreamId}
+Accept: application/json
+
+Response: 200 OK
+Body: DataStream resource
+```
+
+**UPDATE - Replace (PUT):**
+```
+PUT /datastreams/{datastreamId}
+Content-Type: application/json
+Body: Complete datastream resource
+
+Response: 204 No Content
+```
+
+**DELETE:**
+```
+DELETE /datastreams/{datastreamId}
+
+Response: 204 No Content (success)
+         409 Conflict (has observations)
+```
+
+**DELETE with cascade (implicit):**
+Deleting datastream deletes all associated observations.
+
+**Method signatures:**
+```typescript
+// Create
+async createDataStream(body: DataStreamInput): Promise<DataStream>
+async createDataStreamForSystem(systemId: string, body: DataStreamInput): Promise<DataStream>
+
+// Read
+async getDataStream(datastreamId: string, options?: { f?: Format }): Promise<DataStream>
+
+// Update
+async updateDataStream(datastreamId: string, body: DataStreamInput): Promise<DataStream>
+
+// Delete
+async deleteDataStream(datastreamId: string): Promise<void>
+```
+
+**Important:** DataStream schema is **immutable** after creation. To change schema, must delete and recreate datastream (loses historical observations).
 
 74. **Result Format Parameters:** Are there special format parameters for DataStreams? `obsFormat` parameter?
 
-**Answer:**
+**Answer:** Yes, `obsFormat` parameter controls observation format for DataStream operations:
+
+**Usage context:** The `obsFormat` is part of the DataStream **schema definition**, not a query parameter:
+
+**DataStream schema property:**
+```json
+{
+  "id": "ds1",
+  "name": "Weather Observations",
+  "schema": {
+    "obsFormat": "application/json",  // Observation format
+    "resultSchema": { /* SWE schema */ }
+  }
+}
+```
+
+**Supported observation formats:**
+- `application/json` - JSON observations (default, most common)
+- `application/swe+json` - SWE Common JSON format
+- `application/swe+text` - SWE Common text format (CSV-like)
+- `application/swe+binary` - SWE Common binary format (efficient for high-volume)
+- `application/om+json` - O&M JSON format
+
+**Format determines observation structure:**
+
+**JSON format (obsFormat="application/json"):**
+```json
+{
+  "phenomenonTime": "2024-02-02T12:00:00Z",
+  "resultTime": "2024-02-02T12:01:00Z",
+  "result": {
+    "temp": 25.3,
+    "humidity": 60.5
+  }
+}
+```
+
+**SWE text format (obsFormat="application/swe+text"):**
+```
+2024-02-02T12:00:00Z,2024-02-02T12:01:00Z,25.3,60.5
+2024-02-02T12:05:00Z,2024-02-02T12:06:00Z,25.4,60.4
+```
+
+**Query parameter for GET operations:**
+When retrieving observations, can specify format:
+```
+GET /datastreams/{id}/observations?f=json
+GET /datastreams/{id}/observations?f=swe+json
+GET /datastreams/{id}/observations?f=swe+text
+```
+
+**Note:** `obsFormat` is NOT a query parameter for listing datastreams. It's part of datastream metadata and defines the observation format for that specific datastream.
 
 
 ### O. Observations Resource Methods
@@ -3411,37 +3678,476 @@ async getProperties(options?: PropertyQueryOptions): Promise<Property[]> {
 
 75. **Observations Endpoints:** What are ALL Observations endpoints? List all, get by ID, by datastream, query with temporal filters?
 
-**Answer:**
+**Answer:** Complete list of Observations endpoints from OpenAPI Part 2 spec:
 
+**Canonical endpoints:**
+- `GET /observations` - List/query all observations across all datastreams
+- `GET /observations/{obsId}` - Get specific observation by ID
+- `DELETE /observations/{obsId}` - Delete specific observation
+
+**DataStream-scoped endpoints (MOST COMMON):**
+- `GET /datastreams/{datastreamId}/observations` - Get observations from specific datastream
+- `POST /datastreams/{datastreamId}/observations` - Add observation(s) to specific datastream
+
+**NO standalone POST:** Must POST to datastream (observations belong to a datastream)
+
+**NO PUT/PATCH:** Observations are immutable once created (delete and recreate if correction needed)
+
+**Total: 5 endpoint patterns for Observations**
+
+**Key pattern:** Most queries use datastream-scoped endpoint since observations are always associated with a datastream.
 
 76. **Observations Query Parameters:** What query parameters apply to Observations? phenomenonTime (PRIMARY), resultTime, foi, id, limit, offset, cursor, f, obsFormat?
 
-**Answer:**
+**Answer:** Query parameters for Observations endpoints from OpenAPI Part 2 spec:
 
+**Temporal filters (PRIMARY):**
+- `phenomenonTime` - ISO 8601 instant/interval - when phenomenon occurred (MOST IMPORTANT FILTER)
+- `resultTime` - ISO 8601 instant/interval - when result became available
+
+**Identifier filters:**
+- `id` - Comma-separated list of local IDs or URNs
+
+**Relationship filters:**
+- `datastream` - Filter by datastream ID (only for canonical /observations endpoint)
+- `foi` - Filter by feature of interest ID
+- `system` - Filter by system ID (implied)
+
+**Pagination:**
+- `limit` - Max items per page (1-10000, default 10)
+- `offset` - Zero-based starting index (offset-based pagination) OR
+- `cursor` - Cursor token (cursor-based pagination, server-dependent)
+
+**Format negotiation:**
+- `f` - Response format (json, swe+json, swe+text, swe+binary)
+
+**TypeScript interface:**
+```typescript
+interface ObservationQueryOptions {
+  // Temporal (PRIMARY FILTERS)
+  phenomenonTime?: string;  // ISO 8601 instant or interval
+  resultTime?: string;       // ISO 8601 instant or interval
+  
+  // Identifiers
+  id?: string[];
+  
+  // Relationships
+  datastream?: string[];  // Only for /observations endpoint
+  foi?: string[];
+  system?: string[];
+  
+  // Pagination
+  limit?: number;
+  offset?: number;
+  cursor?: string;
+  
+  // Format
+  f?: 'json' | 'swe+json' | 'swe+text' | 'swe+binary';
+}
+```
+
+**Note:** `obsFormat` is NOT a query parameter - it's part of datastream schema. Use `f` parameter for format negotiation.
 
 77. **Temporal Queries:** What are ALL phenomenonTime query patterns? Single instant, closed interval, open start, open end, multiple disjoint intervals?
 
-**Answer:**
+**Answer:** Complete phenomenonTime query patterns (applies to all temporal parameters):
 
+**1. Single instant (exact time):**
+```
+phenomenonTime=2024-02-02T12:00:00Z
+phenomenonTime=2024-02-02
+phenomenonTime=now
+phenomenonTime=latest
+```
+
+**2. Closed interval (start and end):**
+```
+phenomenonTime=2024-01-01T00:00:00Z/2024-01-31T23:59:59Z
+phenomenonTime=2024-01-01/2024-01-31
+phenomenonTime=2024-01-15T10:00:00Z/PT1H              # Start + duration
+phenomenonTime=PT1H/2024-01-15T11:00:00Z              # Duration + end
+```
+
+**3. Open start (everything before end):**
+```
+phenomenonTime=../2024-01-31T23:59:59Z
+phenomenonTime=../2024-01-31
+phenomenonTime=../now
+phenomenonTime=../latest
+```
+
+**4. Open end (everything after start):**
+```
+phenomenonTime=2024-01-01T00:00:00Z/..
+phenomenonTime=2024-01-01/..
+phenomenonTime=now/..
+```
+
+**5. Special keywords:**
+```
+now            # Current time (server evaluates)
+latest         # Most recent observation only
+```
+
+**6. Duration format (ISO 8601 duration):**
+```
+PT1H           # 1 hour
+PT30M          # 30 minutes
+PT1H30M        # 1 hour 30 minutes
+P1D            # 1 day
+P1M            # 1 month
+P1Y            # 1 year
+P1DT12H        # 1 day 12 hours
+```
+
+**NOT SUPPORTED:**
+- Multiple disjoint intervals: `2024-01-01/2024-01-15,2024-02-01/2024-02-15` ❌
+- Use separate queries and merge results client-side
+
+**URL encoding examples:**
+```typescript
+// Closed interval
+encodeURIComponent('2024-01-01T00:00:00Z/2024-01-31T23:59:59Z')
+// Result: 2024-01-01T00%3A00%3A00Z%2F2024-01-31T23%3A59%3A59Z
+
+// Open interval
+encodeURIComponent('../2024-01-31')
+// Result: ..%2F2024-01-31
+```
+
+**TypeScript helper:**
+```typescript
+function buildTemporalQuery(time: string | [string, string]): string {
+  if (typeof time === 'string') {
+    return time;  // Single instant
+  }
+  return `${time[0]}/${time[1]}`;  // Interval
+}
+
+// Usage:
+buildTemporalQuery('2024-02-02T12:00:00Z')  // Single instant
+buildTemporalQuery(['2024-01-01', '2024-01-31'])  // Interval
+buildTemporalQuery(['..', 'now'])  // Open start
+buildTemporalQuery(['now', '..'])  // Open end
+```
 
 78. **Cursor Pagination:** How to implement cursor-based pagination for Observations? Extract cursor from response headers or body? Pass as query parameter?
 
-**Answer:**
+**Answer:** Cursor-based pagination for Observations (server-dependent feature):
 
+**Response structure with cursor:**
+```json
+{
+  "items": [
+    /* observations */
+  ],
+  "links": [
+    {
+      "rel": "next",
+      "href": "https://api.example.com/datastreams/ds1/observations?limit=100&cursor=eyJpZCI6MTIzLCJ0aW1lIjoiMjAyNC0wMS0zMVQyMzo1OTo1OVoifQ=="
+    }
+  ]
+}
+```
+
+**Extract cursor from response:**
+```typescript
+function extractNextCursor(response: ObservationResponse): string | undefined {
+  const nextLink = response.links?.find(link => link.rel === 'next');
+  if (!nextLink) return undefined;
+  
+  const url = new URL(nextLink.href);
+  return url.searchParams.get('cursor') ?? undefined;
+}
+```
+
+**Pagination loop:**
+```typescript
+async function* getAllObservations(
+  datastreamId: string,
+  options?: { phenomenonTime?: string; limit?: number }
+): AsyncGenerator<Observation[], void, unknown> {
+  let cursor: string | undefined = undefined;
+  const limit = options?.limit ?? 100;
+  
+  while (true) {
+    const url = buildObservationsUrl(datastreamId, {
+      ...options,
+      limit,
+      cursor
+    });
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    yield data.items;
+    
+    // Extract next cursor
+    cursor = extractNextCursor(data);
+    if (!cursor) break;  // No more pages
+  }
+}
+
+// Usage:
+for await (const batch of getAllObservations('ds1', { limit: 1000 })) {
+  processBatch(batch);
+}
+```
+
+**Fallback to offset pagination:**
+If server doesn't provide cursor, use offset-based:
+```typescript
+async function getAllObservationsOffset(
+  datastreamId: string,
+  options?: { phenomenonTime?: string; limit?: number }
+): Promise<Observation[]> {
+  const limit = options?.limit ?? 100;
+  let offset = 0;
+  const allObservations: Observation[] = [];
+  
+  while (true) {
+    const response = await getObservations(datastreamId, {
+      ...options,
+      limit,
+      offset
+    });
+    
+    if (response.items.length === 0) break;
+    allObservations.push(...response.items);
+    
+    if (response.items.length < limit) break;  // Last page
+    offset += limit;
+  }
+  
+  return allObservations;
+}
+```
+
+**Key points:**
+- Cursor extracted from **response body links**, not HTTP headers
+- Cursor is **opaque** (server-specific encoding)
+- Fallback to offset if cursor not available
+- Cursor is more efficient for large temporal queries
 
 79. **Observations CRUD:** What CRUD operations for Observations? POST single, POST bulk array, PUT (rare), DELETE?
 
-**Answer:**
+**Answer:** CRUD operations for Observations from OpenAPI Part 2 spec:
 
+**CREATE single observation (POST):**
+```
+POST /datastreams/{datastreamId}/observations
+Content-Type: application/json
+Body: Single observation object
+
+Response: 201 Created
+Location: https://api.example.com/observations/{new-id}
+```
+
+**CREATE bulk observations (POST array):**
+```
+POST /datastreams/{datastreamId}/observations
+Content-Type: application/json
+Body: Array of observation objects
+
+Response: 201 Created
+Body: Array of created observation IDs or full observations
+```
+
+**READ (GET):**
+```
+GET /observations/{obsId}
+Accept: application/json
+
+Response: 200 OK
+Body: Single observation
+```
+
+**NO UPDATE:** Observations are **immutable** after creation
+```
+PUT /observations/{obsId}    ✗ Not supported
+PATCH /observations/{obsId}  ✗ Not supported
+```
+
+**DELETE:**
+```
+DELETE /observations/{obsId}
+
+Response: 204 No Content
+```
+
+**Method signatures:**
+```typescript
+// Create single
+async createObservation(
+  datastreamId: string,
+  observation: ObservationInput
+): Promise<Observation>
+
+// Create bulk
+async createObservations(
+  datastreamId: string,
+  observations: ObservationInput[]
+): Promise<Observation[]>
+
+// Read
+async getObservation(obsId: string, options?: { f?: Format }): Promise<Observation>
+
+// Delete
+async deleteObservation(obsId: string): Promise<void>
+
+// NO UPDATE METHODS
+```
+
+**Rationale for immutability:**
+- Observations are **historical records** (should not be changed)
+- For corrections: Delete incorrect observation, create new corrected one
+- Maintains data integrity and audit trail
 
 80. **Bulk Operations:** How to support bulk observation creation? POST array to `/datastreams/{id}/observations`?
 
-**Answer:**
+**Answer:** Bulk observation creation via POST array:
 
+**Request format:**
+```
+POST /datastreams/{datastreamId}/observations
+Content-Type: application/json
+Body: Array of observations
+
+[
+  {
+    "phenomenonTime": "2024-02-02T12:00:00Z",
+    "resultTime": "2024-02-02T12:01:00Z",
+    "result": { "temp": 25.3, "humidity": 60.5 }
+  },
+  {
+    "phenomenonTime": "2024-02-02T12:05:00Z",
+    "resultTime": "2024-02-02T12:06:00Z",
+    "result": { "temp": 25.4, "humidity": 60.4 }
+  },
+  /* ... up to 10,000 observations */
+]
+```
+
+**Response:**
+```json
+{
+  "items": [
+    {
+      "id": "obs1",
+      "phenomenonTime": "2024-02-02T12:00:00Z",
+      "resultTime": "2024-02-02T12:01:00Z",
+      "result": { "temp": 25.3, "humidity": 60.5 }
+    },
+    /* ... */
+  ]
+}
+```
+
+**Implementation:**
+```typescript
+async createObservations(
+  datastreamId: string,
+  observations: ObservationInput[]
+): Promise<Observation[]> {
+  const baseUrl = this.getResourceLink('datastreams');
+  const url = `${baseUrl}/${datastreamId}/observations`;
+  
+  // Batch into chunks of max 10,000
+  const batchSize = 10000;
+  const allCreated: Observation[] = [];
+  
+  for (let i = 0; i < observations.length; i += batchSize) {
+    const batch = observations.slice(i, i + batchSize);
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(batch)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const result = await response.json();
+    allCreated.push(...result.items);
+  }
+  
+  return allCreated;
+}
+```
+
+**Performance recommendations:**
+- **Batch size:** 100-1000 observations per request (balance latency vs throughput)
+- **Max size:** 10,000 observations per request (server limit)
+- **Compression:** Use gzip compression for large batches
+- **Parallel requests:** Consider parallel POST for independent batches
+
+**Error handling:**
+- Partial failure: Some observations may succeed, others fail
+- Server should return details of failed observations
+- Client should retry failed items
 
 81. **Limit Constraints:** What is max limit for Observations? 10,000 for Part 2?
 
-**Answer:**
+**Answer:** Pagination limits for Observations are **same as Part 1**:
+
+**Constraints:**
+- **Minimum:** 1
+- **Maximum:** 10,000
+- **Default:** 10
+
+**Consistent across Part 1 and Part 2:**
+```yaml
+# Part 1 (Systems, Deployments, etc.)
+limit:
+  minimum: 1
+  maximum: 10000
+  default: 10
+
+# Part 2 (DataStreams, Observations, etc.)
+limit:
+  minimum: 1
+  maximum: 10000
+  default: 10
+```
+
+**Practical recommendations for Observations:**
+
+**Interactive queries (dashboards):**
+```
+limit=50-100  # Responsive UI, quick load
+```
+
+**Batch processing (analysis):**
+```
+limit=1000-10000  # Efficient bulk retrieval
+```
+
+**Real-time streaming:**
+```
+limit=10-50  # Low latency, frequent polls
+```
+
+**Historical export:**
+```
+limit=10000  # Minimize round trips
+```
+
+**TypeScript validation:**
+```typescript
+function validateLimit(limit?: number): number {
+  const value = limit ?? 10;
+  
+  if (value < 1 || value > 10000) {
+    throw new RangeError('limit must be between 1 and 10,000');
+  }
+  
+  return value;
+}
+```
+
+**Note:** Server MAY return fewer observations than limit if insufficient matches exist. Check response length to detect last page.
 
 
 ### P. Control Streams Resource Methods
@@ -3450,27 +4156,260 @@ async getProperties(options?: PropertyQueryOptions): Promise<Property[]> {
 
 82. **Control Streams Endpoints:** What are ALL Control Streams endpoints? List all, get by ID, query, by system, schema endpoint, in collection?
 
-**Answer:**
+**Answer:** Complete list of ControlStreams endpoints from OpenAPI Part 2 spec:
 
+**Canonical endpoints:**
+- `GET /controlstreams` - List/query all control streams
+- `POST /controlstreams` - Create new control stream
+- `GET /controlstreams/{controlstreamId}` - Get specific control stream by ID
+- `PUT /controlstreams/{controlstreamId}` - Replace control stream (complete update)
+- `DELETE /controlstreams/{controlstreamId}` - Delete control stream
+
+**Association endpoints (reverse navigation):**
+- `GET /systems/{systemId}/controlstreams` - List control streams of specific system
+- `POST /systems/{systemId}/controlstreams` - Create control stream for specific system
+
+**Schema endpoint:**
+- `GET /controlstreams/{controlstreamId}/schema` - Get command schema for control stream
+- Format negotiation: `?f=json`, `?f=proto`, `?f=swe+json`
+
+**Commands endpoint (nested):**
+- `GET /controlstreams/{controlstreamId}/commands` - Get commands for control stream
+- `POST /controlstreams/{controlstreamId}/commands` - Submit command(s) to control stream
+
+**No hierarchical structure:** ControlStreams are flat (no sub-control streams)
+
+**Total: 9 distinct endpoint patterns for ControlStreams**
 
 83. **Control Streams Query Parameters:** What query parameters apply to Control Streams? system, controlledProperty, id, uid, q, properties, limit, offset, f?
 
-**Answer:**
+**Answer:** Query parameters for ControlStreams endpoints from OpenAPI Part 2 spec:
 
+**NO spatial/temporal filters:** ControlStreams don't have spatial/temporal extent
+
+**Identifier filters:**
+- `id` - Comma-separated list of local IDs or URNs
+
+**Text search:**
+- `q` - Comma-separated keywords for full-text search
+
+**Relationship filters:**
+- `system` - Filter by system ID (control streams for specific system)
+- `controlledProperty` - Filter by controlled property ID or URI
+- `foi` - Filter by feature of interest ID (implied)
+
+**Pagination:**
+- `limit` - Max items per page (1-10000, default 10)
+- `offset` - Zero-based starting index (default 0) OR
+- `cursor` - Cursor token for cursor-based pagination (server-dependent)
+
+**Format negotiation:**
+- `f` - Response format (json, html)
+
+**TypeScript interface:**
+```typescript
+interface ControlStreamQueryOptions {
+  // Identifiers
+  id?: string[];
+  
+  // Text search
+  q?: string[];
+  
+  // Relationships
+  system?: string[];
+  controlledProperty?: string[];
+  foi?: string[];
+  
+  // Pagination
+  limit?: number;
+  offset?: number;
+  cursor?: string;
+  
+  // Format
+  f?: 'json' | 'html';
+}
+```
 
 84. **Schema Endpoint:** How to construct schema endpoint URL? `/controlstreams/{id}/schema`? What format?
 
-**Answer:**
+**Answer:** Schema endpoint provides command structure for a control stream:
 
+**Endpoint pattern:**
+```
+GET /controlstreams/{controlstreamId}/schema
+GET /controlstreams/{controlstreamId}/schema?f=json
+GET /controlstreams/{controlstreamId}/schema?f=proto
+GET /controlstreams/{controlstreamId}/schema?f=swe+json
+```
+
+**Format negotiation:**
+- `f=json` - JSON Schema format (default)
+- `f=proto` - Protocol Buffers schema
+- `f=swe+json` - SWE Common JSON schema
+
+**Response structure (JSON Schema format):**
+```json
+{
+  "cmdFormat": "application/json",
+  "parametersSchema": {
+    "type": "DataRecord",
+    "fields": [
+      {
+        "name": "pan",
+        "type": "Quantity",
+        "definition": "http://example.org/ont/pan_angle",
+        "label": "Pan Angle",
+        "uom": {"code": "deg"},
+        "constraint": {
+          "type": "AllowedValues",
+          "intervals": [[-180, 180]]
+        }
+      },
+      {
+        "name": "tilt",
+        "type": "Quantity",
+        "definition": "http://example.org/ont/tilt_angle",
+        "label": "Tilt Angle",
+        "uom": {"code": "deg"},
+        "constraint": {
+          "type": "AllowedValues",
+          "intervals": [[-90, 90]]
+        }
+      }
+    ]
+  }
+}
+```
+
+**Method signature:**
+```typescript
+async getControlStreamSchema(
+  controlstreamId: string,
+  options?: { f?: 'json' | 'proto' | 'swe+json' }
+): Promise<ControlStreamSchema>
+```
+
+**Use cases:**
+- **Client validation:** Validate commands before submission
+- **UI generation:** Auto-generate control forms from schema
+- **Parameter parsing:** Understand command structure
 
 85. **Control Streams CRUD:** What CRUD operations for Control Streams? POST, PUT/PATCH, DELETE with cascade?
 
-**Answer:**
+**Answer:** Complete CRUD operations for ControlStreams from OpenAPI Part 2 spec:
 
+**CREATE (POST):**
+```
+POST /controlstreams
+Content-Type: application/json
+Body: ControlStream resource with schema
+
+Response: 201 Created
+Location: https://api.example.com/controlstreams/{new-id}
+```
+
+**CREATE for specific system:**
+```
+POST /systems/{systemId}/controlstreams
+Content-Type: application/json
+Body: ControlStream resource
+
+Response: 201 Created
+```
+
+**READ (GET):**
+```
+GET /controlstreams/{controlstreamId}
+Accept: application/json
+
+Response: 200 OK
+Body: ControlStream resource
+```
+
+**UPDATE - Replace (PUT):**
+```
+PUT /controlstreams/{controlstreamId}
+Content-Type: application/json
+Body: Complete control stream resource
+
+Response: 204 No Content
+```
+
+**DELETE:**
+```
+DELETE /controlstreams/{controlstreamId}
+
+Response: 204 No Content (success)
+         409 Conflict (has commands)
+```
+
+**DELETE with cascade (implicit):**
+Deleting control stream deletes all associated commands.
+
+**Method signatures:**
+```typescript
+// Create
+async createControlStream(body: ControlStreamInput): Promise<ControlStream>
+async createControlStreamForSystem(systemId: string, body: ControlStreamInput): Promise<ControlStream>
+
+// Read
+async getControlStream(controlstreamId: string, options?: { f?: Format }): Promise<ControlStream>
+
+// Update
+async updateControlStream(controlstreamId: string, body: ControlStreamInput): Promise<ControlStream>
+
+// Delete
+async deleteControlStream(controlstreamId: string): Promise<void>
+```
+
+**Important:** ControlStream schema is **immutable** after creation. To change schema, must delete and recreate control stream.
 
 86. **Parameter Format:** Are there special format parameters for Control Streams? `cmdFormat` parameter?
 
-**Answer:**
+**Answer:** Yes, `cmdFormat` parameter controls command format for ControlStream operations:
+
+**Usage context:** The `cmdFormat` is part of the ControlStream **schema definition**, not a query parameter:
+
+**ControlStream schema property:**
+```json
+{
+  "id": "cs1",
+  "name": "Pan/Tilt Control",
+  "schema": {
+    "cmdFormat": "application/json",  // Command format
+    "parametersSchema": { /* SWE schema */ }
+  }
+}
+```
+
+**Supported command formats:**
+- `application/json` - JSON commands (default, most common)
+- `application/swe+json` - SWE Common JSON format
+- `application/swe+text` - SWE Common text format
+- `application/swe+binary` - SWE Common binary format
+
+**Format determines command structure:**
+
+**JSON format (cmdFormat="application/json"):**
+```json
+{
+  "issueTime": "2024-02-02T12:00:00Z",
+  "executionTime": "2024-02-02T12:05:00Z",
+  "parameters": {
+    "pan": 45.0,
+    "tilt": 30.0
+  }
+}
+```
+
+**Query parameter for GET operations:**
+When retrieving commands, can specify format:
+```
+GET /controlstreams/{id}/commands?f=json
+GET /controlstreams/{id}/commands?f=swe+json
+```
+
+**Note:** `cmdFormat` is NOT a query parameter for listing control streams. It's part of control stream metadata and defines the command format for that specific control stream.
 
 
 ### Q. Commands Resource Methods
@@ -3479,52 +4418,670 @@ async getProperties(options?: PropertyQueryOptions): Promise<Property[]> {
 
 87. **Commands Endpoints:** What are ALL Commands endpoints? List all, get by ID, by controlstream, query with temporal filters, status endpoint, result endpoint, feasibility endpoint?
 
-**Answer:**
+**Answer:** Complete list of Commands endpoints from OpenAPI Part 2 spec:
 
+**Canonical endpoints:**
+- `GET /commands` - List/query all commands across all control streams
+- `GET /commands/{cmdId}` - Get specific command by ID
+- `DELETE /commands/{cmdId}` - Delete/cancel command
+
+**ControlStream-scoped endpoints (MOST COMMON):**
+- `GET /controlstreams/{controlstreamId}/commands` - Get commands for specific control stream
+- `POST /controlstreams/{controlstreamId}/commands` - Submit command(s) to specific control stream
+
+**Status endpoints:**
+- `GET /commands/{cmdId}/status` - Get all status updates for command
+- `GET /commands/{cmdId}/status/{statusId}` - Get specific status update
+- `POST /commands/{cmdId}/status` - Add status update to command
+
+**Result endpoints:**
+- `GET /commands/{cmdId}/result` - Get all results for command
+- `GET /commands/{cmdId}/result/{resultId}` - Get specific result
+- `POST /commands/{cmdId}/result` - Add result to command
+
+**Feasibility endpoint (NOT IMPLEMENTED IN SPEC):**
+- `POST /controlstreams/{controlstreamId}/feasibility` - Check command feasibility (FUTURE FEATURE)
+
+**Total: 11 distinct endpoint patterns for Commands**
+
+**Key pattern:** Most operations use controlstream-scoped endpoint since commands are always associated with a control stream.
 
 88. **Commands Query Parameters:** What query parameters apply to Commands? issueTime (PRIMARY), executionTime, status, controlstream, id, limit, offset, cursor, f, cmdFormat?
 
-**Answer:**
+**Answer:** Query parameters for Commands endpoints from OpenAPI Part 2 spec:
 
+**Temporal filters (PRIMARY):**
+- `issueTime` - ISO 8601 instant/interval - when command was issued (MOST IMPORTANT FILTER)
+- `executionTime` - ISO 8601 instant/interval - when command should be/was executed
+
+**Status filter:**
+- `statusCode` - Comma-separated list of status codes (PENDING, ACCEPTED, REJECTED, SCHEDULED, UPDATED, CANCELED, EXECUTING, FAILED, COMPLETED)
+
+**Identifier filters:**
+- `id` - Comma-separated list of local IDs or URNs
+
+**Relationship filters:**
+- `controlStream` - Filter by control stream ID (only for canonical /commands endpoint)
+- `system` - Filter by system ID
+- `foi` - Filter by feature of interest ID
+- `controlledProperty` - Filter by controlled property ID or URI
+- `sender` - Filter by sender ID (who issued command)
+
+**Pagination:**
+- `limit` - Max items per page (1-10000, default 10)
+- `offset` - Zero-based starting index (offset-based pagination) OR
+- `cursor` - Cursor token (cursor-based pagination, server-dependent)
+
+**Format negotiation:**
+- `f` - Response format (json, swe+json)
+
+**TypeScript interface:**
+```typescript
+interface CommandQueryOptions {
+  // Temporal (PRIMARY FILTERS)
+  issueTime?: string;       // ISO 8601 instant or interval
+  executionTime?: string;   // ISO 8601 instant or interval
+  
+  // Status filter
+  statusCode?: CommandStatus[];
+  
+  // Identifiers
+  id?: string[];
+  
+  // Relationships
+  controlStream?: string[];  // Only for /commands endpoint
+  system?: string[];
+  foi?: string[];
+  controlledProperty?: string[];
+  sender?: string[];
+  
+  // Pagination
+  limit?: number;
+  offset?: number;
+  cursor?: string;
+  
+  // Format
+  f?: 'json' | 'swe+json';
+}
+
+type CommandStatus = 
+  | 'PENDING'      // Submitted, not yet processed
+  | 'ACCEPTED'     // Accepted for execution
+  | 'REJECTED'     // Rejected (validation failed)
+  | 'SCHEDULED'    // Scheduled for future execution
+  | 'UPDATED'      // Command parameters updated
+  | 'CANCELED'     // Canceled by user
+  | 'EXECUTING'    // Currently executing
+  | 'FAILED'       // Execution failed
+  | 'COMPLETED';   // Successfully completed
+```
 
 89. **Status Endpoint:** How to construct command status endpoint? `/commands/{id}/status`? What does it return?
 
-**Answer:**
+**Answer:** Command status endpoint provides execution status history:
 
+**Endpoint patterns:**
+```
+GET /commands/{cmdId}/status           # Get all status updates
+GET /commands/{cmdId}/status/{statusId} # Get specific status update
+POST /commands/{cmdId}/status          # Add status update (server/system use)
+```
+
+**Response structure (GET all statuses):**
+```json
+{
+  "items": [
+    {
+      "id": "status1",
+      "time": "2024-02-02T12:00:00Z",
+      "statusCode": "PENDING",
+      "message": "Command queued for processing"
+    },
+    {
+      "id": "status2",
+      "time": "2024-02-02T12:00:05Z",
+      "statusCode": "ACCEPTED",
+      "message": "Command validated and accepted"
+    },
+    {
+      "id": "status3",
+      "time": "2024-02-02T12:05:00Z",
+      "statusCode": "EXECUTING",
+      "message": "Executing command"
+    },
+    {
+      "id": "status4",
+      "time": "2024-02-02T12:05:30Z",
+      "statusCode": "COMPLETED",
+      "message": "Command completed successfully"
+    }
+  ]
+}
+```
+
+**Method signatures:**
+```typescript
+// Get all status updates
+async getCommandStatuses(cmdId: string): Promise<CommandStatus[]>
+
+// Get specific status update
+async getCommandStatus(cmdId: string, statusId: string): Promise<CommandStatus>
+
+// Add status update (server/system use)
+async addCommandStatus(cmdId: string, status: CommandStatusInput): Promise<CommandStatus>
+```
+
+**Status lifecycle:**
+```
+PENDING → ACCEPTED → SCHEDULED → EXECUTING → COMPLETED
+         ↘ REJECTED
+                    ↘ CANCELED
+                               ↘ FAILED
+```
+
+**Use cases:**
+- **Client polling:** Check command execution progress
+- **Audit trail:** Track command lifecycle
+- **Error diagnosis:** Understand failure reasons
 
 90. **Result Endpoint:** How to construct command result endpoint? `/commands/{id}/result`? What does it return?
 
-**Answer:**
+**Answer:** Command result endpoint provides execution results:
 
+**Endpoint patterns:**
+```
+GET /commands/{cmdId}/result           # Get all results
+GET /commands/{cmdId}/result/{resultId} # Get specific result
+POST /commands/{cmdId}/result          # Add result (server/system use)
+```
+
+**Response structure (GET all results):**
+```json
+{
+  "items": [
+    {
+      "id": "result1",
+      "time": "2024-02-02T12:05:30Z",
+      "value": {
+        "actualPan": 44.8,
+        "actualTilt": 29.9,
+        "executionDuration": 30.5
+      }
+    }
+  ]
+}
+```
+
+**Method signatures:**
+```typescript
+// Get all results
+async getCommandResults(cmdId: string): Promise<CommandResult[]>
+
+// Get specific result
+async getCommandResult(cmdId: string, resultId: string): Promise<CommandResult>
+
+// Add result (server/system use)
+async addCommandResult(cmdId: string, result: CommandResultInput): Promise<CommandResult>
+```
+
+**Result vs Status:**
+- **Status:** Execution state (PENDING, EXECUTING, COMPLETED, etc.)
+- **Result:** Actual execution outcome (measured values, confirmation data)
+
+**Use cases:**
+- **Verification:** Confirm command execution
+- **Telemetry:** Get actual achieved values (e.g., actual pan/tilt vs commanded)
+- **Quality control:** Validate execution accuracy
 
 91. **Feasibility Endpoint:** How to construct feasibility endpoint? `POST /controlstreams/{id}/feasibility` with parameters?
 
-**Answer:**
+**Answer:** Feasibility endpoint checks if command is feasible **without executing it**:
 
+**Endpoint pattern:**
+```
+POST /controlstreams/{controlstreamId}/feasibility
+Content-Type: application/json
+Body: Command parameters to check
+```
+
+**Request:**
+```json
+{
+  "executionTime": "2024-02-02T12:05:00Z",
+  "parameters": {
+    "pan": 45.0,
+    "tilt": 30.0
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "feasible": true,
+  "message": "Command can be executed",
+  "estimatedDuration": "PT30S",
+  "constraints": {
+    "maxPan": 180.0,
+    "minPan": -180.0,
+    "maxTilt": 90.0,
+    "minTilt": -90.0
+  }
+}
+```
+
+**OR (if not feasible):**
+```json
+{
+  "feasible": false,
+  "message": "Cannot execute: Pan angle exceeds maximum",
+  "violations": [
+    {
+      "parameter": "pan",
+      "value": 200.0,
+      "constraint": "max",
+      "limit": 180.0
+    }
+  ]
+}
+```
+
+**Method signature:**
+```typescript
+async checkCommandFeasibility(
+  controlstreamId: string,
+  command: CommandInput
+): Promise<FeasibilityResult>
+
+interface FeasibilityResult {
+  feasible: boolean;
+  message: string;
+  estimatedDuration?: string;  // ISO 8601 duration
+  constraints?: Record<string, any>;
+  violations?: Array<{
+    parameter: string;
+    value: any;
+    constraint: string;
+    limit: any;
+  }>;
+}
+```
+
+**Note:** OpenAPI Part 2 spec does **NOT** formally define feasibility endpoint. It's a **proposed future feature**. Implementation is server-dependent.
+
+**Use cases:**
+- **Pre-validation:** Check command before submission
+- **UI feedback:** Show feasibility in real-time
+- **Conflict avoidance:** Prevent impossible commands
 
 92. **Status Filtering:** How to filter commands by status? `status` parameter with multiple values (pending, executing, completed, failed, cancelled)?
 
-**Answer:**
+**Answer:** Filter commands by status using `statusCode` parameter:
 
+**Query pattern:**
+```
+GET /commands?statusCode=PENDING
+GET /commands?statusCode=EXECUTING,SCHEDULED
+GET /commands?statusCode=COMPLETED,FAILED
+GET /controlstreams/{id}/commands?statusCode=PENDING
+```
+
+**Status codes (from OpenAPI spec):**
+- `PENDING` - Submitted, awaiting processing
+- `ACCEPTED` - Validated and accepted
+- `REJECTED` - Validation failed
+- `SCHEDULED` - Scheduled for future execution
+- `UPDATED` - Command parameters updated
+- `CANCELED` - Canceled by user (note: American spelling)
+- `EXECUTING` - Currently executing
+- `FAILED` - Execution failed
+- `COMPLETED` - Successfully completed
+
+**TypeScript implementation:**
+```typescript
+enum CommandStatusCode {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+  SCHEDULED = 'SCHEDULED',
+  UPDATED = 'UPDATED',
+  CANCELED = 'CANCELED',
+  EXECUTING = 'EXECUTING',
+  FAILED = 'FAILED',
+  COMPLETED = 'COMPLETED'
+}
+
+interface CommandQueryOptions {
+  statusCode?: CommandStatusCode[];
+  // ... other options
+}
+
+// Build query string
+if (options.statusCode?.length > 0) {
+  url.searchParams.set('statusCode', options.statusCode.join(','));
+}
+// Result: ?statusCode=PENDING,EXECUTING
+```
+
+**Common use cases:**
+```typescript
+// Get pending commands
+getCommands({ statusCode: [CommandStatusCode.PENDING] })
+
+// Get active commands (executing or scheduled)
+getCommands({ statusCode: [CommandStatusCode.EXECUTING, CommandStatusCode.SCHEDULED] })
+
+// Get completed/failed commands (historical)
+getCommands({ statusCode: [CommandStatusCode.COMPLETED, CommandStatusCode.FAILED] })
+
+// Get all non-terminal commands (can still change)
+getCommands({ statusCode: [
+  CommandStatusCode.PENDING,
+  CommandStatusCode.ACCEPTED,
+  CommandStatusCode.SCHEDULED,
+  CommandStatusCode.EXECUTING
+]})
+```
 
 93. **Temporal Queries:** What are issueTime and executionTime query patterns? ISO 8601 intervals?
 
-**Answer:**
+**Answer:** Temporal queries for commands use same ISO 8601 syntax as observations:
 
+**issueTime query patterns (when command was submitted):**
+```
+issueTime=2024-02-02T12:00:00Z                           # Exact time
+issueTime=2024-02-02                                     # Whole day
+issueTime=2024-01-01/2024-01-31                          # January commands
+issueTime=../now                                         # All commands up to now
+issueTime=2024-02-01/..                                  # From Feb 1 onwards
+issueTime=latest                                         # Most recent command
+```
+
+**executionTime query patterns (when command should be/was executed):**
+```
+executionTime=2024-02-02T14:00:00Z                       # Exact execution time
+executionTime=2024-02-02/2024-02-03                      # Executed in date range
+executionTime=now/..                                     # Scheduled for future
+executionTime=../now                                     # Already executed
+executionTime=2024-02-02T12:00:00Z/PT1H                  # Within 1 hour window
+```
+
+**Combining filters:**
+```
+# Commands issued today for future execution
+GET /commands?issueTime=2024-02-02&executionTime=now/..
+
+# Commands issued last month that failed
+GET /commands?issueTime=2024-01-01/2024-01-31&statusCode=FAILED
+
+# Commands executed yesterday
+GET /commands?executionTime=2024-02-01
+```
+
+**TypeScript helper:**
+```typescript
+interface CommandTemporalQuery {
+  issueTime?: string;      // When command was submitted
+  executionTime?: string;  // When command should be/was executed
+}
+
+// Find commands issued but not yet executed
+const pendingCommands = await getCommands({
+  issueTime: '../now',
+  executionTime: 'now/..',
+  statusCode: [CommandStatusCode.SCHEDULED]
+});
+
+// Find commands that failed during execution
+const failedCommands = await getCommands({
+  executionTime: '../now',
+  statusCode: [CommandStatusCode.FAILED]
+});
+```
 
 94. **Commands CRUD:** What CRUD operations for Commands? POST single, POST bulk array, PATCH status/result, POST cancel?
 
-**Answer:**
+**Answer:** CRUD operations for Commands from OpenAPI Part 2 spec:
 
+**CREATE single command (POST):**
+```
+POST /controlstreams/{controlstreamId}/commands
+Content-Type: application/json
+Body: Single command object
+
+Response: 201 Created (async) OR 200 OK (sync)
+Location: https://api.example.com/commands/{new-id}
+```
+
+**CREATE bulk commands (POST array):**
+```
+POST /controlstreams/{controlstreamId}/commands
+Content-Type: application/json
+Body: Array of command objects
+
+Response: 201 Created
+Body: Array of created command IDs
+```
+
+**READ (GET):**
+```
+GET /commands/{cmdId}
+Accept: application/json
+
+Response: 200 OK
+Body: Single command with current status
+```
+
+**UPDATE status (POST to status endpoint):**
+```
+POST /commands/{cmdId}/status
+Content-Type: application/json
+Body: Status update
+
+Response: 201 Created
+```
+
+**UPDATE result (POST to result endpoint):**
+```
+POST /commands/{cmdId}/result
+Content-Type: application/json
+Body: Result data
+
+Response: 201 Created
+```
+
+**CANCEL (DELETE):**
+```
+DELETE /commands/{cmdId}
+
+Response: 204 No Content
+Side effect: Status changes to CANCELED
+```
+
+**NO PUT/PATCH on command itself:** Once submitted, command parameters are immutable. Can only update status/result or cancel.
+
+**Method signatures:**
+```typescript
+// Create single
+async submitCommand(
+  controlstreamId: string,
+  command: CommandInput
+): Promise<Command>
+
+// Create bulk
+async submitCommands(
+  controlstreamId: string,
+  commands: CommandInput[]
+): Promise<Command[]>
+
+// Read
+async getCommand(cmdId: string, options?: { f?: Format }): Promise<Command>
+
+// Update status (server/system use)
+async updateCommandStatus(cmdId: string, status: CommandStatusInput): Promise<CommandStatus>
+
+// Update result (server/system use)
+async updateCommandResult(cmdId: string, result: CommandResultInput): Promise<CommandResult>
+
+// Cancel
+async cancelCommand(cmdId: string): Promise<void>
+```
 
 95. **Bulk Operations:** How to support bulk command submission? POST array to `/controlstreams/{id}/commands`?
 
-**Answer:**
+**Answer:** Bulk command submission via POST array:
 
+**Request format:**
+```
+POST /controlstreams/{controlstreamId}/commands
+Content-Type: application/json
+Body: Array of commands
+
+[
+  {
+    "issueTime": "2024-02-02T12:00:00Z",
+    "executionTime": "2024-02-02T12:05:00Z",
+    "parameters": { "pan": 45.0, "tilt": 30.0 }
+  },
+  {
+    "issueTime": "2024-02-02T12:00:00Z",
+    "executionTime": "2024-02-02T12:10:00Z",
+    "parameters": { "pan": 90.0, "tilt": 15.0 }
+  },
+  /* ... up to 10,000 commands */
+]
+```
+
+**Response:**
+```json
+{
+  "items": [
+    {
+      "id": "cmd1",
+      "issueTime": "2024-02-02T12:00:00Z",
+      "executionTime": "2024-02-02T12:05:00Z",
+      "statusCode": "PENDING",
+      "parameters": { "pan": 45.0, "tilt": 30.0 }
+    },
+    /* ... */
+  ]
+}
+```
+
+**Implementation:**
+```typescript
+async submitCommands(
+  controlstreamId: string,
+  commands: CommandInput[]
+): Promise<Command[]> {
+  const baseUrl = this.getResourceLink('controlstreams');
+  const url = `${baseUrl}/${controlstreamId}/commands`;
+  
+  // Batch into chunks of max 10,000
+  const batchSize = 10000;
+  const allSubmitted: Command[] = [];
+  
+  for (let i = 0; i < commands.length; i += batchSize) {
+    const batch = commands.slice(i, i + batchSize);
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(batch)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const result = await response.json();
+    allSubmitted.push(...result.items);
+  }
+  
+  return allSubmitted;
+}
+```
+
+**Use cases:**
+- **Scheduled commands:** Submit sequence of commands for automated execution
+- **Mission planning:** Pre-program entire mission sequence
+- **Batch control:** Update multiple systems simultaneously
 
 96. **Synchronous vs Asynchronous:** How do sync vs async command execution differ? Different response codes (200 vs 201)?
 
-**Answer:**
+**Answer:** Commands support both synchronous and asynchronous execution:
+
+**Asynchronous execution (MOST COMMON):**
+```
+POST /controlstreams/{id}/commands
+Body: Command
+
+Response: 201 Created
+Location: https://api.example.com/commands/{cmd-id}
+Body: {
+  "id": "cmd123",
+  "statusCode": "PENDING",
+  "issueTime": "2024-02-02T12:00:00Z",
+  "executionTime": "2024-02-02T12:05:00Z"
+}
+```
+
+**Client workflow:**
+```typescript
+// 1. Submit command
+const command = await submitCommand(controlstreamId, { /* params */ });
+
+// 2. Poll status
+while (true) {
+  const statuses = await getCommandStatuses(command.id);
+  const latestStatus = statuses[statuses.length - 1];
+  
+  if (latestStatus.statusCode === 'COMPLETED') {
+    break;
+  } else if (latestStatus.statusCode === 'FAILED') {
+    throw new Error('Command failed');
+  }
+  
+  await sleep(1000);  // Poll every second
+}
+
+// 3. Get result
+const results = await getCommandResults(command.id);
+```
+
+**Synchronous execution (RARE):**
+```
+POST /controlstreams/{id}/commands
+Body: Command
+
+Response: 200 OK
+Body: {
+  "id": "cmd123",
+  "statusCode": "COMPLETED",
+  "issueTime": "2024-02-02T12:00:00Z",
+  "executionTime": "2024-02-02T12:00:05Z",
+  "result": {
+    "actualPan": 44.8,
+    "actualTilt": 29.9
+  }
+}
+```
+
+**Response code differences:**
+- **201 Created:** Command accepted, will execute asynchronously (client must poll)
+- **200 OK:** Command executed synchronously, result included in response (rare)
+
+**Server behavior:**
+- **Async:** Server returns immediately, command queued for execution
+- **Sync:** Server waits for execution to complete before responding (blocks)
+
+**Sync execution conditions:**
+- Command has immediate `executionTime` (now)
+- System supports synchronous execution
+- Execution is fast (< 1 second)
+- Client explicitly requests sync (implementation-specific)
+
+**Recommendation:** **Always assume asynchronous** - design for polling status endpoint.
 
 
 ### R. TypeScript Type Definitions
@@ -3533,22 +5090,449 @@ async getProperties(options?: PropertyQueryOptions): Promise<Property[]> {
 
 97. **Query Parameter Interfaces:** What TypeScript interfaces should be defined for query parameters? One per resource type? Common parameters interface?
 
-**Answer:**
+**Answer:** Define **base interface + resource-specific extensions** for query parameters:
 
+**Base interface (common parameters):**
+```typescript
+interface BaseQueryOptions {
+  // Identifiers
+  id?: string[];
+  
+  // Text search
+  q?: string[];
+  
+  // Pagination
+  limit?: number;
+  offset?: number;
+  cursor?: string;
+  
+  // Format
+  f?: 'json' | 'geojson' | 'html';
+}
+```
+
+**Spatial extension:**
+```typescript
+interface SpatialQueryOptions {
+  bbox?: [number, number, number, number];
+  geom?: string;  // WKT geometry
+}
+```
+
+**Temporal extension:**
+```typescript
+interface TemporalQueryOptions {
+  datetime?: string;  // ISO 8601 instant or interval
+}
+```
+
+**Resource-specific interfaces:**
+```typescript
+// Systems
+interface SystemQueryOptions extends BaseQueryOptions, SpatialQueryOptions, TemporalQueryOptions {
+  parent?: string[];
+  deployment?: string[];
+  procedure?: string[];
+  foi?: string[];
+  observedProperty?: string[];
+  controlledProperty?: string[];
+  recursive?: boolean;
+  f?: 'json' | 'geojson' | 'sml+json' | 'html';
+}
+
+// Deployments
+interface DeploymentQueryOptions extends BaseQueryOptions, SpatialQueryOptions, TemporalQueryOptions {
+  parent?: string[];
+  system?: string[];
+  foi?: string[];
+  observedProperty?: string[];
+  controlledProperty?: string[];
+  recursive?: boolean;
+  f?: 'json' | 'geojson' | 'html';
+}
+
+// Procedures
+interface ProcedureQueryOptions extends BaseQueryOptions {
+  system?: string[];
+  f?: 'json' | 'geojson' | 'sml+json' | 'html';
+}
+
+// Sampling Features
+interface SamplingFeatureQueryOptions extends BaseQueryOptions, SpatialQueryOptions {
+  system?: string[];
+  foi?: string[];
+  f?: 'json' | 'geojson' | 'html';
+}
+
+// Properties
+interface PropertyQueryOptions extends BaseQueryOptions {
+  system?: string[];
+  baseProperty?: string[];
+  objectType?: string[];
+  f?: 'json' | 'html';
+}
+
+// DataStreams
+interface DataStreamQueryOptions extends BaseQueryOptions {
+  phenomenonTime?: string;
+  resultTime?: string;
+  system?: string[];
+  observedProperty?: string[];
+  foi?: string[];
+  procedure?: string[];
+  deployment?: string[];
+  f?: 'json' | 'html';
+}
+
+// Observations
+interface ObservationQueryOptions extends BaseQueryOptions {
+  phenomenonTime?: string;  // PRIMARY filter
+  resultTime?: string;
+  datastream?: string[];  // Only for /observations endpoint
+  foi?: string[];
+  system?: string[];
+  f?: 'json' | 'swe+json' | 'swe+text' | 'swe+binary';
+}
+
+// ControlStreams
+interface ControlStreamQueryOptions extends BaseQueryOptions {
+  system?: string[];
+  controlledProperty?: string[];
+  foi?: string[];
+  f?: 'json' | 'html';
+}
+
+// Commands
+interface CommandQueryOptions extends BaseQueryOptions {
+  issueTime?: string;       // PRIMARY filter
+  executionTime?: string;
+  statusCode?: CommandStatus[];
+  controlStream?: string[];  // Only for /commands endpoint
+  system?: string[];
+  foi?: string[];
+  controlledProperty?: string[];
+  sender?: string[];
+  f?: 'json' | 'swe+json';
+}
+```
+
+**Benefit of this pattern:**
+- Code reuse via extends
+- Type safety for each resource type
+- Intellisense support
+- Clear documentation of supported parameters
 
 98. **Request Body Types:** What TypeScript types for CRUD request bodies? GeoJSON features? SensorML documents? Observation/command arrays?
 
-**Answer:**
+**Answer:** Define **input types** for request bodies (separate from response types):
 
+**Part 1 resource inputs:**
+```typescript
+// Systems (GeoJSON or SensorML)
+interface SystemInput {
+  name: string;
+  description?: string;
+  validTime?: [string, string];  // ISO 8601 period
+  geometry?: GeoJSON.Geometry;
+  properties?: Record<string, any>;
+  // ... SensorML properties if using sml+json format
+}
+
+// Deployments (GeoJSON)
+interface DeploymentInput {
+  name: string;
+  description?: string;
+  validTime?: [string, string];
+  geometry?: GeoJSON.Geometry;
+  properties?: Record<string, any>;
+}
+
+// Procedures (GeoJSON or SensorML)
+interface ProcedureInput {
+  name: string;
+  description?: string;
+  // ... SensorML properties if using sml+json format
+}
+
+// Sampling Features (GeoJSON)
+interface SamplingFeatureInput extends GeoJSON.Feature {
+  properties: {
+    name: string;
+    description?: string;
+    sampledFeature?: string;  // FOI link
+    [key: string]: any;
+  };
+}
+```
+
+**Part 2 resource inputs:**
+```typescript
+// DataStreams
+interface DataStreamInput {
+  name: string;
+  description?: string;
+  system: string;  // Required: system ID
+  outputName?: string;
+  schema: {
+    obsFormat: string;  // 'application/json', etc.
+    resultSchema: SWEDataRecord;  // SWE Common schema
+    parametersSchema?: SWEDataRecord;
+  };
+}
+
+// Observations
+interface ObservationInput {
+  phenomenonTime: string;  // Required: ISO 8601
+  resultTime?: string;
+  result: any;  // Structure defined by datastream schema
+  resultQuality?: QualityInfo;
+  parameters?: Record<string, any>;
+}
+
+// ControlStreams
+interface ControlStreamInput {
+  name: string;
+  description?: string;
+  system: string;  // Required: system ID
+  inputName?: string;
+  schema: {
+    cmdFormat: string;  // 'application/json', etc.
+    parametersSchema: SWEDataRecord;  // SWE Common schema
+  };
+}
+
+// Commands
+interface CommandInput {
+  issueTime?: string;      // ISO 8601 (defaults to now)
+  executionTime?: string;  // ISO 8601 (defaults to immediate)
+  parameters: any;  // Structure defined by controlstream schema
+  priority?: number;
+}
+```
+
+**Array types for bulk operations:**
+```typescript
+type ObservationBulkInput = ObservationInput[];
+type CommandBulkInput = CommandInput[];
+```
+
+**Utility types:**
+```typescript
+// For PATCH operations (all properties optional)
+type SystemUpdate = Partial<SystemInput>;
+type DeploymentUpdate = Partial<DeploymentInput>;
+
+// For responses (includes server-assigned fields)
+interface SystemResponse extends SystemInput {
+  id: string;  // Server-assigned
+  links: Link[];
+  // ... other read-only fields
+}
+```
 
 99. **Response Types:** Should methods return typed responses or leave typing to handlers?
 
-**Answer:**
+**Answer:** **QueryBuilder methods should return typed responses**, not raw fetch responses:
 
+**Pattern: Strongly typed method returns**
+```typescript
+class CSAPIQueryBuilder {
+  // Returns typed resource, not Response
+  async getSystems(options?: SystemQueryOptions): Promise<System[]> {
+    const url = this.buildSystemsUrl(options);
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data.features || data.items;  // Handle both formats
+  }
+  
+  // Returns single typed resource
+  async getSystem(systemId: string, options?: { f?: Format }): Promise<System> {
+    const url = this.buildSystemUrl(systemId, options);
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  }
+  
+  // Returns paginated response with metadata
+  async getSystemsPaginated(options?: SystemQueryOptions): Promise<{
+    items: System[];
+    links?: Link[];
+    totalResults?: number;
+  }> {
+    const url = this.buildSystemsUrl(options);
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return {
+      items: data.features || data.items,
+      links: data.links,
+      totalResults: data.numberMatched
+    };
+  }
+}
+```
+
+**Response type hierarchy:**
+```typescript
+// Individual resource response
+interface System {
+  id: string;
+  name: string;
+  description?: string;
+  validTime?: [string, string];
+  geometry?: GeoJSON.Geometry;
+  properties?: Record<string, any>;
+  links: Link[];
+}
+
+// Collection response
+interface SystemCollection {
+  items: System[];
+  links?: Link[];
+  numberMatched?: number;
+  numberReturned?: number;
+}
+
+// Paginated response (generic)
+interface PaginatedResponse<T> {
+  items: T[];
+  links?: Link[];
+  totalResults?: number;
+}
+```
+
+**Benefits:**
+- **Type safety:** Catch errors at compile time
+- **Intellisense:** Auto-completion in IDE
+- **Documentation:** Types serve as documentation
+- **Consistency:** All methods return same structure
+
+**Alternative (URL-only pattern) - NOT RECOMMENDED:**
+```typescript
+// DON'T DO THIS - returns URL string, caller must fetch
+buildSystemsUrl(options?: SystemQueryOptions): string {
+  // ... build URL
+  return url.toString();
+}
+```
+
+**Recommendation:** Follow EDRQueryBuilder pattern - return typed responses.
 
 100. **Optional vs Required Parameters:** How to type optional parameters? Partial types? Undefined allowed?
 
-**Answer:**
+**Answer:** Use **optional properties with undefined** for query parameters:
+
+**Pattern: Optional properties with `?`**
+```typescript
+interface SystemQueryOptions {
+  // All parameters are optional
+  bbox?: [number, number, number, number];  // Can be undefined
+  datetime?: string;                        // Can be undefined
+  id?: string[];                            // Can be undefined
+  limit?: number;                           // Can be undefined
+  // ...
+}
+
+// Method signature
+async getSystems(options?: SystemQueryOptions): Promise<System[]> {
+  // options itself is optional
+  // All properties within options are optional
+}
+```
+
+**Required vs optional parameters:**
+```typescript
+// Resource ID is REQUIRED (not optional)
+async getSystem(
+  systemId: string,  // REQUIRED - no ?
+  options?: {
+    datetime?: string;  // OPTIONAL
+    f?: Format;         // OPTIONAL
+  }
+): Promise<System>
+
+// Both resource ID and body are REQUIRED
+async createSystem(
+  body: SystemInput  // REQUIRED - no ?
+): Promise<System>
+
+// Parent ID is REQUIRED, options are optional
+async getSubsystems(
+  parentId: string,    // REQUIRED
+  options?: SystemQueryOptions  // OPTIONAL
+): Promise<System[]>
+```
+
+**Partial types for updates:**
+```typescript
+// For PATCH operations - all properties become optional
+async patchSystem(
+  systemId: string,          // REQUIRED
+  updates: Partial<SystemInput>  // All fields optional
+): Promise<System>
+
+// Allows partial updates
+patchSystem('sys1', { name: 'New Name' })  // Only update name
+patchSystem('sys1', { description: 'New Description', validTime: [...] })
+```
+
+**Strict null checks:**
+```typescript
+// Enable in tsconfig.json
+{
+  "compilerOptions": {
+    "strictNullChecks": true,  // Distinguish undefined from null
+    "strict": true              // Enable all strict checks
+  }
+}
+```
+
+**Validation patterns:**
+```typescript
+async getSystems(options?: SystemQueryOptions): Promise<System[]> {
+  // Validate optional parameters
+  if (options?.limit !== undefined) {
+    if (options.limit < 1 || options.limit > 10000) {
+      throw new RangeError('limit must be between 1 and 10,000');
+    }
+  }
+  
+  if (options?.bbox !== undefined) {
+    if (options.bbox.length !== 4) {
+      throw new Error('bbox must have exactly 4 values');
+    }
+  }
+  
+  // ... build URL and fetch
+}
+```
+
+**Default values:**
+```typescript
+async getSystems(options?: SystemQueryOptions): Promise<System[]> {
+  // Provide defaults for undefined parameters
+  const limit = options?.limit ?? 10;
+  const offset = options?.offset ?? 0;
+  const format = options?.f ?? 'geojson';
+  
+  // ... use defaults
+}
+```
+
+**Key principle:** All query parameters are optional; only path parameters (resource IDs) and request bodies are required.
 
 
 ### S. Code Organization and Structure
@@ -3557,22 +5541,709 @@ async getProperties(options?: PropertyQueryOptions): Promise<Property[]> {
 
 101. **File Structure:** Should CSAPIQueryBuilder be one file or split across multiple files? If split, how to organize?
 
-**Answer:**
+**Answer:** Use **multiple files with modular organization**:
+
+```
+src/csapi/
+  index.ts                    // Main export
+  CSAPIQueryBuilder.ts        // Main class
+  types/
+    index.ts                  // Re-export all types
+    common.ts                 // BaseQueryOptions, Link, etc.
+    systems.ts                // System, SystemQueryOptions, SystemInput
+    deployments.ts            // Deployment, DeploymentQueryOptions
+    procedures.ts             // Procedure, ProcedureQueryOptions
+    samplingFeatures.ts       // SamplingFeature, SamplingFeatureQueryOptions
+    properties.ts             // Property, PropertyQueryOptions
+    datastreams.ts            // DataStream, DataStreamQueryOptions
+    observations.ts           // Observation, ObservationQueryOptions
+    controlstreams.ts         // ControlStream, ControlStreamQueryOptions
+    commands.ts               // Command, CommandQueryOptions, CommandStatus
+  methods/
+    index.ts                  // Re-export all methods
+    systems.ts                // getSystems, getSystem, createSystem, etc.
+    deployments.ts            // getDeployments, getDeployment, etc.
+    procedures.ts             // getProcedures, getProcedure, etc.
+    samplingFeatures.ts       // getSamplingFeatures, getSamplingFeature, etc.
+    properties.ts             // getProperties, getProperty, etc.
+    datastreams.ts            // getDataStreams, getDataStream, etc.
+    observations.ts           // getObservations, getObservation, etc.
+    controlstreams.ts         // getControlStreams, getControlStream, etc.
+    commands.ts               // getCommands, getCommand, etc.
+  utils/
+    index.ts                  // Re-export all utils
+    url-builder.ts            // buildUrl, buildQueryString, encodeValue
+    validators.ts             // validateBbox, validateDatetime, validateLimit
+    formatters.ts             // formatDatetime, formatBbox
+  constants.ts                // DEFAULT_LIMIT, MAX_LIMIT, etc.
+```
+
+**Main class uses composition:**
+```typescript
+// CSAPIQueryBuilder.ts
+import * as systemMethods from './methods/systems';
+import * as deploymentMethods from './methods/deployments';
+// ... import all methods
+
+export class CSAPIQueryBuilder {
+  constructor(private baseUrl: string) {}
+  
+  // Delegate to method modules
+  getSystems = systemMethods.getSystems.bind(this);
+  getSystem = systemMethods.getSystem.bind(this);
+  createSystem = systemMethods.createSystem.bind(this);
+  // ... bind all methods
+}
+```
+
+**Each method file is self-contained:**
+```typescript
+// methods/systems.ts
+import { System, SystemQueryOptions } from '../types/systems';
+import { buildUrl } from '../utils/url-builder';
+
+export async function getSystems(
+  this: { baseUrl: string },  // 'this' context type
+  options?: SystemQueryOptions
+): Promise<System[]> {
+  const url = buildUrl(`${this.baseUrl}/systems`, options);
+  // ... fetch and parse
+}
+```
+
+**Benefits:**
+- **Modularity:** Easy to find and modify code for each resource type
+- **Testability:** Each module can be tested independently
+- **Maintainability:** Add new resource types without modifying existing files
+- **Bundle splitting:** Unused resource types can be tree-shaken
 
 
 102. **Helper Functions:** What helper functions are needed? URL encoding? Query string construction? Parameter validation?
 
-**Answer:**
+**Answer:** Extract **common operations into utility functions**:
+
+**URL Building:**
+```typescript
+// utils/url-builder.ts
+
+/**
+ * Build URL with query parameters
+ */
+export function buildUrl(
+  basePath: string,
+  params?: Record<string, any>
+): string {
+  const url = new URL(basePath);
+  
+  if (params) {
+    const queryString = buildQueryString(params);
+    if (queryString) {
+      url.search = queryString;
+    }
+  }
+  
+  return url.toString();
+}
+
+/**
+ * Build query string from parameters
+ */
+export function buildQueryString(
+  params: Record<string, any>
+): string {
+  const searchParams = new URLSearchParams();
+  
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null) {
+      continue;  // Skip undefined/null
+    }
+    
+    if (Array.isArray(value)) {
+      // Multiple values: id=1&id=2&id=3
+      value.forEach(v => searchParams.append(key, String(v)));
+    } else {
+      searchParams.append(key, String(value));
+    }
+  }
+  
+  return searchParams.toString();
+}
+
+/**
+ * Encode special characters in parameter values
+ */
+export function encodeValue(value: any): string {
+  if (typeof value === 'string') {
+    return encodeURIComponent(value);
+  }
+  return String(value);
+}
+
+/**
+ * Build path with resource ID
+ */
+export function buildResourcePath(
+  basePath: string,
+  resourceId: string
+): string {
+  return `${basePath}/${encodeURIComponent(resourceId)}`;
+}
+```
+
+**Validation:**
+```typescript
+// utils/validators.ts
+
+/**
+ * Validate bounding box
+ */
+export function validateBbox(bbox: number[]): void {
+  if (bbox.length !== 4) {
+    throw new Error('bbox must have exactly 4 values');
+  }
+  
+  const [minLon, minLat, maxLon, maxLat] = bbox;
+  
+  if (minLon < -180 || minLon > 180 || maxLon < -180 || maxLon > 180) {
+    throw new RangeError('Longitude must be between -180 and 180');
+  }
+  
+  if (minLat < -90 || minLat > 90 || maxLat < -90 || maxLat > 90) {
+    throw new RangeError('Latitude must be between -90 and 90');
+  }
+  
+  if (minLon >= maxLon) {
+    throw new Error('minLon must be less than maxLon');
+  }
+  
+  if (minLat >= maxLat) {
+    throw new Error('minLat must be less than maxLat');
+  }
+}
+
+/**
+ * Validate datetime parameter
+ */
+export function validateDatetime(datetime: string): void {
+  // Check for instant
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(datetime)) {
+    return;  // Valid ISO 8601 instant
+  }
+  
+  // Check for interval
+  if (datetime.includes('/')) {
+    const [start, end] = datetime.split('/');
+    
+    if (start !== '..' && !/^\d{4}-\d{2}-\d{2}/.test(start)) {
+      throw new Error(`Invalid start: ${start}`);
+    }
+    
+    if (end !== '..' && !/^\d{4}-\d{2}-\d{2}/.test(end)) {
+      throw new Error(`Invalid end: ${end}`);
+    }
+    
+    return;
+  }
+  
+  // Check for special keywords
+  if (['now', 'latest'].includes(datetime)) {
+    return;
+  }
+  
+  throw new Error(`Invalid datetime: ${datetime}`);
+}
+
+/**
+ * Validate limit parameter
+ */
+export function validateLimit(limit: number, max = 10000): void {
+  if (!Number.isInteger(limit)) {
+    throw new TypeError('limit must be an integer');
+  }
+  
+  if (limit < 1 || limit > max) {
+    throw new RangeError(`limit must be between 1 and ${max}`);
+  }
+}
+
+/**
+ * Validate pagination parameters
+ */
+export function validatePagination(
+  limit?: number,
+  offset?: number,
+  cursor?: string
+): void {
+  if (limit !== undefined) {
+    validateLimit(limit);
+  }
+  
+  if (offset !== undefined && cursor !== undefined) {
+    throw new Error('Cannot use both offset and cursor pagination');
+  }
+  
+  if (offset !== undefined) {
+    if (!Number.isInteger(offset) || offset < 0) {
+      throw new RangeError('offset must be a non-negative integer');
+    }
+  }
+}
+```
+
+**Formatting:**
+```typescript
+// utils/formatters.ts
+
+/**
+ * Format Date to ISO 8601 string
+ */
+export function formatDatetime(date: Date): string {
+  return date.toISOString();
+}
+
+/**
+ * Format bbox to comma-separated string
+ */
+export function formatBbox(bbox: [number, number, number, number]): string {
+  return bbox.join(',');
+}
+
+/**
+ * Format array for query parameter
+ */
+export function formatArray<T>(values: T[]): string[] {
+  return values.map(v => String(v));
+}
+```
+
+**Error handling:**
+```typescript
+// utils/errors.ts
+
+/**
+ * Custom error for API errors
+ */
+export class CSAPIError extends Error {
+  constructor(
+    public statusCode: number,
+    public statusText: string,
+    public url: string
+  ) {
+    super(`HTTP ${statusCode}: ${statusText}`);
+    this.name = 'CSAPIError';
+  }
+}
+
+/**
+ * Throw error from HTTP response
+ */
+export async function handleResponse(response: Response): Promise<void> {
+  if (!response.ok) {
+    throw new CSAPIError(
+      response.status,
+      response.statusText,
+      response.url
+    );
+  }
+}
+```
 
 
 103. **Constants:** What constants should be defined? Default limits? Valid format values? Status values?
 
-**Answer:**
+**Answer:** Define **constants for reusable values**:
+
+```typescript
+// constants.ts
+
+/**
+ * Pagination constants
+ */
+export const DEFAULT_LIMIT = 10;
+export const MAX_LIMIT = 10000;
+export const MAX_BULK_OBSERVATIONS = 10000;
+export const MAX_BULK_COMMANDS = 10000;
+
+/**
+ * Format values
+ */
+export const FORMAT = {
+  JSON: 'json',
+  GEOJSON: 'geojson',
+  HTML: 'html',
+  SML_JSON: 'sml+json',
+  SWE_JSON: 'swe+json',
+  SWE_TEXT: 'swe+text',
+  SWE_BINARY: 'swe+binary',
+  PROTOBUF: 'proto'
+} as const;
+
+export type Format = typeof FORMAT[keyof typeof FORMAT];
+
+/**
+ * Command status codes
+ */
+export const COMMAND_STATUS = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  SCHEDULED: 'SCHEDULED',
+  UPDATED: 'UPDATED',
+  CANCELED: 'CANCELED',
+  EXECUTING: 'EXECUTING',
+  FAILED: 'FAILED',
+  COMPLETED: 'COMPLETED'
+} as const;
+
+export type CommandStatus = typeof COMMAND_STATUS[keyof typeof COMMAND_STATUS];
+
+/**
+ * Common query parameters
+ */
+export const QUERY_PARAM = {
+  ID: 'id',
+  Q: 'q',
+  BBOX: 'bbox',
+  GEOM: 'geom',
+  DATETIME: 'datetime',
+  LIMIT: 'limit',
+  OFFSET: 'offset',
+  CURSOR: 'cursor',
+  FORMAT: 'f',
+  
+  // Part 2 temporal
+  PHENOMENON_TIME: 'phenomenonTime',
+  RESULT_TIME: 'resultTime',
+  ISSUE_TIME: 'issueTime',
+  EXECUTION_TIME: 'executionTime',
+  
+  // Part 2 filtering
+  DATASTREAM: 'datastream',
+  CONTROL_STREAM: 'controlStream',
+  STATUS_CODE: 'statusCode',
+  
+  // Resource relationships
+  PARENT: 'parent',
+  SYSTEM: 'system',
+  DEPLOYMENT: 'deployment',
+  PROCEDURE: 'procedure',
+  FOI: 'foi',
+  OBSERVED_PROPERTY: 'observedProperty',
+  CONTROLLED_PROPERTY: 'controlledProperty',
+  SENDER: 'sender',
+  
+  // Flags
+  RECURSIVE: 'recursive'
+} as const;
+
+/**
+ * Endpoint paths
+ */
+export const ENDPOINT = {
+  SYSTEMS: '/systems',
+  DEPLOYMENTS: '/deployments',
+  PROCEDURES: '/procedures',
+  SAMPLING_FEATURES: '/samplingFeatures',
+  PROPERTIES: '/properties',
+  DATASTREAMS: '/datastreams',
+  OBSERVATIONS: '/observations',
+  CONTROL_STREAMS: '/controlStreams',
+  COMMANDS: '/commands'
+} as const;
+
+/**
+ * Special datetime values
+ */
+export const DATETIME_SPECIAL = {
+  NOW: 'now',
+  LATEST: 'latest'
+} as const;
+
+/**
+ * Validation limits
+ */
+export const VALIDATION = {
+  MIN_LONGITUDE: -180,
+  MAX_LONGITUDE: 180,
+  MIN_LATITUDE: -90,
+  MAX_LATITUDE: 90,
+  MIN_LIMIT: 1,
+  MAX_LIMIT: 10000,
+  MIN_OFFSET: 0
+} as const;
+```
+
+**Usage in code:**
+```typescript
+import { 
+  DEFAULT_LIMIT, 
+  MAX_LIMIT, 
+  FORMAT, 
+  COMMAND_STATUS,
+  ENDPOINT
+} from './constants';
+
+// Use in method
+async getSystems(options?: SystemQueryOptions): Promise<System[]> {
+  const limit = options?.limit ?? DEFAULT_LIMIT;
+  const format = options?.f ?? FORMAT.GEOJSON;
+  
+  validateLimit(limit, MAX_LIMIT);
+  
+  const url = buildUrl(
+    `${this.baseUrl}${ENDPOINT.SYSTEMS}`,
+    { ...options, limit, f: format }
+  );
+  
+  // ... fetch
+}
+
+// Use in validation
+if (statusCode && !Object.values(COMMAND_STATUS).includes(statusCode)) {
+  throw new Error(`Invalid status code: ${statusCode}`);
+}
+```
 
 
 104. **Documentation:** How to document 60-70 methods? JSDoc for each? Examples?
 
-**Answer:**
+**Answer:** Use **comprehensive JSDoc with examples and links**:
+
+**Method documentation pattern:**
+```typescript
+/**
+ * Retrieve systems matching query criteria.
+ * 
+ * @param options - Query options for filtering and pagination
+ * @returns Promise resolving to array of System resources
+ * 
+ * @throws {RangeError} If limit is outside valid range (1-10000)
+ * @throws {CSAPIError} If HTTP request fails
+ * 
+ * @example
+ * // Get all systems
+ * const systems = await builder.getSystems();
+ * 
+ * @example
+ * // Get systems in bounding box
+ * const systems = await builder.getSystems({
+ *   bbox: [-122.5, 37.7, -122.3, 37.9]
+ * });
+ * 
+ * @example
+ * // Get systems with pagination
+ * const systems = await builder.getSystems({
+ *   limit: 50,
+ *   offset: 0
+ * });
+ * 
+ * @see {@link https://example.com/csapi/systems | Systems API}
+ */
+async getSystems(options?: SystemQueryOptions): Promise<System[]>
+
+/**
+ * Retrieve a single system by ID.
+ * 
+ * @param systemId - System identifier
+ * @param options - Optional format parameter
+ * @returns Promise resolving to System resource
+ * 
+ * @throws {CSAPIError} If system not found (404) or request fails
+ * 
+ * @example
+ * const system = await builder.getSystem('sys123');
+ * 
+ * @example
+ * // Get system as SensorML
+ * const system = await builder.getSystem('sys123', { f: 'sml+json' });
+ */
+async getSystem(
+  systemId: string,
+  options?: { f?: Format }
+): Promise<System>
+
+/**
+ * Create a new system resource.
+ * 
+ * @param body - System properties
+ * @returns Promise resolving to created System with server-assigned ID
+ * 
+ * @throws {CSAPIError} If validation fails (400) or creation fails
+ * 
+ * @example
+ * const newSystem = await builder.createSystem({
+ *   name: 'Weather Station 1',
+ *   description: 'Measures temperature and humidity',
+ *   geometry: {
+ *     type: 'Point',
+ *     coordinates: [-122.4, 37.8]
+ *   }
+ * });
+ * 
+ * console.log(newSystem.id);  // 'sys456' (server-assigned)
+ */
+async createSystem(body: SystemInput): Promise<System>
+```
+
+**Part 2 resource documentation with temporal queries:**
+```typescript
+/**
+ * Retrieve observations matching query criteria.
+ * 
+ * **Temporal Filtering:**
+ * Use `phenomenonTime` parameter to filter by observation time:
+ * - Single instant: `"2024-02-02T12:00:00Z"`
+ * - Closed interval: `"2024-01-01/2024-01-31"`
+ * - Open start: `"../2024-01-31"` (all observations before date)
+ * - Open end: `"2024-01-01/.."` (all observations after date)
+ * - Special keywords: `"now"`, `"latest"`
+ * 
+ * **Pagination:**
+ * Use cursor-based pagination for large datasets:
+ * 1. Extract `cursor` from response `links` array
+ * 2. Pass cursor in next request
+ * 
+ * @param datastreamId - DataStream identifier
+ * @param options - Query options for filtering and pagination
+ * @returns Promise resolving to array of Observation resources
+ * 
+ * @throws {RangeError} If limit is outside valid range (1-10000)
+ * @throws {CSAPIError} If HTTP request fails
+ * 
+ * @example
+ * // Get observations for datastream
+ * const observations = await builder.getObservations('ds1');
+ * 
+ * @example
+ * // Get observations in time range
+ * const observations = await builder.getObservations('ds1', {
+ *   phenomenonTime: '2024-01-01/2024-01-31'
+ * });
+ * 
+ * @example
+ * // Get latest observations
+ * const observations = await builder.getObservations('ds1', {
+ *   phenomenonTime: 'latest',
+ *   limit: 100
+ * });
+ * 
+ * @example
+ * // Paginate with cursor
+ * let cursor: string | undefined;
+ * while (true) {
+ *   const result = await builder.getObservationsPaginated('ds1', {
+ *     limit: 1000,
+ *     cursor
+ *   });
+ *   
+ *   processObservations(result.items);
+ *   
+ *   // Extract next cursor from links
+ *   const nextLink = result.links?.find(l => l.rel === 'next');
+ *   if (!nextLink) break;
+ *   
+ *   cursor = new URL(nextLink.href).searchParams.get('cursor') ?? undefined;
+ * }
+ * 
+ * @see {@link https://example.com/csapi/observations | Observations API}
+ */
+async getObservations(
+  datastreamId: string,
+  options?: ObservationQueryOptions
+): Promise<Observation[]>
+```
+
+**Commands documentation with status codes:**
+```typescript
+/**
+ * Retrieve commands matching query criteria.
+ * 
+ * **Status Filtering:**
+ * Filter by command lifecycle status:
+ * - `PENDING` - Submitted, awaiting processing
+ * - `ACCEPTED` - Validated and accepted
+ * - `REJECTED` - Validation failed
+ * - `SCHEDULED` - Scheduled for future execution
+ * - `EXECUTING` - Currently executing
+ * - `COMPLETED` - Successfully completed
+ * - `FAILED` - Execution failed
+ * - `CANCELED` - Canceled by user
+ * 
+ * **Temporal Filtering:**
+ * - `issueTime` - When command was submitted
+ * - `executionTime` - When command was executed
+ * 
+ * @param controlStreamId - ControlStream identifier
+ * @param options - Query options for filtering and pagination
+ * @returns Promise resolving to array of Command resources
+ * 
+ * @example
+ * // Get all commands for control stream
+ * const commands = await builder.getCommands('cs1');
+ * 
+ * @example
+ * // Get pending and executing commands
+ * const commands = await builder.getCommands('cs1', {
+ *   statusCode: ['PENDING', 'EXECUTING']
+ * });
+ * 
+ * @example
+ * // Get commands issued today
+ * const today = new Date().toISOString().split('T')[0];
+ * const commands = await builder.getCommands('cs1', {
+ *   issueTime: `${today}/..`
+ * });
+ */
+async getCommands(
+  controlStreamId: string,
+  options?: CommandQueryOptions
+): Promise<Command[]>
+```
+
+**Type documentation:**
+```typescript
+/**
+ * Query options for systems endpoint.
+ */
+interface SystemQueryOptions extends BaseQueryOptions {
+  /**
+   * Bounding box filter [minLon, minLat, maxLon, maxLat].
+   * Coordinates in WGS84 (EPSG:4326).
+   * 
+   * @example [-122.5, 37.7, -122.3, 37.9]
+   */
+  bbox?: [number, number, number, number];
+  
+  /**
+   * Temporal filter (ISO 8601).
+   * 
+   * @example "2024-01-01/2024-01-31" - Date range
+   * @example "now/.." - From now onwards
+   */
+  datetime?: string;
+  
+  /**
+   * Filter by parent system ID.
+   */
+  parent?: string[];
+  
+  /**
+   * Include subsystems recursively.
+   * 
+   * @default false
+   */
+  recursive?: boolean;
+}
+```
+
+**Key documentation practices:**
+- All public methods have JSDoc
+- Include @param, @returns, @throws
+- Provide 2-3 examples per method
+- Link to API specification with @see
+- Document temporal query patterns
+- Document status codes and lifecycles
+- Include @default for optional parameters
 
 
 ### T. Testing Strategy
@@ -3581,17 +6252,849 @@ async getProperties(options?: PropertyQueryOptions): Promise<Property[]> {
 
 105. **Unit Tests:** What should be unit tested? Each URL construction method? Parameter validation? Query string encoding?
 
-**Answer:**
+**Answer:** Unit test **individual functions in isolation** with mocked dependencies:
+
+**URL construction tests:**
+```typescript
+// tests/utils/url-builder.test.ts
+
+describe('buildUrl', () => {
+  it('builds URL without parameters', () => {
+    const url = buildUrl('https://api.example.com/systems');
+    expect(url).toBe('https://api.example.com/systems');
+  });
+  
+  it('builds URL with single parameter', () => {
+    const url = buildUrl('https://api.example.com/systems', { limit: 10 });
+    expect(url).toBe('https://api.example.com/systems?limit=10');
+  });
+  
+  it('builds URL with array parameter', () => {
+    const url = buildUrl('https://api.example.com/systems', { 
+      id: ['sys1', 'sys2', 'sys3'] 
+    });
+    expect(url).toBe('https://api.example.com/systems?id=sys1&id=sys2&id=sys3');
+  });
+  
+  it('skips undefined parameters', () => {
+    const url = buildUrl('https://api.example.com/systems', { 
+      limit: 10,
+      offset: undefined,
+      bbox: null
+    });
+    expect(url).toBe('https://api.example.com/systems?limit=10');
+  });
+  
+  it('encodes special characters', () => {
+    const url = buildUrl('https://api.example.com/systems', { 
+      q: 'temperature sensor' 
+    });
+    expect(url).toBe('https://api.example.com/systems?q=temperature+sensor');
+  });
+});
+```
+
+**Query string construction tests:**
+```typescript
+describe('buildQueryString', () => {
+  it('handles empty parameters', () => {
+    expect(buildQueryString({})).toBe('');
+  });
+  
+  it('handles single parameter', () => {
+    expect(buildQueryString({ limit: 10 })).toBe('limit=10');
+  });
+  
+  it('handles multiple parameters', () => {
+    const qs = buildQueryString({ limit: 10, offset: 0 });
+    expect(qs).toMatch(/limit=10/);
+    expect(qs).toMatch(/offset=0/);
+  });
+  
+  it('handles array parameters', () => {
+    expect(buildQueryString({ id: ['a', 'b', 'c'] }))
+      .toBe('id=a&id=b&id=c');
+  });
+  
+  it('skips undefined and null', () => {
+    expect(buildQueryString({ 
+      limit: 10, 
+      offset: undefined, 
+      cursor: null 
+    })).toBe('limit=10');
+  });
+});
+```
+
+**Validation tests:**
+```typescript
+// tests/utils/validators.test.ts
+
+describe('validateBbox', () => {
+  it('accepts valid bbox', () => {
+    expect(() => validateBbox([-122.5, 37.7, -122.3, 37.9]))
+      .not.toThrow();
+  });
+  
+  it('rejects bbox with wrong length', () => {
+    expect(() => validateBbox([-122.5, 37.7, -122.3]))
+      .toThrow('bbox must have exactly 4 values');
+  });
+  
+  it('rejects invalid longitude', () => {
+    expect(() => validateBbox([-200, 37.7, -122.3, 37.9]))
+      .toThrow(RangeError);
+  });
+  
+  it('rejects invalid latitude', () => {
+    expect(() => validateBbox([-122.5, -100, -122.3, 37.9]))
+      .toThrow(RangeError);
+  });
+  
+  it('rejects min >= max', () => {
+    expect(() => validateBbox([-122.3, 37.7, -122.5, 37.9]))
+      .toThrow('minLon must be less than maxLon');
+  });
+});
+
+describe('validateDatetime', () => {
+  it('accepts ISO 8601 instant', () => {
+    expect(() => validateDatetime('2024-02-02T12:00:00Z'))
+      .not.toThrow();
+  });
+  
+  it('accepts closed interval', () => {
+    expect(() => validateDatetime('2024-01-01/2024-01-31'))
+      .not.toThrow();
+  });
+  
+  it('accepts open start', () => {
+    expect(() => validateDatetime('../2024-01-31'))
+      .not.toThrow();
+  });
+  
+  it('accepts open end', () => {
+    expect(() => validateDatetime('2024-01-01/..'))
+      .not.toThrow();
+  });
+  
+  it('accepts special keywords', () => {
+    expect(() => validateDatetime('now')).not.toThrow();
+    expect(() => validateDatetime('latest')).not.toThrow();
+  });
+  
+  it('rejects invalid format', () => {
+    expect(() => validateDatetime('invalid'))
+      .toThrow('Invalid datetime');
+  });
+});
+
+describe('validateLimit', () => {
+  it('accepts valid limit', () => {
+    expect(() => validateLimit(100)).not.toThrow();
+  });
+  
+  it('rejects non-integer', () => {
+    expect(() => validateLimit(10.5))
+      .toThrow(TypeError);
+  });
+  
+  it('rejects out of range', () => {
+    expect(() => validateLimit(0)).toThrow(RangeError);
+    expect(() => validateLimit(10001)).toThrow(RangeError);
+  });
+});
+```
+
+**Method tests (with mocked fetch):**
+```typescript
+// tests/methods/systems.test.ts
+
+describe('getSystems', () => {
+  let builder: CSAPIQueryBuilder;
+  let fetchMock: jest.Mock;
+  
+  beforeEach(() => {
+    fetchMock = jest.fn();
+    global.fetch = fetchMock;
+    builder = new CSAPIQueryBuilder('https://api.example.com');
+  });
+  
+  it('builds correct URL for basic request', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ features: [] })
+    });
+    
+    await builder.getSystems();
+    
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.example.com/systems?limit=10',
+      expect.any(Object)
+    );
+  });
+  
+  it('builds correct URL with bbox', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ features: [] })
+    });
+    
+    await builder.getSystems({ 
+      bbox: [-122.5, 37.7, -122.3, 37.9] 
+    });
+    
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('bbox=-122.5%2C37.7%2C-122.3%2C37.9'),
+      expect.any(Object)
+    );
+  });
+  
+  it('throws on HTTP error', async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found'
+    });
+    
+    await expect(builder.getSystems())
+      .rejects.toThrow(CSAPIError);
+  });
+});
+```
+
+**What to unit test:**
+- ✅ URL construction with various parameter combinations
+- ✅ Query string encoding with special characters
+- ✅ Parameter validation (bbox, datetime, limit, etc.)
+- ✅ Array parameter handling
+- ✅ Undefined/null parameter handling
+- ✅ Error handling (HTTP errors, validation errors)
+- ✅ Response parsing
+- ❌ NOT actual HTTP requests (use mocks)
+- ❌ NOT server-side behavior
 
 
 106. **Integration Tests:** What should be integration tested? Full request/response cycle? Actual CSAPI server interaction?
 
-**Answer:**
+**Answer:** Integration test **full request/response cycle with real server**:
+
+**Test against live CSAPI server:**
+```typescript
+// tests/integration/systems.integration.test.ts
+
+describe('Systems Integration', () => {
+  let builder: CSAPIQueryBuilder;
+  
+  beforeAll(() => {
+    const serverUrl = process.env.CSAPI_TEST_SERVER || 
+                      'https://test.ogc-csapi.org';
+    builder = new CSAPIQueryBuilder(serverUrl);
+  });
+  
+  it('retrieves systems from server', async () => {
+    const systems = await builder.getSystems({ limit: 5 });
+    
+    expect(systems).toBeInstanceOf(Array);
+    expect(systems.length).toBeLessThanOrEqual(5);
+    
+    if (systems.length > 0) {
+      expect(systems[0]).toHaveProperty('id');
+      expect(systems[0]).toHaveProperty('name');
+      expect(systems[0]).toHaveProperty('links');
+    }
+  });
+  
+  it('filters systems by bbox', async () => {
+    const systems = await builder.getSystems({
+      bbox: [-180, -90, 180, 90],  // World bbox
+      limit: 10
+    });
+    
+    expect(systems).toBeInstanceOf(Array);
+    
+    // All systems should have geometry within bbox
+    systems.forEach(system => {
+      if (system.geometry) {
+        expect(system.geometry).toHaveProperty('type');
+        expect(system.geometry).toHaveProperty('coordinates');
+      }
+    });
+  });
+  
+  it('retrieves specific system by ID', async () => {
+    // First get a list to get a valid ID
+    const systems = await builder.getSystems({ limit: 1 });
+    
+    if (systems.length > 0) {
+      const systemId = systems[0].id;
+      const system = await builder.getSystem(systemId);
+      
+      expect(system.id).toBe(systemId);
+      expect(system).toHaveProperty('name');
+    }
+  });
+  
+  it('creates, updates, and deletes system', async () => {
+    // Create
+    const newSystem = await builder.createSystem({
+      name: 'Test System',
+      description: 'Integration test',
+      geometry: {
+        type: 'Point',
+        coordinates: [-122.4, 37.8]
+      }
+    });
+    
+    expect(newSystem).toHaveProperty('id');
+    expect(newSystem.name).toBe('Test System');
+    
+    const systemId = newSystem.id;
+    
+    try {
+      // Update
+      const updated = await builder.patchSystem(systemId, {
+        description: 'Updated description'
+      });
+      
+      expect(updated.description).toBe('Updated description');
+      
+      // Verify update
+      const retrieved = await builder.getSystem(systemId);
+      expect(retrieved.description).toBe('Updated description');
+    } finally {
+      // Clean up - always delete even if test fails
+      await builder.deleteSystem(systemId);
+      
+      // Verify deletion
+      await expect(builder.getSystem(systemId))
+        .rejects.toThrow(CSAPIError);
+    }
+  });
+});
+```
+
+**Test Part 2 resources:**
+```typescript
+// tests/integration/observations.integration.test.ts
+
+describe('Observations Integration', () => {
+  let builder: CSAPIQueryBuilder;
+  let datastreamId: string;
+  
+  beforeAll(async () => {
+    builder = new CSAPIQueryBuilder(process.env.CSAPI_TEST_SERVER!);
+    
+    // Get a datastream ID for testing
+    const datastreams = await builder.getDataStreams({ limit: 1 });
+    if (datastreams.length === 0) {
+      throw new Error('No datastreams available for testing');
+    }
+    datastreamId = datastreams[0].id;
+  });
+  
+  it('retrieves observations for datastream', async () => {
+    const observations = await builder.getObservations(datastreamId, {
+      limit: 10
+    });
+    
+    expect(observations).toBeInstanceOf(Array);
+    
+    observations.forEach(obs => {
+      expect(obs).toHaveProperty('phenomenonTime');
+      expect(obs).toHaveProperty('result');
+    });
+  });
+  
+  it('filters observations by phenomenonTime', async () => {
+    const now = new Date().toISOString();
+    const yesterday = new Date(Date.now() - 24*60*60*1000).toISOString();
+    
+    const observations = await builder.getObservations(datastreamId, {
+      phenomenonTime: `${yesterday}/${now}`,
+      limit: 100
+    });
+    
+    expect(observations).toBeInstanceOf(Array);
+    
+    // All observations should be within time range
+    observations.forEach(obs => {
+      const obsTime = new Date(obs.phenomenonTime);
+      expect(obsTime.getTime()).toBeGreaterThanOrEqual(
+        new Date(yesterday).getTime()
+      );
+      expect(obsTime.getTime()).toBeLessThanOrEqual(
+        new Date(now).getTime()
+      );
+    });
+  });
+  
+  it('paginates observations with cursor', async () => {
+    const page1 = await builder.getObservationsPaginated(datastreamId, {
+      limit: 10
+    });
+    
+    expect(page1.items).toBeInstanceOf(Array);
+    
+    if (page1.links) {
+      const nextLink = page1.links.find(l => l.rel === 'next');
+      
+      if (nextLink) {
+        const cursor = new URL(nextLink.href).searchParams.get('cursor');
+        
+        const page2 = await builder.getObservationsPaginated(datastreamId, {
+          limit: 10,
+          cursor: cursor!
+        });
+        
+        expect(page2.items).toBeInstanceOf(Array);
+        
+        // Pages should have different observations
+        const page1Ids = page1.items.map(o => o.id);
+        const page2Ids = page2.items.map(o => o.id);
+        expect(page1Ids).not.toEqual(page2Ids);
+      }
+    }
+  });
+  
+  it('creates and deletes observation', async () => {
+    const newObs = await builder.createObservation(datastreamId, {
+      phenomenonTime: new Date().toISOString(),
+      result: 42.5
+    });
+    
+    expect(newObs).toHaveProperty('id');
+    expect(newObs.result).toBe(42.5);
+    
+    // Clean up
+    await builder.deleteObservation(newObs.id);
+  });
+});
+```
+
+**What to integration test:**
+- ✅ Full request/response cycle with real server
+- ✅ Actual HTTP requests and responses
+- ✅ CRUD operations (create, read, update, delete)
+- ✅ Query parameter filtering
+- ✅ Pagination (offset and cursor)
+- ✅ Temporal queries
+- ✅ Bulk operations
+- ✅ Error responses from server
+- ❌ NOT URL construction logic (unit tested)
+- ❌ NOT parameter validation (unit tested)
+
+**Test environment:**
+```typescript
+// jest.integration.config.js
+module.exports = {
+  testMatch: ['**/*.integration.test.ts'],
+  testTimeout: 30000,  // 30 seconds for network requests
+  maxWorkers: 1,        // Run serially to avoid conflicts
+  setupFiles: ['<rootDir>/tests/integration/setup.ts']
+};
+
+// tests/integration/setup.ts
+if (!process.env.CSAPI_TEST_SERVER) {
+  console.warn('CSAPI_TEST_SERVER not set, using default');
+  process.env.CSAPI_TEST_SERVER = 'https://test.ogc-csapi.org';
+}
+```
 
 
 107. **Test Organization:** How to organize tests for 9 resource types? Separate test files per resource? Single test file with sections?
 
-**Answer:**
+**Answer:** Use **separate test files per resource type + shared utilities**:
+
+```
+tests/
+  unit/
+    utils/
+      url-builder.test.ts       // URL construction tests
+      validators.test.ts        // Validation tests
+      formatters.test.ts        // Formatting tests
+    methods/
+      systems.test.ts           // Systems method tests
+      deployments.test.ts       // Deployments method tests
+      procedures.test.ts        // Procedures method tests
+      samplingFeatures.test.ts  // Sampling features method tests
+      properties.test.ts        // Properties method tests
+      datastreams.test.ts       // DataStreams method tests
+      observations.test.ts      // Observations method tests
+      controlstreams.test.ts    // ControlStreams method tests
+      commands.test.ts          // Commands method tests
+    types/
+      query-options.test.ts     // Type validation tests
+  
+  integration/
+    setup.ts                    // Test server configuration
+    systems.integration.test.ts
+    deployments.integration.test.ts
+    procedures.integration.test.ts
+    samplingFeatures.integration.test.ts
+    properties.integration.test.ts
+    datastreams.integration.test.ts
+    observations.integration.test.ts
+    controlstreams.integration.test.ts
+    commands.integration.test.ts
+  
+  fixtures/
+    mock-systems.ts             // Mock system data
+    mock-deployments.ts         // Mock deployment data
+    mock-observations.ts        // Mock observation data
+    mock-commands.ts            // Mock command data
+    mock-responses.ts           // Mock HTTP responses
+  
+  helpers/
+    fetch-mock.ts               // Mock fetch implementation
+    test-server.ts              // Test server utilities
+    assertions.ts               // Custom assertions
+```
+
+**Benefits:**
+- **Modularity:** Easy to find tests for specific resource
+- **Parallel execution:** Tests run in parallel for speed
+- **Maintainability:** Add new resource tests without modifying existing files
+- **Clarity:** Each file focused on single resource type
+
+**Shared test utilities:**
+```typescript
+// tests/helpers/fetch-mock.ts
+
+export function createFetchMock() {
+  const mock = jest.fn();
+  
+  mock.mockSuccess = (data: any) => {
+    mock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => data
+    });
+  };
+  
+  mock.mockError = (status: number, statusText: string) => {
+    mock.mockResolvedValue({
+      ok: false,
+      status,
+      statusText
+    });
+  };
+  
+  return mock;
+}
+
+// tests/helpers/assertions.ts
+
+export function expectValidSystem(system: any) {
+  expect(system).toHaveProperty('id');
+  expect(system).toHaveProperty('name');
+  expect(system).toHaveProperty('links');
+  expect(Array.isArray(system.links)).toBe(true);
+}
+
+export function expectValidObservation(observation: any) {
+  expect(observation).toHaveProperty('phenomenonTime');
+  expect(observation).toHaveProperty('result');
+}
+```
+
+**Test suite structure:**
+```typescript
+// tests/unit/methods/systems.test.ts
+
+import { CSAPIQueryBuilder } from '../../../src/CSAPIQueryBuilder';
+import { createFetchMock } from '../../helpers/fetch-mock';
+import { expectValidSystem } from '../../helpers/assertions';
+import { mockSystems } from '../../fixtures/mock-systems';
+
+describe('Systems Methods', () => {
+  let builder: CSAPIQueryBuilder;
+  let fetchMock: jest.Mock;
+  
+  beforeEach(() => {
+    fetchMock = createFetchMock();
+    global.fetch = fetchMock;
+    builder = new CSAPIQueryBuilder('https://api.example.com');
+  });
+  
+  describe('getSystems', () => {
+    // Multiple tests for getSystems
+  });
+  
+  describe('getSystem', () => {
+    // Multiple tests for getSystem
+  });
+  
+  describe('createSystem', () => {
+    // Multiple tests for createSystem
+  });
+  
+  // ... other methods
+});
+```
+
+
+108. **Mock Data:** What mock data for testing? Mock collection info? Mock server responses?
+
+**Answer:** Create **comprehensive mock fixtures** for testing:
+
+**Mock systems:**
+```typescript
+// tests/fixtures/mock-systems.ts
+
+export const mockSystem = {
+  id: 'sys1',
+  name: 'Weather Station 1',
+  description: 'Measures temperature and humidity',
+  validTime: ['2024-01-01T00:00:00Z', null],
+  geometry: {
+    type: 'Point',
+    coordinates: [-122.4, 37.8]
+  },
+  properties: {
+    manufacturer: 'Acme Corp',
+    model: 'WS-100'
+  },
+  links: [
+    { rel: 'self', href: 'https://api.example.com/systems/sys1' },
+    { rel: 'datastreams', href: 'https://api.example.com/systems/sys1/datastreams' }
+  ]
+};
+
+export const mockSystems = [
+  mockSystem,
+  {
+    id: 'sys2',
+    name: 'Weather Station 2',
+    description: 'Another station',
+    geometry: {
+      type: 'Point',
+      coordinates: [-122.5, 37.9]
+    },
+    links: [
+      { rel: 'self', href: 'https://api.example.com/systems/sys2' }
+    ]
+  }
+];
+
+export const mockSystemCollection = {
+  items: mockSystems,
+  links: [
+    { rel: 'self', href: 'https://api.example.com/systems' },
+    { rel: 'next', href: 'https://api.example.com/systems?offset=10' }
+  ],
+  numberMatched: 42,
+  numberReturned: 2
+};
+```
+
+**Mock observations:**
+```typescript
+// tests/fixtures/mock-observations.ts
+
+export const mockObservation = {
+  id: 'obs1',
+  phenomenonTime: '2024-02-02T12:00:00Z',
+  resultTime: '2024-02-02T12:00:05Z',
+  result: 22.5,
+  resultQuality: {
+    quality: 'good'
+  },
+  parameters: {}
+};
+
+export const mockObservations = [
+  mockObservation,
+  {
+    id: 'obs2',
+    phenomenonTime: '2024-02-02T12:01:00Z',
+    resultTime: '2024-02-02T12:01:05Z',
+    result: 22.6
+  },
+  {
+    id: 'obs3',
+    phenomenonTime: '2024-02-02T12:02:00Z',
+    resultTime: '2024-02-02T12:02:05Z',
+    result: 22.7
+  }
+];
+
+export const mockObservationCollection = {
+  items: mockObservations,
+  links: [
+    { 
+      rel: 'self', 
+      href: 'https://api.example.com/datastreams/ds1/observations' 
+    },
+    { 
+      rel: 'next', 
+      href: 'https://api.example.com/datastreams/ds1/observations?cursor=abc123' 
+    }
+  ],
+  numberMatched: 1000,
+  numberReturned: 3
+};
+```
+
+**Mock commands:**
+```typescript
+// tests/fixtures/mock-commands.ts
+
+export const mockCommand = {
+  id: 'cmd1',
+  issueTime: '2024-02-02T12:00:00Z',
+  executionTime: '2024-02-02T12:00:10Z',
+  parameters: {
+    angle: 45,
+    speed: 10
+  },
+  priority: 5,
+  status: [
+    {
+      id: 'status1',
+      code: 'PENDING',
+      time: '2024-02-02T12:00:00Z'
+    },
+    {
+      id: 'status2',
+      code: 'EXECUTING',
+      time: '2024-02-02T12:00:10Z'
+    },
+    {
+      id: 'status3',
+      code: 'COMPLETED',
+      time: '2024-02-02T12:00:15Z'
+    }
+  ],
+  result: [
+    {
+      id: 'result1',
+      time: '2024-02-02T12:00:15Z',
+      value: {
+        success: true,
+        message: 'Command completed successfully'
+      }
+    }
+  ],
+  links: [
+    { rel: 'self', href: 'https://api.example.com/commands/cmd1' },
+    { rel: 'status', href: 'https://api.example.com/commands/cmd1/status' },
+    { rel: 'result', href: 'https://api.example.com/commands/cmd1/result' }
+  ]
+};
+
+export const mockCommands = [mockCommand];
+```
+
+**Mock HTTP responses:**
+```typescript
+// tests/fixtures/mock-responses.ts
+
+export const mockResponse = (data: any, status = 200) => ({
+  ok: status >= 200 && status < 300,
+  status,
+  statusText: status === 200 ? 'OK' : 'Error',
+  json: async () => data,
+  text: async () => JSON.stringify(data)
+});
+
+export const mockErrorResponse = (status: number, message: string) => ({
+  ok: false,
+  status,
+  statusText: message,
+  json: async () => ({
+    type: 'error',
+    title: message,
+    status,
+    detail: `Error ${status}: ${message}`
+  })
+});
+
+export const mock404Response = () => mockErrorResponse(404, 'Not Found');
+export const mock400Response = () => mockErrorResponse(400, 'Bad Request');
+export const mock500Response = () => mockErrorResponse(500, 'Internal Server Error');
+```
+
+**Mock DataStreams and ControlStreams:**
+```typescript
+// tests/fixtures/mock-datastreams.ts
+
+export const mockDataStream = {
+  id: 'ds1',
+  name: 'Temperature Observations',
+  description: 'Temperature readings from sensor',
+  system: 'sys1',
+  outputName: 'temperature',
+  schema: {
+    obsFormat: 'application/json',
+    resultSchema: {
+      type: 'DataRecord',
+      fields: [
+        {
+          name: 'temperature',
+          type: 'Quantity',
+          uom: 'Cel',
+          definition: 'http://sweet.jpl.nasa.gov/ontology/property/Temperature'
+        }
+      ]
+    }
+  },
+  links: [
+    { rel: 'self', href: 'https://api.example.com/datastreams/ds1' },
+    { rel: 'observations', href: 'https://api.example.com/datastreams/ds1/observations' },
+    { rel: 'schema', href: 'https://api.example.com/datastreams/ds1/schema' }
+  ]
+};
+
+// tests/fixtures/mock-controlstreams.ts
+
+export const mockControlStream = {
+  id: 'cs1',
+  name: 'Pan/Tilt Control',
+  description: 'Camera pan and tilt control',
+  system: 'sys1',
+  inputName: 'pan_tilt',
+  schema: {
+    cmdFormat: 'application/json',
+    parametersSchema: {
+      type: 'DataRecord',
+      fields: [
+        {
+          name: 'pan',
+          type: 'Quantity',
+          uom: 'deg',
+          constraint: { interval: [-180, 180] }
+        },
+        {
+          name: 'tilt',
+          type: 'Quantity',
+          uom: 'deg',
+          constraint: { interval: [-90, 90] }
+        }
+      ]
+    }
+  },
+  links: [
+    { rel: 'self', href: 'https://api.example.com/controlstreams/cs1' },
+    { rel: 'commands', href: 'https://api.example.com/controlstreams/cs1/commands' },
+    { rel: 'schema', href: 'https://api.example.com/controlstreams/cs1/schema' }
+  ]
+};
+```
+
+**Usage in tests:**
+```typescript
+import { mockSystems, mockSystemCollection } from '../fixtures/mock-systems';
+import { mockResponse } from '../fixtures/mock-responses';
+
+it('retrieves systems', async () => {
+  fetchMock.mockResolvedValue(mockResponse(mockSystemCollection));
+  
+  const systems = await builder.getSystems();
+  
+  expect(systems).toEqual(mockSystems);
+});
+```
 
 
 108. **Mock Data:** What mock data is needed? Mock collection info? Mock server responses?
