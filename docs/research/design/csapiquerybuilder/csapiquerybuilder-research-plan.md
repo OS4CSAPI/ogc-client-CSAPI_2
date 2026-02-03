@@ -138,37 +138,115 @@ This is the largest single component in the CSAPI implementation:
 
 1. **Instantiation:** How is EDRQueryBuilder instantiated in `endpoint.edr(collectionId)`? What's the factory method implementation?
 
-**Answer:**
+**Answer:** EDRQueryBuilder is instantiated via a factory method in OgcApiEndpoint that follows this pattern:
+1. Check if endpoint supports EDR (conformance check - fail fast if not)
+2. Check cache (`collection_id_to_edr_builder_` Map) for existing instance
+3. If cached, return cached instance (same object reference)
+4. If not cached, fetch collection metadata via `await this.getCollectionInfo(collection_id)`
+5. Instantiate new `EDRQueryBuilder(collection)` passing collection metadata
+6. Cache instance with collection ID as key: `cache.set(collection_id, result)`
+7. Return the QueryBuilder instance
 
+The factory method signature: `public async edr(collection_id: string): Promise<EDRQueryBuilder>`
 
 2. **Metadata Encapsulation:** What metadata from `OgcApiCollectionInfo` does EDRQueryBuilder encapsulate? What properties are extracted?
 
-**Answer:**
+**Answer:** EDRQueryBuilder encapsulates and extracts the following from `OgcApiCollectionInfo`:
+- **`collection` object** (stored privately): Full collection metadata reference
+- **`data_queries` object**: Contains links for query types (position, area, cube, trajectory, corridor, radius, locations, instances)
+- **`parameter_names`**: Dictionary of available parameters (temperature, humidity, etc.) with metadata
+- **`crs`**: Array of supported Coordinate Reference System codes
+- **`links`**: Array of link objects with rel and href for navigation
+- **Derived `supported_query_types`**: Boolean flags computed from `data_queries` (e.g., `area: collection.data_queries.area !== undefined`)
 
+These are extracted in the constructor and stored as instance properties (some private, some public).
 
 3. **Caching Strategy:** How does the factory method cache QueryBuilder instances? What is the cache key? When is cache invalidated?
 
-**Answer:**
+**Answer:** Caching strategy:
+- **Cache location:** Private Map in OgcApiEndpoint class: `collection_id_to_edr_builder_: Map<string, EDRQueryBuilder>`
+- **Cache key:** Collection ID string (e.g., "temperature", "humidity")
+- **Cache behavior:** One instance per collection per endpoint instance
+- **Cache lifetime:** Tied to endpoint instance lifetime - no automatic invalidation
+- **Cache invalidation:** Only when endpoint instance is destroyed (no explicit invalidation API)
+- **Cache benefits:** Avoids redundant HTTP requests for collection metadata, ensures same collection always returns same builder instance
 
+Example: `endpoint.edr('temp')` twice returns the exact same object (`===` equality).
 
 4. **Lifecycle:** What happens in the EDRQueryBuilder constructor? What validation occurs? What state is initialized?
 
-**Answer:**
+**Answer:** Constructor lifecycle:
+1. **Store collection metadata:** `constructor(private collection: OgcApiCollectionInfo)`
+2. **Validate required data exists:** Check `if (!collection.data_queries)` throw error "No data queries found, so cannot issue EDR queries"
+3. **Extract query type support:** Compute boolean flags for each query type from presence in `data_queries` object:
+   ```typescript
+   this.supported_query_types = {
+     area: collection.data_queries.area !== undefined,
+     cube: collection.data_queries.cube !== undefined,
+     // ... for all 7 EDR query types
+   };
+   ```
+4. **Extract metadata:** Store public properties:
+   - `this.supported_parameters = collection.parameter_names`
+   - `this.supported_crs = collection.crs`
+   - `this.links = collection.links`
+5. **State is immutable** after construction - no further changes
 
+If validation fails (no `data_queries`), constructor throws immediately and no instance is created.
 
 5. **Method Organization:** How are EDR query methods organized? Are they grouped by query type? What naming conventions are used?
 
-**Answer:**
+**Answer:** Method organization in EDRQueryBuilder:
+- **Grouped by query type:** Each of 7 EDR query types gets two methods (build URL + execute query)
+- **Naming convention:** 
+  - URL builders: `build<QueryType>DownloadUrl()` (e.g., `buildPositionDownloadUrl()`, `buildAreaDownloadUrl()`)
+  - Query executors: `get<QueryType>()` (e.g., `getPosition()`, `getArea()`)
+- **Parameter pattern:** Required params as direct arguments, optional params as options object with default `= {}`
+- **Method pairs:** Each query type has both patterns (14 methods total for 7 query types)
+- **Capability getter:** `get supported_queries(): Set<DataQueryType>` exposes what's available
+- **No sectioning:** All methods at same level in class (no nested classes or sections)
 
+Example: `buildPositionDownloadUrl(coords, optional_params = {})` and `async getPosition(coords, optional_params = {})`
 
 6. **URL Building vs Execution:** Does EDRQueryBuilder provide both `buildXxxUrl()` methods (return URL) and `getXxx()` methods (execute and return data)? What's the pattern?
 
-**Answer:**
+**Answer:** Yes, EDRQueryBuilder provides BOTH patterns:
 
+**Build URL methods (synchronous):**
+- Pattern: `build<QueryType>DownloadUrl(...): string`
+- Returns: URL string
+- Use case: User wants URL to fetch themselves or use in other context
+- Example: `buildPositionDownloadUrl(coords, optional_params)` → `"https://api.example.com/collections/temp/position?coords=POINT(...)"`
+
+**Execute query methods (asynchronous):**
+- Pattern: `async get<QueryType>(...): Promise<EdrData>`
+- Implementation: Calls build method + fetch + parse
+- Returns: Typed data object
+- Use case: User wants data directly, doesn't care about URL
+- Example: `await getPosition(coords, optional_params)` → `{ type: 'FeatureCollection', features: [...] }`
+
+**Relationship:** Execute methods internally call build methods: `const url = this.buildPositionDownloadUrl(coords, optional_params);`
 
 7. **Collection Validation:** How does EDRQueryBuilder validate that a collection supports EDR operations? What errors are thrown?
 
-**Answer:**
+**Answer:** Validation occurs at two levels:
+
+**Constructor validation (fail fast):**
+- Check: `if (!collection.data_queries)` 
+- Error: `throw new Error('No data queries found, so cannot issue EDR queries')`
+- Result: No QueryBuilder instance created if collection doesn't support EDR at all
+
+**Method-level validation (per query type):**
+- Check: `if (!this.supported_query_types.position)` (example for position queries)
+- Error: `throw new Error('Collection does not support position queries')`
+- Result: Runtime error if user tries to call unsupported query type
+
+**User-facing capability exposure:**
+- Property: `builder.supported_queries` returns `Set<'position' | 'area' | 'cube' | ...>`
+- Pattern: User checks capabilities before calling methods to avoid errors
+- Example: `if (builder.supported_queries.has('trajectory')) { ... }`
+
+Additional validation in methods: Parameter validation (check `supported_parameters` and `supported_crs` before adding to URL).
 
 
 ### B. Single-Class Architecture for 9 Resource Types
@@ -177,27 +255,154 @@ This is the largest single component in the CSAPI implementation:
 
 8. **Method Grouping:** How should we organize methods for 9 resource types within one class? By resource type sections? By operation type (CRUD)? Both?
 
-**Answer:**
-
+**Answer:** Organize by **resource type sections** (not by CRUD operation) following EDR pattern:
+- Group all methods for each resource together (Systems, Deployments, Procedures, etc.)
+- Within each resource group, order by: list/query → get by ID → create → update → delete → nested resources
+- Use JSDoc section comments to mark resource boundaries: `// ========== Systems Resource Methods ==========`
+- No nested classes or modules - all methods at same level in one class
+- Example structure:
+  ```typescript
+  class CSAPIQueryBuilder {
+    // ========== Systems ==========
+    getSystems(options?) { }
+    getSystem(id) { }
+    createSystem(body) { }
+    updateSystem(id, body) { }
+    deleteSystem(id, cascade?) { }
+    getSubsystems(parentId, options?) { }
+    
+    // ========== Deployments ==========
+    getDeployments(options?) { }
+    getDeployment(id) { }
+    // ... etc
+  }
+  ```
+This mirrors how EDR groups methods by query type (position, area, cube, etc.).
 
 9. **Method Naming:** What naming convention should we use for methods? `getSystems()`, `getSystemById(id)`, `createSystem(body)`, `updateSystem(id, body)`, `deleteSystem(id)`? How does this scale to 9 resource types?
 
-**Answer:**
+**Answer:** Follow EDR pattern with CRUD-based naming:
+- **List/query:** `get<ResourcePlural>(options?)` → `getSystems()`, `getDeployments()`, `getObservations()`
+- **Get by ID:** `get<ResourceSingular>(id)` → `getSystem(id)`, `getDeployment(id)`, `getObservation(id)`
+- **Create:** `create<ResourceSingular>(body)` → `createSystem(body)`, `createDeployment(body)`
+- **Update:** `update<ResourceSingular>(id, body)` → `updateSystem(id, body)`
+- **Delete:** `delete<ResourceSingular>(id, cascade?)` → `deleteSystem(id, cascade)`
+- **Nested resources:** `get<Nested>(parentId, options?)` → `getSubsystems(parentId)`, `getDatastreams(systemId)`
 
+**Scaling:** This pattern scales well - each resource type gets 4-6 methods (list, get, create, update, delete, potentially nested). For 9 resources with full CRUD, expect ~50-60 methods total.
+
+**Naming rationale:** "get" prefix indicates read operations (GET), "create/update/delete" prefixes match HTTP verbs, singular vs plural indicates single vs multiple results.
 
 10. **Code Reuse:** What patterns can reduce duplication across resource types? Can we abstract common URL construction logic? Can we use helper methods?
 
-**Answer:**
+**Answer:** Several code reuse patterns based on EDR approach:
 
+**1. Private helper methods for common operations:**
+```typescript
+private buildResourceListUrl(resourcePath: string, options: QueryOptions): string {
+  const baseUrl = this.getResourceLink(resourcePath);
+  const url = new URL(baseUrl);
+  if (options.limit) url.searchParams.set('limit', options.limit.toString());
+  if (options.offset) url.searchParams.set('offset', options.offset.toString());
+  if (options.bbox) url.searchParams.set('bbox', options.bbox.join(','));
+  return url.toString();
+}
+```
+
+**2. Shared parameter encoding:**
+```typescript
+private addQueryParams(url: URL, options: QueryOptions): void {
+  if (options.limit !== undefined) url.searchParams.set('limit', options.limit.toString());
+  if (options.offset !== undefined) url.searchParams.set('offset', options.offset.toString());
+  // ... common parameters
+}
+```
+
+**3. Link extraction helper:**
+```typescript
+private getResourceLink(rel: string): string {
+  const link = this.collection.links.find(l => l.rel === rel);
+  if (!link) throw new Error(`Resource '${rel}' not available`);
+  return link.href;
+}
+```
+
+**4. Common fetch/parse logic:**
+```typescript
+private async fetchResource<T>(url: string): Promise<T> {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return await response.json();
+}
+```
+
+**Pattern:** Extract common logic into private helpers, call from public methods. EDR doesn't abstract much because each query type is unique; CSAPI can abstract more because resources share common patterns.
 
 11. **Nested Endpoints:** How to handle nested endpoints like `/systems/{id}/subsystems`? Separate methods like `getSubsystems(parentId)` or parameters like `getSystems({ parent: id })`?
 
-**Answer:**
+**Answer:** Use **separate dedicated methods** for nested endpoints, not parameters:
 
+**✅ Recommended approach (explicit):**
+```typescript
+// Dedicated method for nested resource
+getSubsystems(parentId: string, options?: QueryOptions): Promise<System[]> {
+  const url = this.buildResourceUrl(`systems/${parentId}/subsystems`);
+  // ... add query params, fetch, return
+}
+
+// Usage: clear intent
+const subsystems = await builder.getSubsystems('system-123');
+```
+
+**❌ Not recommended (parameter-based):**
+```typescript
+getSystems(options?: { parent?: string, ... }): Promise<System[]> {
+  // Builds /systems OR /systems/{parent}/subsystems based on options
+  // LESS CLEAR, mixes concerns
+}
+```
+
+**Rationale:**
+1. **Clarity:** Separate methods make nested relationships explicit
+2. **Type safety:** Different return types possible (subsystems vs all systems)
+3. **URL patterns:** Different endpoints may have different query parameter support
+4. **Follows REST:** Each endpoint is a distinct resource with its own method
+5. **Scalability:** Easy to add more nested patterns (e.g., `getSystemDatastreams(systemId)`)
+
+**For hierarchical queries via parent parameter:** Use the `parent` query parameter when querying the canonical endpoint: `GET /systems?parent=system-123` vs nested endpoint `GET /systems/system-123/subsystems`.
 
 12. **State Management:** What state should CSAPIQueryBuilder maintain? Collection metadata? Supported resource types? Capabilities flags?
 
-**Answer:**
+**Answer:** Following EDR pattern, CSAPIQueryBuilder should maintain:
+
+**Private state (encapsulated):**
+- `private collection: OgcApiCollectionInfo` - Full collection metadata reference
+- `private supported_resources: Set<string>` - Computed from links (which resources are available)
+
+**Public state (exposed to users):**
+- `public links: Array<{rel: string, href: string}>` - Collection links for resource navigation
+- `public id: string` - Collection ID
+- `public title: string` - Collection title
+- Potentially: `public extent: Extent` - Spatial/temporal extent
+- Potentially: `public crs: string[]` - Supported CRS codes (if relevant for CSAPI)
+
+**Derived getters:**
+```typescript
+get supportedResources(): Set<string> {
+  return new Set(this.supported_resources); // Return copy, not reference
+}
+```
+
+**State characteristics:**
+- **Immutable after construction:** All state set in constructor, never modified
+- **Derived from collection:** All state comes from `OgcApiCollectionInfo` passed to constructor
+- **No shared state:** Each collection gets own QueryBuilder instance with isolated state
+- **Source of truth:** Collection metadata from server is authoritative
+
+**What NOT to maintain:**
+- Runtime query state (no caching of results)
+- User preferences (stateless service object)
+- Connection pools (leave to fetch implementation)
 
 
 ### C. URL Construction Patterns
@@ -206,61 +411,474 @@ This is the largest single component in the CSAPI implementation:
 
 13. **Canonical Endpoints:** What are the URL patterns for canonical resource endpoints? `/systems`, `/deployments`, `/procedures`, `/samplingFeatures`, `/properties`, `/datastreams`, `/observations`, `/controlstreams`, `/commands`?
 
-**Answer:**
+**Answer:** Based on OpenAPI specs, the canonical endpoint patterns are:
 
+**Part 1 Resources:**
+- `/systems` - List/create systems
+- `/systems/{systemId}` - Get/update/delete specific system
+- `/deployments` - List/create deployments
+- `/deployments/{deploymentId}` - Get/update/delete specific deployment
+- `/procedures` - List/create procedures
+- `/procedures/{procedureId}` - Get/update/delete specific procedure
+- `/samplingFeatures` - List/create sampling features
+- `/samplingFeatures/{featureId}` - Get/update/delete specific sampling feature
+- `/properties` - List properties (read-only)
+- `/properties/{propId}` - Get specific property (read-only)
+
+**Part 2 Resources:**
+- `/datastreams` - List/create datastreams
+- `/datastreams/{dataStreamId}` - Get/update/delete specific datastream
+- `/observations` - List/create observations (canonical, not commonly used)
+- `/observations/{obsId}` - Get/update/delete specific observation
+- `/controlstreams` - List/create control streams
+- `/controlstreams/{controlStreamId}` - Get/update/delete specific control stream
+- `/commands` - List/create commands (canonical, not commonly used)
+- `/commands/{cmdId}` - Get/update/delete specific command
+
+**Important:** CSAPI follows standard OGC API pattern: plural resource name for collections, `{id}` parameter for individual resources.
 
 14. **Nested Endpoints:** What are ALL nested endpoint patterns? (e.g., `/systems/{id}/subsystems`, `/systems/{id}/datastreams`, `/datastreams/{id}/observations`, `/controlstreams/{id}/commands`)?
 
-**Answer:**
+**Answer:** Nested endpoint patterns from OpenAPI specs:
 
+**Systems nested resources:**
+- `/systems/{systemId}/subsystems` - Subsystems of a specific system (hierarchical)
+- `/systems/{systemId}/deployments` - Deployments for a specific system
+- `/systems/{systemId}/samplingFeatures` - Sampling features for a specific system
+- `/systems/{systemId}/datastreams` - Datastreams for a specific system (Part 2)
+- `/systems/{systemId}/controlstreams` - Control streams for a specific system (Part 2)
+
+**Deployments nested resources:**
+- `/deployments/{deploymentId}/subdeployments` - Subdeployments of a specific deployment (hierarchical)
+
+**DataStreams nested resources:**
+- `/datastreams/{dataStreamId}/observations` - Observations for a specific datastream (most common pattern for querying observations)
+
+**ControlStreams nested resources:**
+- `/controlstreams/{controlStreamId}/commands` - Commands for a specific control stream (most common pattern for querying commands)
+
+**Commands nested resources:**
+- `/commands/{cmdId}/status` - Status updates for a specific command
+- `/commands/{cmdId}/status/{statusId}` - Specific status update
+- `/commands/{cmdId}/result` - Result of a specific command
+- `/commands/{cmdId}/result/{resultId}` - Specific result
+
+**Pattern:** Nested endpoints follow format `/{parentResource}/{parentId}/{childResource}` and are used for:
+1. Hierarchical relationships (subsystems, subdeployments)
+2. Association navigation (system → datastreams, datastream → observations)
+3. Sub-resources (command → status/result)
 
 15. **Schema Endpoints:** What are the schema endpoint patterns? `/datastreams/{id}/schema`, `/controlstreams/{id}/schema`?
 
-**Answer:**
+**Answer:** Schema endpoint patterns from OpenAPI specs:
 
+**DataStream schema:**
+- `/datastreams/{dataStreamId}/schema` - Returns SWE Common DataComponent schema defining structure of observation results for this datastream
+- HTTP Method: GET
+- Response: JSON schema document (SWE Common 3.0 format)
+- Purpose: Clients use this to understand observation result structure before parsing observations
+
+**ControlStream schema:**
+- `/controlstreams/{controlStreamId}/schema` - Returns SWE Common DataComponent schema defining structure of command parameters for this control stream
+- HTTP Method: GET
+- Response: JSON schema document (SWE Common 3.0 format)
+- Purpose: Clients use this to understand command parameter structure before submitting commands
+
+**Pattern:** `/{resourceType}/{resourceId}/schema` where schema is a sub-resource providing metadata about data structure.
+
+**Note:** Only DataStreams and ControlStreams have schema endpoints because they deal with structured data (observations and commands respectively). Other resources (Systems, Deployments, etc.) don't have schema endpoints as they use fixed GeoJSON/SensorML formats.
 
 16. **Special Endpoints:** What are the special-purpose endpoints? `/commands/{id}/status`, `/commands/{id}/result`, `/controlstreams/{id}/feasibility`?
 
-**Answer:**
+**Answer:** Special-purpose endpoints from OpenAPI specs:
 
+**Command status tracking:**
+- `/commands/{cmdId}/status` - GET: Retrieve current status of command execution
+- `/commands/{cmdId}/status` - POST: Add status update (typically by system, not client)
+- `/commands/{cmdId}/status/{statusId}` - GET: Retrieve specific status update by ID
+- Returns: Status object with fields like `status` (pending/executing/completed/failed), `percentCompletion`, `statusMessage`, `updateTime`
+
+**Command result retrieval:**
+- `/commands/{cmdId}/result` - GET: Retrieve result after command execution completes
+- `/commands/{cmdId}/result` - PUT: Set result (typically by system, not client)
+- `/commands/{cmdId}/result/{resultId}` - GET: Retrieve specific result by ID
+- Returns: Result object with execution output data
+
+**Feasibility checking:**
+- `/controlstreams/{controlStreamId}/feasibility` - POST: Check if command parameters are feasible before actual submission
+- Request body: Command parameters (same structure as command)
+- Response: Feasibility report indicating whether parameters are valid/achievable
+- Purpose: Pre-validation before committing to command execution
+
+**Other potential special endpoints:**
+- `/commands/{cmdId}/cancel` - POST: Cancel pending/executing command (if supported by server)
+
+**Pattern:** These are sub-resources or actions on parent resources, typically using POST for operations beyond standard CRUD.
 
 17. **Query String Assembly:** How to construct query strings from parameter objects? How to handle URL encoding? How to serialize arrays?
 
-**Answer:**
+**Answer:** Following EDR pattern, use native JavaScript URL API:
 
+**Basic pattern:**
+```typescript
+const url = new URL(baseUrl); // Base URL from links
+if (options.limit !== undefined) {
+  url.searchParams.set('limit', options.limit.toString());
+}
+if (options.offset !== undefined) {
+  url.searchParams.set('offset', options.offset.toString());
+}
+return url.toString();
+```
+
+**URL encoding:** Automatic via `URL.searchParams.set()` - no manual encoding needed:
+```typescript
+url.searchParams.set('q', 'weather station'); 
+// Automatically encodes spaces: ?q=weather%20station
+```
+
+**Array serialization:** Join with comma (OGC API standard):
+```typescript
+if (options.id?.length > 0) {
+  url.searchParams.set('id', options.id.join(','));
+}
+// Result: ?id=sys1,sys2,sys3
+```
+
+**Conditional addition:** Always check for undefined before adding:
+```typescript
+if (options.bbox !== undefined) {
+  url.searchParams.set('bbox', options.bbox.join(','));
+}
+// Only adds parameter if provided
+```
+
+**Boolean serialization:** Convert to string:
+```typescript
+if (options.recursive !== undefined) {
+  url.searchParams.set('recursive', options.recursive.toString());
+}
+// Result: ?recursive=true or ?recursive=false
+```
+
+**Temporal parameters:** Pass through as-is (already ISO 8601 formatted):
+```typescript
+if (options.datetime) {
+  url.searchParams.set('datetime', options.datetime);
+}
+// Result: ?datetime=2024-01-01T00:00:00Z/2024-01-31T23:59:59Z
+```
+
+**Key principles:** Use native URL API, check undefined before adding, join arrays with comma, toString() for primitives.
 
 18. **Base URL Construction:** How to combine base URL + collection path + resource path + query string? How to handle trailing slashes?
 
-**Answer:**
+**Answer:** Following OGC API hypermedia principle, **NEVER construct base URLs manually** - always extract from links:
 
+**✅ Correct approach - link-based:**
+```typescript
+// 1. Get URL from collection links (provided by server)
+const baseUrl = this.getResourceLink('systems'); 
+// Server provides: "https://api.example.com/collections/sensors/systems"
 
-### D. CRUD Operations Implementation
+// 2. Create URL object
+const url = new URL(baseUrl);
 
-**Questions:**
+// 3. For specific resource, append ID
+const resourceUrl = new URL(`${baseUrl}/${systemId}`);
+// Result: "https://api.example.com/collections/sensors/systems/system-123"
+
+// 4. Add query parameters
+url.searchParams.set('limit', '10');
+
+// 5. Return string
+return url.toString();
+```
+
+**❌ Wrong approach - manual construction:**
+```typescript
+// DON'T DO THIS - fragile, non-standard
+const url = `${this.endpoint}/collections/${this.collectionId}/systems`;
+```
+
+**Trailing slash handling:** Let URL API normalize:
+```typescript
+new URL('/systems/123', 'https://api.example.com').toString()
+// Result: https://api.example.com/systems/123 (no trailing slash)
+
+new URL('systems/123', 'https://api.example.com/').toString()
+// Result: https://api.example.com/systems/123 (URL API handles normalization)
+```
+
+**For nested resources:**
+```typescript
+const systemsUrl = this.getResourceLink('systems');
+const subsystemsUrl = `${systemsUrl}/${parentId}/subsystems`;
+const url = new URL(subsystemsUrl);
+```
+
+**Rationale:** Servers can use ANY URL structure. By using links, client works with any compliant implementation (even non-standard paths).
 
 19. **HTTP Methods:** What HTTP methods map to what CRUD operations? GET = Read, POST = Create, PUT = Replace, PATCH = Update, DELETE = Delete?
 
-**Answer:**
+**Answer:** HTTP method mapping for CSAPI (from OpenAPI specs):
 
+**GET - Read/Retrieve:**
+- List resources: `GET /systems` → array of systems
+- Get by ID: `GET /systems/{id}` → single system
+- Nested resources: `GET /systems/{id}/subsystems` → array of subsystems
+- Schema: `GET /datastreams/{id}/schema` → schema document
+- Status/Result: `GET /commands/{id}/status` → status object
+
+**POST - Create:**
+- Create resource: `POST /systems` with body → 201 Created with Location header
+- Create nested: `POST /systems/{id}/subsystems` with body → 201 Created
+- Bulk create: `POST /datastreams/{id}/observations` with array → 201 Created
+- Actions: `POST /controlstreams/{id}/feasibility` → feasibility report
+- Submit command: `POST /controlstreams/{id}/commands` with body → 201 Created
+
+**PUT - Replace (complete):**
+- Full replacement: `PUT /systems/{id}` with complete body → 200 OK or 204 No Content
+- Replace result: `PUT /commands/{id}/result` with result → 200 OK
+- **Idempotent:** Same request produces same result
+
+**PATCH - Update (partial):**
+- Partial update: `PATCH /systems/{id}` with partial body (JSON Patch or JSON Merge Patch) → 200 OK
+- Update status: `PATCH /commands/{id}/status` with status fields → 200 OK
+- **Non-idempotent:** May produce different results
+
+**DELETE - Remove:**
+- Delete resource: `DELETE /systems/{id}` → 204 No Content
+- Cascade delete: `DELETE /systems/{id}?cascade=true` → 204 No Content
+- **Note:** Some resources may be retained (archives) rather than truly deleted
+
+**Response codes:**
+- 200 OK - successful GET/PUT/PATCH with response body
+- 201 Created - successful POST with Location header
+- 204 No Content - successful DELETE or PUT/PATCH without response body
+- 400 Bad Request - validation error
+- 404 Not Found - resource doesn't exist
+- 409 Conflict - constraint violation (e.g., can't delete system with datastreams)
 
 20. **Request Bodies:** For POST/PUT/PATCH, how to pass request bodies? Method parameter? TypeScript interface for body structure?
 
-**Answer:**
+**Answer:** Pass request bodies as typed method parameters:
 
+**Method signature pattern:**
+```typescript
+async createSystem(body: SystemInput): Promise<System> {
+  const url = this.getResourceLink('systems');
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/geo+json' },
+    body: JSON.stringify(body)
+  });
+  // ... handle response
+}
+```
+
+**TypeScript interfaces for bodies:**
+```typescript
+interface SystemInput {
+  type: 'Feature';
+  geometry: GeoJSONGeometry;
+  properties: {
+    name: string;
+    description?: string;
+    systemType: string; // URI like 'http://www.w3.org/ns/sosa/Sensor'
+    uniqueIdentifier?: string; // URN
+    validTime?: TemporalPeriod;
+    // ... other system properties
+  };
+}
+
+interface ObservationInput {
+  phenomenonTime: string; // ISO 8601
+  resultTime?: string;
+  result: any; // Structure defined by datastream schema
+  resultQuality?: QualityInfo;
+  parameters?: Record<string, any>;
+}
+
+interface CommandInput {
+  issueTime?: string;
+  executionTime?: string;
+  parameters: any; // Structure defined by controlstream schema
+  priority?: number;
+}
+```
+
+**For bulk operations (arrays):**
+```typescript
+async createObservations(
+  datastreamId: string,
+  observations: ObservationInput[]
+): Promise<Observation[]> {
+  const url = `${this.getDatastreamUrl(datastreamId)}/observations`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(observations) // Array directly
+  });
+  // ...
+}
+```
+
+**For updates (partial):**
+```typescript
+async updateSystem(
+  id: string,
+  updates: Partial<SystemInput> // Partial type for PATCH
+): Promise<System> {
+  const url = `${this.getResourceLink('systems')}/${id}`;
+  const response = await fetch(url, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/merge-patch+json' },
+    body: JSON.stringify(updates)
+  });
+  // ...
+}
+```
+
+**Pattern:** Strongly typed body parameter, serialize with JSON.stringify(), set appropriate Content-Type header.
 
 21. **Content-Type Headers:** What Content-Type headers for different body formats? `application/json`, `application/geo+json`, `application/sml+json`?
 
-**Answer:**
+**Answer:** Content-Type headers vary by resource type and format:
 
+**GeoJSON resources (Systems, Deployments, Sampling Features):**
+- `Content-Type: application/geo+json` - Preferred for GeoJSON Feature/FeatureCollection
+- `Content-Type: application/json` - Also acceptable (GeoJSON is valid JSON)
+- Used for: POST/PUT/PATCH of Part 1 spatial resources
+
+**SensorML resources (Systems, Procedures with detailed descriptions):**
+- `Content-Type: application/sml+json` - SensorML 3.0 JSON encoding
+- Used for: POST/PUT of Systems or Procedures with detailed sensor metadata
+
+**Standard JSON resources (DataStreams, ControlStreams, Properties):**
+- `Content-Type: application/json` - Standard JSON
+- Used for: POST/PUT/PATCH of Part 2 resources and metadata resources
+
+**SWE Common resources (Observations, Commands):**
+- `Content-Type: application/json` - For JSON-encoded observations/commands
+- `Content-Type: application/swe+json` - SWE Common JSON encoding (if server supports)
+- `Content-Type: text/csv` or `application/swe+text` - For CSV/text-encoded observations (bulk data)
+- `Content-Type: application/octet-stream` - For binary-encoded observations (high-volume streaming)
+
+**Partial updates (PATCH):**
+- `Content-Type: application/merge-patch+json` - JSON Merge Patch (RFC 7396)
+- `Content-Type: application/json-patch+json` - JSON Patch (RFC 6902)
+
+**Format negotiation via Accept header (GET requests):**
+- `Accept: application/geo+json` - Request GeoJSON format
+- `Accept: application/sml+json` - Request SensorML format
+- `Accept: application/json` - Request standard JSON
+- Or use `?f=geojson` query parameter
+
+**Pattern:** Match Content-Type to resource format: GeoJSON for spatial, SensorML for detailed sensors, JSON for others.
 
 22. **Response Handling:** Should QueryBuilder methods return URLs only or execute requests and return parsed data? Or both patterns?
 
-**Answer:**
+**Answer:** Follow EDR pattern - provide BOTH approaches but **ONLY implement execute pattern** initially:
 
+**Recommended approach (execute and return data):**
+```typescript
+async getSystems(options?: QueryOptions): Promise<System[]> {
+  const url = this.buildSystemsUrl(options);
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data.features || data.items; // Handle both formats
+}
+```
+
+**Optional approach (build URL only) - for advanced users:**
+```typescript
+buildSystemsUrl(options?: QueryOptions): string {
+  const baseUrl = this.getResourceLink('systems');
+  const url = new URL(baseUrl);
+  this.addQueryParams(url, options);
+  return url.toString();
+}
+
+// User can fetch themselves:
+const url = builder.buildSystemsUrl({ limit: 10 });
+const response = await fetch(url);
+```
+
+**Recommendation for CSAPI:**
+- **Start with execute methods only:** `getSystems()`, `getSystem()`, etc.
+- **Add build methods later if needed:** `buildSystemsUrl()`, `buildSystemUrl()`
+- **Rationale:** 
+  - Most users want data, not URLs
+  - Execute methods can use build methods internally (DRY)
+  - Build methods add API surface area (more to document/test)
+  - EDR provides both but most users use execute methods
+
+**Return type pattern:**
+- List methods: `Promise<Resource[]>`
+- Get by ID: `Promise<Resource>`
+- Create: `Promise<Resource>` (returns created resource with ID)
+- Update: `Promise<Resource>` (returns updated resource)
+- Delete: `Promise<void>` (no return value on 204 No Content)
 
 23. **Cascade Delete:** How to support cascade delete? Query parameter `?cascade=true`? Separate method?
 
-**Answer:**
+**Answer:** Use **query parameter** approach (not separate method):
+
+**Recommended implementation:**
+```typescript
+async deleteSystem(
+  id: string,
+  options?: { cascade?: boolean }
+): Promise<void> {
+  const baseUrl = this.getResourceLink('systems');
+  const url = new URL(`${baseUrl}/${id}`);
+  
+  // Add cascade parameter if requested
+  if (options?.cascade) {
+    url.searchParams.set('cascade', 'true');
+  }
+  
+  const response = await fetch(url.toString(), {
+    method: 'DELETE'
+  });
+  
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
+  
+  // DELETE returns 204 No Content on success
+}
+```
+
+**Usage:**
+```typescript
+// Delete system only (fails if has dependencies)
+await builder.deleteSystem('system-123');
+
+// Delete system and all dependent resources
+await builder.deleteSystem('system-123', { cascade: true });
+```
+
+**❌ Not recommended (separate method):**
+```typescript
+// Creates API bloat
+async deleteSystem(id: string): Promise<void> { }
+async deleteSystemCascade(id: string): Promise<void> { }
+```
+
+**Cascade behavior from OpenAPI specs:**
+- `cascade=false` or omitted: Delete fails if resource has dependents (409 Conflict)
+- `cascade=true`: Delete resource and ALL dependent resources (subsystems, datastreams, observations, etc.)
+- **Dangerous operation:** Potentially deletes large amounts of data
+- **Server-side validation:** Server checks authorization and constraints
+
+**Applies to:** Systems, Deployments, DataStreams, ControlStreams (resources that can have dependents).
+
+**Does NOT apply to:** Observations, Commands, Procedures, Sampling Features, Properties (leaf nodes or shared resources).
 
 
 ### E. Standard OGC API Query Parameters
