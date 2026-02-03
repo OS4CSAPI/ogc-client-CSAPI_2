@@ -24,10 +24,14 @@ Components that establish how CSAPI is accessed and what capabilities are availa
   - Implementation: ~7 lines total (simplest component in design)
   - Dependencies: None
 
-- [ ] **3. Collections Reader** (`collections-reader/`)
+- [x] **3. Collections Reader** (`collections-reader/`)
+  - ✅ **RESEARCH COMPLETE**
   - Identifies which collections have CSAPI features
+  - Extends `parseCollections()` function in info.ts
   - Adds `csapiCollections` getter to endpoint.ts
-  - Dependencies: Conformance Reader (needs to know if CSAPI is available)
+  - Analysis: Detection strategy (featureType + itemType checks), filter logic, testing strategy documented
+  - Implementation: ~15 lines total (extend function + add getter)
+  - Dependencies: Conformance Reader (uses `hasConnectedSystems` getter)
 
 ### Phase 2: Core Functionality
 The main component that defines all URL patterns, methods, and query parameters.

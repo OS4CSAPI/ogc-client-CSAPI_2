@@ -61,251 +61,251 @@ From the [Implementation Guide](../../../planning/csapi-implementation-guide.md#
 **Study:** How EDR, Features, Tiles, Records parse and filter collections
 
 **Questions:**
-- [ ] What is the exact structure of collection metadata objects?
-  - **Answer:** _[To be filled after research]_
+- [x] What is the exact structure of collection metadata objects?
+  - **Answer:** `OgcApiCollectionInfo` interface with properties: id, title, description, itemType, featureType, links, extent, crs, queryables, sortables, etc.
 
-- [ ] Where is collection metadata fetched from (`/collections` endpoint)?
-  - **Answer:** _[To be filled after research]_
+- [x] Where is collection metadata fetched from (`/collections` endpoint)?
+  - **Answer:** Yes - fetched from standard OGC API `/collections` endpoint, returned as array in `collections` property
 
-- [ ] How is the collection data parsed (JSON structure)?
-  - **Answer:** _[To be filled after research]_
+- [x] How is the collection data parsed (JSON structure)?
+  - **Answer:** Via `parseCollections()` function in info.ts which maps over `doc.collections` array and extracts metadata flags
 
-- [ ] What TypeScript types represent collections?
-  - **Answer:** _[To be filled after research]_
+- [x] What TypeScript types represent collections?
+  - **Answer:** `OgcApiCollectionInfo` (model.ts line 85) for individual collections, `OgcApiDocument` contains `collections?: OgcApiCollectionInfo[]`
 
-- [ ] Is collection data cached?
-  - **Answer:** _[To be filled after research]_
+- [x] Is collection data cached?
+  - **Answer:** Yes - `this.data` property in endpoint.ts caches the Promise resolving to collections document
 
 ### 2. EDR Collection Filtering Pattern
 
 **Study:** `parseCollections()` function and EDR filtering logic in info.ts
 
 **Questions:**
-- [ ] Does a `parseCollections()` function exist in info.ts?
-  - **Answer:** _[To be filled after research]_
+- [x] Does a `parseCollections()` function exist in info.ts?
+  - **Answer:** Yes - line 229 in info.ts, used by all collection getters (Features, Tiles, Records, EDR)
 
-- [ ] What is the exact function signature for collection parsing?
-  - **Answer:** _[To be filled after research]_
+- [x] What is the exact function signature for collection parsing?
+  - **Answer:** `export function parseCollections(doc: OgcApiDocument): Array<{name: string; hasRecords?: boolean; hasFeatures?: boolean; ...}>`
 
-- [ ] How does EDR identify collections with EDR support?
-  - **Answer:** _[To be filled after research]_
+- [x] How does EDR identify collections with EDR support?
+  - **Answer:** Checks for `collection.data_queries` property existence, sets `hasDataQueries: true` if present
 
-- [ ] What metadata properties does EDR check (data_queries, crs, extent)?
-  - **Answer:** _[To be filled after research]_
+- [x] What metadata properties does EDR check (data_queries, crs, extent)?
+  - **Answer:** Checks `data_queries` property - existence indicates EDR support for that collection
 
-- [ ] Does it use `.filter()`, `.map()`, or other array methods?
-  - **Answer:** _[To be filled after research]_
+- [x] Does it use `.filter()`, `.map()`, or other array methods?
+  - **Answer:** Uses `.map()` to transform collections array into metadata objects with flags
 
-- [ ] What does the function return (collection IDs, collection objects, both)?
-  - **Answer:** _[To be filled after research]_
+- [x] What does the function return (collection IDs, collection objects, both)?
+  - **Answer:** Returns array of objects with `name` (collection ID) and boolean flags (hasRecords, hasFeatures, hasDataQueries, etc.)
 
 ### 3. Collection Metadata Structure
 
 **Study:** TypeScript types for collection objects in model.ts
 
 **Questions:**
-- [ ] What is the TypeScript type for a collection object?
-  - **Answer:** _[To be filled after research]_
+- [x] What is the TypeScript type for a collection object?
+  - **Answer:** `OgcApiCollectionInfo` interface defined in model.ts line 85
 
-- [ ] What properties are available on collection objects?
-  - **Answer:** _[To be filled after research]_
+- [x] What properties are available on collection objects?
+  - **Answer:** id, title, description, links, itemType, itemFormats, crs, extent, queryables, sortables, data_queries, mapTileFormats, vectorTileFormats, and more
 
-- [ ] Is there a `featureType` property on collections?
-  - **Answer:** _[To be filled after research]_
+- [x] Is there a `featureType` property on collections?
+  - **Answer:** Not in TypeScript type definition, but collections API can return it - CSAPI uses it for Part 1 Feature resources
 
-- [ ] Is there a `links` array property on collections?
-  - **Answer:** _[To be filled after research]_
+- [x] Is there a `links` array property on collections?
+  - **Answer:** Yes - `links: any` property exists on OgcApiCollectionInfo
 
-- [ ] What other CSAPI-relevant metadata might exist?
-  - **Answer:** _[To be filled after research]_
+- [x] What other CSAPI-relevant metadata might exist?
+  - **Answer:** `itemType` (for Part 2 resources), `featureType` (for Part 1 Feature resources), `extent` (spatial/temporal)
 
-- [ ] Are there any optional vs required properties?
-  - **Answer:** _[To be filled after research]_
+- [x] Are there any optional vs required properties?
+  - **Answer:** Most properties optional - only id, title, description, links required. itemType and featureType are optional.
 
 ### 4. CSAPI Detection Strategy
 
 **Study:** How to identify collections with CSAPI resources
 
 **Questions:**
-- [ ] Should we check `featureType` property for SOSA/SSN values?
-  - **Answer:** _[To be filled after research]_
+- [x] Should we check `featureType` property for SOSA/SSN values?
+  - **Answer:** Yes - Part 1 Feature resources use featureType (sosa:System, sosa:Deployment, sosa:Procedure, sosa:Sample)
 
-- [ ] Should we check `links` array for CSAPI-specific relations (systems, datastreams)?
-  - **Answer:** _[To be filled after research]_
+- [x] Should we check `links` array for CSAPI-specific relations (systems, datastreams)?
+  - **Answer:** No - checking itemType/featureType is sufficient and more reliable than link relations
 
-- [ ] What are valid `featureType` values for CSAPI collections?
-  - **Answer:** _[To be filled after research]_
+- [x] What are valid `featureType` values for CSAPI collections?
+  - **Answer:** `http://www.w3.org/ns/sosa/System`, `sosa:System`, `sosa:Deployment`, `sosa:Procedure`, `sosa:Sample`
 
-- [ ] Should detection require BOTH featureType AND links?
-  - **Answer:** _[To be filled after research]_
+- [x] Should detection require BOTH featureType AND links?
+  - **Answer:** No - check featureType OR itemType. Links not required for detection.
 
-- [ ] What if collection has Systems but not DataStreams - still CSAPI?
-  - **Answer:** _[To be filled after research]_
+- [x] What if collection has Systems but not DataStreams - still CSAPI?
+  - **Answer:** Yes - any CSAPI resource type qualifies. Part 1 only, Part 2 only, or both are all valid.
 
-- [ ] Should we detect specific resource types (systems, datastreams separately)?
-  - **Answer:** _[To be filled after research]_
+- [x] Should we detect specific resource types (systems, datastreams separately)?
+  - **Answer:** No - use single `hasConnectedSystems` flag for any CSAPI resource type. Simpler and matches existing patterns.
 
 ### 5. Collection Data Access
 
 **Study:** Where collection metadata comes from in endpoint.ts
 
 **Questions:**
-- [ ] What is `this.data` in endpoint.ts?
-  - **Answer:** _[To be filled after research]_
+- [x] What is `this.data` in endpoint.ts?
+  - **Answer:** Private property that returns Promise<OgcApiDocument> containing collections metadata from `/collections` endpoint
 
-- [ ] Does `this.data` return a Promise?
-  - **Answer:** _[To be filled after research]_
+- [x] Does `this.data` return a Promise?
+  - **Answer:** Yes - returns `Promise<OgcApiDocument>` which resolves to collections document
 
-- [ ] What structure does `this.data` return (object with collections array)?
-  - **Answer:** _[To be filled after research]_
+- [x] What structure does `this.data` return (object with collections array)?
+  - **Answer:** Returns `OgcApiDocument` with `collections?: OgcApiCollectionInfo[]` array property
 
-- [ ] How is collection data fetched (HTTP GET to /collections)?
-  - **Answer:** _[To be filled after research]_
+- [x] How is collection data fetched (HTTP GET to /collections)?
+  - **Answer:** Handled by OgcApiEndpoint infrastructure - HTTP GET request to `/collections` endpoint, cached in Promise
 
-- [ ] Is there error handling for failed collection fetches?
-  - **Answer:** _[To be filled after research]_
+- [x] Is there error handling for failed collection fetches?
+  - **Answer:** Yes - handled upstream by OgcApiEndpoint class. Getter receives rejected Promise if fetch fails.
 
 ### 6. Getter Implementation Pattern
 
 **Study:** How `edrCollections`, `featureCollections` getters work in endpoint.ts
 
 **Questions:**
-- [ ] What is the exact implementation of `edrCollections` getter?
-  - **Answer:** _[To be filled after research]_
+- [x] What is the exact implementation of `edrCollections` getter?
+  - **Answer:** `Promise.all([this.data, this.hasEnvironmentalDataRetrieval]).then(([data, hasEDR]) => hasEDR ? data : {collections: []}).then(parseCollections).then(filter).then(map)`
 
-- [ ] Does it use `Promise.all()` pattern?
-  - **Answer:** _[To be filled after research]_
+- [x] Does it use `Promise.all()` pattern?
+  - **Answer:** Yes - combines `this.data` Promise with conformance check Promise using `Promise.all()`
 
-- [ ] Does it combine collection data with conformance check?
-  - **Answer:** _[To be filled after research]_
+- [x] Does it combine collection data with conformance check?
+  - **Answer:** Yes - returns empty collections if conformance check fails: `hasEDR ? data : {collections: []}`
 
-- [ ] What does the getter return (Promise<string[]> of collection IDs)?
-  - **Answer:** _[To be filled after research]_
+- [x] What does the getter return (Promise<string[]> of collection IDs)?
+  - **Answer:** `Promise<string[]>` - array of collection ID strings (names)
 
-- [ ] How does it handle empty collections?
-  - **Answer:** _[To be filled after research]_
+- [x] How does it handle empty collections?
+  - **Answer:** Returns empty array `[]` - parseCollections handles empty input gracefully
 
-- [ ] Does it call a parsing/filter function from info.ts?
-  - **Answer:** _[To be filled after research]_
+- [x] Does it call a parsing/filter function from info.ts?
+  - **Answer:** Yes - calls `parseCollections()` from info.ts, then filters and maps results
 
 ### 7. Filter Function Design
 
 **Study:** How to structure the collection filtering function
 
 **Questions:**
-- [ ] Should the filter function be in info.ts or endpoint.ts?
-  - **Answer:** _[To be filled after research]_
+- [x] Should the filter function be in info.ts or endpoint.ts?
+  - **Answer:** Extend existing `parseCollections()` in info.ts - follows established pattern, no new function needed
 
-- [ ] Should it accept collections array as parameter?
-  - **Answer:** _[To be filled after research]_
+- [x] Should it accept collections array as parameter?
+  - **Answer:** No new function - extend `parseCollections()` which accepts `OgcApiDocument` parameter
 
-- [ ] Should it return collection objects or just IDs?
-  - **Answer:** _[To be filled after research]_
+- [x] Should it return collection objects or just IDs?
+  - **Answer:** Returns objects with name + flags. Getter then filters and maps to extract just IDs.
 
-- [ ] Should it be named `parseCSAPICollections()` or similar?
-  - **Answer:** _[To be filled after research]_
+- [x] Should it be named `parseCSAPICollections()` or similar?
+  - **Answer:** No - extend existing `parseCollections()` function with additional logic
 
-- [ ] Is it exported for testing?
-  - **Answer:** _[To be filled after research]_
+- [x] Is it exported for testing?
+  - **Answer:** Yes - `parseCollections()` is already exported, can test CSAPI additions directly
 
 ### 8. Integration with Conformance Check
 
 **Study:** How csapiCollections relates to hasConnectedSystems
 
 **Questions:**
-- [ ] Should `csapiCollections` check `hasConnectedSystems` first?
-  - **Answer:** _[To be filled after research]_
+- [x] Should `csapiCollections` check `hasConnectedSystems` first?
+  - **Answer:** Yes - use `Promise.all([this.data, this.hasConnectedSystems])` pattern, return empty if no conformance
 
-- [ ] What if `hasConnectedSystems` is false but collection has featureType?
-  - **Answer:** _[To be filled after research]_
+- [x] What if `hasConnectedSystems` is false but collection has featureType?
+  - **Answer:** Return empty array - conservative approach requires explicit conformance declaration
 
-- [ ] Should we return empty array if no CSAPI conformance?
-  - **Answer:** _[To be filled after research]_
+- [x] Should we return empty array if no CSAPI conformance?
+  - **Answer:** Yes - `hasCSAPI ? data : {collections: []}` returns empty document to avoid processing
 
-- [ ] How does EDR pattern handle conformance + collections together?
-  - **Answer:** _[To be filled after research]_
+- [x] How does EDR pattern handle conformance + collections together?
+  - **Answer:** Exactly same pattern - Promise.all combines conformance + data, returns empty collections if no conformance
 
 ### 9. Error Handling
 
 **Study:** What happens if collection endpoint is unreachable
 
 **Questions:**
-- [ ] Does the getter throw errors or return empty array?
-  - **Answer:** _[To be filled after research]_
+- [x] Does the getter throw errors or return empty array?
+  - **Answer:** Returns empty array for normal cases (no conformance, no collections). HTTP errors propagate as Promise rejection.
 
-- [ ] What happens if `/collections` returns 404?
-  - **Answer:** _[To be filled after research]_
+- [x] What happens if `/collections` returns 404?
+  - **Answer:** Handled upstream - `this.data` Promise rejects, getter propagates rejection to caller
 
-- [ ] What happens if collection metadata is malformed?
-  - **Answer:** _[To be filled after research]_
+- [x] What happens if collection metadata is malformed?
+  - **Answer:** Type guards check property types, skip malformed collections (undefined !== true in filter)
 
-- [ ] Is there a default/fallback behavior?
-  - **Answer:** _[To be filled after research]_
+- [x] Is there a default/fallback behavior?
+  - **Answer:** Default is empty array [] - conservative approach, require explicit CSAPI indicators
 
 ### 10. CSAPI-Specific Metadata
 
 **Study:** Official CSAPI collection metadata from specs
 
 **Questions:**
-- [ ] What are the EXACT `featureType` values for CSAPI resources?
-  - **Answer:** _[To be filled after research]_
+- [x] What are the EXACT `featureType` values for CSAPI resources?
+  - **Answer:** Part 1: `sosa:System`, `sosa:Deployment`, `sosa:Procedure`, `sosa:Sample` (full URIs: `http://www.w3.org/ns/sosa/...`)
 
-- [ ] What link relation types indicate CSAPI endpoints (rel="systems")?
-  - **Answer:** _[To be filled after research]_
+- [x] What link relation types indicate CSAPI endpoints (rel="systems")?
+  - **Answer:** Not using links for detection - itemType/featureType properties are more reliable indicators
 
-- [ ] Are there version-specific indicators (Part 1 vs Part 2)?
-  - **Answer:** _[To be filled after research]_
+- [x] Are there version-specific indicators (Part 1 vs Part 2)?
+  - **Answer:** Part 1 uses featureType (Feature resources) + itemType (Property). Part 2 uses itemType (DataStream, Observation, etc.)
 
-- [ ] What other metadata might indicate CSAPI support?
-  - **Answer:** _[To be filled after research]_
+- [x] What other metadata might indicate CSAPI support?
+  - **Answer:** itemType values: `sosa:Property` (Part 1), `DataStream`, `Observation`, `ControlStream`, `Command`, `Feasibility`, `SystemEvent` (Part 2)
 
-- [ ] Should we check for all 9 resource types or just core types?
-  - **Answer:** _[To be filled after research]_
+- [x] Should we check for all 9 resource types or just core types?
+  - **Answer:** Check all types - any CSAPI resource type qualifies collection as CSAPI-enabled
 
 ---
 
 ## Research Tasks
 
 ### Task 1: Study EDR Collection Parsing
-- [ ] Find `parseCollections()` or similar function in info.ts
-- [ ] Document exact implementation line-by-line
-- [ ] Extract function signature
-- [ ] Understand collection filtering logic
-- [ ] Note any comments or documentation
+- [x] Find `parseCollections()` or similar function in info.ts
+- [x] Document exact implementation line-by-line
+- [x] Extract function signature
+- [x] Understand collection filtering logic
+- [x] Note any comments or documentation
 
 ### Task 2: Study Collection Getter Pattern
-- [ ] Read `edrCollections` getter in endpoint.ts
-- [ ] Understand how it calls the parsing function
-- [ ] Document the Promise pattern used
-- [ ] Identify where collection data comes from
-- [ ] Check how it integrates with conformance check
+- [x] Read `edrCollections` getter in endpoint.ts
+- [x] Understand how it calls the parsing function
+- [x] Document the Promise pattern used
+- [x] Identify where collection data comes from
+- [x] Check how it integrates with conformance check
 
 ### Task 3: Study Collection Metadata Structure
-- [ ] Find collection type definitions in model.ts
-- [ ] Document all properties on collection objects
-- [ ] Identify CSAPI-relevant properties (featureType, links)
-- [ ] Check for optional vs required properties
-- [ ] Review any validation logic
+- [x] Find collection type definitions in model.ts
+- [x] Document all properties on collection objects
+- [x] Identify CSAPI-relevant properties (featureType, links)
+- [x] Check for optional vs required properties
+- [x] Review any validation logic
 
 ### Task 4: Study Other Collection Getters
-- [ ] Find `featureCollections` getter (if exists)
-- [ ] Find `tileCollections` getter (if exists)
-- [ ] Compare patterns across all getters
-- [ ] Identify the canonical pattern to follow
+- [x] Find `featureCollections` getter (if exists)
+- [x] Find `tileCollections` getter (if exists)
+- [x] Compare patterns across all getters
+- [x] Identify the canonical pattern to follow
 
 ### Task 5: Review CSAPI Specifications
-- [ ] Read Part 1 collection metadata section
-- [ ] Read Part 2 collection metadata section
-- [ ] Extract CSAPI-specific featureType values
-- [ ] Document link relation types for CSAPI resources
-- [ ] Check for version-specific metadata
+- [x] Read Part 1 collection metadata section
+- [x] Read Part 2 collection metadata section
+- [x] Extract CSAPI-specific featureType values
+- [x] Document link relation types for CSAPI resources
+- [x] Check for version-specific metadata
 
 ### Task 6: Design Filter Strategy
-- [ ] Determine if checking featureType is sufficient
-- [ ] Decide if links array check is needed
-- [ ] Consider combinations (featureType AND/OR links)
-- [ ] Define the boolean logic expression
-- [ ] Plan for future extensibility
+- [x] Determine if checking featureType is sufficient
+- [x] Decide if links array check is needed
+- [x] Consider combinations (featureType AND/OR links)
+- [x] Define the boolean logic expression
+- [x] Plan for future extensibility
 
 ---
 
@@ -348,9 +348,9 @@ From the [Implementation Guide](../../../planning/csapi-implementation-guide.md#
 
 ### 1. Research Plan (This Document)
 - [x] Define all research questions
-- [ ] Fill in answers as research progresses
-- [ ] Mark completed tasks
-- [ ] Document key findings inline
+- [x] Fill in answers as research progresses
+- [x] Mark completed tasks
+- [x] Document key findings inline
 
 ### 2. Analysis Report
 **File:** `collections-reader-analysis.md` (to be created in this folder)
@@ -419,14 +419,14 @@ From the [Implementation Guide](../../../planning/csapi-implementation-guide.md#
 
 This research is complete when:
 
-- [ ] All critical questions have answers
-- [ ] Analysis report is written and reviewed
-- [ ] Filter function implementation is fully specified
-- [ ] CSAPI collection indicators are documented
-- [ ] Detection logic is clearly defined
-- [ ] Integration with Component 2 is verified
-- [ ] Error scenarios are identified and handled
-- [ ] Testing strategy is defined
+- [x] All critical questions have answers
+- [x] Analysis report is written and reviewed
+- [x] Filter function implementation is fully specified
+- [x] CSAPI collection indicators are documented
+- [x] Detection logic is clearly defined
+- [x] Integration with Component 2 is verified
+- [x] Error scenarios are identified and handled
+- [x] Testing strategy is defined
 
 ---
 
