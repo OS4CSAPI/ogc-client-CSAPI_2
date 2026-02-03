@@ -15,9 +15,13 @@ Components that establish how CSAPI is accessed and what capabilities are availa
   - Implementation: ~65 lines across 3 files (endpoint.ts, info.ts, index.ts)
   - Dependencies: None
 
-- [ ] **2. Conformance Reader** (`conformance-reader/`)
+- [x] **2. Conformance Reader** (`conformance-reader/`)
+  - ✅ **RESEARCH COMPLETE**
   - Determines if a service supports CSAPI
-  - Adds `hasConnectedSystems` getter to info.ts
+  - Adds `checkHasConnectedSystems()` function in info.ts
+  - Adds `hasConnectedSystems` getter to endpoint.ts
+  - Analysis: Function signature, detection logic (Part 1 OR Part 2), testing strategy documented
+  - Implementation: ~7 lines total (simplest component in design)
   - Dependencies: None
 
 - [ ] **3. Collections Reader** (`collections-reader/`)

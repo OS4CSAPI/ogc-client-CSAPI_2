@@ -929,3 +929,60 @@ Component 2 (Conformance Reader) is a **simple, self-contained addition** requir
 
 **Next Steps:** Proceed to implementation following the checklist in Section 8.
 
+---
+
+## Development Standards Reference
+
+All implementation work for Component 2 must adhere to the project's development standards:
+
+### Code Style Guide
+**Reference:** [docs/development-standards/code-style-guide.md](../../../development-standards/code-style-guide.md)
+
+**Key Requirements:**
+- Follow existing TypeScript patterns in info.ts and endpoint.ts
+- Use consistent destructured array parameters (same as EDR)
+- Match existing naming conventions (`checkHas*`, `has*`)
+- Use JSDoc comments for public functions
+- Follow 2-space indentation
+- No semicolons (project style)
+
+### Testing Standards
+**Reference:** [docs/development-standards/testing-standards.md](../../../development-standards/testing-standards.md)
+
+**Key Requirements:**
+- Write unit tests for `checkHasConnectedSystems()` in info.spec.ts
+- Write integration tests for `hasConnectedSystems` getter in endpoint.spec.ts
+- Test positive cases (Part 1, Part 2, both)
+- Test negative cases (empty, wrong classes, undefined)
+- Test edge cases (malformed URIs, case sensitivity)
+- Achieve ≥90% code coverage
+- Use fixtures from fixtures/ogc-api/ directory
+
+### Documentation Standards
+**Reference:** [docs/development-standards/documentation-standards.md](../../../development-standards/documentation-standards.md)
+
+**Key Requirements:**
+- Add JSDoc to `checkHasConnectedSystems()` function
+- Document parameters, return values, and purpose
+- Include usage examples in JSDoc
+- Update API documentation (TypeDoc)
+- Update CHANGELOG.md with new feature
+- Update README.md if exposing public API
+
+### Development Workflow
+- Create feature branch from main
+- Implement following Section 8 checklist
+- Run all tests locally (`npm test`)
+- Run linting (`npm run lint`)
+- Commit with descriptive message
+- Create pull request referencing Component 2 research
+
+**Quality Gates:**
+- ✅ All tests passing
+- ✅ No TypeScript errors
+- ✅ No linting errors
+- ✅ Code coverage ≥90%
+- ✅ Documentation updated
+- ✅ Follows existing patterns exactly
+
+---

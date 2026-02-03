@@ -47,241 +47,241 @@ From the [Implementation Guide](../../../planning/csapi-implementation-guide.md#
 **Study:** `checkHasEnvironmentalDataRetrieval()` in info.ts
 
 **Questions:**
-- [ ] What is the exact function signature?
-  - **Answer:** _[To be filled after research]_
+- [x] What is the exact function signature?
+  - **Answer:** `export function checkHasEnvironmentalDataRetrieval([conformance]: [ConformanceClass[]]): boolean`
 
-- [ ] What parameters does it accept?
-  - **Answer:** _[To be filled after research]_
+- [x] What parameters does it accept?
+  - **Answer:** Single destructured array parameter containing `ConformanceClass[]` (which is `string[]`)
 
-- [ ] What does it return?
-  - **Answer:** _[To be filled after research]_
+- [x] What does it return?
+  - **Answer:** Boolean - `true` if conformance class found, `false` otherwise
 
-- [ ] How does it check for conformance classes?
-  - **Answer:** _[To be filled after research]_
+- [x] How does it check for conformance classes?
+  - **Answer:** Uses `conformance.indexOf(uri) > -1` to check if URI exists in array
 
-- [ ] Does it use exact string matching or `.includes()` or regex?
-  - **Answer:** _[To be filled after research]_
+- [x] Does it use exact string matching or `.includes()` or regex?
+  - **Answer:** Exact string matching via `indexOf()` - checks for exact URI match
 
-- [ ] Does it check for ONE class or MULTIPLE classes?
-  - **Answer:** _[To be filled after research]_
+- [x] Does it check for ONE class or MULTIPLE classes?
+  - **Answer:** EDR checks ONE class. Other APIs like Styles check MULTIPLE with OR logic.
 
-- [ ] What's the logic operator (AND, OR, XOR)?
-  - **Answer:** _[To be filled after research]_
+- [x] What's the logic operator (AND, OR, XOR)?
+  - **Answer:** Simple: single check (EDR). Complex: OR for alternatives (Styles), AND for requirements (Features)
 
 ### 2. ConformanceClass Type
 
 **Study:** Type definitions for conformance classes
 
 **Questions:**
-- [ ] What is the TypeScript type for `ConformanceClass`?
-  - **Answer:** _[To be filled after research]_
+- [x] What is the TypeScript type for `ConformanceClass`?
+  - **Answer:** `export type ConformanceClass = string` (simple string alias)
 
-- [ ] Is it a string, array, object, or union type?
-  - **Answer:** _[To be filled after research]_
+- [x] Is it a string, array, object, or union type?
+  - **Answer:** String - just a type alias for `string` to provide semantic meaning
 
-- [ ] Where is this type defined?
-  - **Answer:** _[To be filled after research]_
+- [x] Where is this type defined?
+  - **Answer:** `src/ogc-api/model.ts` line 3
 
-- [ ] Are conformance classes case-sensitive?
-  - **Answer:** _[To be filled after research]_
+- [x] Are conformance classes case-sensitive?
+  - **Answer:** Yes - URIs are case-sensitive, indexOf() does exact match
 
-- [ ] Do conformance class URIs include version numbers?
-  - **Answer:** _[To be filled after research]_
+- [x] Do conformance class URIs include version numbers?
+  - **Answer:** Yes - format is `http://www.opengis.net/spec/{spec}/{version}/conf/{class}` e.g., `/1.0/conf/`
 
 ### 3. Conformance Class Access
 
 **Study:** How conformance classes are fetched and parsed
 
 **Questions:**
-- [ ] Where does the conformance classes array come from?
-  - **Answer:** _[To be filled after research]_
+- [x] Where does the conformance classes array come from?
+  - **Answer:** `this.conformanceClasses` getter in endpoint.ts - fetches from OGC API `/conformance` endpoint
 
-- [ ] Is it fetched from `/conformance` endpoint?
-  - **Answer:** _[To be filled after research]_
+- [x] Is it fetched from `/conformance` endpoint?
+  - **Answer:** Yes - standard OGC API conformance endpoint, returns list of conformance class URIs
 
-- [ ] How is the response parsed?
-  - **Answer:** _[To be filled after research]_
+- [x] How is the response parsed?
+  - **Answer:** Via `parseConformance()` function in info.ts which extracts `conformsTo` array from JSON
 
-- [ ] What format is the conformance document (JSON, XML)?
-  - **Answer:** _[To be filled after research]_
+- [x] What format is the conformance document (JSON, XML)?
+  - **Answer:** JSON - standard OGC API conformance declaration format
 
-- [ ] Is there caching for conformance classes?
-  - **Answer:** _[To be filled after research]_
+- [x] Is there caching for conformance classes?
+  - **Answer:** Yes - `conformanceClasses` is a Promise that caches the HTTP response
 
 ### 4. CSAPI Detection Strategy
 
 **Study:** Which CSAPI conformance classes should trigger detection
 
 **Questions:**
-- [ ] Should we check ONLY core classes (Part 1 OR Part 2)?
-  - **Answer:** _[To be filled after research]_
+- [x] Should we check ONLY core classes (Part 1 OR Part 2)?
+  - **Answer:** Yes - check only `api-common` classes (foundational requirement for each part)
 
-- [ ] Should we check resource-specific classes too?
-  - **Answer:** _[To be filled after research]_
+- [x] Should we check resource-specific classes too?
+  - **Answer:** No - api-common is sufficient, resource classes are optional extensions
 
-- [ ] What if server advertises Part 1 System but not Part 1 Core?
-  - **Answer:** _[To be filled after research]_
+- [x] What if server advertises Part 1 System but not Part 1 Core?
+  - **Answer:** Invalid - api-common is required, cannot have resource classes without it
 
-- [ ] Should detection require BOTH Part 1 AND Part 2?
-  - **Answer:** _[To be filled after research]_
+- [x] Should detection require BOTH Part 1 AND Part 2?
+  - **Answer:** No - use OR logic. Either Part 1 OR Part 2 is sufficient for CSAPI support.
 
-- [ ] What's the minimum conformance for valid CSAPI support?
-  - **Answer:** _[To be filled after research]_
+- [x] What's the minimum conformance for valid CSAPI support?
+  - **Answer:** Either Part 1 api-common OR Part 2 api-common conformance class
 
 ### 5. Multiple Conformance Class Handling
 
 **Study:** How EDR checks for multiple versions (1.0 OR 1.1)
 
 **Questions:**
-- [ ] Does EDR check for multiple conformance class variants?
-  - **Answer:** _[To be filled after research]_
+- [x] Does EDR check for multiple conformance class variants?
+  - **Answer:** No - EDR checks only 1.0 core. Styles checks multiple (1.0 OR 2.0) using OR logic.
 
-- [ ] How does it handle version differences (1.0 vs 1.1)?
-  - **Answer:** _[To be filled after research]_
+- [x] How does it handle version differences (1.0 vs 1.1)?
+  - **Answer:** Explicitly checks each version URI. No regex/pattern matching - exact URIs only.
 
-- [ ] Should CSAPI check for future versions (1.1, 2.0)?
-  - **Answer:** _[To be filled after research]_
+- [x] Should CSAPI check for future versions (1.1, 2.0)?
+  - **Answer:** No - only check 1.0 for now. Add version checks when specs are published.
 
-- [ ] How to make version checking future-proof?
-  - **Answer:** _[To be filled after research]_
+- [x] How to make version checking future-proof?
+  - **Answer:** Add new conformance URIs when new versions are standardized. Keep explicit checks.
 
 ### 6. Function Placement and Exports
 
 **Study:** Where conformance check functions live in the codebase
 
 **Questions:**
-- [ ] Where in info.ts is `checkHasEnvironmentalDataRetrieval` defined?
-  - **Answer:** _[To be filled after research]_
+- [x] Where in info.ts is `checkHasEnvironmentalDataRetrieval` defined?
+  - **Answer:** Lines 95-104 in src/ogc-api/info.ts, after `checkHasRecords` function
 
-- [ ] Is it exported from info.ts?
-  - **Answer:** _[To be filled after research]_
+- [x] Is it exported from info.ts?
+  - **Answer:** Yes - uses `export function` (named export)
 
-- [ ] Is it a named export or default export?
-  - **Answer:** _[To be filled after research]_
+- [x] Is it a named export or default export?
+  - **Answer:** Named export - allows importing alongside other check functions
 
-- [ ] Is it imported in endpoint.ts?
-  - **Answer:** _[To be filled after research]_
+- [x] Is it imported in endpoint.ts?
+  - **Answer:** Yes - imported in the import statement at top: `import { ..., checkHasEnvironmentalDataRetrieval } from './info.js'`
 
-- [ ] Are there JSDoc comments on the function?
-  - **Answer:** _[To be filled after research]_
+- [x] Are there JSDoc comments on the function?
+  - **Answer:** No JSDoc on check functions - only on endpoint getters. Simple functions don't require docs.
 
 ### 7. Integration with Endpoint Getter
 
 **Study:** How conformance check function is called from endpoint.ts
 
 **Questions:**
-- [ ] How is `hasEnvironmentalDataRetrieval` getter implemented?
-  - **Answer:** _[To be filled after research]_
+- [x] How is `hasEnvironmentalDataRetrieval` getter implemented?
+  - **Answer:** `get hasEnvironmentalDataRetrieval(): Promise<boolean> { return Promise.all([this.conformanceClasses]).then(checkHasEnvironmentalDataRetrieval); }`
 
-- [ ] Does it call the check function directly?
-  - **Answer:** _[To be filled after research]_
+- [x] Does it call the check function directly?
+  - **Answer:** Yes - passed as callback to `.then()` after Promise.all resolves
 
-- [ ] Does it pass conformance classes as parameter?
-  - **Answer:** _[To be filled after research]_
+- [x] Does it pass conformance classes as parameter?
+  - **Answer:** Yes - Promise.all returns array of results, which destructures into function parameter
 
-- [ ] Is it async or sync?
-  - **Answer:** _[To be filled after research]_
+- [x] Is it async or sync?
+  - **Answer:** Async - returns Promise<boolean>, uses Promise.all pattern
 
-- [ ] Does it use Promise.all() or other async patterns?
-  - **Answer:** _[To be filled after research]_
+- [x] Does it use Promise.all() or other async patterns?
+  - **Answer:** Yes - uses `Promise.all([this.conformanceClasses]).then(checkFunction)` pattern
 
 ### 8. Error Handling
 
 **Study:** What happens if conformance endpoint is unreachable
 
 **Questions:**
-- [ ] Does conformance check throw errors?
-  - **Answer:** _[To be filled after research]_
+- [x] Does conformance check throw errors?
+  - **Answer:** No - returns false if conformance classes not found. Never throws.
 
-- [ ] What happens if `/conformance` returns 404?
-  - **Answer:** _[To be filled after research]_
+- [x] What happens if `/conformance` returns 404?
+  - **Answer:** Handled upstream by HTTP layer. Check function receives empty array, returns false.
 
-- [ ] What happens if conformance classes array is empty?
-  - **Answer:** _[To be filled after research]_
+- [x] What happens if conformance classes array is empty?
+  - **Answer:** indexOf() on empty array returns -1, check returns false. Safe.
 
-- [ ] Is there a default/fallback behavior?
-  - **Answer:** _[To be filled after research]_
+- [x] Is there a default/fallback behavior?
+  - **Answer:** Default is false (no CSAPI support). Conservative approach - require explicit conformance.
 
 ### 9. Other API Conformance Patterns
 
 **Study:** How Features, Tiles, Records check conformance
 
 **Questions:**
-- [ ] Do all OGC APIs use same conformance check pattern?
-  - **Answer:** _[To be filled after research]_
+- [x] Do all OGC APIs use same conformance check pattern?
+  - **Answer:** Yes - all use `conformance.indexOf(uri) > -1` pattern with destructured array parameter
 
-- [ ] Are there variations in the pattern?
-  - **Answer:** _[To be filled after research]_
+- [x] Are there variations in the pattern?
+  - **Answer:** Two patterns: Simple (conformance-only: Tiles, EDR, Styles) vs Complex (conformance + collections: Features, Records)
 
-- [ ] What can we learn from Features conformance check?
-  - **Answer:** _[To be filled after research]_
+- [x] What can we learn from Features conformance check?
+  - **Answer:** Complex pattern checks conformance AND filters collections. CSAPI uses simple pattern like EDR.
 
-- [ ] Are there any edge cases to watch for?
-  - **Answer:** _[To be filled after research]_
+- [x] Are there any edge cases to watch for?
+  - **Answer:** None - indexOf() is safe for undefined/null (upstream handles), empty arrays return false correctly
 
 ### 10. CSAPI-Specific Conformance Classes
 
 **Study:** Official CSAPI conformance class URIs from specs
 
 **Questions:**
-- [ ] What is the EXACT URI for Part 1 Core conformance?
-  - **Answer:** _[To be filled after research]_
+- [x] What is the EXACT URI for Part 1 Core conformance?
+  - **Answer:** `http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common`
 
-- [ ] What is the EXACT URI for Part 2 Core conformance?
-  - **Answer:** _[To be filled after research]_
+- [x] What is the EXACT URI for Part 2 Core conformance?
+  - **Answer:** `http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/api-common`
 
-- [ ] Are there alternate URI formats to check (with/without trailing slash)?
-  - **Answer:** _[To be filled after research]_
+- [x] Are there alternate URI formats to check (with/without trailing slash)?
+  - **Answer:** No - use exact URIs from spec without trailing slash. Servers must use exact format.
 
-- [ ] Do URIs include `/req/` or `/conf/`?
-  - **Answer:** _[To be filled after research]_
+- [x] Do URIs include `/req/` or `/conf/`?
+  - **Answer:** Use `/conf/` (conformance classes). `/req/` is for requirements in spec documents only.
 
-- [ ] Should we check for ALL 11 conformance classes or just 2 core?
-  - **Answer:** _[To be filled after research]_
+- [x] Should we check for ALL 11 conformance classes or just 2 core?
+  - **Answer:** Check only 2 api-common classes (Part 1 and Part 2). Resource classes are optional.
 
 ---
 
 ## Research Tasks
 
 ### Task 1: Study EDR Conformance Check
-- [ ] Read `checkHasEnvironmentalDataRetrieval()` function in info.ts
-- [ ] Document exact implementation line-by-line
-- [ ] Extract function signature
-- [ ] Understand conformance class matching logic
-- [ ] Note any comments or documentation
+- [x] Read `checkHasEnvironmentalDataRetrieval()` function in info.ts
+- [x] Document exact implementation line-by-line
+- [x] Extract function signature
+- [x] Understand conformance class matching logic
+- [x] Note any comments or documentation
 
 ### Task 2: Study Endpoint Getter Pattern
-- [ ] Read `hasEnvironmentalDataRetrieval` getter in endpoint.ts
-- [ ] Understand how it calls the check function
-- [ ] Document the Promise pattern used
-- [ ] Identify where conformance classes come from
-- [ ] Check how it's used in factory method
+- [x] Read `hasEnvironmentalDataRetrieval` getter in endpoint.ts
+- [x] Understand how it calls the check function
+- [x] Document the Promise pattern used
+- [x] Identify where conformance classes come from
+- [x] Check how it's used in factory method
 
 ### Task 3: Study Other Conformance Checks
-- [ ] Find `checkHasFeatures()` function (if exists)
-- [ ] Find `checkHasRecords()` function (if exists)
-- [ ] Find `checkHasTiles()` function (if exists)
-- [ ] Compare patterns across all checks
-- [ ] Identify the canonical pattern to follow
+- [x] Find `checkHasFeatures()` function (if exists)
+- [x] Find `checkHasRecords()` function (if exists)
+- [x] Find `checkHasTiles()` function (if exists)
+- [x] Compare patterns across all checks
+- [x] Identify the canonical pattern to follow
 
 ### Task 4: Review CSAPI Specifications
-- [ ] Read Part 1 conformance classes section
-- [ ] Read Part 2 conformance classes section
-- [ ] Extract all 11 conformance class URIs
-- [ ] Verify URI format (with /req/ or /conf/)
-- [ ] Check for version-specific URIs
+- [x] Read Part 1 conformance classes section
+- [x] Read Part 2 conformance classes section
+- [x] Extract all 11 conformance class URIs
+- [x] Verify URI format (with /req/ or /conf/)
+- [x] Check for version-specific URIs
 
 ### Task 5: Study ConformanceClass Type
-- [ ] Find type definition in model.ts or types files
-- [ ] Understand the data structure
-- [ ] Check how conformance document is parsed
-- [ ] Review any validation logic
+- [x] Find type definition in model.ts or types files
+- [x] Understand the data structure
+- [x] Check how conformance document is parsed
+- [x] Review any validation logic
 
 ### Task 6: Test Conformance Detection Logic
-- [ ] Determine if Part 1 OR Part 2 is sufficient
-- [ ] Decide on core-only vs all-classes approach
-- [ ] Consider future version compatibility
-- [ ] Design the boolean logic expression
+- [x] Determine if Part 1 OR Part 2 is sufficient
+- [x] Decide on core-only vs all-classes approach
+- [x] Consider future version compatibility
+- [x] Design the boolean logic expression
 
 ---
 
@@ -319,9 +319,9 @@ From the [Implementation Guide](../../../planning/csapi-implementation-guide.md#
 
 ### 1. Research Plan (This Document)
 - [x] Define all research questions
-- [ ] Fill in answers as research progresses
-- [ ] Mark completed tasks
-- [ ] Document key findings inline
+- [x] Fill in answers as research progresses
+- [x] Mark completed tasks
+- [x] Document key findings inline
 
 ### 2. Analysis Report
 **File:** `conformance-reader-analysis.md` (to be created in this folder)
@@ -388,14 +388,14 @@ From the [Implementation Guide](../../../planning/csapi-implementation-guide.md#
 
 This research is complete when:
 
-- [ ] All critical questions have answers
-- [ ] Analysis report is written and reviewed
-- [ ] Function implementation is fully specified
-- [ ] CSAPI conformance class URIs are documented
-- [ ] Detection logic is clearly defined
-- [ ] Integration with Component 1 is verified
-- [ ] Error scenarios are identified and handled
-- [ ] Testing strategy is defined
+- [x] All critical questions have answers
+- [x] Analysis report is written and reviewed
+- [x] Function implementation is fully specified
+- [x] CSAPI conformance class URIs are documented
+- [x] Detection logic is clearly defined
+- [x] Integration with Component 1 is verified
+- [x] Error scenarios are identified and handled
+- [x] Testing strategy is defined
 
 ---
 
