@@ -933,35 +933,36 @@ Component 2 (Conformance Reader) is a **simple, self-contained addition** requir
 
 ## Development Standards
 
-All implementation work for Component 2 must adhere to established project patterns:
+All implementation work for Component 2 must adhere to the project's [Development Standards](../../../planning/csapi-implementation-guide.md#development-standards) defined in the CSAPI Implementation Guide.
 
-### Code Consistency
-- Follow existing TypeScript patterns in info.ts and endpoint.ts
-- Use consistent destructured array parameters (same as EDR pattern)
-- Match existing naming conventions (`checkHas*`, `has*`)
-- Follow existing code style (2-space indentation, no semicolons)
-- Use JSDoc comments on public getters (follow existing getter documentation style)
+### Key Standards for This Component
 
-### Testing Requirements
-- Write unit tests for `checkHasConnectedSystems()` in info.spec.ts
-- Write integration tests for `hasConnectedSystems` getter in endpoint.spec.ts
+**Development Workflow:**
+1. Write function signatures before implementation (done in this analysis)
+2. Add comprehensive JSDoc comments with parameters, return types, examples
+3. Implement functionality following EDR pattern exactly
+4. Write tests as you implement (not deferred to later)
+5. Document edge cases and validation rules as discovered
+
+**Code Quality Requirements:**
+- TypeScript strict mode enabled
+- 100% public API JSDoc coverage (add JSDoc to `hasConnectedSystems` getter)
+- >80% test coverage (statement and branch)
+- Lint-clean code (ESLint configuration)
+- No magic numbers or strings (use constants for conformance URIs)
+- Consistent error handling patterns (return false, never throw)
+
+**Documentation Requirements:**
+- Clear, concise method descriptions
+- Parameter descriptions with types and constraints
+- Return type documentation
+- Links to relevant CSAPI specification sections
+- Error condition documentation
+
+**Testing Requirements:**
 - Test positive cases (Part 1, Part 2, both)
-- Test negative cases (empty array, wrong classes, undefined)
-- Test edge cases (malformed URIs, case sensitivity)
-- Use fixtures from fixtures/ogc-api/ directory (follow existing fixture patterns)
-
-### Development Workflow
-- Create feature branch from main
-- Implement following Section 8 checklist
-- Run all tests locally (`npm test`)
-- Run linting (`npm run lint`)
-- Commit with descriptive message
-- Create pull request
-
-**Quality Gates:**
-- ✅ All tests passing
-- ✅ No TypeScript errors
-- ✅ No linting errors
-- ✅ Follows existing patterns exactly (especially EDR pattern)
+- Test negative cases (empty array, wrong classes)
+- Test edge cases (undefined, null, malformed URIs)
+- Use fixtures from fixtures/ogc-api/ directory
 
 ---
