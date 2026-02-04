@@ -8,14 +8,14 @@
 
 ## Executive Summary
 
-**DECISION: Single CSAPIQueryBuilder class following EDR pattern with full format handling.**
+**DECISION: Single CSAPIQueryBuilder class following EDR pattern with full format handling and resource validation.**
 
 - ✅ Single builder class (not separate Part 1/Part 2)
 - ✅ ~70-80 public methods organized by resource type
 - ✅ Helper methods for code reuse (no inheritance)
 - ✅ Full format parsing for GeoJSON, SensorML 3.0, SWE Common 3.0
 - ✅ Format parsers in separate formats/ subfolder
-- ✅ Resource discovery via links (no validation in methods)
+- ✅ **Resource validation in methods (fail-fast with clear errors)**
 
 **Status:** Structural decisions complete. Implementation details require Plans 11-16.
 
@@ -293,7 +293,7 @@ const system = parseSensorML30(await response.text());
 
 ---
 
-## Decision 4: Resource Discovery Without Validation
+## Decision 4: Resource Validation (User Mandate)
 
 ### The Question
 
@@ -310,9 +310,13 @@ Should methods validate that a resource is available before building URLs?
 - Collection links indicate available resources
 - Not all endpoints support all 9 resources
 
-### Decision
+**Original Research Recommendation:** No validation (follow EDR pattern)
 
-**✅ Expose availability, don't validate in methods**
+### Decision (2026-02-04)
+
+**✅ FIRM REQUIREMENT: Validate resources in methods (User Mandate)**
+
+**This decision OVERRIDES the original research-based recommendation to skip validation.**
 
 ```typescript
 export default class CSAPIQueryBuilder {
@@ -323,38 +327,62 @@ export default class CSAPIQueryBuilder {
     this.availableResources = this.extractAvailableResources();
   }
   
-  // NO validation in methods
+  // VALIDATE in all methods
   async getSystems(options?: QueryOptions): Promise<string> {
+    if (!this.availableResources.has('systems')) {
+      throw new EndpointError(
+        `Collection '${this.collection_.id}' does not support 'systems' resource. ` +
+        `Available resources: ${Array.from(this.availableResources).join(', ')}`
+      );
+    }
     return this.buildResourceUrl('systems', undefined, undefined, options);
   }
+  
+  async getDeployments(options?: QueryOptions): Promise<string> {
+    if (!this.availableResources.has('deployments')) {
+      throw new EndpointError(
+        `Collection '${this.collection_.id}' does not support 'deployments' resource. ` +
+        `Available resources: ${Array.from(this.availableResources).join(', ')}`
+      );
+    }
+    return this.buildResourceUrl('deployments', undefined, undefined, options);
+  }
+  
+  // ... validation in all 70-80 methods
 }
 
-// User code
+// User code - automatic validation
 const builder = await endpoint.csapi('sensors');
 
-// User checks availability
-if (builder.availableResources.has('systems')) {
+// No manual checking needed - method validates automatically
+try {
   const url = await builder.getSystems();
   const response = await fetch(url);
-  if (response.ok) {
-    const systems = await response.json();
-  }
+  const systems = await response.json();
+} catch (error) {
+  // Clear error: "Collection 'sensors' does not support 'systems' resource. Available resources: deployments, datastreams"
+  console.error(error.message);
 }
 ```
 
 ### Rationale
 
-**Pros:**
-- ✅ Follows "minimal validation" principle
-- ✅ Matches EDR pattern (no validation)
-- ✅ Server validates via HTTP 404
-- ✅ Less code (~0 lines vs ~70-80 lines of checks)
-- ✅ User has visibility into capabilities
+**Why Validate (User Mandate):**
+1. **Better Developer Experience:** Fail-fast with clear, actionable error messages
+2. **Debugging Efficiency:** Users know immediately if resource is unavailable (not a network/server issue)
+3. **Standard Practice:** Most client libraries validate before operations
+4. **Small Code Cost:** ~140-160 lines total (~2 lines per method) for significant UX improvement
+5. **Type Safety Extension:** TypeScript types + runtime validation = complete safety
 
-**Cons Considered:**
-- Methods may generate invalid URLs - **Acceptable:** Server will 404
+**Trade-offs Accepted:**
+- Deviates from EDR pattern - **Acceptable:** CSAPI has 9 resources (more complexity than EDR's 1)
+- Additional code - **Acceptable:** ~140-160 lines is <2% of total implementation
+- Validation overhead - **Negligible:** Set lookup is O(1), happens once per method call
 
-**Confidence:** ⭐⭐⭐⭐ (4/5) - Consistent with upstream, but could add validation later
+**Original Research Suggested:** No validation (follow upstream)
+**User Decision:** Validation required for better UX
+
+**Confidence:** ⭐⭐⭐⭐⭐ (5/5) - User mandate (firm), clear UX benefit
 
 ---
 
@@ -445,10 +473,12 @@ export function checkHasConnectedSystems([conformance]: [
 
 | Component | Lines | Status |
 |-----------|-------|--------|
-| url_builder.ts | 500-700 | Structure decided, details pending |
+| url_builder.ts | 640-860 | Structure decided, details pending |
+| - Methods (base) | 500-700 | URL building logic |
+| - Validation | 140-160 | Resource validation (~2 lines/method) |
 | model.ts | 200-300 | Structure decided, types pending |
 | helpers.ts | 50-100 | Structure decided, details pending |
-| **Core Subtotal** | **750-1,100** | **Structure complete** |
+| **Core Subtotal** | **890-1,260** | **Structure complete** |
 
 ### Format Parsing Implementation
 
@@ -479,9 +509,9 @@ export function checkHasConnectedSystems([conformance]: [
 
 ### Grand Total
 
-**Implementation:** ~4,095-5,795 lines  
+**Implementation:** ~4,235-5,955 lines (+140-160 for validation)  
 **Tests:** ~6,000-7,900 lines  
-**TOTAL:** ~10,095-13,695 lines
+**TOTAL:** ~10,235-13,855 lines
 
 **Status:** Structure decided, implementation details pending Plans 11-16.
 
@@ -502,11 +532,11 @@ export function checkHasConnectedSystems([conformance]: [
 
 - **Single class:** ⭐⭐⭐⭐⭐ (100% confidence - zero ambiguity)
 - **Helper methods:** ⭐⭐⭐⭐⭐ (100% confidence - zero inheritance precedent)
-- **Format handling:** ⭐⭐⭐⭐ (95% confidence - user mandate, details pending)
-- **No validation:** ⭐⭐⭐⭐ (90% confidence - consistent with upstream)
+- **Format handling:** ⭐⭐⭐⭐⭐ (100% confidence - user mandate, firm)
+- **Resource validation:** ⭐⭐⭐⭐⭐ (100% confidence - user mandate, firm)
 - **Integration:** ⭐⭐⭐⭐⭐ (100% confidence - copy EDR pattern)
 
-**Average Confidence:** ⭐⭐⭐⭐⭐ (98%)
+**Average Confidence:** ⭐⭐⭐⭐⭐ (100%)
 
 ---
 
@@ -568,7 +598,7 @@ Without Plans 11-16, we'd be guessing at:
 **Research:** Plans 01-04, 10 (5 plans)  
 **Time:** ~8-10 hours  
 **Output:** This decision document  
-**Confidence:** 98%  
+**Confidence:** 100%  
 
 ### Phase 2: Implementation Design 📋 PENDING
 
@@ -588,7 +618,7 @@ Without Plans 11-16, we'd be guessing at:
 ### Phase 3: Implementation 🚀 READY AFTER PART 2
 
 **What we'll implement:**
-- CSAPIQueryBuilder class (~500-700 lines)
+- CSAPIQueryBuilder class (~640-860 lines with validation)
 - Format parsers (~3,300-4,650 lines)
 - Integration (~45 lines)
 - Tests (~6,000-7,900 lines)
@@ -609,6 +639,7 @@ Without Plans 11-16, we'd be guessing at:
 
 **User Decisions:**
 - Format handling mandate (2026-02-04)
+- Resource validation mandate (2026-02-04)
 
 **Governance:**
 - Follows upstream conventions (100% alignment)
