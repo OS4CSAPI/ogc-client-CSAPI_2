@@ -1,7 +1,7 @@
 # CSAPI Implementation Guide for Camptocamp OGC Client Library
 
 **Last Updated:** February 4, 2026  
-**Version:** 4.0 (Implementation-Ready)
+**Version:** 3.0 (Implementation-Ready)
 
 ---
 
@@ -713,108 +713,27 @@ export default class CSAPIQueryBuilder {
 
 ```
 src/ogc-api/csapi/
-├── url_builder.ts              (~700-800 lines) - CSAPIQueryBuilder class
-│   ├── Constructor & validation (~50-100 lines)
-│   ├── Helper methods (~50-80 lines)
-│   │   ├── buildResourceUrl() - Core URL construction
-│   │   ├── buildQueryString() - Parameter serialization
-│   │   └── extractAvailableResources() - Resource discovery
-│   ├── Part 1 methods (~400-500 lines, 42 methods)
-│   │   ├── Systems (12 methods)
-│   │   ├── Deployments (8 methods)
-│   │   ├── Procedures (8 methods)
-│   │   ├── Sampling Features (8 methods)
-│   │   └── Properties (6 methods)
-│   ├── Part 2 methods (~400-500 lines, 38 methods)
-│   │   ├── DataStreams (11 methods)
-│   │   ├── Observations (9 methods)
-│   │   ├── Control Streams (8 methods)
-│   │   └── Commands (10 methods)
-│   └── Resource validation (~140-160 lines, ~2 lines/method)
-│
 ├── model.ts                    (~350-400 lines) - GeoJSON types
-│   ├── Resource type enum (12 lines)
-│   ├── Query options (~40 lines)
-│   │   ├── QueryOptions (base)
-│   │   ├── SystemQueryOptions (extended)
-│   │   └── ObservationQueryOptions (extended)
-│   ├── Helper types (~40 lines)
-│   │   ├── TimeInterval
-│   │   ├── ResourceLink
-│   │   ├── HistoryEvent
-│   │   └── Characteristic
-│   ├── Resource interfaces (~225 lines)
-│   │   ├── System (~25 lines)
-│   │   ├── Deployment (~25 lines)
-│   │   ├── SamplingFeature (~25 lines)
-│   │   ├── Procedure (~25 lines)
-│   │   ├── Property (~25 lines)
-│   │   ├── Datastream (~25 lines)
-│   │   ├── Observation (~25 lines)
-│   │   ├── Control (~25 lines)
-│   │   ├── ControlStream (~25 lines)
-│   │   └── Command (~25 lines)
-│   └── Collection types (~35 lines)
-│
-├── helpers.ts                  (~50-80 lines) - Utility functions
-│   ├── URL encoding helpers
-│   ├── Temporal parsing utilities
-│   └── Validation utilities
-│
+├── url_builder.ts              (~700-800 lines) - CSAPIQueryBuilder class
+├── helpers.ts                  (~50-80 lines)   - Utility functions
 ├── formats/                    (~3,450-4,750 lines) - Format parsers
-│   ├── index.ts                (~50-100 lines) - Format exports
-│   │   └── Barrel file for all parsers
-│   │
-│   ├── geojson.ts              (~50-100 lines) - GeoJSON utilities
-│   │   └── CSAPI property extraction
-│   │
-│   ├── constants.ts            (~50-100 lines) - Media types, namespaces
-│   │   ├── Media type constants
-│   │   ├── Resource type constants
-│   │   └── Vocabulary URI constants
-│   │
+│   ├── index.ts                (~50-100 lines)  - Format exports
+│   ├── geojson.ts              (~50-100 lines)  - GeoJSON utilities
+│   ├── constants.ts            (~50-100 lines)  - Media types, namespaces
 │   ├── sensorml/               (~1,600-2,200 lines)
-│   │   ├── index.ts            (~50-100 lines) - SensorML exports
-│   │   │
+│   │   ├── index.ts            (~50-100 lines)  - SensorML exports
 │   │   ├── types.ts            (~800-1,200 lines) - TypeScript interfaces
-│   │   │   ├── PhysicalSystem interface
-│   │   │   ├── PhysicalComponent interface
-│   │   │   ├── SimpleProcess/AggregateProcess interfaces
-│   │   │   ├── Capability/Characteristic interfaces
-│   │   │   ├── Component/Connection/Mode interfaces
-│   │   │   └── 30+ supporting interfaces
-│   │   │
 │   │   ├── parser.ts           (~600-800 lines) - Main parser
-│   │   │   ├── Main SensorML 3.0 parser
-│   │   │   ├── Recursive component parsing
-│   │   │   ├── Capability/characteristic parsing
-│   │   │   └── Position/location parsing
-│   │   │
 │   │   ├── simple-process.ts   (~150-200 lines) - SimpleProcess parser
 │   │   ├── aggregate-process.ts(~200-250 lines) - AggregateProcess parser
 │   │   └── physical-system.ts  (~200-250 lines) - PhysicalSystem parser
-│   │
 │   └── swecommon/              (~1,600-2,250 lines)
-│       ├── index.ts            (~50-100 lines) - SWE exports
-│       │
+│       ├── index.ts            (~50-100 lines)  - SWE exports
 │       ├── types.ts            (~600-800 lines) - TypeScript interfaces
-│       │   ├── DataComponent union type
-│       │   ├── DataRecord interface
-│       │   ├── DataArray interface
-│       │   ├── Quantity/Count/Text/Boolean interfaces
-│       │   ├── Encoding interfaces (JSON/Text/Binary)
-│       │   └── 20+ supporting interfaces
-│       │
 │       ├── parser.ts           (~500-700 lines) - Main parser
-│       │   ├── Main SWE Common 3.0 parser
-│       │   ├── Component type discrimination
-│       │   ├── Encoding detection
-│       │   └── Schema validation
-│       │
 │       ├── data-record.ts      (~150-200 lines) - DataRecord parser
 │       ├── data-array.ts       (~200-250 lines) - DataArray parser
 │       └── components.ts       (~300-400 lines) - Component parsers
-│
 ├── model.spec.ts               (~200-300 lines) - Type tests
 └── url_builder.spec.ts         (~800-1,000 lines) - QueryBuilder tests
 ```
@@ -2330,12 +2249,11 @@ Every component described above aligns with these core project goals:
 
 ---
 
-**Document Version:** 4.0 (Implementation-Ready with Enhanced Detail)  
+**Document Version:** 3.0 (Implementation-Ready)  
 **Previous Versions:** 
 - [v1.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v1.md) - Original architecture  
 - [v2.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v2.md) - Research-validated structure  
-- [v3.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v3.md) - Implementation details and roadmap  
 
 **Date:** 2026-02-04  
 **Research Foundation:** 13 completed research plans with ⭐⭐⭐⭐⭐ confidence (98-100%)  
-**Status:** ✅ **IMPLEMENTATION READY** with complete roadmap and detailed file structure
+**Status:** ✅ **IMPLEMENTATION READY** with complete roadmap
