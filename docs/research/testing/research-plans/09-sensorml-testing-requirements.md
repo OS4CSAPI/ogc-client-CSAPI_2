@@ -173,7 +173,7 @@ This research defines:
 
 ### Phase 2: JSON Schema Analysis (30-45 minutes)
 
-1. Parse SensorML 3.0 JSON schemas from https://schemas.opengis.net/sensorml/3.0/
+1. Parse SensorML 3.0 JSON schemas from https://schemas.opengis.net/sensorML/3.0/
 2. Extract validation rules per structure type
 3. Document required vs optional properties
 4. Document format and enumeration constraints
@@ -204,8 +204,8 @@ This research defines:
 
 ### Primary Resources
 
-- **SensorML 3.0 Specification:** https://docs.ogc.org/is/23-000r1/23-000r1.html
-- **SensorML 3.0 JSON Schema:** https://schemas.opengis.net/sensorml/3.0/
+- **SensorML 3.0 Specification:** https://docs.ogc.org/is/23-000/23-000.html
+- **SensorML 3.0 JSON Schema:** https://schemas.opengis.net/sensorML/3.0/
 - **CSAPI Implementation Guide:** [docs/planning/csapi-implementation-guide.md](../../../planning/csapi-implementation-guide.md) (SensorML parser specification)
 
 ### Supporting Resources
