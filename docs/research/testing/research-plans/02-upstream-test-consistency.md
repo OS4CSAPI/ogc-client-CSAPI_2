@@ -1,21 +1,17 @@
-# Research Plan: Existing Upstream Test Pattern Survey
+# Section 02: Existing Upstream Test Pattern Survey - Research Plan
 
-**Section:** 2 of 38  
-**Phase:** 1 - Critical Foundation  
-**Estimated Time:** 2-3 hours  
-**Priority:** HIGH - Validates consistency across all implementations
+**Status:** Research Planning Phase - Not Started  
+**Last Updated:** February 5, 2026  
+**Estimated Research Time:** 2-3 hours  
+**Estimated Test Implementation Lines:** N/A (Research produces analysis document, not tests)
 
 ---
 
-## Objective
+## 1. Research Objective
 
 Survey and document consistent testing patterns across all existing ogc-client implementations (WFS, WMS, WMTS, STAC, EDR). Identify library-wide conventions, test-to-code ratios, shared utilities, and quality standards that define the expected testing approach for any new OGC API implementation.
 
----
-
-## Why This Research Second
-
-After understanding EDR (Section 1) - the newest and closest match to CSAPI - we need to validate those patterns are consistent across the entire library. This identifies:
+**Why 2nd:** After understanding EDR (Section 1) - the newest and closest match to CSAPI - we need to validate those patterns are consistent across the entire library. This identifies:
 - **Library-wide conventions** that all implementations follow
 - **Mature patterns** from older implementations (WFS, WMS, WMTS)
 - **Evolution** of testing practices over time
@@ -24,98 +20,111 @@ After understanding EDR (Section 1) - the newest and closest match to CSAPI - we
 
 ---
 
-## Key Research Questions
+## 2. Research Questions
 
-### Implementation Inventory
+### Core Questions
+
+1. What testing patterns are consistent (universal) across all ogc-client implementations?
+2. What are the library-wide conventions that CSAPI must follow?
+3. How have testing practices evolved from oldest to newest implementations?
+4. What shared test infrastructure exists that CSAPI should leverage?
+5. What test-to-code ratios and coverage targets are standard?
+6. Do EDR patterns (from Section 1) align with library-wide standards?
+
+### Detailed Questions
+
+### Detailed Questions
+
+**Implementation Inventory:**
 1. What implementations exist in camptocamp/ogc-client?
 2. When was each implementation added (chronological order)?
 3. What's the maturity level of each (lines of code, features)?
 4. Which implementations have the most comprehensive tests?
 
-### Test File Consistency
+**Test File Consistency:**
 5. What test file naming conventions are consistent across implementations?
 6. Where are test files located (always colocated? always separate?)?
 7. What's the standard test file structure template?
 8. Are there variations in organization? Why?
 
-### Coverage Consistency
+**Coverage Consistency:**
 9. What's the coverage % for each implementation?
 10. Is there a consistent coverage target?
 11. Which implementations exceed/fall short of targets?
 12. How does coverage vary by component type (QueryBuilder vs parsers vs types)?
 
-### Test Structure Patterns
+**Test Structure Patterns:**
 13. Are describe/it block patterns consistent?
 14. Do all implementations use the same test framework (Jest)?
 15. Are there consistent setup/teardown patterns?
 16. How are tests grouped (by file? by describe block?)?
 
-### Assertion Patterns
+**Assertion Patterns:**
 17. What assertion patterns are used consistently across implementations?
 18. Are URL validation patterns consistent?
 19. Are query parameter validation patterns consistent?
 20. Are error assertion patterns consistent?
 21. What assertion depth is standard?
 
-### Fixture Organization
+**Fixture Organization:**
 22. How are fixtures organized in each implementation?
 23. Is there a standard fixture directory structure?
 24. Are fixtures real spec examples or synthetic mocks (consistent approach)?
 25. How are fixtures named?
 26. Are fixtures shared across implementations?
 
-### Test Utility Patterns
+**Test Utility Patterns:**
 27. What shared test utilities exist?
 28. What test helpers are implementation-specific?
 29. Are there mock creation utilities?
 30. Are there fixture loading utilities?
 31. What assertion helpers exist?
 
-### Test-to-Code Ratios
+**Test-to-Code Ratios:**
 32. What's the test-to-code ratio for each implementation?
 33. Is there a consistent ratio across implementations?
 34. How does ratio correlate with implementation complexity?
 35. What's considered "good" coverage ratio?
 
-### Type System Testing
+**Type System Testing:**
 36. How are TypeScript types tested across implementations?
 37. Are type tests consistent?
 38. What's the standard approach for interface testing?
 39. Are generic types tested? How?
 
-### Integration Test Patterns
+**Integration Test Patterns:**
 40. What qualifies as "integration" test across implementations?
 41. Are integration tests consistently structured?
 42. What integration scenarios are common?
 43. Is there a standard integration test file?
 
-### Error Handling Patterns
+**Error Handling Patterns:**
 44. How are errors tested across implementations?
 45. What error types are consistently tested?
 46. Are error messages validated consistently?
 47. What error assertion patterns are standard?
 
-### Conformance Testing
+**Conformance Testing:**
 48. How is conformance detection tested in each implementation?
 49. Are conformance tests consistent?
 50. What conformance scenarios are tested?
 
-### Format Handling
+**Format Handling:**
 51. How are format parsers tested across implementations?
 52. Are format tests consistent in structure?
 53. What format validation depth is standard?
 
-### QueryBuilder/Navigator Testing
+**QueryBuilder/Navigator Testing:**
 54. How are QueryBuilder classes tested consistently?
 55. What method testing patterns are universal?
 56. Are parameter testing approaches consistent?
 
-### Documentation Standards
+**Documentation Standards:**
 57. What test documentation exists across implementations?
 58. Are tests documented with JSDoc consistently?
 59. How is test intent communicated?
 
-### Evolution Analysis
+**Evolution Analysis:**
 60. How have testing patterns evolved from oldest to newest implementations?
 61. What patterns were deprecated?
 62. What new patterns emerged with EDR?
@@ -123,154 +132,135 @@ After understanding EDR (Section 1) - the newest and closest match to CSAPI - we
 
 ---
 
-## Research Methodology
+## 3. Primary Resources
 
-### Phase 1: Implementation Identification (15 minutes)
-1. Survey camptocamp/ogc-client repository
-2. List all OGC API implementations with tests
-3. Identify implementation dates (git history)
-4. Categorize by maturity (LOC, features, test coverage)
-
-### Phase 2: Per-Implementation Analysis (1.5-2 hours)
-For each implementation (WFS, WMS, WMTS, STAC, EDR):
-1. Locate all test files
-2. Count test files, lines, test cases
-3. Measure coverage % (if available)
-4. Document test structure patterns
-5. Extract fixture patterns
-6. Identify test utilities used
-7. Calculate test-to-code ratio
-8. Extract 2-3 example test patterns
-
-### Phase 3: Consistency Matrix (30-45 minutes)
-1. Create comparison matrix across all implementations
-2. Identify patterns present in 100% of implementations (universal)
-3. Identify patterns present in 80%+ implementations (standard)
-4. Identify patterns present in 40-60% implementations (emerging)
-5. Identify patterns unique to one implementation (outliers)
-6. Document pattern evolution timeline
-
-### Phase 4: Documentation (30 minutes)
-1. Synthesize findings into consistency matrix
-2. Document universal patterns CSAPI must follow
-3. Document standard patterns CSAPI should follow
-4. Document emerging patterns to consider
-5. Create recommendations for CSAPI
-
----
-
-## Resources Required
-
-### Primary Resources
-- **camptocamp/ogc-client repository:** Local clone required
-- All existing test files in:
+- **camptocamp/ogc-client repository:** Local clone required for comprehensive analysis
+- All existing test files in implementations:
   - `src/wfs/*.spec.ts` or similar
   - `src/wms/*.spec.ts` or similar
   - `src/wmts/*.spec.ts` or similar
   - `src/ogc-api/stac/*.spec.ts` or similar
   - `src/ogc-api/edr/*.spec.ts` or similar
 
-### Supporting Resources
-- [Architecture Patterns Analysis](../../upstream/architecture-patterns-analysis.md)
-- [File Organization Strategy](../../upstream/file-organization-analysis.md)
-- Section 1 Deliverable (EDR Test Blueprint) - for comparison
-- Git history for implementation dates
-- Coverage reports (if available)
+## 4. Supporting Resources
 
-### Tools Needed
-- VS Code for test file examination
-- Jest coverage tools
-- Git for history analysis
-- Spreadsheet for consistency matrix
+- **Section 1 Deliverable:** EDR Test Blueprint (for comparison and validation)
+- **Architecture Patterns Analysis:** [docs/research/upstream/architecture-patterns-analysis.md](../../upstream/architecture-patterns-analysis.md)
+- **File Organization Strategy:** [docs/research/upstream/file-organization-analysis.md](../../upstream/file-organization-analysis.md)
+- Git history for implementation dates and evolution
+- Coverage reports (if available in repository)
 
 ---
 
-## Deliverable Specification
+## 5. Research Methodology
 
-### Document: "Upstream Test Pattern Consistency Matrix"
+## 5. Research Methodology
+
+### Phase 1: Implementation Identification and Inventory (15 minutes)
+
+**Objective:** Create complete inventory of ogc-client implementations with metadata
+
+**Tasks:**
+1. Survey camptocamp/ogc-client repository structure
+2. List all OGC API implementations with test files
+3. Use git history to identify implementation dates (git log for each implementation)
+4. Categorize by maturity (lines of code, feature count, test coverage %)
+5. Create implementation inventory table
+
+### Phase 2: Per-Implementation Analysis (1.5-2 hours)
+
+**Objective:** Detailed analysis of test patterns for each implementation
+
+**Tasks:**
+For each implementation (WFS, WMS, WMTS, STAC, EDR):
+1. Locate all test files and count
+2. Count test file lines and test case count
+3. Measure coverage % (use coverage tools if available)
+4. Document test structure patterns (describe/it conventions)
+5. Extract fixture patterns and organization
+6. Identify test utilities used (shared vs implementation-specific)
+7. Calculate test-to-code ratio
+8. Extract 2-3 representative test pattern examples
+9. Document any unique patterns or deviations
+
+### Phase 3: Consistency Matrix Creation (30-45 minutes)
+
+**Objective:** Create comprehensive consistency comparison matrix
+
+**Tasks:**
+1. Create comparison matrix table across all implementations
+2. Identify universal patterns (present in 100% of implementations)
+3. Identify standard patterns (present in 80%+ implementations)
+4. Identify emerging patterns (present in 40-60% implementations)
+5. Identify outlier patterns (unique to one implementation)
+6. Document pattern evolution timeline (oldest to newest)
+7. Calculate consistency percentages for each pattern
+8. Categorize recommendations (MUST, SHOULD, CONSIDER, AVOID)
+
+### Phase 4: Synthesis and Documentation (30 minutes)
+
+**Objective:** Create comprehensive deliverable document
+
+**Tasks:**
+1. Synthesize findings into consistency matrix document
+2. Document universal patterns CSAPI MUST follow
+3. Document standard patterns CSAPI SHOULD follow
+4. Document emerging patterns CSAPI should CONSIDER
+5. Document deprecated patterns CSAPI should AVOID
+6. Create actionable recommendations for CSAPI
+7. Compare findings with Section 1 EDR blueprint
+8. Identify any EDR deviations from library standards
+
+---
+
+## 6. Success Criteria
+
+This research is complete when:
+
+- [ ] All implementations surveyed with quantifiable metrics (test file count, line count, coverage %)
+- [ ] Complete consistency matrix created with % ratings for each pattern
+- [ ] Universal patterns identified (100% consistency - MUST follow)
+- [ ] Standard patterns identified (80%+ consistency - SHOULD follow)
+- [ ] Emerging patterns identified (40-60% consistency - CONSIDER)
+- [ ] Clear, actionable recommendations for CSAPI documented
+- [ ] Pattern evolution timeline documented (oldest to newest)
+- [ ] Test-to-code ratio benchmarks established
+- [ ] Section 1 EDR patterns validated or contradicted against library standards
+- [ ] All 64 research questions answered with specific findings
+
+---
+
+## 7. Deliverable
+
+**Upstream Test Pattern Consistency Matrix document**
+
 **Location:** `docs/research/testing/findings/02-upstream-test-consistency.md`
 
-**Required Sections:**
+Content includes:
 
 1. **Executive Summary**
-   - Implementations surveyed (count, names, dates)
+   - Implementations surveyed (count, names, dates added)
    - Key consistency findings
    - Universal patterns identified
-   - Variations and evolution
+   - Variations and evolution observed
+   - High-level recommendations for CSAPI
 
 2. **Implementation Inventory**
-   - Complete list with metadata
-   - Maturity assessment
-   - Test coverage summary
-   - Implementation dates
+   - Complete list with metadata (name, date added, maturity)
+   - Lines of code per implementation
+   - Test file count per implementation
+   - Test coverage % summary
+   - Implementation timeline (chronological order)
 
 3. **Consistency Matrix**
    - Pattern-by-pattern comparison table
-   - Universal patterns (100% consistency)
-   - Standard patterns (80%+ consistency)
-   - Emerging patterns (40-60% consistency)
-   - Outlier patterns (unique to one)
+   - Universal patterns (100% consistency) - MUST follow
+   - Standard patterns (80%+ consistency) - SHOULD follow
+   - Emerging patterns (40-60% consistency) - CONSIDER
+   - Outlier patterns (unique to one) - Document rationale
+   - Consistency percentage for each pattern
 
-4. **Test File Organization**
-   - Naming conventions (consistent vs varied)
-   - Location patterns (consistent vs varied)
-   - Structure patterns (consistent vs varied)
-   - Recommendations for CSAPI
-
-5. **Coverage Analysis**
-   - Coverage % per implementation
-   - Coverage targets identified
-   - Coverage consistency assessment
-   - Recommended targets for CSAPI
-
-6. **Test Structure Standards**
-   - Describe/it block patterns
-   - Setup/teardown patterns
-   - Test naming conventions
-   - Grouping strategies
-   - Recommended structure for CSAPI
-
-7. **Assertion Standards**
-   - URL validation patterns
-   - Query parameter patterns
-   - Error assertion patterns
-   - Depth standards
-   - Recommended assertions for CSAPI
-
-8. **Fixture Standards**
-   - Organization patterns
-   - Naming patterns
-   - Quality standards (real vs mock)
-   - Sharing patterns
-   - Recommended approach for CSAPI
-
-9. **Test Utility Analysis**
-   - Shared utilities inventory
-   - Implementation-specific utilities
-   - Common patterns
-   - Recommended utilities for CSAPI
-
-10. **Test-to-Code Ratios**
-    - Ratio per implementation
-    - Average ratio
-    - Ratio by component type
-    - Recommended ratio for CSAPI
-
-11. **Pattern Evolution**
-    - Timeline of testing practices
-    - Deprecated patterns
-    - Emerging patterns
-    - What CSAPI should adopt
-
-12. **CSAPI Recommendations**
-    - Must follow (universal patterns)
-    - Should follow (standard patterns)
-    - Consider (emerging patterns)
-    - Avoid (deprecated patterns)
-    - CSAPI-specific adaptations needed
-
-### Matrix Format Example
-
+**Matrix Format Example:**
 ```markdown
 | Pattern | WFS | WMS | WMTS | STAC | EDR | Consistency | Recommendation |
 |---------|-----|-----|------|------|-----|-------------|----------------|
@@ -280,75 +270,144 @@ For each implementation (WFS, WMS, WMTS, STAC, EDR):
 | URL parseUrl() validation | ❌ | ❌ | ✅ | ✅ | ✅ | 60% | CONSIDER |
 ```
 
-### Success Criteria
+4. **Test File Organization**
+   - Naming conventions (consistent patterns vs variations)
+   - Location patterns (colocated vs separate test/)
+   - Structure patterns (file organization strategies)
+   - Recommendations for CSAPI
 
-✅ All implementations surveyed with quantifiable metrics  
-✅ Complete consistency matrix with % ratings  
-✅ Universal patterns identified (must follow)  
-✅ Standard patterns identified (should follow)  
-✅ Clear recommendations for CSAPI  
-✅ Pattern evolution timeline documented  
-✅ Test-to-code ratio benchmarks established  
-✅ Validates or contradicts EDR patterns from Section 1  
+5. **Coverage Analysis**
+   - Coverage % per implementation (table)
+   - Coverage targets identified from patterns
+   - Coverage consistency assessment
+   - Coverage by component type (QueryBuilder, parsers, types)
+   - Recommended coverage targets for CSAPI
 
-### Validation
+6. **Test Structure Standards**
+   - Describe/it block patterns (consistent conventions)
+   - Setup/teardown patterns (beforeEach, afterEach usage)
+   - Test naming conventions
+   - Test grouping strategies
+   - Nesting depth patterns
+   - Recommended structure template for CSAPI
 
-- Matrix covers all major test aspects
-- Consistency ratings are based on quantifiable analysis
-- Recommendations are actionable for CSAPI
-- Patterns are proven across multiple implementations
-- Evolution shows improvement over time
+7. **Assertion Standards**
+   - URL validation patterns (consistent approaches)
+   - Query parameter validation patterns
+   - Error assertion patterns
+   - Assertion depth standards (meaningful vs trivial)
+   - Matcher usage patterns (toBe, toEqual, toMatchObject)
+   - Recommended assertion approaches for CSAPI
+
+8. **Fixture Standards**
+   - Fixture organization patterns (directory structure)
+   - Fixture naming patterns
+   - Fixture quality standards (real spec examples vs synthetic mocks)
+   - Fixture sharing patterns across implementations
+   - Fixture variations (minimal, typical, maximal, edge cases)
+   - Recommended fixture approach for CSAPI
+
+9. **Test Utility Analysis**
+   - Shared utilities inventory (library-wide utilities)
+   - Implementation-specific utilities
+   - Common utility patterns
+   - Mock creation utilities
+   - Fixture loading utilities
+   - Assertion helpers
+   - Recommended utilities for CSAPI to leverage or create
+
+10. **Test-to-Code Ratios**
+    - Test-to-code ratio per implementation (table)
+    - Average ratio across all implementations
+    - Ratio by component type (QueryBuilder vs parsers vs types)
+    - Ratio correlation with implementation complexity
+    - Recommended ratio range for CSAPI
+
+11. **Pattern Evolution Timeline**
+    - Chronological evolution of testing practices
+    - Patterns from oldest implementations (WFS, WMS, WMTS)
+    - New patterns in newer implementations (STAC, EDR)
+    - Deprecated patterns no longer used
+    - Emerging patterns in recent implementations
+    - Lessons learned from evolution
+    - What CSAPI should adopt based on evolution
+
+12. **CSAPI Recommendations**
+    - **MUST Follow:** Universal patterns (100% consistency)
+    - **SHOULD Follow:** Standard patterns (80%+ consistency)
+    - **CONSIDER:** Emerging patterns (40-60% consistency)
+    - **AVOID:** Deprecated patterns or anti-patterns
+    - CSAPI-specific adaptations needed for unique complexity
+    - Validation of Section 1 EDR patterns against library standards
+    - Deviations between EDR and other implementations explained
 
 ---
 
-## Cross-References
+## 8. Dependencies
 
-**Validates Against:**
-- Section 1: EDR Test Blueprint (should align with universal patterns)
+**Must Complete Before Starting:**
+- Section 1: Upstream Blueprint Analysis (PR #114) - provides EDR baseline to validate against
 
-**Informs:**
-- Section 4: Implementation Guide requirements validation
-- Section 12: QueryBuilder testing strategy (consistent patterns)
-- Section 19: Test organization and file structure (naming conventions)
-- Section 34: Test utility design (shared utilities)
+**Blocks:**
+- Section 4: Implementation Guide requirements validation (uses consistency findings)
+- Section 12: QueryBuilder testing strategy (follows consistent patterns)
+- Section 19: Test organization and file structure (uses naming conventions)
+- Section 34: Test utility design (leverages shared utilities)
+- All subsequent testing sections (guided by universal patterns)
 
 ---
 
-## Next Steps After Completion
+## 9. Research Status Checklist
 
-1. Compare findings with Section 1 (EDR blueprint)
-2. Validate universal patterns are in EDR
-3. Identify any EDR deviations from standard patterns
-4. Use consistency matrix to guide all subsequent test design
+- [ ] Phase 1: Implementation Identification and Inventory (15 min) - Complete
+- [ ] Phase 2: Per-Implementation Analysis (1.5-2 hrs) - Complete
+- [ ] Phase 3: Consistency Matrix Creation (30-45 min) - Complete
+- [ ] Phase 4: Synthesis and Documentation (30 min) - Complete
+- [ ] Deliverable document created and reviewed
+- [ ] Cross-references updated in related documents
+- [ ] Section 1 EDR patterns validated against consistency matrix
+
+---
+
+## 10. Notes and Open Questions
+
+<!-- Add notes and unresolved questions here as research progresses -->
+
+**Initial Observations:**
+- Survey covers 5 implementations (WFS, WMS, WMTS, STAC, EDR) spanning multiple years
+- Older implementations (WFS, WMS) may have outdated patterns
+- Recent implementations (STAC, EDR) likely reflect current best practices
+- Need to identify library evolution trajectory
+
+**Risks and Mitigation:**
+
+**Risk:** Older implementations (WFS, WMS) may have outdated test patterns  
+**Mitigation:** Weight recent implementations (STAC, EDR) more heavily in recommendations; document evolution trajectory clearly
+
+**Risk:** Different implementations may have different complexity requiring different patterns  
+**Mitigation:** Normalize comparisons by complexity; identify and document complexity-driven variations
+
+**Risk:** Coverage metrics may not be consistently available across all implementations  
+**Mitigation:** Use current coverage tools to measure retrospectively; estimate if needed; focus on pattern presence/absence
+
+**Risk:** Time-consuming to analyze 5+ implementations deeply  
+**Mitigation:** Focus on pattern presence/absence rather than deep analysis of each; sample 2-3 representative tests per implementation for depth analysis
+
+**Validation Against Section 1:**
+- Section 1 provided detailed EDR blueprint
+- This section validates EDR patterns are consistent with library standards
+- Any EDR deviations from library patterns should be documented and explained
+- If EDR introduces new patterns not in older implementations, document as emerging patterns
+
+**Next Steps After Completion:**
+1. Compare consistency matrix findings with Section 1 EDR blueprint
+2. Validate universal patterns are present in EDR
+3. Identify and explain any EDR deviations from standard patterns
+4. Use consistency matrix to guide all subsequent test design decisions
 5. Update Section 3 research with library-specific context
 
 ---
 
-## Risks and Mitigation
-
-**Risk:** Older implementations (WFS, WMS) may have outdated test patterns  
-**Mitigation:** Weight recent implementations (STAC, EDR) more heavily; document evolution
-
-**Risk:** Different implementations may have different complexity requiring different patterns  
-**Mitigation:** Normalize comparisons by complexity; identify complexity-driven variations
-
-**Risk:** Coverage metrics may not be consistently available  
-**Mitigation:** Use current coverage tools to measure retrospectively; estimate if needed
-
-**Risk:** Time-consuming to analyze 5+ implementations deeply  
-**Mitigation:** Focus on pattern presence/absence rather than deep analysis of each; sample 2-3 tests per implementation for depth
-
----
-
-## Research Status
-
-- [ ] Phase 1: Implementation Identification (15 min)
-- [ ] Phase 2: Per-Implementation Analysis (1.5-2 hrs)
-- [ ] Phase 3: Consistency Matrix (30-45 min)
-- [ ] Phase 4: Documentation (30 min)
-- [ ] Deliverable Complete and Reviewed
-
-**Total Estimated Time:** 2-3 hours  
-**Actual Time:** _[To be filled during research]_  
-**Started:** _[Date]_  
-**Completed:** _[Date]_
+**Actual Research Time:** _[To be filled during research execution]_  
+**Started:** _[Date when research begins]_  
+**Completed:** _[Date when deliverable is finished]_
