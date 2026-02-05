@@ -212,12 +212,13 @@ Line 4356: [End of document - updated footer]
 **Actions:**
 1. Update version header: `Version: 5.0` → `Version: 6.0 (Complete Self-Contained Guide)`
 2. Update last updated date to February 5, 2026
-3. Remove broken "Query Parameters Reference" from ToC (line 76)
-4. Update footer with v5 archive link
-5. Add version history note explaining restoration
-6. Spot-check 5-6 random ToC links
-7. Commit with comprehensive message
-8. Push to remote
+3. Update footer with v5 archive link
+4. Add version history note explaining restoration
+5. Spot-check 5-6 random ToC links
+6. Commit with comprehensive message
+7. Push to remote
+
+**Note:** Removal of broken "Query Parameters Reference" from ToC will be handled separately after this plan is complete.
 
 **Expected result:**
 - v6 finalized at ~4,356 lines
@@ -300,10 +301,12 @@ Line 4356: [End of document - updated footer]
 
 ### Phase 4 Success
 - [ ] Version updated to 6.0
-- [ ] ToC cleaned (Query Parameters removed)
 - [ ] Footer updated with v5 reference
+- [ ] Version history note added
 - [ ] 5-6 spot-checked links work
 - [ ] Document committed and pushed
+
+**Note:** ToC cleanup (Query Parameters removal) deferred to separate task
 
 ### Overall Success
 - [ ] Final document: ~4,356 lines
