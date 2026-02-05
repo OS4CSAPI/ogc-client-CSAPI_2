@@ -1,19 +1,18 @@
 # Research Plan: GeoJSON CSAPI Extensions Testing Requirements
 
 **Section:** 11 of 38  
-**Phase:** 3 - Component Requirements  
+**Status:** Not Started  
+**Last Updated:** February 5, 2026  
 **Estimated Time:** 1.5-2 hours  
-**Priority:** HIGH - Primary Part 1 resource format
+**Estimated Lines:** 500-800 lines
 
 ---
 
-## Objective
+## 1. Research Objective
 
 Define comprehensive testing requirements for CSAPI-specific GeoJSON extensions that build on existing GeoJSON parser. Identify what CSAPI property validation and resource-specific logic must be tested beyond standard GeoJSON compliance.
 
----
-
-## Why This Research Eleventh
+### Why This Research Eleventh
 
 **Dependency Chain:** After SensorML and SWE Common testing (Sections 9-10), address the simpler but equally important GeoJSON format for Part 1 resources.
 
@@ -31,12 +30,28 @@ This research defines:
 - **Reuse Strategy:** What to inherit from existing GeoJSON tests
 - **Test Depth:** What constitutes "meaningful" GeoJSON CSAPI testing
 
+### Sequencing Rationale
+
+Sections 9-10 addressed the complex formats (SensorML, SWE Common). Section 11 addresses GeoJSON CSAPI extensions, which is simpler but equally critical. GeoJSON is the primary encoding for all CSAPI Part 1 resources. Since upstream ogc-client already has a GeoJSON parser with RFC 7946 compliance tests, this research focuses exclusively on CSAPI-specific extensions: property validation (uniqueIdentifier, featureType, vocabularies), temporal properties (validTime), and resource-specific properties (systemType, deployedSystem, observableProperty). This minimizes test duplication while ensuring comprehensive CSAPI coverage.
+
 ---
 
-## Key Research Questions
+## 2. Research Questions
 
-### CSAPI Part 1 GeoJSON Requirements
+### Core Questions
 
+1. What GeoJSON properties are CSAPI-specific vs standard RFC 7946?
+2. What validation rules (URI formats, controlled vocabularies, temporal) must be tested?
+3. How does testing differ across 5 Part 1 resource types (Systems, Deployments, Procedures, SamplingFeatures, Properties)?
+4. What can be reused from existing upstream GeoJSON tests vs what must be CSAPI-specific?
+5. What constitutes "meaningful" GeoJSON CSAPI extension testing without duplicating RFC 7946 tests?
+6. What fixtures are available (spec examples vs OpenSensorHub) for each resource type?
+
+### Detailed Questions
+
+### Detailed Questions
+
+**CSAPI Part 1 GeoJSON Requirements (8 questions):**
 1. What GeoJSON properties are standard (inherited from RFC 7946)?
 2. What GeoJSON properties are CSAPI-specific?
 3. What properties are common across all Part 1 resources?
@@ -46,8 +61,7 @@ This research defines:
 7. What temporal properties exist (validTime, phenomenonTime)?
 8. What relationship properties exist (links, associations)?
 
-### Existing GeoJSON Parser Analysis
-
+**Existing GeoJSON Parser Analysis (6 questions):**
 9. What GeoJSON parser exists in upstream ogc-client?
 10. What does the existing parser already test?
 11. What test coverage exists for standard GeoJSON?
@@ -55,8 +69,7 @@ This research defines:
 13. How does CSAPI extend the existing parser?
 14. What integration points exist with existing parser?
 
-### Resource Type Differentiation
-
+**Resource Type Differentiation (7 questions):**
 15. **Systems:** What CSAPI-specific properties must be tested?
 16. **Deployments:** What CSAPI-specific properties must be tested?
 17. **Procedures:** What CSAPI-specific properties must be tested?
@@ -65,8 +78,7 @@ This research defines:
 20. What properties are shared across all 5 resource types?
 21. What properties are unique per resource type?
 
-### Property Validation Requirements
-
+**Property Validation Requirements (9 questions):**
 22. **uniqueIdentifier:** What URI validation is required?
 23. **featureType:** What vocabulary values are valid?
 24. **systemType:** What vocabulary values are valid (for Systems)?
@@ -77,15 +89,13 @@ This research defines:
 29. **resultTime:** What temporal format validation is required?
 30. **links:** What link structure validation is required?
 
-### Geometry Handling
-
+**Geometry Handling (4 questions):**
 31. Does CSAPI add geometry requirements beyond RFC 7946?
 32. What geometry types are used per resource type?
 33. Are there CSAPI-specific CRS requirements?
 34. How to test geometry parsing without duplicating RFC 7946 tests?
 
-### featureType Vocabulary
-
+**featureType Vocabulary (6 questions):**
 35. What featureType values are defined for Systems?
 36. What featureType values are defined for Deployments?
 37. What featureType values are defined for Procedures?
@@ -93,30 +103,26 @@ This research defines:
 39. What featureType values are defined for Properties?
 40. Is featureType validation strict or permissive?
 
-### Temporal Property Validation
-
+**Temporal Property Validation (5 questions):**
 41. What temporal formats must be supported (ISO 8601)?
 42. How to validate instant vs interval formats?
 43. What edge cases exist (open intervals, null values)?
 44. How to test validTime for Deployments?
 45. How to test phenomenonTime for observations (if applicable)?
 
-### Link Validation
-
+**Link Validation (4 questions):**
 46. What link relations are defined in CSAPI?
 47. What link structure is required (href, rel, type)?
 48. How to validate link URIs?
 49. What relationships exist between resource types?
 
-### FeatureCollection Testing
-
+**FeatureCollection Testing (4 questions):**
 50. How to test FeatureCollection parsing?
 51. What CSAPI-specific collection properties exist?
 52. How to test pagination links in collections?
 53. How to test mixed resource types in collections?
 
-### Error Handling
-
+**Error Handling (6 questions):**
 54. What error conditions must be tested?
 55. How to handle missing required CSAPI properties?
 56. How to handle invalid property values (wrong type, format)?
@@ -124,23 +130,20 @@ This research defines:
 58. How to handle malformed temporal properties?
 59. What error messages should be provided?
 
-### Specification Examples
-
+**Specification Examples (4 questions):**
 60. What GeoJSON examples exist in CSAPI Part 1 spec?
 61. What examples exist per resource type?
 62. Can all spec examples be extracted as fixtures?
 63. What edge case examples exist?
 
-### OpenSensorHub Real-World Examples
-
+**OpenSensorHub Real-World Examples (5 questions):**
 64. What GeoJSON examples available from OpenSensorHub?
 65. What property complexity exists in real-world data?
 66. What edge cases do real-world examples expose?
 67. What validation issues exist in real-world data?
 68. Can OpenSensorHub examples supplement spec examples?
 
-### Parser Implementation Testing
-
+**Parser Implementation Testing (6 questions):**
 69. What parsing functions are CSAPI-specific?
 70. What integration tests needed with existing GeoJSON parser?
 71. What test organization (one file or per resource type)?
@@ -150,488 +153,245 @@ This research defines:
 
 ---
 
-## Research Methodology
-
-### Phase 1: CSAPI Part 1 GeoJSON Requirements (30-40 minutes)
-
-1. Read CSAPI Part 1 specification GeoJSON encoding sections
-2. Extract all CSAPI-specific property definitions
-3. Document validation rules per property
-4. Document controlled vocabularies
-5. Extract resource type specific requirements
-6. Extract all specification examples
-7. Create property validation matrix
-
-### Phase 2: Existing Parser Analysis (20-30 minutes)
-
-1. Review existing GeoJSON parser in upstream ogc-client
-2. Review existing GeoJSON tests
-3. Identify what's already covered
-4. Identify CSAPI-specific extensions
-5. Document integration points
-6. Create reuse vs new test matrix
-
-### Phase 3: Resource Type Deep Dive (20-30 minutes)
-
-1. Analyze Systems resource requirements
-2. Analyze Deployments resource requirements
-3. Analyze Procedures resource requirements
-4. Analyze SamplingFeatures resource requirements
-5. Analyze Properties resource requirements
-6. Document shared vs unique properties
-7. Create resource type testing matrix
-
-### Phase 4: Example and Fixture Analysis (15-20 minutes)
-
-1. Extract all Part 1 specification examples
-2. Fetch real-world examples from OpenSensorHub
-3. Analyze property complexity
-4. Identify edge cases
-5. Document fixture sourcing strategy
-6. Create fixture inventory per resource type
-
-### Phase 5: Test Strategy Design (15-20 minutes)
-
-1. Map resource types to test requirements
-2. Define CSAPI-specific test scope
-3. Define integration with existing parser tests
-4. Design fixture organization
-5. Define test depth per resource type
-6. Create test specification document
-
----
-
-## Resources Required
-
-### Primary Resources
+## 3. Primary Resources
 
 - **CSAPI Part 1 Specification:** https://docs.ogc.org/is/23-001/23-001.html (GeoJSON encoding sections)
 - **GeoJSON RFC 7946:** https://tools.ietf.org/html/rfc7946
 - **CSAPI Implementation Guide:** [docs/planning/csapi-implementation-guide.md](../../../planning/csapi-implementation-guide.md) (GeoJSON handler extensions)
 
-### Supporting Resources
+---
 
-- **Section 8 Deliverable:** CSAPI specification requirements (GeoJSON validation rules)
+## 4. Supporting Resources
+
+- **Section 8 Deliverable:** CSAPI specification requirements (GeoJSON validation rules from Part 1)
 - **Part 1 Requirements Analysis:** [docs/research/requirements/csapi-part1-requirements.md](../../requirements/csapi-part1-requirements.md)
 - **Format Requirements Analysis:** [docs/research/requirements/csapi-format-requirements.md](../../requirements/csapi-format-requirements.md)
 - **OpenSensorHub Analysis:** [docs/research/requirements/csapi-opensensorhub-analysis.md](../../requirements/csapi-opensensorhub-analysis.md)
-- Section 6 Deliverable: "Meaningful vs Trivial" guide (quality context)
-- Section 1-2 Deliverables: Upstream GeoJSON parser and tests
-
-### Tools Needed
-
-- GeoJSON validator
-- JSON schema validator
-- OpenSensorHub API access
+- Section 6 Deliverable: "Meaningful vs Trivial" guide (quality context for test depth)
+- Section 1-2 Deliverables: Upstream GeoJSON parser and tests (reuse strategy)
+- GeoJSON validator (tool)
+- JSON schema validator (tool)
+- OpenSensorHub API access (tool)
 
 ---
 
-## Deliverable Specification
+## 5. Research Methodology
 
-### Document: "GeoJSON CSAPI Extensions Testing Specification"
+**Phase 1: CSAPI Part 1 GeoJSON Requirements (30-40 minutes)**
+- Read CSAPI Part 1 spec (focus on GeoJSON encoding sections for all 5 resource types)
+- Extract CSAPI-specific property definitions (uniqueIdentifier, featureType, systemType, etc.)
+- Document required vs optional properties per resource type
+- Document controlled vocabularies (featureType, systemType, samplingFeatureType)
+- Document temporal property requirements (validTime, phenomenonTime)
+- Document link structure requirements
+- Document error conditions
+- Estimated time: 30-40 minutes
 
-**Location:** `docs/research/testing/findings/11-geojson-csapi-testing-requirements.md`
+**Phase 2: Existing Parser Analysis (20-30 minutes)**
+- Review upstream ogc-client GeoJSON parser implementation
+- Review existing GeoJSON test coverage (RFC 7946 compliance)
+- Document what's already tested (geometry parsing, standard properties, collections)
+- Document what needs CSAPI-specific testing (property validation, vocabularies)
+- Design reuse strategy (inherit existing parser, extend for CSAPI)
+- Estimated time: 20-30 minutes
 
-**Note:** This goes in `findings/` because it's detailed analysis (test strategy synthesis in Section 14+).
+**Phase 3: Resource Type Deep Dive (20-30 minutes)**
+- Define Systems-specific testing (systemType, parent, samplingFeatures/properties/datastreams)
+- Define Deployments-specific testing (deployedSystem, platform, validTime)
+- Define Procedures-specific testing (procedureType, implementation)
+- Define SamplingFeatures-specific testing (samplingFeatureType, sampledFeature)
+- Define Properties-specific testing (observableProperty, uom)
+- Document common property testing (uniqueIdentifier, featureType, definition, validTime, links)
+- Determine validation priorities per resource type
+- Estimated time: 20-30 minutes
+
+**Phase 4: Example and Fixture Analysis (15-20 minutes)**
+- Extract GeoJSON examples from CSAPI Part 1 spec
+- Catalog OpenSensorHub examples (if available)
+- Determine fixture requirements per resource type
+- Plan fixture directory structure (fixtures/geojson-csapi/)
+- Estimated time: 15-20 minutes
+
+**Phase 5: Test Strategy Design (15-20 minutes)**
+- Define test organization (single file: geojson-csapi.spec.ts)
+- Define test depth per resource type (meaningful validation, not trivial)
+- Design test structure (describe blocks per resource type)
+- Plan integration with existing GeoJSON parser
+- Document validation priorities (CRITICAL/HIGH/MEDIUM/LOW)
+- Estimated time: 15-20 minutes
+
+**Total Estimated Time: 1.5-2 hours**
+
+---
+
+## 6. Success Criteria
+
+- [ ] All CSAPI-specific GeoJSON properties defined (uniqueIdentifier, featureType, resource-specific)
+- [ ] All 5 Part 1 resource types covered (Systems, Deployments, Procedures, SamplingFeatures, Properties)
+- [ ] Common property validation rules documented (uniqueIdentifier, featureType, definition, validTime, links)
+- [ ] Resource-specific property validation rules documented (systemType, deployedSystem, observableProperty, etc.)
+- [ ] Controlled vocabularies validated (featureType, systemType, samplingFeatureType, procedureType)
+- [ ] Temporal property validation rules documented (ISO 8601 formats, intervals, edge cases)
+- [ ] Link structure validation rules documented (href, rel, type, title)
+- [ ] Reuse strategy clear (what to inherit from existing GeoJSON parser vs what's CSAPI-specific)
+- [ ] Fixture requirements defined per resource type (~30 fixtures total)
+- [ ] Test organization designed (geojson-csapi.spec.ts with describe blocks)
+- [ ] Testing priorities assigned (CRITICAL/HIGH/MEDIUM/LOW)
+
+**Validation:**
+- All 74 research questions answered
+- All 18 deliverable sections complete
+- Validation priorities documented
+- No duplication with existing RFC 7946 tests
+- Clear integration with existing GeoJSON parser
+- OpenSensorHub examples inventoried
+- Ready for test implementation in Section 13
+
+---
+
+## 7. Deliverable
+
+**Document Location:** `docs/deliverables/testing/geojson-csapi-testing-specification.md`
 
 **Required Sections:**
 
-#### 1. Executive Summary
+### 1. Executive Summary
+- CSAPI-specific properties to test (not RFC 7946 duplication)
+- 5 Part 1 resource types covered
+- Testing priorities (CRITICAL/HIGH/MEDIUM/LOW)
+- Fixture count requirements (~30 total)
+- Estimated test lines (492-829 lines)
+- Reuse strategy for existing GeoJSON tests (inherit RFC 7946 coverage)
 
-- CSAPI-specific properties to test
-- 5 Part 1 resource types
-- Testing priorities
-- Fixture count requirements
-- Estimated test lines
-- Reuse strategy for existing GeoJSON tests
+### 2. Existing GeoJSON Parser Coverage
+- Matrix of what's tested upstream (RFC 7946) vs what needs CSAPI-specific testing
+- Reuse strategy (inherit geometry/standard parsing, add CSAPI property validation)
 
-#### 2. Existing GeoJSON Parser Coverage
+### 3. CSAPI-Specific Property Testing Matrix
+- Common properties table (7 properties: uniqueIdentifier, featureType, definition, label, description, validTime, links)
+- Required/optional status, validation rules, edge cases, priorities
 
-```markdown
-| Standard GeoJSON Feature | Upstream Test Coverage | CSAPI Needs Additional Testing? | Notes |
-|---------------------------|------------------------|--------------------------------|-------|
-| Feature geometry parsing | ✅ Covered | ❌ No | RFC 7946 compliance tested upstream |
-| Feature properties parsing | ✅ Covered | ✅ Yes (CSAPI-specific properties) | Need CSAPI property validation |
-| FeatureCollection parsing | ✅ Covered | ✅ Yes (pagination links) | Need CSAPI collection extensions |
-| CRS handling | ✅ Covered | ❌ No | WGS84 default tested upstream |
-| Geometry validation | ✅ Covered | ❌ No | Geometry types tested upstream |
-```
+### 4. Resource Type Specific Testing Requirements
+- **Systems Resource:** systemType (vocabulary), parent (URI), samplingFeatures/properties/datastreams (arrays)
+- **Deployments Resource:** deployedSystem (required, CRITICAL), platform (optional), validTime (required)
+- **Procedures Resource:** procedureType (vocabulary), implementation (URI)
+- **SamplingFeatures Resource:** samplingFeatureType (vocabulary), sampledFeature (URI)
+- **Properties Resource:** observableProperty (required, CRITICAL), uom (optional, UCUM codes)
 
-#### 3. CSAPI-Specific Property Testing Matrix
+### 5. featureType Vocabulary Validation
+- Table of valid values per resource type (systems: system/platform/sensor, deployments: deployment, etc.)
+- Validation strictness (strict = error on unknown)
 
-**Common Properties (All 5 Resource Types):**
+### 6. Temporal Property Validation
+- ISO 8601 interval formats (validTime, phenomenonTime)
+- Valid examples ("2024-01-01/2024-12-31", "../2024-12-31", "2024-01-01/..")
+- Invalid examples and error messages
 
-```markdown
-| Property | Required/Optional | Validation Rules | Edge Cases | Test Type | Priority |
-|----------|-------------------|------------------|------------|-----------|----------|
-| uniqueIdentifier | Required | Valid URI | Missing, invalid URI, relative URI | Unit | CRITICAL |
-| featureType | Required | Controlled vocabulary | Unknown type, missing | Unit | CRITICAL |
-| definition | Optional | Valid URI | Invalid URI, relative URI | Unit | HIGH |
-| label | Optional | String | Very long, special characters, missing | Unit | MEDIUM |
-| description | Optional | String | Very long, missing | Unit | LOW |
-| validTime | Optional | ISO 8601 interval | Invalid format, open interval, missing | Unit | MEDIUM |
-| links | Optional | Array of links | Invalid structure, missing href, invalid rel | Unit | MEDIUM |
-```
+### 7. Link Structure Validation
+- Link properties: href (required, URI), rel (required, relation type), type (optional, MIME), title (optional)
+- Test scenarios per property
 
-#### 4. Resource Type Specific Testing Requirements
+### 8. Error Condition Testing
+- 8 error conditions: missing uniqueIdentifier, invalid URI, missing featureType, unknown featureType, invalid systemType, invalid validTime, missing required resource-specific property, malformed link
+- Expected error messages
 
-##### Systems Resource
+### 9. Specification Example Fixtures
+- Extract fixtures from Part 1 spec (one per resource type minimum)
+- Catalog by section, resource type, complexity
 
-```markdown
-| Property | Required/Optional | Validation Rules | Test Scenarios | Priority |
-|----------|-------------------|------------------|----------------|----------|
-| systemType | Optional | Controlled vocabulary | Valid type, invalid type, missing | HIGH |
-| parent | Optional | Valid system URI | Valid reference, invalid URI, missing | MEDIUM |
-| samplingFeatures | Optional | Array of URIs | Valid URIs, invalid URIs, empty array | MEDIUM |
-| properties | Optional | Array of URIs | Valid URIs, invalid URIs, empty array | MEDIUM |
-| datastreams | Optional | Array of URIs | Valid URIs, invalid URIs, empty array | MEDIUM |
-```
+### 10. OpenSensorHub Fixture Inventory
+- Catalog real-world examples by resource type
+- Assess CSAPI property coverage and usability
 
-##### Deployments Resource
+### 11. Test Organization
+- Single test file: `src/ogc-api/formats/geojson-csapi.spec.ts`
+- 7 describe blocks: Common Properties, Systems, Deployments, Procedures, SamplingFeatures, Properties, FeatureCollection Extensions, Error Handling
 
-```markdown
-| Property | Required/Optional | Validation Rules | Test Scenarios | Priority |
-|----------|-------------------|------------------|----------------|----------|
-| deployedSystem | Required | Valid system URI | Valid URI, invalid URI, missing | CRITICAL |
-| platform | Optional | Valid system URI | Valid URI, invalid URI, missing | MEDIUM |
-| validTime | Required | ISO 8601 interval | Valid interval, open interval, missing | HIGH |
-```
+### 12. Test Depth Definition
+- **DO:** Parse complete fixtures, validate CSAPI properties, validate URI formats strictly, validate controlled vocabularies, validate resource-specific properties, validate temporal properties, test error conditions, use real examples
+- **DON'T:** Re-test standard GeoJSON (RFC 7946 covered upstream), just check for null, skip URI validation, skip vocabulary validation, use simple fixtures when spec exists, only test happy path
 
-##### Procedures Resource
+### 13. Fixture Requirements
+- **Directory:** fixtures/geojson-csapi/
+- **Per Type:** Systems (5), Deployments (4), Procedures (3), SamplingFeatures (4), Properties (3), FeatureCollections (3), Error cases (5)
+- **Total:** ~30 fixtures
 
-```markdown
-| Property | Required/Optional | Validation Rules | Test Scenarios | Priority |
-|----------|-------------------|------------------|----------------|----------|
-| procedureType | Optional | Controlled vocabulary | Valid type, invalid type, missing | MEDIUM |
-| implementation | Optional | Valid procedure URI | Valid URI, invalid URI, missing | LOW |
-```
+### 14. Validation Against Upstream Patterns
+- Compare with existing GeoJSON tests
+- Ensure no duplication of RFC 7946 coverage
+- Document integration points
 
-##### SamplingFeatures Resource
+### 15. Integration with Implementation Guide
+- Validate alignment with GeoJSON handler design
+- Ensure test coverage matches implementation expectations
 
-```markdown
-| Property | Required/Optional | Validation Rules | Test Scenarios | Priority |
-|----------|-------------------|------------------|----------------|----------|
-| samplingFeatureType | Optional | Controlled vocabulary | Valid type, invalid type, missing | HIGH |
-| sampledFeature | Optional | Valid feature URI | Valid URI, invalid URI, missing | MEDIUM |
-```
+### 16. Testing Estimates
+- 50-63 tests total
+- 492-829 lines of test code
+- 8-11 hours implementation time
+- Breakdown by category: Common Properties (12-15 tests), Systems (8-10), Deployments (8-10), Procedures (5-6), SamplingFeatures (7-9), Properties (6-8), FeatureCollection (4-5), Error Handling (6-8)
 
-##### Properties Resource
+### 17. Testing Priorities
+- **CRITICAL:** uniqueIdentifier validation, featureType validation, deployedSystem validation (Deployments), observableProperty validation (Properties)
+- **HIGH:** systemType vocabulary, samplingFeatureType vocabulary, validTime validation (Deployments), definition URI validation
+- **MEDIUM:** temporal property validation, link validation, parent/sampled feature references, uom validation
+- **LOW:** label/description validation, procedure implementation references
 
-```markdown
-| Property | Required/Optional | Validation Rules | Test Scenarios | Priority |
-|----------|-------------------|------------------|----------------|----------|
-| observableProperty | Required | Valid property URI | Valid URI, invalid URI, missing | CRITICAL |
-| uom | Optional | Valid UOM code | Valid UCUM, invalid code, missing | MEDIUM |
-```
-
-#### 5. featureType Vocabulary Validation
-
-```markdown
-| Resource Type | Valid featureType Values | Validation Strictness | Priority |
-|---------------|--------------------------|----------------------|----------|
-| Systems | system, platform, sensor | Strict (error if unknown) | HIGH |
-| Deployments | deployment | Strict | HIGH |
-| Procedures | procedure, process | Strict | MEDIUM |
-| SamplingFeatures | samplingFeature, samplingPoint, samplingCurve, samplingSurface | Strict | HIGH |
-| Properties | observableProperty | Strict | HIGH |
-```
-
-#### 6. Temporal Property Validation
-
-```markdown
-| Property | Format | Valid Examples | Invalid Examples | Test Priority |
-|----------|--------|----------------|------------------|---------------|
-| validTime | ISO 8601 interval | "2024-01-01/2024-12-31" | "2024-01-01" (instant), "invalid" | HIGH |
-| validTime (open start) | ISO 8601 interval | "../2024-12-31" | ".../2024-12-31" (wrong syntax) | MEDIUM |
-| validTime (open end) | ISO 8601 interval | "2024-01-01/.." | "2024-01-01/..." (wrong syntax) | MEDIUM |
-| phenomenonTime | ISO 8601 instant or interval | "2024-01-01T12:00:00Z", "2024-01-01/2024-01-31" | "2024-01-01 12:00:00" (missing T) | MEDIUM |
-```
-
-#### 7. Link Structure Validation
-
-```markdown
-| Link Property | Required | Format | Test Scenarios | Priority |
-|---------------|----------|--------|----------------|----------|
-| href | Yes | Valid URI | Valid absolute URI, valid relative URI, invalid URI, missing | HIGH |
-| rel | Yes | String (relation type) | Valid relation, custom relation, missing | HIGH |
-| type | No | MIME type | Valid MIME, invalid MIME, missing | LOW |
-| title | No | String | Valid title, missing | LOW |
-```
-
-#### 8. Error Condition Testing
-
-```markdown
-| Error Condition | Test Scenario | Expected Error | Test Type | Priority |
-|-----------------|---------------|----------------|-----------|----------|
-| Missing uniqueIdentifier | Feature without uniqueIdentifier | Validation error | Unit | CRITICAL |
-| Invalid URI format | uniqueIdentifier = "not a uri" | Validation error | Unit | HIGH |
-| Missing featureType | Feature without featureType | Validation error | Unit | HIGH |
-| Unknown featureType | featureType = "unknownType" | Validation error or warning | Unit | HIGH |
-| Invalid systemType vocabulary | systemType = "invalidType" | Validation warning | Unit | MEDIUM |
-| Invalid validTime format | validTime = "invalid" | Validation error | Unit | MEDIUM |
-| Missing required property (resource-specific) | Deployment without deployedSystem | Validation error | Unit | HIGH |
-```
-
-#### 9. Specification Example Fixtures
-
-```markdown
-| Spec Section | Resource Type | Complexity | CSAPI Properties | Usable | Notes |
-|--------------|---------------|------------|------------------|--------|-------|
-| Part 1, §7.2 | Systems | Simple | uniqueIdentifier, featureType, systemType | Yes | Weather station example |
-| Part 1, §8.2 | Deployments | Medium | uniqueIdentifier, deployedSystem, validTime | Yes | Deployment with temporal validity |
-| Part 1, §9.2 | Procedures | Simple | uniqueIdentifier, featureType, procedureType | Yes | Observation procedure |
-| Part 1, §10.2 | SamplingFeatures | Medium | uniqueIdentifier, samplingFeatureType, geometry | Yes | Sampling location |
-| Part 1, §11.2 | Properties | Simple | uniqueIdentifier, observableProperty, uom | Yes | Temperature property |
-| ... | ... | ... | ... | ... | ... |
-```
-
-#### 10. OpenSensorHub Fixture Inventory
-
-```markdown
-| Resource URL | Resource Type | CSAPI Properties | Usable | Notes |
-|--------------|---------------|------------------|--------|-------|
-| /collections/sensors/systems | Systems | uniqueIdentifier, systemType, links | Yes | Real weather station |
-| /collections/deployments/items | Deployments | deployedSystem, validTime | Yes | Active deployment |
-| /collections/procedures/items | Procedures | uniqueIdentifier, procedureType | Partially | May have extensions |
-| ... | ... | ... | ... | ... |
-```
-
-#### 11. Test Organization
-
-```markdown
-Test File: `src/ogc-api/formats/geojson-csapi.spec.ts`
-
-Describe Block Structure:
-- describe('GeoJSON CSAPI Extensions')
-  - describe('Common Properties')
-    - it('should validate uniqueIdentifier is valid URI')
-    - it('should error on missing uniqueIdentifier')
-    - it('should validate featureType is recognized')
-    - it('should parse validTime as ISO 8601 interval')
-    - it('should parse links array')
-    - ...
-  - describe('Systems Resource')
-    - it('should parse Systems Feature with systemType')
-    - it('should validate systemType vocabulary')
-    - it('should parse parent reference')
-    - it('should parse samplingFeatures array')
-    - ...
-  - describe('Deployments Resource')
-    - it('should parse Deployments Feature with validTime')
-    - it('should require deployedSystem')
-    - it('should error on missing deployedSystem')
-    - ...
-  - describe('Procedures Resource')
-    - it('should parse Procedures Feature')
-    - it('should validate procedureType vocabulary')
-    - ...
-  - describe('SamplingFeatures Resource')
-    - it('should parse SamplingFeatures Feature')
-    - it('should validate samplingFeatureType vocabulary')
-    - ...
-  - describe('Properties Resource')
-    - it('should parse Properties Feature')
-    - it('should require observableProperty')
-    - ...
-  - describe('FeatureCollection Extensions')
-    - it('should parse FeatureCollection with pagination links')
-    - it('should handle mixed resource types')
-    - ...
-  - describe('Error Handling')
-    - it('should error on missing uniqueIdentifier')
-    - it('should error on invalid URI format')
-    - it('should error on unknown featureType')
-    - ...
-```
-
-#### 12. Test Depth Definition
-
-**"Meaningful" GeoJSON CSAPI Test Characteristics:**
-
-✅ **DO:**
-- Parse complete fixture, validate all CSAPI properties extracted
-- Validate URI formats strictly (uniqueIdentifier, definition, links)
-- Validate controlled vocabularies (featureType, systemType, etc.)
-- Test resource type specific properties
-- Test temporal property parsing (validTime, ISO 8601 intervals)
-- Test error conditions with clear assertions
-- Use real spec examples or OpenSensorHub data
-- Don't duplicate RFC 7946 tests (trust existing parser)
-
-❌ **DON'T (Trivial):**
-- Re-test standard GeoJSON compliance (geometry, etc.)
-- Just check `result !== null`
-- Skip URI validation
-- Skip vocabulary validation
-- Use overly simple hand-crafted fixtures when spec examples exist
-- Test only happy path without edge cases
-
-#### 13. Fixture Requirements
-
-```markdown
-Fixture Directory: `fixtures/geojson-csapi/`
-
-Required Fixtures per Resource Type:
-- Systems: 5 fixtures (simple, with components, with links, with parent, edge cases)
-- Deployments: 4 fixtures (simple, with platform, open validTime, edge cases)
-- Procedures: 3 fixtures (simple, with implementation, edge cases)
-- SamplingFeatures: 4 fixtures (point, curve, surface, edge cases)
-- Properties: 3 fixtures (simple, with UOM, edge cases)
-- FeatureCollections: 3 fixtures (systems collection, mixed types, with pagination links)
-- Error cases: 5 fixtures (missing uniqueIdentifier, invalid URI, unknown featureType, etc.)
-
-Total: ~30 fixtures
-```
-
-#### 14. Validation Against Upstream Patterns
-
-Compare with Section 1-2 findings:
-- How does upstream handle GeoJSON parsing?
-- What test depth exists for GeoJSON?
-- Are CSAPI extensions similar to other OGC API extensions?
-- What patterns exist for extending parsers?
-
-#### 15. Integration with Implementation Guide
-
-Cross-validate with Implementation Guide GeoJSON handler specification:
-- ✅ Aligned: Test requirement matches Implementation Guide
-- ⚠️ Gap: Test requirement not addressed in Implementation Guide
-- ❌ Conflict: Test requirement conflicts with Implementation Guide
-
-#### 16. Testing Estimates
-
-```markdown
-| Test Category | Test Count | Lines per Test | Total Lines | Time Estimate |
-|---------------|------------|----------------|-------------|---------------|
-| Common properties | 8-10 | 10-12 | 80-120 | 1-2 hours |
-| Systems resource | 8-10 | 10-15 | 80-150 | 1-2 hours |
-| Deployments resource | 6-8 | 10-15 | 60-120 | 1-1.5 hours |
-| Procedures resource | 5-6 | 10-12 | 50-72 | 1 hour |
-| SamplingFeatures resource | 6-8 | 10-15 | 60-120 | 1-1.5 hours |
-| Properties resource | 5-6 | 10-12 | 50-72 | 1 hour |
-| FeatureCollection extensions | 4-5 | 12-15 | 48-75 | 1 hour |
-| Error handling | 8-10 | 8-10 | 64-100 | 1 hour |
-| **TOTAL** | **50-63** | **~10 avg** | **492-829** | **8-11 hours** |
-```
-
-#### 17. Testing Priorities
-
-**CRITICAL (Must Have):**
-- uniqueIdentifier validation (all resources)
-- featureType validation (all resources)
-- Systems resource (most common)
-- Deployments resource (temporal validity)
-- Properties resource (observable properties)
-- Basic error handling
-
-**HIGH (Should Have):**
-- SamplingFeatures resource
-- Procedures resource
-- Temporal property validation (validTime)
-- Link structure validation
-- All spec example coverage
-
-**MEDIUM (Nice to Have):**
-- Vocabulary validation strictness
-- FeatureCollection pagination
-- Mixed resource type collections
-- Advanced error conditions
-
-**LOW (Optional):**
-- Edge case vocabularies
-- Performance testing
-- Complex link relationships
-
-#### 18. Risks and Edge Cases
-
-```markdown
-| Risk/Edge Case | Likelihood | Impact | Mitigation |
-|----------------|------------|--------|------------|
-| OpenSensorHub data has non-standard properties | High | Low | Ignore unknown properties; warn if desired |
-| Vocabulary values evolve | Medium | Medium | Configurable strictness; warning vs error |
-| Temporal format edge cases | Medium | Medium | Strict ISO 8601 validation; clear errors |
-| URI validation too strict/lenient | Medium | Medium | Follow RFC 3986; configurable strictness |
-| Real-world data violates spec | Medium | Low | Log warnings; don't fail parsing |
-```
-
-### Success Criteria
-
-✅ All CSAPI-specific properties have test requirements defined  
-✅ All 5 Part 1 resource types covered  
-✅ Validation rules documented (URI formats, vocabularies, temporal)  
-✅ Reuse strategy clear (don't duplicate RFC 7946 tests)  
-✅ Fixture inventory complete (30 fixtures)  
-✅ Test depth defined ("meaningful" criteria)  
-✅ Error handling requirements specified  
-✅ Test organization and estimates documented  
-✅ Validated against upstream patterns  
-✅ Cross-validated with Implementation Guide  
-
-### Validation
-
-- All CSAPI properties from Part 1 spec covered
-- Resource type differentiation clear
-- Test depth meets "meaningful" criteria from Section 6
-- Fixture count sufficient for coverage (30 fixtures)
-- Test estimates realistic (~500-800 lines for GeoJSON CSAPI)
-- Reuse strategy minimizes duplication
-- Error conditions comprehensive
+### 18. Risks and Edge Cases
+- **Risk:** Over-testing standard GeoJSON → **Mitigation:** Clear reuse strategy, focus on CSAPI-specific
+- **Risk:** Vocabulary validation too strict → **Mitigation:** Configurable strictness, warning vs error
+- **Risk:** OpenSensorHub examples don't cover edge cases → **Mitigation:** Supplement with spec examples and hand-crafted fixtures
+- **Risk:** Temporal property validation complexity → **Mitigation:** Use strict ISO 8601 parser, clear error messages
+- **Risk:** Real-world data violates CSAPI requirements → **Mitigation:** Document deviations, implement lenient mode
 
 ---
 
-## Cross-References
+## 8. Dependencies
 
-**Builds On:**
-- Section 8: CSAPI Specification Test Requirements (GeoJSON validation rules from Part 1)
+**Must Complete Before Starting:**
+- Section 8: CSAPI Specification Test Requirements (GeoJSON validation rules extracted from Part 1)
 - Section 6: "Meaningful vs Trivial" Definition (test depth guidance)
-- Section 1-2: Upstream GeoJSON parser and test patterns
-- **Part 1 Requirements Analysis:** [docs/research/requirements/csapi-part1-requirements.md](../../requirements/csapi-part1-requirements.md)
+- Section 1-2: Upstream GeoJSON Parser Analysis and Test Patterns (reuse strategy baseline)
+- Part 1 Requirements Analysis: [docs/research/requirements/csapi-part1-requirements.md](../../requirements/csapi-part1-requirements.md) (property definitions)
 
-**Critical For:**
-- Section 12: QueryBuilder Testing (Part 1 resource endpoints require GeoJSON parsing)
-- Section 13: Resource Method Testing (all Part 1 resource methods use GeoJSON)
-- Section 14: Integration Test Workflows (discovery workflow uses GeoJSON resources)
-- Section 15: Fixture Sourcing Strategy (GeoJSON fixture inventory)
+**This Section Blocks:**
+- Section 12: QueryBuilder Testing Requirements (Part 1 resource endpoints require GeoJSON parsing)
+- Section 13: Resource Method Testing Requirements (all Part 1 resource methods use GeoJSON encoding)
+- Section 14: Integration Test Workflows (discovery workflow uses GeoJSON resources: systems, deployments, sampling features)
+- Section 15: Fixture Sourcing Strategy (GeoJSON fixture inventory feeds fixture organization)
 - Section 36: Test Quality Checklist (GeoJSON test validation criteria)
 
 ---
 
-## Next Steps After Completion
+## 9. Research Status Checklist
 
-1. Use test requirements to implement GeoJSON CSAPI extension tests (Phase 2, Tasks 2-6)
+- [ ] **Phase 1 Complete:** CSAPI Part 1 GeoJSON requirements extracted (properties, vocabularies, temporal, links)
+- [ ] **Phase 2 Complete:** Existing parser coverage documented, reuse strategy defined
+- [ ] **Phase 3 Complete:** Resource type deep dive complete (5 resource types, property matrices)
+- [ ] **Phase 4 Complete:** Fixture inventory complete (spec examples + OpenSensorHub + ~30 total)
+- [ ] **Phase 5 Complete:** Test strategy designed (organization, depth, priorities)
+
+---
+
+## 10. Notes and Open Questions
+
+**Risks and Mitigation:**
+- **Over-testing standard GeoJSON:** Focus exclusively on CSAPI-specific properties, trust existing RFC 7946 coverage
+- **Vocabulary validation strictness:** Implement configurable strictness (strict mode vs lenient mode with warnings)
+- **OpenSensorHub edge case coverage:** Supplement with hand-crafted fixtures for edge cases not found in real-world data
+- **Temporal property validation complexity:** Use strict ISO 8601 parser, provide clear error messages for invalid formats
+
+**Validation Strategy:**
+- Reuse existing GeoJSON parser for RFC 7946 compliance (geometry, standard properties, FeatureCollection)
+- Add CSAPI-specific property validation (uniqueIdentifier, featureType, resource-specific properties)
+- Validate controlled vocabularies (featureType, systemType, samplingFeatureType, procedureType)
+- Validate temporal properties (ISO 8601 intervals, open intervals)
+- Validate link structure (href, rel, type, title)
+- Test error conditions (missing required, invalid formats, unknown vocabularies)
+
+**Next Steps After Completion:**
+1. Implement GeoJSON CSAPI tests in `src/ogc-api/formats/geojson-csapi.spec.ts`
 2. Source fixtures from Part 1 spec and OpenSensorHub
-3. Design test file structure
-4. Validate test coverage against Part 1 requirements
-5. Create fixture organization strategy
-
----
-
-## Risks and Mitigation
-
-**Risk:** Over-testing standard GeoJSON (duplication with upstream)  
-**Mitigation:** Clear reuse strategy; focus only on CSAPI-specific properties
-
-**Risk:** Vocabulary validation may be too strict for real-world data  
-**Mitigation:** Configurable strictness; warning vs error modes
-
-**Risk:** OpenSensorHub examples may not cover all edge cases  
-**Mitigation:** Supplement with spec examples and hand-crafted fixtures
-
-**Risk:** Temporal property validation complexity  
-**Mitigation:** Strict ISO 8601 validation; clear error messages
-
----
-
-## Research Status
-
-- [ ] Phase 1: CSAPI Part 1 GeoJSON Requirements (30-40 min)
-- [ ] Phase 2: Existing Parser Analysis (20-30 min)
-- [ ] Phase 3: Resource Type Deep Dive (20-30 min)
-- [ ] Phase 4: Example and Fixture Analysis (15-20 min)
-- [ ] Phase 5: Test Strategy Design (15-20 min)
-- [ ] Deliverable Complete and Reviewed
-
-**Total Estimated Time:** 1.5-2 hours  
-**Actual Time:** _[To be filled during research]_  
-**Started:** _[Date]_  
-**Completed:** _[Date]_
+3. Design fixture directory structure (fixtures/geojson-csapi/)
+4. Validate test coverage against deliverable specification
+5. Create test organization (7 describe blocks: Common, Systems, Deployments, Procedures, SamplingFeatures, Properties, Error Handling)
