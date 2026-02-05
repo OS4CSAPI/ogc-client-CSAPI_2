@@ -236,7 +236,7 @@ This research defines:
 
 ### Primary Resources
 
-- **SWE Common 3.0 Specification:** https://docs.ogc.org/is/23-011r1/23-011r1.html
+- **SWE Common 3.0 Specification:** https://docs.ogc.org/is/24-014/24-014.html
 - **SWE Common 3.0 JSON Schema:** https://schemas.opengis.net/sweCommon/3.0/
 - **CSAPI Implementation Guide:** [docs/planning/csapi-implementation-guide.md](../../../planning/csapi-implementation-guide.md) (SWE Common parser specification)
 
