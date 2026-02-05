@@ -1180,15 +1180,15 @@ export interface System {
   links: OgcApiDocumentLink[];
 }
 
-// SensorML 3.0 representation - NOT TYPED
-// Users requesting f=application/xml get parsed result, not TypeScript types
+// SensorML 3.0 representation - NOT TYPED as TypeScript interface
+// Users requesting f=application/sml+json get parsed result, validated at runtime
 ```
 
 **Rationale:**
 1. ✅ 90% of users will use GeoJSON format (simple spatial features)
-2. ✅ TypeScript types are for compile-time safety, not runtime parsing
-3. ✅ Alternative formats (SensorML JSON, SWE JSON/Text/Binary) have different schemas
-4. ✅ Format parsers return parsed objects validated at runtime, not typed at compile-time
+2. ✅ TypeScript types are for compile-time safety of primary format
+3. ✅ Alternative JSON formats (SensorML 3.0, SWE Common 3.0) have entirely different schemas
+4. ✅ Format parsers return structured objects validated at runtime against JSON schemas
 
 **For format-specific use:**
 
