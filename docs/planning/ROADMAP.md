@@ -7,43 +7,41 @@
 
 ## Executive Summary
 
-This implementation adds Connected Systems API (CSAPI) support to the Camptocamp OGC Client Library, enabling developers to interact with sensor networks, observation data, and system control through the same unified interface they already use for OGC API Features, Tiles, and Environmental Data Retrieval (EDR).
+This roadmap outlines the complete implementation plan for adding Connected Systems API (CSAPI) support to the Camptocamp OGC Client Library. The work is organized into four sequential phases spanning **60-88 hours of development time** (8-12 weeks calendar time).
 
-> **📊 RESEARCH FOUNDATION**
+> **📋 FULL CONTEXT**
 >
-> This implementation guide is built on **13 completed research plans** (Plans 01-04, 10-16) with **⭐⭐⭐⭐⭐ confidence ratings (98-100%)** for all architectural and implementation decisions. Every design choice documented here has been validated through systematic analysis of:
-> - Upstream library patterns (100% consistency with existing code)
-> - CSAPI specification requirements (complete Parts 1 & 2 coverage)
-> - Real-world usage scenarios (validated workflows)
-> - Performance characteristics (proven patterns)
-> - Integration patterns (EDR as exact template)
-> - Type system design (three-tier hierarchy)
-> - File organization (flat structure + formats/)
-> - Lessons learned from two previous failed attempts
+> This roadmap extracts the implementation phases from the complete [CSAPI Implementation Guide](csapi-implementation-guide.md), which contains:
+> - 13 completed research plans with ⭐⭐⭐⭐⭐ confidence ratings
+> - Complete architectural decisions and rationale
+> - Detailed component specifications
+> - Integration patterns and code examples
+> - Development standards and best practices
 >
-> **See:** [Architecture Decision Documents](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/tree/main/docs/research/design/csapiquerybuilder/architecture-decision/results) for complete research foundation.
+> **Refer to the [Implementation Guide](csapi-implementation-guide.md) for complete architectural context and detailed component specifications.**
 
-**What We're Building:**
-- **9 components extending existing code** - Small, targeted enhancements to conformance checking, collection parsing, format detection, validation, and worker infrastructure (~50 lines of modifications total)
-- **3 components building new code** - CSAPIQueryBuilder class for URL construction, SensorML 3.0 parser, and SWE Common 3.0 parser
+**Roadmap Overview:**
 
-**Key Architectural Facts:**
-- **Integration Footprint:** 64 lines across 3 files (`endpoint.ts`: 35 lines, `info.ts`: 12 lines, `index.ts`: 17 lines)
-- **QueryBuilder Pattern:** Single `CSAPIQueryBuilder` class accessed via `endpoint.csapi(collectionId)` (follows upstream EDR pattern from PR #114)
-- **9 Resource Types:** Systems, Deployments, Procedures, Sampling Features, Properties, DataStreams, Observations, Control Streams, Commands - all as methods within one QueryBuilder class
-- **Resource Validation:** All ~70-80 methods validate resource availability and fail-fast with clear error messages (user mandate)
-- **Type System:** Complete TypeScript types for all resources (1,750-2,400 lines) with three-tier hierarchy
-- **Full CSAPI Support:** Complete Parts 1 & 2 implementation with all query parameters, filtering, pagination, and format support - NOT MVP scope
+- **Phase 1: Core Structure (12-16 hours)** - Foundation: types, integration points, stub QueryBuilder, helper utilities
+- **Phase 2: QueryBuilder (20-28 hours)** - Complete URL building for all 70-80 CSAPI methods across 9 resource types
+- **Phase 3: Format Handling (16-28 hours)** - SensorML/SWE parsers + GeoJSON/Format Detector/Validator extensions
+- **Phase 4: Worker & Tests (12-16 hours)** - Worker extensions, integration tests, documentation completion
 
-**Scope Clarification:** While architecturally elegant (3 new classes, 9 extensions), the CSAPIQueryBuilder represents ~70% of new code volume because it implements comprehensive URL construction for 60-70 unique URL patterns across all CSAPI resource types with full CRUD, query, filter, and pagination capabilities. See [Summary: Build vs Extend Breakdown](#summary-build-vs-extend-breakdown) for detailed component inventory.
+**Total Scope:**
+- **Implementation:** ~4,850-6,500 lines across 24 files
+- **Tests:** ~4,400-6,300 lines across 17 test files
+- **Total Code:** ~9,250-12,800 lines
 
-**Estimated Code Volume:** ~4,614-6,094 lines implementation + ~4,500-6,000 lines tests = **~9,114-12,094 lines total**
+**Key Dependencies:**
+- Phase 1 → Phase 2 (types required for QueryBuilder)
+- Phase 2 → Phase 3 (QueryBuilder required for format integration tests)
+- Phases 1-3 → Phase 4 (complete implementation required for full testing)
 
-**Estimated Effort:** 48-72 hours development time (7-10 weeks calendar time with testing)
-
----
-
-[Table of Contents and all content from v7.0 lines 1-4220 remains unchanged - omitted for brevity but included in actual file]
+**Success Factors:**
+- Write JSDoc documentation as you code (don't defer)
+- Write tests as you implement (not in Phase 4 only)
+- Validate against spec examples throughout
+- Review coverage after each phase (aim for >80%)
 
 ---
 
@@ -51,7 +49,7 @@ This implementation adds Connected Systems API (CSAPI) support to the Camptocamp
 
 **Complete Roadmap: ALL Work Required for Full CSAPI Implementation**
 
-This roadmap breaks down the complete CSAPI implementation into four phases, ordered by complexity and dependencies. The phases include ALL components documented in this guide: core structure, query builder with all methods, format parsers with all extensions, and comprehensive testing.
+This roadmap breaks down the complete CSAPI implementation into four phases, ordered by complexity and dependencies. The phases include ALL components documented in the [CSAPI Implementation Guide](csapi-implementation-guide.md): core structure, query builder with all methods, format parsers with all extensions, and comprehensive testing.
 
 ### Phase 1: Core Structure (Low Complexity)
 
@@ -370,7 +368,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 **Confidence:** ⭐⭐⭐⭐⭐ (5/5) - Based on 13 research plans and component-level estimates
 
 **What Changed in v8.0:**
-This roadmap update ensures 100% coverage of all work described in this document. Previous version (v7.0) roadmap was ~75-80% complete, missing:
+This roadmap update ensures 100% coverage of all work described in the [CSAPI Implementation Guide](csapi-implementation-guide.md). Previous version (v7.0) roadmap was ~75-80% complete, missing:
 - GeoJSON Handler CSAPI property extraction tasks (now in Phase 3, Task 1)
 - Format Detector media type registration tasks (now in Phase 3, Task 2)
 - Validator CSAPI validation rule tasks (now in Phase 3, Task 3)
@@ -380,47 +378,26 @@ This roadmap update ensures 100% coverage of all work described in this document
 
 ---
 
-[Code Volume Summary, Build vs Extend Breakdown, Project Goals Alignment, and Development Standards sections remain unchanged from v7.0 - omitted for brevity]
-
----
-
 ## Version History
 
-**Document Version:** 8.0 (Comprehensive Roadmap Update)  
+**Document:** CSAPI Implementation Roadmap (Standalone)  
+**Version:** 1.0 (Extracted from Implementation Guide v8.0)  
 **Date:** February 5, 2026  
-**Research Foundation:** 14 completed research plans with ⭐⭐⭐⭐⭐ confidence (98-100%)  
 **Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete and accurate
 
-**Version 8.0 - Comprehensive Roadmap Update (February 5, 2026):**
-- Updated Implementation Roadmap to include ALL work described in document
-- Added GeoJSON Handler CSAPI extensions to Phase 3
-- Added Format Detector media type registration to Phase 3
-- Added Validator CSAPI validation rules to Phase 3
-- Added Worker message type additions to Phase 4
-- Made JSDoc documentation explicit in every phase/task
-- Updated time estimates: 48-72 hours → 60-88 hours (reflects complete scope)
-- Roadmap now 100% complete vs ~75-80% in v7.0
-- Addressed 4 logical inconsistencies between Roadmap and Development Standards:
-  - Documentation now explicit in each phase (not deferred)
-  - Testing integrated throughout (not waterfall Phase 4)
-  - Standards now align with incremental approach
-  - Method signature guidance integrated into tasks
+**Version 1.0 - Standalone Roadmap (February 5, 2026):**
+- Extracted roadmap phases from [CSAPI Implementation Guide v8.0](csapi-implementation-guide.md)
+- Restructured as standalone roadmap document focused on phasing and timelines
+- Removed architectural details (now in Implementation Guide)
+- Added explicit links to Implementation Guide for full context
+- Clarified this roadmap represents 100% of work from comprehensive research foundation
 
-**Version 7.0 - Query Parameters Restoration (February 5, 2026):**
-- Restored "Complete Query Parameter Support" section accidentally removed in v3
-- ~70 lines of centralized query parameter documentation restored
-- Completes the restoration work from v6.0
+**Roadmap Source:**
+This roadmap is based on the Implementation Roadmap section from the complete [CSAPI Implementation Guide](csapi-implementation-guide.md), which contains:
+- 13 completed research plans with ⭐⭐⭐⭐⭐ confidence (98-100%)
+- Complete architectural decisions and component specifications
+- Detailed implementation guidance for all 24 files
+- Development standards and integration patterns
 
-**Version 6.0 - Restoration (February 5, 2026):**
-- Restored 17 detailed implementation sections intentionally removed in v2.0
-- Document became complete and self-contained
-- Total additions: ~900 lines of detailed implementation guidance
-
-**Previous Versions:**
-- [v7.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v7.md) - Query Parameters restored
-- [v6.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v6.md) - Complete self-contained guide
-- [v5.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v5.md) - Architecture-validated
-- [v4.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v4.md) - Hybrid file structure
-- [v3.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v3.md) - Implementation details
-- [v2.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v2.md) - Research-validated structure
-- [v1.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v1.md) - Original architecture
+**Implementation Guide Version History:**
+For the complete version history of the architectural research and implementation planning, see the [CSAPI Implementation Guide](csapi-implementation-guide.md) version history section.
