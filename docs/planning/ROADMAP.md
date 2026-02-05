@@ -1,4 +1,4 @@
-# CSAPI Implementation Guide for Camptocamp OGC Client Library
+# CSAPI Implementation Roadmap
 
 **Last Updated:** February 5, 2026  
 **Version:** 8.0 (Comprehensive Roadmap Update)
