@@ -69,7 +69,25 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - **Write JSDoc:** Document all interfaces with property descriptions, required vs optional fields, examples
    - **Test:** Create `model.spec.ts` for type validation tests (~200-300 lines)
 
-2. **Integrate with OgcApiEndpoint** (~3-4 hours, Low complexity)
+2. **Create Helper Utilities** (~3-4 hours, Low complexity)
+   - Create `src/ogc-api/csapi/helpers.ts` (~50-80 lines)
+   - Implement `buildResourceUrl(resourceType, id?, subPath?, options?)` - core URL construction
+   - Implement `buildQueryString(options?)` - parameter serialization with encoding
+   - Implement URL encoding utilities, temporal parsing utilities, validation utilities
+   - **Write JSDoc:** Document each utility function with parameter descriptions, examples
+   - **Test:** Add helper tests (~100-150 lines for helpers)
+
+3. **Create Stub QueryBuilder** (~2-3 hours, Low complexity)
+   - Create `src/ogc-api/csapi/url_builder.ts` (stub with constructor + 1-2 methods)
+   - Implement constructor with collection info parameter
+   - Implement `extractAvailableResources()` helper for resource discovery
+   - Create `availableResources` property (Set<string>)
+   - Implement 1-2 simple methods (e.g., `getSystems()`, `getSystem(id)`) as proof of concept
+   - Validate resource availability before URL construction
+   - **Write JSDoc:** Document constructor, helper methods, and validation pattern
+   - **Test:** Create `url_builder.spec.ts` with basic tests for constructor and resource validation (~100-150 lines)
+
+4. **Integrate with OgcApiEndpoint** (~3-4 hours, Low complexity)
    - Modify `src/ogc-api/endpoint.ts` (+35 lines)
      - Add import for CSAPIQueryBuilder
      - Add cache field for QueryBuilder instances
@@ -85,24 +103,6 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
      - Export query options types
    - **Write JSDoc:** Document factory method, getters, conformance function with usage examples
    - **Test:** Add integration tests for endpoint conformance checking (~100-150 lines)
-
-3. **Create Stub QueryBuilder** (~2-3 hours, Low complexity)
-   - Create `src/ogc-api/csapi/url_builder.ts` (stub with constructor + 1-2 methods)
-   - Implement constructor with collection info parameter
-   - Implement `extractAvailableResources()` helper for resource discovery
-   - Create `availableResources` property (Set<string>)
-   - Implement 1-2 simple methods (e.g., `getSystems()`, `getSystem(id)`) as proof of concept
-   - Validate resource availability before URL construction
-   - **Write JSDoc:** Document constructor, helper methods, and validation pattern
-   - **Test:** Create `url_builder.spec.ts` with basic tests for constructor and resource validation (~100-150 lines)
-
-4. **Create Helper Utilities** (~3-4 hours, Low complexity)
-   - Create `src/ogc-api/csapi/helpers.ts` (~50-80 lines)
-   - Implement `buildResourceUrl(resourceType, id?, subPath?, options?)` - core URL construction
-   - Implement `buildQueryString(options?)` - parameter serialization with encoding
-   - Implement URL encoding utilities, temporal parsing utilities, validation utilities
-   - **Write JSDoc:** Document each utility function with parameter descriptions, examples
-   - **Test:** Add helper tests to `url_builder.spec.ts` (~100-150 lines for helpers)
 
 **Phase 1 Deliverables:**
 - ✅ Complete type system (all interfaces)
