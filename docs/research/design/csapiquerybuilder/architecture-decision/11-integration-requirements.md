@@ -29,12 +29,12 @@
 
 ## Key Questions to Answer
 
-- [ ] How many lines needed for EDR (single QueryBuilder)?
-- [ ] How many lines for hypothetical multi-class approach?
-- [ ] What files must be modified in each case?
-- [ ] Does multi-class significantly increase integration complexity?
-- [ ] What is the diff size comparison?
-- [ ] Are there namespace/export implications?
+- [x] How many lines needed for EDR (single QueryBuilder)?
+- [x] How many lines for hypothetical multi-class approach?
+- [x] What files must be modified in each case?
+- [x] Does multi-class significantly increase integration complexity?
+- [x] What is the diff size comparison?
+- [x] Are there namespace/export implications?
 
 ---
 
@@ -63,8 +63,17 @@
 
 Record key findings here for final synthesis document:
 
-- Single-class LOC: [Number]
-- Multi-class LOC estimate: [Number]
-- Complexity difference: [Analysis]
-- Maintainability: [Assessment]
-- Recommendation: [Based on integration perspective]
+- **Single-class LOC:** 64 lines (35 endpoint.ts + 12 info.ts + 17 index.ts)
+- **Multi-class LOC estimate:** 124-275 lines (2-class: 124-140, 9-class: 222-275)
+- **Complexity difference:** Multi-class is 2-4.3x more complex than single-class
+- **Files modified:** Same 3 files for all approaches (endpoint.ts, info.ts, index.ts)
+- **Diff size:** Single-class has minimal 64-line diff vs 124-275 for multi-class
+- **Maintainability:** Single-class requires 0 integration changes for new resources
+- **User experience:** Single-class provides simple, intuitive API (`endpoint.csapi(id)`)
+- **Testing:** Single-class requires 90 test lines vs 180-300 for multi-class
+- **Namespace/exports:** Single-class has clean 17-line exports vs 35-80 for multi-class
+- **Recommendation:** **Single-class pattern STRONGLY favored** - unambiguous winner from integration perspective
+
+**Impact Level Revised:** HIGH (not MEDIUM) - Integration complexity is 2-4x different
+
+**Confidence:** ⭐⭐⭐⭐⭐ (5/5) - Quantitative measurements show clear advantage
