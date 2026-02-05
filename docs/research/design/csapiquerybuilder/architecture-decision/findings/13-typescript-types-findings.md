@@ -1142,8 +1142,8 @@ export interface SamplingFeature {
 
 **CSAPI resources can be returned in different formats:**
 - GeoJSON / JSON-FG (primary)
-- SensorML 3.0 (XML)
-- SWE Common 3.0 (JSON/XML)
+- SensorML 3.0 (JSON)
+- SWE Common 3.0 (JSON)
 - JSON-LD
 
 **Question:** Do we need separate types per format?
@@ -1159,7 +1159,7 @@ async getPosition(...): Promise<any>  // Could be GeoJSON, CoverageJSON, etc.
 
 **Why?**
 - Formats have radically different structures
-- TypeScript types for XML are impractical
+- TypeScript types for alternative formats are complex
 - Response parsing is format-dependent
 - Users specify format, know what they'll get
 
@@ -1182,9 +1182,9 @@ export interface System {
 ```
 
 **Rationale:**
-1. ✅ 90% of users will use JSON format
+1. ✅ 90% of users will use GeoJSON format
 2. ✅ TypeScript is for compile-time safety, not runtime parsing
-3. ✅ XML structure differs significantly (no point trying to type both)
+3. ✅ Alternative formats have different structures (SensorML, SWE Common)
 4. ✅ Format parsers return parsed objects, not typed interfaces
 
 **For format-specific use:**
@@ -1193,9 +1193,9 @@ export interface System {
 // Users can request specific format
 const url = builder.getSystemUrl(systemId);
 const response = await fetch(url, { 
-  headers: { Accept: 'application/vnd.ogc.sml+xml; version=3.0' } 
+  headers: { Accept: 'application/sml+json; version=3.0' } 
 });
-const xml = await response.text();  // Parse as needed
+const json = await response.json();  // Parse as needed
 ```
 
 **User mandate context:** Format parsing returns structured objects, but those objects don't need TypeScript type definitions (parsing validates structure at runtime).
