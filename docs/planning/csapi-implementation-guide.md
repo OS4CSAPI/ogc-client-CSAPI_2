@@ -1196,6 +1196,529 @@ class DatastreamsBuilder {
 
 ---
 
+### Systems Resource Methods
+
+The CSAPIQueryBuilder includes Systems resource methods to manage CSAPI System resources, representing sensors, actuators, platforms, samplers, and other observing systems. These methods implement all CRUD operations (Create, Read, Update, Delete) for Systems at both canonical endpoints (`/systems`, `/systems/{id}`) and nested endpoints (`/systems/{parentId}/subsystems`). Systems are the core resource in CSAPI Part 1, serving as the entry point for discovering available sensors and their relationships to deployments, procedures, sampling features, and observation streams. The methods support hierarchical queries (recursive subsystem traversal), relationship filtering (query by deployment, procedure, or sampling feature), and both GeoJSON and SensorML format parsing. This functionality connects to the URL builder for query construction, the format handlers for parsing responses, and the validator for checking system constraints.
+
+**Operations to Implement:**
+
+**Read Operations:**
+- List all systems: `GET /systems`
+- Get single system: `GET /systems/{id}`
+- Query systems: `GET /systems?bbox=...&parent=...&recursive=true`
+- List subsystems: `GET /systems/{parentId}/subsystems`
+- Recursive subsystem query: `GET /systems/{parentId}/subsystems?recursive=true`
+- Systems by deployment: `GET /systems?deployment={deploymentId}`
+- Systems by procedure: `GET /systems?procedure={procedureId}`
+- Systems in collection: `GET /collections/{collectionId}/items?featureType=sosa:System`
+
+**Create Operations:**
+- Create system: `POST /systems` with GeoJSON or SensorML body
+- Create subsystem: `POST /systems/{parentId}/subsystems` with body
+- Add to collection: `POST /collections/{collectionId}/items` with system feature
+
+**Update Operations:**
+- Replace system: `PUT /systems/{id}` with full document
+- Partial update: `PATCH /systems/{id}` with partial document (JSON Patch or Merge Patch)
+
+**Delete Operations:**
+- Delete system: `DELETE /systems/{id}`
+- Cascade delete: `DELETE /systems/{id}?cascade=true` (deletes subsystems, datastreams, etc.)
+
+**System Relationship Management:**
+- Parse and expose subsystem hierarchy
+- Navigate system-deployment associations (bidirectional)
+- Navigate system-procedure associations
+- Navigate system-sampling feature associations
+- Navigate system-datastream associations (Part 2)
+- Navigate system-controlstream associations (Part 2)
+
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Systems support: `bbox`, `datetime`, `recursive`, `parent`, `deployment`, `procedure`, `foi`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative specification for Systems resources and CRUD operations
+- [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Systems endpoint definitions
+- [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Detailed client implementation requirements for Systems resource methods
+- [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Semantic definitions for system types and relationships
+- [RFC 7946 (GeoJSON)](https://tools.ietf.org/html/rfc7946): Format specification for encoding Systems as GeoJSON Features
+
+---
+
+### Deployments Resource Methods
+
+The CSAPIQueryBuilder includes Deployments resource methods to manage CSAPI Deployment resources, describing where and when systems are deployed in the field. These methods implement all CRUD operations for Deployments at canonical endpoints (`/deployments`, `/deployments/{id}`) and nested endpoints (`/deployments/{parentId}/subdeployments`). Deployments connect systems to geographic locations and temporal periods, enabling queries like "what sensors were active in this region during this time period." The methods support hierarchical subdeployment queries (recursive parameter), relationship filtering (query by system), and GeoJSON format parsing with deployment-specific metadata. Deployments have bidirectional associations with systems - a system can have multiple deployments over time, and a deployment can involve multiple systems.
+
+**Operations to Implement:**
+
+**Read Operations:**
+- List all deployments: `GET /deployments`
+- Get single deployment: `GET /deployments/{id}`
+- Query deployments: `GET /deployments?bbox=...&system=...&datetime=...`
+- List subdeployments: `GET /deployments/{parentId}/subdeployments`
+- Recursive subdeployment query: `GET /deployments/{parentId}/subdeployments?recursive=true`
+- Deployments by system: `GET /deployments?system={systemId}`
+- Deployments in collection: `GET /collections/{collectionId}/items?featureType=sosa:Deployment`
+
+**Create Operations:**
+- Create deployment: `POST /deployments` with GeoJSON body
+- Create subdeployment: `POST /deployments/{parentId}/subdeployments`
+- Add to collection: `POST /collections/{collectionId}/items`
+
+**Update Operations:**
+- Replace deployment: `PUT /deployments/{id}`
+- Partial update: `PATCH /deployments/{id}`
+
+**Delete Operations:**
+- Delete deployment: `DELETE /deployments/{id}`
+- Cascade delete: `DELETE /deployments/{id}?cascade=true`
+
+**Deployment Relationship Management:**
+- Parse and expose subdeployment hierarchy
+- Navigate deployment-system associations (many-to-many)
+- Extract spatial extent (deployment footprint)
+- Extract temporal extent (deployment period)
+- Validate validTime periods
+
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Deployments support: `bbox`, `datetime`, `recursive`, `system`, `parent`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative specification for Deployments resources
+- [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Deployments endpoint definitions
+- [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client implementation requirements for Deployments including spatial/temporal queries
+- [RFC 7946 (GeoJSON)](https://tools.ietf.org/html/rfc7946): Format for encoding Deployments with spatial extents
+
+---
+
+### Procedures Resource Methods
+
+The CSAPIQueryBuilder includes Procedures resource methods to manage CSAPI Procedure resources, describing the methodologies, algorithms, or processes used to generate observations or control systems. These methods implement all CRUD operations for Procedures at canonical endpoints (`/procedures`, `/procedures/{id}`). Procedures can represent sensor measurement methodologies, data processing algorithms, calibration procedures, quality control processes, or sampling protocols. The methods parse both GeoJSON features (for simple procedure metadata) and SensorML process models (for detailed technical descriptions), support relationship filtering (procedures used by specific systems), and provide access to procedure documentation and parameters. Procedures are referenced by Systems (via `systemKind` or `procedure` properties) and DataStreams (via `procedure` property), connecting the "how" of data collection to the "what" (systems) and "where" (observation streams).
+
+**Operations to Implement:**
+
+**Read Operations:**
+- List all procedures: `GET /procedures`
+- Get single procedure: `GET /procedures/{id}`
+- Query procedures: `GET /procedures?system=...&q=...`
+- Procedures by system: `GET /procedures?system={systemId}`
+- Procedures in collection: `GET /collections/{collectionId}/items?featureType=sosa:Procedure`
+
+**Create Operations:**
+- Create procedure: `POST /procedures` with GeoJSON or SensorML body
+- Add to collection: `POST /collections/{collectionId}/items`
+
+**Update Operations:**
+- Replace procedure: `PUT /procedures/{id}`
+- Partial update: `PATCH /procedures/{id}`
+
+**Delete Operations:**
+- Delete procedure: `DELETE /procedures/{id}`
+
+**Procedure Properties to Parse:**
+- `procedureType`: URI indicating type (sensor, algorithm, protocol)
+- `methodKind`: URI from controlled vocabulary
+- `attachedTo`: Link to system that uses this procedure
+- `inputs`: Input parameters/requirements (from SensorML)
+- `outputs`: Output specifications (from SensorML)
+- `parameters`: Configuration parameters (from SensorML)
+- `documentation`: Links to manuals, specifications
+
+**Procedure Relationship Management:**
+- Systems using this procedure (reverse lookup)
+- DataStreams using this procedure (Part 2 cross-reference)
+- Parse SensorML method descriptions
+- Extract parameter definitions
+
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Procedures support: `system`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative specification for Procedures resources and methodologies
+- [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Procedures endpoint definitions
+- [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client requirements for Procedures including SensorML format support
+- [OGC SensorML 3.0](https://docs.ogc.org/is/23-000/23-000.html): Format for detailed procedure descriptions
+
+---
+
+### Sampling Features Resource Methods
+
+The CSAPIQueryBuilder includes Sampling Features resource methods to manage CSAPI Sampling Feature resources, representing the features being observed or sampled by systems. These methods implement all CRUD operations for Sampling Features at canonical endpoints (`/samplingFeatures`, `/samplingFeatures/{id}`) and nested endpoints (`/systems/{systemId}/samplingFeatures` for system-specific sampling features). Sampling Features answer "what is being observed?" - they can be physical locations (weather station site), spatial regions (forest plot), physical samples (water sample, core sample), or abstract features (administrative boundary). The methods support spatial queries (bbox for sampling location), relationship queries (sampling features for specific systems or sampled features), hierarchical relationships (related sampling features), and GeoJSON format parsing with sampling feature metadata. Sampling Features connect systems to the ultimate features of interest through the sampling relationship chain.
+
+**Operations to Implement:**
+
+**Read Operations:**
+- List all sampling features: `GET /samplingFeatures`
+- Get single sampling feature: `GET /samplingFeatures/{id}`
+- Query sampling features: `GET /samplingFeatures?bbox=...&foi=...&system=...`
+- System-specific sampling features: `GET /systems/{systemId}/samplingFeatures`
+- Sampling features by feature of interest: `GET /samplingFeatures?foi={featureId}`
+- Sampling features in collection: `GET /collections/{collectionId}/items?featureType=sosa:SamplingFeature`
+
+**Create Operations:**
+- Create sampling feature: `POST /samplingFeatures` with GeoJSON body
+- Create under system: `POST /systems/{systemId}/samplingFeatures`
+- Add to collection: `POST /collections/{collectionId}/items`
+
+**Update Operations:**
+- Replace sampling feature: `PUT /samplingFeatures/{id}`
+- Partial update: `PATCH /samplingFeatures/{id}`
+
+**Delete Operations:**
+- Delete sampling feature: `DELETE /samplingFeatures/{id}`
+
+**Sampling Feature Properties to Parse:**
+- `samplingFeatureType`: URI indicating type (point, specimen, transect)
+- `sampledFeature`: Link to ultimate feature of interest
+- `relatedSamplingFeature`: Links to related sampling features
+- `hostedProcedure`: Procedures performed at this location
+- `shape`: Geometry (point, line, polygon) of sampling location
+- `samplingMethod`: How sample was collected
+
+**Sampling Feature Relationship Management:**
+- Systems using this sampling feature
+- Ultimate feature of interest (sampled feature)
+- Related sampling features (hierarchical relationships)
+- Observations at this sampling feature (Part 2)
+
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Sampling Features support: `bbox`, `system`, `foi`, `relatedSamplingFeature`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative specification for Sampling Features resources
+- [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Sampling Features endpoint definitions
+- [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client requirements for Sampling Features navigation
+- [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Semantic definitions for sampling feature types and relationships
+- [RFC 7946 (GeoJSON)](https://tools.ietf.org/html/rfc7946): Format for encoding Sampling Features with geometries
+
+---
+
+### Properties Resource Methods
+
+The CSAPIQueryBuilder includes Properties resource methods to manage CSAPI Property resources, defining the observable or controllable properties that systems can measure or actuate. These methods implement read-only operations (GET only, no CRUD) for Properties at canonical endpoints (`/properties`, `/properties/{id}`). Properties represent physical quantities (temperature, pressure, humidity), chemical properties (pH, dissolved oxygen), biological parameters (species count), or control parameters (valve position, power state). The methods parse property definitions from controlled vocabularies (like QUDT or CF Standard Names), support relationship queries (properties observed by specific systems or datastreams), and provide access to property metadata (definition URIs, units, descriptions). Properties serve as the vocabulary for DataStreams (what is being measured) and ControlStreams (what can be controlled), connecting abstract concepts to concrete measurement streams.
+
+**Operations to Implement:**
+
+**Read Operations:**
+- List all properties: `GET /properties`
+- Get single property: `GET /properties/{id}`
+- Query properties: `GET /properties?q=temperature&system=...`
+- Properties by system: `GET /properties?system={systemId}` (properties this system can observe)
+- Properties in collection: `GET /collections/{collectionId}/items?featureType=sosa:ObservableProperty`
+
+**Property Metadata to Parse:**
+- `definition`: URI from controlled vocabulary (QUDT, CF, etc.)
+- `label`: Human-readable name
+- `description`: Detailed explanation
+- `baseProperty`: Parent property in hierarchy
+- `subProperties`: Child properties
+- `units`: Standard units of measure
+
+**Property Relationship Management:**
+- Systems capable of observing this property
+- DataStreams observing this property (Part 2)
+- ControlStreams controlling this property (Part 2)
+- Property hierarchies (baseProperty/subProperty relationships)
+
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Properties support: `system`, `baseProperty`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative specification for Properties resources
+- [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Properties endpoint definitions
+- [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client requirements for Properties navigation
+- [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Semantic definitions for observable and actuatable properties
+
+---
+
+### DataStreams Resource Methods
+
+The CSAPIQueryBuilder includes DataStreams resource methods to manage CSAPI DataStream resources, representing collections of observations from the same system with shared schemas. These methods implement all CRUD operations for DataStreams at canonical endpoints (`/datastreams`, `/datastreams/{id}`) and nested endpoints (`/systems/{systemId}/datastreams` for system-specific streams). DataStreams define the structure and metadata for observation data: what properties are being observed, what system is observing them, what sampling features or features of interest are involved, what schema the results follow, and what output format is used. The methods parse SWE Common result schemas (DataComponent definitions), validate that observations conform to these schemas, support relationship queries (datastreams for specific systems, procedures, or features of interest), and provide access to schema endpoints (`/datastreams/{id}/schema`). DataStreams are the bridge between Part 1 metadata (systems, procedures, sampling features) and Part 2 dynamic data (observations).
+
+**Operations to Implement:**
+
+**Read Operations:**
+- List all datastreams: `GET /datastreams`
+- Get single datastream: `GET /datastreams/{id}`
+- Query datastreams: `GET /datastreams?system=...&observedProperty=...&foi=...`
+- System-specific datastreams: `GET /systems/{systemId}/datastreams`
+- Get result schema: `GET /datastreams/{id}/schema`
+- DataStreams in collection: `GET /collections/{collectionId}/items`
+
+**Create Operations:**
+- Create datastream: `POST /datastreams` with JSON body including result schema
+- Create under system: `POST /systems/{systemId}/datastreams`
+
+**Update Operations:**
+- Replace datastream: `PUT /datastreams/{id}` (caution: schema changes affect existing observations)
+- Partial update: `PATCH /datastreams/{id}` (limited schema updates allowed)
+
+**Delete Operations:**
+- Delete datastream: `DELETE /datastreams/{id}`
+- Cascade delete: `DELETE /datastreams/{id}?cascade=true` (deletes all observations)
+
+**DataStream Properties to Parse:**
+- `name`: Human-readable name
+- `description`: Detailed description
+- `system`: Link to producing system (required)
+- `observedProperties`: Array of property URIs being measured
+- `resultSchema`: SWE Common DataComponent defining observation structure
+- `resultFormat`: Output encoding (JSON, Text, Binary)
+- `phenomenonTimeRange`: Temporal extent of observations
+- `procedure`: Link to observation methodology
+- `samplingFeatures`: Links to sampling features
+- `featuresOfInterest`: Links to ultimate features of interest
+- `liveFeed`: Boolean indicating real-time availability
+- `archiveDuration`: How long observations are retained
+
+**DataStream Relationship Management:**
+- System producing this datastream (required association)
+- Properties being observed (required association)
+- Observations in this datastream (Part 2, see Observations methods)
+- Procedure used (optional association)
+- Sampling features (optional association)
+- Features of interest (optional association)
+
+**Schema Operations:**
+- Parse SWE Common result schema
+- Validate observation results against schema
+- Provide schema introspection for clients
+- Support schema evolution (versioning)
+
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). DataStreams support: `system`, `observedProperty`, `foi`, `samplingFeature`, `procedure`, `datetime`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+
+**References:**
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for DataStreams resources and schema operations
+- [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): DataStreams endpoint definitions
+- [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client implementation requirements for DataStreams including schema handling
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/24-014/24-014.html): Format for result schemas and data encoding
+- [pr114-analysis.md](../research/upstream/pr114-analysis.md): Architectural patterns for DataStreams implementation
+
+---
+
+### Observations Resource Methods
+
+The CSAPIQueryBuilder includes Observations resource methods to manage CSAPI Observation resources, representing actual measurement data from systems. These methods implement CRUD operations for Observations at canonical endpoints (`/observations`, `/observations/{id}`) and nested endpoints (`/datastreams/{datastreamId}/observations` for stream-specific observations). Observations are the dynamic data in CSAPI - they change frequently, come in high volumes, and require efficient pagination and temporal queries. The methods parse SWE Common result encodings (JSON, Text/CSV, Binary), validate results against DataStream schemas, support temporal range queries (phenomenonTime, resultTime), implement cursor-based pagination for large result sets, and handle bulk observation creation (POST with arrays of observations). Observations connect to DataStreams for schema and metadata, making them schema-driven rather than free-form. This is one of the most performance-critical components due to high data volumes.
+
+**Operations to Implement:**
+
+**Read Operations:**
+- List all observations: `GET /observations?phenomenonTime=...&limit=...`
+- Get single observation: `GET /observations/{id}`
+- Stream-specific observations: `GET /datastreams/{id}/observations?phenomenonTime=2024-01-01/2024-01-31`
+- Query by result time: `GET /observations?resultTime=2024-01-01/..`
+- Query by feature of interest: `GET /observations?foi={featureId}`
+- Pagination: `GET /observations?cursor={nextCursor}&limit=1000`
+
+**Create Operations:**
+- Create single observation: `POST /datastreams/{id}/observations` with observation body
+- Bulk create: `POST /datastreams/{id}/observations` with array of observations
+- Stream ingestion: POST to `/datastreams/{id}/observations` with streaming payload
+
+**Update Operations:**
+- Replace observation: `PUT /observations/{id}` (rare, usually observations are immutable)
+- Partial update: `PATCH /observations/{id}` (for quality flags, validation status)
+
+**Delete Operations:**
+- Delete observation: `DELETE /observations/{id}` (rare, usually retained)
+
+**Observation Properties to Parse:**
+- `phenomenonTime`: When the observation was made (required, ISO 8601)
+- `resultTime`: When the result became available (optional, defaults to phenomenonTime)
+- `result`: Observation result structured per DataStream schema (required)
+- `resultQuality`: Quality indicators (accuracy, precision, flags)
+- `parameters`: Additional metadata (sensor settings, environmental conditions)
+- `featureOfInterest`: Link to observed feature (optional if provided by DataStream)
+
+**Observation Result Parsing:**
+- Parse SWE Common JSON encoding: structured JSON with units
+- Parse SWE Common Text encoding: CSV-style compact format
+- Parse SWE Common Binary encoding: efficient binary format
+- Validate against DataStream result schema
+- Extract individual property values
+- Extract units of measure
+- Extract quality information
+
+**Temporal Query Features:**
+- **phenomenonTime filtering** (when observation was made - PRIMARY temporal filter):
+  - Single instant: `phenomenonTime=2024-01-15T12:00:00Z`
+  - Closed interval: `phenomenonTime=2024-01-01/2024-01-31`
+  - Open start (before end): `phenomenonTime=../2024-01-31`
+  - Open end (after start): `phenomenonTime=2024-01-01/..`
+  - Multiple disjoint intervals: `phenomenonTime=2024-01-01/2024-01-15,2024-02-01/2024-02-15`
+- **resultTime filtering**: When observation result became available (ISO 8601 intervals)
+- **Temporal binning/aggregation**: Group observations by time period (hour, day, month)
+- **Temporal resolution**: Filter by minimum time spacing between observations
+
+**Pagination Support:**
+- **Offset-based pagination** (Part 1 style): `limit` + `offset` for predictable page numbers
+- **Cursor-based pagination** (Part 2 optimized): `limit` + `cursor` for efficient streaming of large time series
+  - Cursor tokens encode position in result set
+  - Stable across result set changes
+  - Required for datasets > 100K observations
+- **Limit parameter**: 1 to 10,000 (CSAPI Part 2 maximum)
+- **Next/prev links**: Link headers for navigation
+- **Stable sorting**: By phenomenonTime ascending, then by ID for deterministic ordering
+
+**Performance Considerations:**
+- Efficient parsing of large observation arrays
+- Streaming support for bulk ingestion
+- Incremental parsing of CSV/Text format
+- Memory-efficient handling of large result sets
+- Caching of DataStream schemas
+
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Observations support: `phenomenonTime`, `resultTime`, `foi`, `id`, `limit`, `offset`, `cursor`, `f`, `obsFormat`.
+
+**References:**
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for Observations resources and temporal queries
+- [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Observations endpoint definitions
+- [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for Observations including pagination and bulk operations
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/24-014/24-014.html): Format for observation result encodings (JSON, Text, Binary)
+- [pr114-analysis.md](../research/upstream/pr114-analysis.md): Performance patterns for high-volume observation handling
+
+---
+
+### Control Streams Resource Methods
+
+The CSAPIQueryBuilder includes Control Streams resource methods to manage CSAPI ControlStream resources, representing command interfaces for controlling actuators and systems. These methods implement all CRUD operations for Control Streams at canonical endpoints (`/controlstreams`, `/controlstreams/{id}`) and nested endpoints (`/systems/{systemId}/controlstreams` for system-specific control channels). Control Streams define what can be controlled on a system: the control schema (parameters structure using SWE Common), valid parameter ranges and constraints, execution modes (synchronous vs asynchronous), and feasibility checking capabilities. The methods parse SWE Common parameter schemas, validate commands against these schemas, support relationship queries (controlstreams for specific systems or controlled properties), and provide access to schema endpoints (`/controlstreams/{id}/schema`). Control Streams mirror DataStreams architecturally but for control/actuation rather than observation/sensing. This functionality is essential for bidirectional system interaction beyond just reading sensor data.
+
+**Operations to Implement:**
+
+**Read Operations:**
+- List all control streams: `GET /controlstreams`
+- Get single control stream: `GET /controlstreams/{id}`
+- Query control streams: `GET /controlstreams?system=...&controlledProperty=...`
+- System-specific control streams: `GET /systems/{systemId}/controlstreams`
+- Get parameter schema: `GET /controlstreams/{id}/schema`
+- Control streams in collection: `GET /collections/{collectionId}/items`
+
+**Create Operations:**
+- Create control stream: `POST /controlstreams` with JSON body including parameter schema
+- Create under system: `POST /systems/{systemId}/controlstreams`
+
+**Update Operations:**
+- Replace control stream: `PUT /controlstreams/{id}`
+- Partial update: `PATCH /controlstreams/{id}`
+
+**Delete Operations:**
+- Delete control stream: `DELETE /controlstreams/{id}`
+- Cascade delete: `DELETE /controlstreams/{id}?cascade=true` (deletes all commands)
+
+**Control Stream Properties to Parse:**
+- `name`: Human-readable name
+- `description`: Detailed description
+- `system`: Link to controlled system (required)
+- `controlledProperties`: Array of property URIs being controlled
+- `parameterSchema`: SWE Common DataComponent defining command structure
+- `parameterFormat`: Input encoding (JSON, Text, Binary)
+- `executionMode`: Synchronous or asynchronous
+- `supportsExecutionControl`: Can cancel/pause/resume
+- `supportsFeasibility`: Can check feasibility before execution
+
+**Control Stream Relationship Management:**
+- System being controlled (required association)
+- Properties being controlled (required association)
+- Commands sent through this stream (see Commands methods)
+- Valid parameter ranges and constraints
+
+**Schema Operations:**
+- Parse SWE Common parameter schema
+- Validate command parameters against schema
+- Provide schema introspection for clients
+- Support schema evolution
+
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Control Streams support: `system`, `controlledProperty`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+
+**References:**
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for ControlStreams resources
+- [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): ControlStreams endpoint definitions
+- [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for ControlStreams and actuation capabilities
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/24-014/24-014.html): Format for control parameter schemas
+- [pr114-analysis.md](../research/upstream/pr114-analysis.md): Architectural patterns mirroring DataStreams for control
+
+---
+
+### Commands Resource Methods
+
+The CSAPIQueryBuilder includes Commands resource methods to manage CSAPI Command resources, representing instructions sent to systems for actuation or control. These methods implement CRUD operations for Commands at canonical endpoints (`/commands`, `/commands/{id}`) and nested endpoints (`/controlstreams/{controlstreamId}/commands` for stream-specific commands). Commands are the control equivalent of Observations - they flow to systems rather than from systems. The methods parse SWE Common parameter encodings, validate parameters against ControlStream schemas, support temporal queries (issueTime, executionTime), implement command status tracking (`/commands/{id}/status`), handle command results (`/commands/{id}/result`), and support bulk command submission. Commands can be synchronous (immediate execution with result) or asynchronous (queued execution with status polling). This functionality enables closed-loop control and system tasking capabilities.
+
+**Operations to Implement:**
+
+**Read Operations:**
+- List all commands: `GET /commands?issueTime=...&limit=...`
+- Get single command: `GET /commands/{id}`
+- Stream-specific commands: `GET /controlstreams/{id}/commands?issueTime=2024-01-01/..`
+- Query by execution time: `GET /commands?executionTime=2024-01-01/..`
+- Query by status: `GET /commands?status=pending,executing`
+- Get command status: `GET /commands/{id}/status`
+- Get command result: `GET /commands/{id}/result`
+
+**Create Operations:**
+- Create single command: `POST /controlstreams/{id}/commands` with command body
+- Bulk create: `POST /controlstreams/{id}/commands` with array of commands
+- Check feasibility: `POST /controlstreams/{id}/feasibility` with parameters
+
+**Update Operations:**
+- Update command status: `PATCH /commands/{id}/status` (for system-generated status updates)
+- Update command result: `PUT /commands/{id}/result` (when execution completes)
+- Cancel command: `POST /commands/{id}/cancel`
+
+**Delete Operations:**
+- Delete command: `DELETE /commands/{id}` (if not yet executed)
+
+**Command Properties to Parse:**
+- `issueTime`: When command was issued (ISO 8601)
+- `executionTime`: When to execute (optional, immediate if omitted)
+- `parameters`: Command parameters per ControlStream schema
+- `priority`: Execution priority (integer)
+- `sender`: Entity that issued command
+- `receiver`: Target system/component
+
+**Command Status Properties:**
+- `status`: Current state (pending, accepted, executing, completed, failed, cancelled)
+- `percentCompletion`: Progress indicator (0-100)
+- `statusMessage`: Human-readable status
+- `updateTime`: Last status update timestamp
+
+**Command Result Properties:**
+- `result`: Execution result per ControlStream schema
+- `completionTime`: When execution finished
+- `resultQuality`: Quality indicators for result
+
+**Temporal Query Features:**
+- **issueTime filtering** (when command was issued - PRIMARY temporal filter):
+  - Single instant: `issueTime=2024-01-15T12:00:00Z`
+  - Closed interval: `issueTime=2024-01-01/2024-01-31`
+  - Open start: `issueTime=../2024-01-31`
+  - Open end: `issueTime=2024-01-01/..`
+- **executionTime filtering**: When command should be/was executed (ISO 8601 intervals)
+- **Status filtering**: `status` parameter with multiple values (pending, accepted, executing, completed, failed, cancelled)
+- **Relationship filtering**: `controlstream` parameter (commands for specific control stream)
+
+**Pagination Support:**
+- **Offset-based pagination**: `limit` + `offset` for predictable page numbers
+- **Cursor-based pagination**: `limit` + `cursor` for efficient streaming of command histories
+- **Limit parameter**: 1 to 10,000 (CSAPI Part 2 maximum)
+- **Next/prev links**: Link headers for navigation
+- **Stable sorting**: By issueTime ascending, then by ID
+
+**Command Lifecycle Management:**
+- Submit command (validate parameters)
+- Track status (poll for updates)
+- Retrieve result (when completed)
+- Cancel command (if supported)
+- Check feasibility (before submission)
+
+**Synchronous vs Asynchronous Execution:**
+- Synchronous: POST returns 200 with immediate result
+- Asynchronous: POST returns 201 with status URL, client polls for completion
+
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Commands support: `issueTime`, `executionTime`, `status`, `controlstream`, `id`, `limit`, `offset`, `cursor`, `f`, `cmdFormat`.
+
+**References:**
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for Commands resources and lifecycle management
+- [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Commands endpoint definitions
+- [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for Commands including status tracking and feasibility
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/24-014/24-014.html): Format for command parameter encodings
+- [pr114-analysis.md](../research/upstream/pr114-analysis.md): Patterns for command submission and status polling
+
+---
+
 ### File Structure and Organization
 
 **Research-Validated Structure:**
