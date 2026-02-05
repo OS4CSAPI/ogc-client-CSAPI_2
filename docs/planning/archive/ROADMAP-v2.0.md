@@ -1,7 +1,7 @@
 # CSAPI Implementation Roadmap
 
 **Last Updated:** February 5, 2026  
-**Version:** 3.0 (Phase 3 Restructure - Incremental Testing + Dependency Fix)
+**Version:** 2.0 (Phase 2 Restructure - Incremental Testing)
 
 ---
 
@@ -23,8 +23,8 @@ This roadmap outlines the complete implementation plan for adding Connected Syst
 **Roadmap Overview:**
 
 - **Phase 1: Core Structure (12-16 hours)** - Foundation: types, integration points, stub QueryBuilder, helper utilities (4 tasks)
-- **Phase 2: QueryBuilder (20-28 hours)** - Complete URL building for all 70-80 CSAPI methods across 9 resource types (9 tasks)
-- **Phase 3: Format Handling (16-28 hours)** - SensorML/SWE parsers + GeoJSON/Format Detector/Validator extensions (15 tasks with incremental testing)
+- **Phase 2: QueryBuilder (20-28 hours)** - Complete URL building for all 70-80 CSAPI methods across 9 resource types (9 tasks, one per resource type)
+- **Phase 3: Format Handling (16-28 hours)** - SensorML/SWE parsers + GeoJSON/Format Detector/Validator extensions (7 tasks)
 - **Phase 4: Worker & Tests (12-16 hours)** - Worker extensions, integration tests, documentation completion (4 tasks)
 
 **Total Scope:**
@@ -322,9 +322,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 
 **Estimated Time:** 16-28 hours (2-4 weeks calendar time)
 
-**Goal:** Build format parsers for SensorML 3.0 and SWE Common 3.0, extend GeoJSON/Format Detector/Validator for CSAPI, with incremental testing and correct dependency ordering.
-
-**Task Structure:** SWE Common types created first (needed by SensorML), then each parser component tested immediately after implementation.
+**Goal:** Build format parsers for SensorML 3.0 and SWE Common 3.0, extend GeoJSON/Format Detector/Validator for CSAPI.
 
 **Tasks:**
 
@@ -334,10 +332,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - Extract CSAPI-specific properties (uniqueIdentifier, systemType, assetType, validTime, etc.)
    - Add validation for CSAPI GeoJSON requirements (uniqueIdentifier must be URI, systemType from SOSA vocabulary)
    - **Write JSDoc:** Document CSAPI property extraction, validation rules
-   - **Test immediately:** Add tests for CSAPI GeoJSON parsing (~150-300 lines tests)
-     - Test featureType recognition
-     - Test property extraction
-     - Test validation rules
+   - **Test:** Add tests for CSAPI GeoJSON parsing (~150-300 lines tests)
 
 2. **Format Detector Extensions** (~1-2 hours, Low complexity)
    - Extend existing format detector
@@ -345,10 +340,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - Add routing logic to format handlers (SensorML → SensorML parser, SWE Common → SWE Common parser)
    - Add Content-Type header parsing, structure-based fallback detection
    - **Write JSDoc:** Document media type detection patterns
-   - **Test immediately:** Add format detection tests (~50-100 lines tests)
-     - Test media type registration
-     - Test routing logic
-     - Test fallback detection
+   - **Test:** Add format detection tests (~50-100 lines tests)
 
 3. **Validator Extensions** (~3-4 hours, Medium complexity)
    - Extend existing validation framework
@@ -356,179 +348,70 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - Add CSAPI Part 2 validation rules (schema conformance for Observations/Commands, result validation)
    - Add cross-reference validation (association links, hierarchical integrity, vocabulary references)
    - **Write JSDoc:** Document validation rules, error reporting patterns
-   - **Test immediately:** Add validation tests (~200-400 lines tests)
-     - Test Part 1 validation rules
-     - Test Part 2 validation rules
-     - Test cross-reference validation
+   - **Test:** Add validation tests (~200-400 lines tests)
 
-4. **SWE Common Types** (~2-3 hours, Medium complexity)
+4. **SensorML Parser** (~5-10 hours, High complexity)
+   - Create `src/ogc-api/csapi/formats/sensorml/` directory
+   - Create `types.ts` (~800-1,200 lines)
+     - Define PhysicalSystem, PhysicalComponent, SimpleProcess, AggregateProcess interfaces
+     - Define CapabilityList, CharacteristicList, ComponentList, ConnectionList interfaces
+     - Link to SWE Common types for capability/characteristic values
+   - Create `parser.ts` (~600-800 lines)
+     - Main SensorML 3.0 parser with recursive component parsing
+     - Capability/characteristic parsing with SWE Common integration
+     - Position/location parsing
+   - Create sub-parsers (~550-700 lines total)
+     - `simple-process.ts` (~150-200 lines)
+     - `aggregate-process.ts` (~200-250 lines)
+     - `physical-system.ts` (~200-250 lines)
+   - Create `index.ts` (~50-100 lines) - barrel file exports
+   - **Write JSDoc:** Document all SensorML types and parser functions with SensorML 3.0 spec references
+   - **Test:** Add SensorML parser tests (~600-800 lines tests)
+
+5. **SWE Common Parser** (~5-10 hours, High complexity)
    - Create `src/ogc-api/csapi/formats/swecommon/` directory
    - Create `types.ts` (~600-800 lines)
      - Define DataComponent union type and all component interfaces
      - Define DataRecord, DataArray, Quantity, Count, Text, Boolean, Time, etc.
      - Define Encoding interfaces (JSONEncoding, TextEncoding, BinaryEncoding)
-     - Define Constraint interfaces (AllowedValues, AllowedTimes, etc.)
-   - **Write JSDoc:** Document all SWE Common types with SWE Common 3.0 spec references
-   - **Test immediately:** Add type compilation tests (~50-100 lines tests)
-     - Test type definitions compile without errors
-     - Test union types discriminate correctly
-     - Test interface constraints
+   - Create `parser.ts` (~500-700 lines)
+     - Main SWE Common 3.0 parser with component type discrimination
+     - Encoding detection (JSON/Text/Binary)
+     - Schema validation against DataComponent definitions
+   - Create sub-parsers (~650-850 lines total)
+     - `data-record.ts` (~150-200 lines)
+     - `data-array.ts` (~200-250 lines)
+     - `components.ts` (~300-400 lines) - all simple component types
+   - Create `index.ts` (~50-100 lines) - barrel file exports
+   - **Write JSDoc:** Document all SWE Common types and parser functions with SWE Common 3.0 spec references
+   - **Test:** Add SWE Common parser tests (~800-1,000 lines tests)
 
-5. **SensorML Types** (~2-3 hours, Medium complexity)
-   - Create `src/ogc-api/csapi/formats/sensorml/` directory
-   - Create `types.ts` (~800-1,200 lines)
-     - Define PhysicalSystem, PhysicalComponent, SimpleProcess, AggregateProcess interfaces
-     - Define CapabilityList, CharacteristicList, ComponentList, ConnectionList interfaces
-     - **Link to SWE Common types** from Task 4 for capability/characteristic values
-   - **Write JSDoc:** Document all SensorML types with SensorML 3.0 spec references
-   - **Test immediately:** Add type compilation tests (~50-100 lines tests)
-     - Test type definitions compile without errors
-     - Test SWE Common type integration works
-     - Test interface constraints
+6. **Format Constants** (~1-2 hours, Low complexity)
+   - Create `src/ogc-api/csapi/formats/constants.ts` (~50-100 lines)
+   - Define media type constants
+   - Define resource type constants
+   - Define vocabulary URI constants (SOSA, SSN, CF, QUDT)
+   - **Write JSDoc:** Document constant values and usage
+   - **Test:** Constants validated by format detector tests
 
-6. **SensorML Simple Process Parser** (~2-3 hours, Medium-High complexity)
-   - Create `formats/sensorml/simple-process.ts` (~150-200 lines)
-   - Implement parser for SimpleProcess descriptors
-   - Handle inputs, outputs, parameters, method descriptions
-   - **Write JSDoc:** Document parser function with examples
-   - **Test immediately:** Add Simple Process parser tests (~100-150 lines tests)
-     - Test parsing with spec example fixtures
-     - Test invalid document handling
-     - Test edge cases
-
-7. **SensorML Aggregate Process Parser** (~2-3 hours, Medium-High complexity)
-   - Create `formats/sensorml/aggregate-process.ts` (~200-250 lines)
-   - Implement parser for AggregateProcess descriptors
-   - Handle component connections, internal processes
-   - **Write JSDoc:** Document parser function with examples
-   - **Test immediately:** Add Aggregate Process parser tests (~150-200 lines tests)
-     - Test parsing with spec example fixtures
-     - Test connection handling
-     - Test nested component parsing
-
-8. **SensorML Physical System Parser** (~2-3 hours, Medium-High complexity)
-   - Create `formats/sensorml/physical-system.ts` (~200-250 lines)
-   - Implement parser for PhysicalSystem descriptors
-   - Handle position, components, capabilities, characteristics
-   - **Write JSDoc:** Document parser function with examples
-   - **Test immediately:** Add Physical System parser tests (~150-200 lines tests)
-     - Test parsing with spec example fixtures
-     - Test position/location parsing
-     - Test component hierarchy parsing
-
-9. **SensorML Main Parser** (~2-3 hours, High complexity)
-   - Create `formats/sensorml/parser.ts` (~600-800 lines)
-   - Main SensorML 3.0 parser with recursive component parsing
-   - Capability/characteristic parsing with SWE Common integration
-   - Type discrimination (SimpleProcess vs AggregateProcess vs PhysicalSystem)
-   - Delegate to sub-parsers from Tasks 6-8
-   - **Write JSDoc:** Document main parser with workflow examples
-   - **Test immediately:** Add main parser tests (~150-200 lines tests)
-     - Test type discrimination
-     - Test recursive parsing
-     - Test capability/characteristic integration with SWE Common
-     - Test error handling
-
-10. **SensorML Index** (~0.5-1 hour, Low complexity)
-    - Create `formats/sensorml/index.ts` (~50-100 lines)
-    - Barrel file exporting all SensorML parsers and types
-    - Tree-shaking friendly exports
-    - **Write JSDoc:** Document exports and usage patterns
-    - **Test immediately:** Verify exports work (~20-30 lines tests)
-
-11. **SWE Common Simple Components Parser** (~2-3 hours, Medium-High complexity)
-    - Create `formats/swecommon/components.ts` (~300-400 lines)
-    - Implement parsers for all simple component types (Quantity, Count, Text, Boolean, Time, Category)
-    - Handle UOM, constraints, code spaces
-    - **Write JSDoc:** Document each component parser with examples
-    - **Test immediately:** Add component parser tests (~200-300 lines tests)
-      - Test each component type with fixtures
-      - Test constraint validation
-      - Test UOM handling
-
-12. **SWE Common DataRecord Parser** (~2-3 hours, Medium-High complexity)
-    - Create `formats/swecommon/data-record.ts` (~150-200 lines)
-    - Implement parser for DataRecord structures
-    - Handle field definitions, nested records
-    - **Write JSDoc:** Document parser function with examples
-    - **Test immediately:** Add DataRecord parser tests (~100-150 lines tests)
-      - Test flat records
-      - Test nested records
-      - Test field ordering
-
-13. **SWE Common DataArray Parser** (~2-3 hours, Medium-High complexity)
-    - Create `formats/swecommon/data-array.ts` (~200-250 lines)
-    - Implement parser for DataArray structures
-    - Handle element types, encoding, values
-    - Support JSON/Text/Binary encodings
-    - **Write JSDoc:** Document parser function with encoding examples
-    - **Test immediately:** Add DataArray parser tests (~150-200 lines tests)
-      - Test JSON encoding
-      - Test Text encoding
-      - Test Binary encoding
-      - Test element count validation
-
-14. **SWE Common Main Parser** (~2-3 hours, High complexity)
-    - Create `formats/swecommon/parser.ts` (~500-700 lines)
-    - Main SWE Common 3.0 parser with component type discrimination
-    - Encoding detection (JSON/Text/Binary)
-    - Schema validation against DataComponent definitions
-    - Delegate to sub-parsers from Tasks 11-13
-    - **Write JSDoc:** Document main parser with workflow examples
-    - **Test immediately:** Add main parser tests (~200-300 lines tests)
-      - Test type discrimination
-      - Test encoding detection
-      - Test schema validation
-      - Test error handling
-
-15. **SWE Common Index** (~0.5-1 hour, Low complexity)
-    - Create `formats/swecommon/index.ts` (~50-100 lines)
-    - Barrel file exporting all SWE Common parsers and types
-    - Tree-shaking friendly exports
-    - **Write JSDoc:** Document exports and usage patterns
-    - **Test immediately:** Verify exports work (~20-30 lines tests)
-
-16. **Format Constants** (~1-2 hours, Low complexity)
-    - Create `src/ogc-api/csapi/formats/constants.ts` (~50-100 lines)
-    - Define media type constants
-    - Define resource type constants
-    - Define vocabulary URI constants (SOSA, SSN, CF, QUDT)
-    - **Write JSDoc:** Document constant values and usage
-    - **Test:** Constants validated by format detector tests (no separate test file needed)
-
-17. **Format Index** (~1-2 hours, Low complexity)
-    - Create `src/ogc-api/csapi/formats/index.ts` (~50-100 lines)
-    - Barrel file exporting all parsers, types, and constants
-    - Tree-shaking friendly exports
-    - **Write JSDoc:** Document format imports and usage patterns
-    - **Test immediately:** Add integration tests (~50-100 lines tests)
-      - Test all exports are accessible
-      - Test tree-shaking works correctly
-      - Test import paths resolve
+7. **Format Index** (~1-2 hours, Low complexity)
+   - Create `src/ogc-api/csapi/formats/index.ts` (~50-100 lines)
+   - Barrel file exporting all parsers
+   - Tree-shaking friendly exports
+   - **Write JSDoc:** Document format imports and usage patterns
+   - **Test:** Integration tests verify exports
 
 **Phase 3 Deliverables:**
 - ✅ GeoJSON CSAPI extensions (~150-300 lines)
 - ✅ Format Detector extensions (~50-100 lines)
 - ✅ Validator extensions (~200-400 lines)
-- ✅ SWE Common types (~600-800 lines) - **Created first for SensorML dependency**
-- ✅ SensorML types (~800-1,200 lines) - Links to SWE Common types
-- ✅ SensorML parsers complete (~1,150-1,450 lines across 4 files)
-- ✅ SWE Common parsers complete (~1,150-1,550 lines across 4 files)
-- ✅ Format constants and indices (~150-300 lines)
+- ✅ SensorML parser complete (~1,600-2,200 lines)
+- ✅ SWE Common parser complete (~1,600-2,250 lines)
+- ✅ Format constants and index (~100-200 lines)
 - ✅ Comprehensive format tests (~2,400-3,500 lines tests)
 - ✅ All JSDoc documentation for format handlers
-- ✅ Each component tested immediately after implementation
 
 **Dependencies:** Phase 1 (type system), Phase 2 (QueryBuilder for integration tests)
-
-**Why This Structure:**
-- **Dependency fix** - SWE Common types (Task 4) created before SensorML types (Task 5) that depend on them
-- **Early validation** - Each parser component tested immediately, not after 5-10 hours
-- **Incremental progress** - 17 tasks with ~1-3 hour intervals instead of 2 massive 5-10 hour blocks
-- **Natural checkpoints** - Each parser type (Simple Process, Aggregate Process, Physical System, etc.) is commit-able
-- **Fresh context** - Tests written while parser logic is fresh
-- **Prevents test debt** - Max 800 lines without tests, not 2,900 lines
-- **Matches Phases 1 & 2 pattern** - Test after each task
 
 ---
 
@@ -555,10 +438,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - Integrate SensorML and SWE Common parsers
    - Add fallback for non-worker environments
    - **Write JSDoc:** Document message types, payload structures, performance characteristics
-   - **Test immediately:** Add worker tests (~200-300 lines tests)
-     - Test each message type
-     - Test parser integration
-     - Test fallback behavior
+   - **Test:** Add worker tests (~200-300 lines tests)
 
 2. **Integration Tests** (~4-6 hours, Medium complexity)
    - Create end-to-end workflow tests (~500-800 lines)
@@ -610,9 +490,9 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 |-------|------|------------|--------------|-------------|
 | **Phase 1** | 12-16 hrs | Low | Types, integration, stub builder, helpers (4 tasks) | ~500-600 + ~400-550 tests |
 | **Phase 2** | 20-28 hrs | Medium | Complete QueryBuilder - 9 resource types (9 tasks) | ~700-800 + ~800-1,000 tests |
-| **Phase 3** | 16-28 hrs | High | Format parsers + extensions (17 tasks with incremental testing) | ~3,600-5,050 + ~2,400-3,500 tests |
+| **Phase 3** | 16-28 hrs | High | Format parsers + extensions (7 tasks) | ~3,600-5,050 + ~2,400-3,500 tests |
 | **Phase 4** | 12-16 hrs | Medium-High | Worker, tests, documentation (4 tasks) | ~50 + ~800-1,250 tests |
-| **TOTAL** | **60-88 hrs** | **Mixed** | **Complete CSAPI implementation (34 tasks)** | **~4,850-6,500 + ~4,400-6,300 tests** |
+| **TOTAL** | **60-88 hrs** | **Mixed** | **Complete CSAPI implementation (24 tasks)** | **~4,850-6,500 + ~4,400-6,300 tests** |
 
 **Total Development Time:** 60-88 hours (average: 74 hours)  
 **Calendar Time:** 8-12 weeks (assuming 6-8 hours/week development pace)  
@@ -621,14 +501,13 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 **Key Success Factors:**
 - ✅ Write JSDoc documentation AS YOU CODE (don't defer)
 - ✅ Write method signatures before implementation (design first)
-- ✅ **Write tests IMMEDIATELY after each subtask** (max 2-3 hrs between tests, not 5-10 hrs)
+- ✅ **Write tests IMMEDIATELY after each subtask** (Phase 2: test each resource type before moving to next)
 - ✅ Validate against spec examples throughout
 - ✅ Use helper methods for code reuse (prevents duplication)
 - ✅ Follow three-tier type hierarchy (prevents circular dependencies)
 - ✅ Test edge cases and errors as discovered (don't batch)
 - ✅ Document edge cases in JSDoc immediately
 - ✅ Review coverage after each subtask (aim for >80%)
-- ✅ **Respect dependencies** (SWE Common types before SensorML types)
 - ✅ Update this roadmap if estimates change
 
 **Confidence:** ⭐⭐⭐⭐⭐ (5/5) - Based on 13 research plans and component-level estimates
@@ -683,23 +562,23 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 ## Version History
 
 **Document:** CSAPI Implementation Roadmap (Standalone)  
-**Version:** 3.0 (Phase 3 Restructure - Incremental Testing + Dependency Fix)  
+**Version:** 2.0 (Phase 2 Restructure - Incremental Testing)  
 **Date:** February 5, 2026  
-**Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete with incremental testing and correct dependencies
+**Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete with incremental testing strategy
 
-**Version 3.0 - Phase 3 Restructure (February 5, 2026):**
-- Restructured Phase 3 from 7 tasks (2 massive 5-10 hour tasks) into **17 granular subtasks**
-- Each subtask now implements one component, then tests immediately (implement → test → commit)
-- **Fixed critical dependency**: SWE Common types (Task 4) now created **before** SensorML types (Task 5) that depend on them
-- Prevents test debt: max 800 lines without tests (Task 5 or 9), not 2,900 lines
-- Creates natural checkpoints every 1-3 hours instead of 5-10 hour blocks
-- Aligns with Development Standards and Phases 1 & 2: test immediately after each subtask
-- Total time unchanged (16-28 hours), but distributed across 17 checkpoints
-- Task count increased from 24 to 34 total tasks (more granular tracking)
+**Version 2.0 - Phase 2 Restructure (February 5, 2026):**
+- Restructured Phase 2 from 2 large tasks into **9 granular subtasks** (one per resource type)
+- Each subtask now includes immediate test writing (implement → test → commit)
+- Prevents test debt accumulation (max 12 methods without tests, not 70)
+- Validates architecture incrementally (helper functions tested with Systems, not Commands)
+- Creates natural checkpoints for commits and rollbacks
+- Aligns with Development Standards: "Write tests as you implement (not deferred to later)"
+- Aligns with Phase 1 pattern: test after each task
+- Total time unchanged (20-28 hours), but better distributed across 9 checkpoints
+- Phase 1 task order corrected: Types → Helpers → QueryBuilder → Integration
 
 **Previous Versions:**
-- [v2.0 (archived)](archive/ROADMAP-v2.0.md) - Phase 2 restructured, Phase 3 had testing debt issue
-- [v1.0 (archived)](archive/ROADMAP-v1.0.md) - Original standalone roadmap with monolithic phases
+- [v1.0 (archived)](archive/ROADMAP-v1.0.md) - Original standalone roadmap with 2-task Phase 2 structure
 
 **Roadmap Source:**
 This roadmap is based on the Implementation Roadmap section from the complete [CSAPI Implementation Guide](csapi-implementation-guide.md), which contains:
