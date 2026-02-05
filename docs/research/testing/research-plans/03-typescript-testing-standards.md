@@ -2,18 +2,18 @@
 
 **Section:** 3 of 38  
 **Phase:** 1 - Critical Foundation  
-**Estimated Time:** 1-2 hours  
-**Priority:** MEDIUM - Validates upstream patterns align with industry standards
+**Status:** Research Planning Phase - Not Started  
+**Last Updated:** February 5, 2026  
+**Estimated Research Time:** 1-2 hours  
+**Estimated Test Implementation Lines:** N/A (this is validation research)
 
 ---
 
-## Objective
+## 1. Research Objective
 
 Research industry-standard testing practices for TypeScript client libraries independent of OGC/geospatial context. Validate that upstream ogc-client testing patterns align with broader TypeScript ecosystem best practices, and identify any gaps or opportunities for improvement specific to CSAPI implementation.
 
----
-
-## Why This Research Third
+**Why This Research Third:**
 
 After understanding upstream patterns (Sections 1-2), validate those patterns against industry standards. This ensures:
 - **Upstream patterns are sound** (not just internal conventions)
@@ -21,40 +21,54 @@ After understanding upstream patterns (Sections 1-2), validate those patterns ag
 - **Gaps are identified** (where upstream could improve)
 - **CSAPI can lead** (adopt industry best practices not yet in upstream)
 
-This research provides external validation and prevents "cargo cult" testing where we copy patterns without understanding their merit.
+**Sequencing Rationale:**
+This research provides external validation and prevents "cargo cult" testing where we copy patterns without understanding their merit. Must occur after Sections 1-2 (upstream pattern understanding) and before implementation guidance (Section 4+).
 
 ---
 
-## Key Research Questions
+## 2. Research Questions
 
-### Production-Quality Definition
+### Core Questions
+
+1. **What defines "production-quality" testing for TypeScript client libraries?**
+2. **What coverage targets and metrics are industry standard?**
+3. **How do popular client libraries test without actual HTTP calls?**
+4. **How are TypeScript types validated in tests?**
+5. **What test pyramid distribution is recommended for client libraries?**
+6. **Where do upstream patterns align or diverge from industry standards?**
+
+### Detailed Questions
+
+### Detailed Questions
+
+**Production-Quality Definition (4 questions):**
 1. What defines "production-quality" testing for TypeScript client libraries?
 2. What characteristics separate mature vs immature test suites?
 3. What do TypeScript testing guides recommend?
 4. What do popular client libraries achieve?
 
-### Coverage Standards
+**Coverage Standards (5 questions):**
 5. What coverage % is industry standard for TypeScript client libraries?
 6. What coverage metrics matter (statement, branch, function, line)?
 7. How does coverage vary by component type?
 8. What's considered "good enough" vs "excellent"?
 9. What coverage targets do popular libraries achieve?
 
-### Testing Without HTTP
+**Testing Without HTTP (5 questions):**
 10. How do client libraries test without actual HTTP calls?
 11. What mocking strategies are standard?
 12. What HTTP mocking libraries are popular (jest.mock, nock, msw)?
 13. How to test URL construction without making requests?
 14. What's the balance of mocked vs real network tests?
 
-### URL Validation Depth
+**URL Validation Depth (5 questions):**
 15. How deeply should URLs be validated in tests?
 16. What URL parsing libraries are standard for testing?
 17. What URL assertions are considered thorough?
 18. How to test URL encoding edge cases?
 19. How to test query parameter combinations?
 
-### TypeScript Type Testing
+**TypeScript Type Testing (6 questions):**
 20. How are TypeScript interfaces tested?
 21. How are type definitions validated?
 22. What tools exist for type testing (tsd, dtslint)?
@@ -62,211 +76,257 @@ This research provides external validation and prevents "cargo cult" testing whe
 24. How to test type inference?
 25. How to test generic types?
 
-### Test Pyramid for Client Libraries
+**Test Pyramid for Client Libraries (4 questions):**
 26. What's the test pyramid distribution for client libraries (unit/integration/e2e)?
 27. What's considered "unit" vs "integration" vs "e2e" for a URL-building library?
 28. What's the recommended ratio?
 29. How do popular libraries structure their test pyramid?
 
-### Error Condition Testing
+**Error Condition Testing (5 questions):**
 30. How should error conditions be tested comprehensively?
 31. What error types must be covered?
 32. How to test error messages?
 33. How to test error recovery?
 34. What's the standard depth for error testing?
 
-### Test Structure Best Practices
+**Test Structure Best Practices (5 questions):**
 35. What describe/it block conventions are standard in TypeScript?
 36. What naming conventions for test files?
 37. What naming conventions for test cases?
 38. How to structure setup/teardown?
 39. What's the recommended test file organization?
 
-### Fixture Best Practices
+**Fixture Best Practices (4 questions):**
 40. How should test fixtures be organized?
 41. What fixture formats are standard (JSON, TypeScript objects)?
 42. How to manage fixture maintenance?
 43. What's the balance of real vs synthetic fixtures?
 
-### Test Documentation
+**Test Documentation (4 questions):**
 44. What test documentation is standard?
 45. How are tests self-documenting?
 46. What comments are needed vs redundant?
 47. How to document test intent?
 
-### Performance Testing
+**Performance Testing (2 questions):**
 48. How should performance be tested in client libraries?
 49. What performance metrics matter?
 50. Are benchmarks standard?
 
-### Test Maintainability
+**Test Maintainability (4 questions):**
 51. What makes tests maintainable long-term?
 52. How to prevent test rot?
 53. What refactoring patterns exist for tests?
 54. How to reduce test duplication?
 
-### Test-to-Code Ratio
+**Test-to-Code Ratio (3 questions):**
 55. What's a healthy test-to-code ratio?
 56. How does it vary by library type?
 57. What do popular libraries achieve?
 
-### CI/CD Integration
+**CI/CD Integration (3 questions):**
 58. What CI/CD practices are standard for TypeScript libraries?
 59. What test commands are standard (test, test:watch, test:coverage)?
 60. What coverage reporting is standard?
 
 ---
 
-## Research Methodology
+## 3. Primary Resources
 
-### Phase 1: Documentation Survey (30-45 minutes)
-1. Review official TypeScript testing documentation
-2. Review Jest best practices documentation
-3. Review testing guides from TypeScript community
-4. Extract recommended practices
-5. Identify consensus patterns
-
-### Phase 2: Popular Library Analysis (45-60 minutes)
-Analyze test suites from 3-5 popular TypeScript client libraries:
-- **@octokit/rest** (GitHub API client)
-- **axios** (HTTP client)
-- **@aws-sdk/client-s3** (AWS SDK - one service)
-- **stripe** (Stripe API client)
-- **node-fetch** (if has test suite)
-
-For each:
-1. Examine test file structure
-2. Measure coverage %
-3. Identify mocking strategies
-4. Document assertion patterns
-5. Count test-to-code ratio
-6. Extract 2-3 exemplary test patterns
-
-### Phase 3: Best Practices Synthesis (15-30 minutes)
-1. Identify patterns consistent across documentation + libraries
-2. Document industry consensus patterns
-3. Identify variations and their rationale
-4. Compare against upstream patterns from Sections 1-2
-5. Identify gaps or opportunities
-
-### Phase 4: Documentation (15 minutes)
-1. Synthesize findings into best practices guide
-2. Compare with upstream patterns
-3. Document validation (where upstream matches industry)
-4. Document gaps (where upstream differs from industry)
-5. Recommend CSAPI approach
-
----
-
-## Resources Required
-
-### Primary Resources
 - **TypeScript Handbook:** https://www.typescriptlang.org/docs/handbook/
 - **Jest Documentation:** https://jestjs.io/docs/getting-started
 - **Testing TypeScript Guide:** https://www.typescriptlang.org/docs/handbook/testing-types.html
-- Popular library repositories (GitHub)
-
-### Supporting Resources
-- Sections 1-2 deliverables (upstream patterns for comparison)
-- TypeScript testing blog posts and articles
-- Testing best practices articles
-- Coverage.io or Codecov documentation
-
-### Tools Needed
-- GitHub for repository access
-- Coverage report viewing tools
-- Test framework documentation
+- **Popular TypeScript Client Library Repositories:**
+  - @octokit/rest (GitHub API client)
+  - axios (HTTP client)
+  - @aws-sdk/client-s3 (AWS SDK)
+  - stripe (Stripe API client)
+  - node-fetch (if has test suite)
 
 ---
 
-## Deliverable Specification
+## 4. Supporting Resources
 
-### Document: "TypeScript Client Library Testing Standards"
+- Section 1 Deliverable: EDR Test Blueprint (for comparison)
+- Section 2 Deliverable: Upstream Test Consistency Matrix (for validation)
+- TypeScript testing blog posts and articles (community best practices)
+- Testing best practices articles (broader industry context)
+- Coverage.io or Codecov documentation (coverage reporting standards)
+
+---
+
+## 5. Research Methodology
+
+### Phase 1: Documentation Survey (30-45 minutes)
+
+**Objective:** Extract recommended practices from authoritative sources
+
+**Tasks:**
+1. Review official TypeScript testing documentation
+2. Review Jest best practices documentation
+3. Review testing guides from TypeScript community
+4. Extract recommended practices for each question category
+5. Identify consensus patterns across documentation sources
+6. Document conflicts or variations in recommendations
+
+### Phase 2: Popular Library Analysis (45-60 minutes)
+
+**Objective:** Quantify practices from real-world production libraries
+
+**Tasks:**
+Analyze test suites from 3-5 popular TypeScript client libraries (@octokit/rest, axios, @aws-sdk/client-s3, stripe, node-fetch):
+
+For each library:
+1. Examine test file structure and organization
+2. Measure coverage % (statement, branch, function, line)
+3. Identify mocking strategies (HTTP mocking approach)
+4. Document assertion patterns (URL validation depth)
+5. Count test-to-code ratio (LOC test vs LOC production)
+6. Document test pyramid distribution (unit/integration/e2e counts)
+7. Extract 2-3 exemplary test patterns as examples
+8. Document TypeScript type testing approaches
+
+### Phase 3: Best Practices Synthesis (15-30 minutes)
+
+**Objective:** Synthesize findings into industry consensus
+
+**Tasks:**
+1. Identify patterns consistent across documentation + libraries (universal industry standards)
+2. Document industry consensus patterns with quantified metrics
+3. Identify variations and their rationale (context-specific adaptations)
+4. Compare against upstream patterns from Sections 1-2
+5. Identify where upstream matches industry standards (validation ✅)
+6. Identify gaps or opportunities where upstream differs from industry (enhancement ⚠️)
+
+### Phase 4: Documentation (15 minutes)
+
+**Objective:** Create comprehensive deliverable document
+
+**Tasks:**
+1. Synthesize findings into best practices guide
+2. Create comparison table: Industry vs Upstream patterns
+3. Document validation (where upstream matches industry)
+4. Document gaps (where upstream differs from industry)
+5. Recommend CSAPI approach for each category
+6. Provide specific examples from popular libraries
+
+---
+
+## 6. Success Criteria
+
+This research is complete when:
+
+- [ ] Industry consensus documented with authoritative sources
+- [ ] 3-5 popular libraries analyzed with quantifiable metrics
+- [ ] Coverage standards benchmarked (statement/branch/function/line %)
+- [ ] Mocking strategies compared across libraries
+- [ ] Type testing approaches documented (tsd, dtslint, etc.)
+- [ ] Test pyramid standards defined (unit/integration/e2e ratios)
+- [ ] Test structure conventions documented (describe/it, naming)
+- [ ] Fixture best practices extracted from examples
+- [ ] Test-to-code ratios quantified from popular libraries
+- [ ] Validation against upstream patterns complete (comparison table)
+- [ ] Clear gaps identified where upstream differs from industry
+- [ ] Actionable recommendations for CSAPI documented
+- [ ] All 60 research questions answered with specific findings
+
+---
+
+## 7. Deliverable
+
+**TypeScript Client Library Testing Standards document**
+
 **Location:** `docs/research/testing/findings/03-typescript-testing-standards.md`
 
-**Required Sections:**
+Content includes:
 
 1. **Executive Summary**
    - Industry consensus on testing standards
-   - Key metrics from popular libraries
-   - Comparison with upstream patterns
-   - Recommendations for CSAPI
+   - Key metrics from popular libraries (coverage %, ratios)
+   - Comparison with upstream patterns (validation vs gaps)
+   - High-level recommendations for CSAPI
 
 2. **Production-Quality Characteristics**
    - What defines "production-quality" testing
-   - Maturity indicators
-   - Quality gates
+   - Maturity indicators for test suites
+   - Quality gates recommended by industry
    - Examples from popular libraries
 
 3. **Coverage Standards**
-   - Industry-standard coverage targets
-   - Coverage by metric type (statement, branch, function)
-   - Coverage by component type
-   - Examples from popular libraries
+   - Industry-standard coverage targets (% by metric type)
+   - Coverage by metric type (statement, branch, function, line)
+   - Coverage by component type (QueryBuilder, parsers, types)
+   - Examples from popular libraries with actual metrics
 
 4. **Mocking Strategies**
-   - HTTP mocking approaches
+   - HTTP mocking approaches (jest.mock, nock, MSW)
    - Pros/cons of each approach
-   - Popular mocking libraries
+   - Popular mocking libraries and usage patterns
    - URL construction testing without HTTP
    - Recommended strategy for CSAPI
 
 5. **URL Validation Best Practices**
    - URL assertion depth standards
-   - URL parsing libraries for testing
+   - URL parsing libraries for testing (url-parse, URL API)
    - Query parameter validation approaches
    - Examples from client libraries
 
 6. **TypeScript Type Testing**
-   - Type testing approaches
-   - Tools available (tsd, dtslint, etc.)
+   - Type testing approaches (compilation vs runtime)
+   - Tools available (tsd, dtslint, expect-type)
    - Type assertion patterns
    - Recommended approach for CSAPI
 
 7. **Test Pyramid Standards**
    - Unit/integration/e2e definitions for client libraries
-   - Recommended distribution
-   - Examples from popular libraries
-   - Application to CSAPI
+   - Recommended distribution (ratios)
+   - Examples from popular libraries with counts
+   - Application to CSAPI context
 
 8. **Error Testing Best Practices**
    - Error condition coverage standards
-   - Error message validation
-   - Error recovery testing
+   - Error message validation approaches
+   - Error recovery testing patterns
    - Examples from popular libraries
 
 9. **Test Structure Standards**
-   - Describe/it block conventions
-   - Naming conventions
-   - File organization
-   - Setup/teardown patterns
+   - Describe/it block conventions (industry patterns)
+   - Naming conventions (test files and test cases)
+   - File organization patterns
+   - Setup/teardown patterns (beforeEach, afterEach)
    - Examples from popular libraries
 
 10. **Fixture Best Practices**
-    - Fixture organization
+    - Fixture organization patterns
     - Fixture quality (real vs synthetic)
-    - Fixture maintenance
+    - Fixture maintenance strategies
     - Examples from popular libraries
 
 11. **Test-to-Code Ratios**
     - Industry benchmarks
-    - Ratios from popular libraries
+    - Ratios from popular libraries (quantified)
     - Factors affecting ratio
     - Recommended ratio for CSAPI
 
-12. **Validation Against Upstream**
+12. **CI/CD Integration Standards**
+    - Standard CI/CD practices for TypeScript libraries
+    - Standard test commands (test, test:watch, test:coverage)
+    - Coverage reporting standards
+    - Examples from popular libraries
+
+13. **Validation Against Upstream**
     - Where upstream matches industry standards ✅
     - Where upstream differs from industry standards ⚠️
     - Gaps to address in CSAPI
-    - Opportunities for leadership
+    - Opportunities for leadership (adopting best practices)
 
-13. **Recommendations for CSAPI**
-    - Adopt upstream patterns (validated by industry)
-    - Enhance upstream patterns (industry best practices)
-    - Avoid patterns (not industry standard)
-    - CSAPI-specific considerations
+14. **Recommendations for CSAPI**
+    - **Adopt upstream patterns** (validated by industry)
+    - **Enhance upstream patterns** (industry best practices not yet in upstream)
+    - **Avoid patterns** (not industry standard)
+    - **CSAPI-specific considerations** (unique requirements)
 
-### Comparison Table Example
+**Comparison Table Format:**
 
 ```markdown
 | Practice | Industry Standard | Upstream (ogc-client) | Gap? | CSAPI Action |
@@ -277,77 +337,74 @@ For each:
 | Mocking strategy | MSW, nock | jest.mock | ✅ Match | Continue |
 ```
 
-### Success Criteria
+---
 
-✅ Industry consensus documented with sources  
-✅ 3-5 popular libraries analyzed with metrics  
-✅ Coverage standards benchmarked  
-✅ Mocking strategies compared  
-✅ Type testing approaches documented  
-✅ Test pyramid standards defined  
-✅ Validation against upstream patterns complete  
-✅ Clear gaps identified  
-✅ Actionable recommendations for CSAPI  
+## 8. Dependencies
 
-### Validation
+**Must Complete Before Starting:**
+- Section 1: Upstream Blueprint Analysis (PR #114) - provides EDR baseline
+- Section 2: Upstream Test Consistency - provides library-wide pattern inventory
 
-- Findings are sourced (documentation + library examples)
-- Metrics are quantified (coverage %, ratios)
-- Comparisons are objective (not subjective opinion)
-- Recommendations are justified by industry practice
-- Gaps are specific and actionable
+**Blocks:**
+- Section 6: "Meaningful vs Trivial" Definition (uses industry context)
+- Section 17: Coverage Targets Definition (uses industry benchmarks)
+- Section 21: TypeScript Type Testing (uses type testing tools research)
+- Section 33: Performance Testing (uses industry standards)
+- All subsequent testing sections (informed by industry validation)
 
 ---
 
-## Cross-References
+## 9. Research Status Checklist
 
-**Validates:**
-- Section 1: EDR Test Blueprint (are EDR patterns industry-standard?)
-- Section 2: Upstream Test Consistency (are upstream patterns sound?)
-
-**Informs:**
-- Section 6: "Meaningful vs Trivial" Definition (industry context)
-- Section 17: Coverage Targets Definition (industry benchmarks)
-- Section 21: TypeScript Type Testing (type testing tools)
-- Section 33: Performance Testing (industry standards)
+- [ ] Phase 1: Documentation Survey (30-45 min) - Complete
+- [ ] Phase 2: Popular Library Analysis (45-60 min) - Complete
+- [ ] Phase 3: Best Practices Synthesis (15-30 min) - Complete
+- [ ] Phase 4: Documentation (15 min) - Complete
+- [ ] Deliverable document created and reviewed
+- [ ] Cross-references updated in related documents
+- [ ] Upstream patterns validated against industry standards
 
 ---
 
-## Next Steps After Completion
+## 10. Notes and Open Questions
 
-1. Compare findings with Sections 1-2
+<!-- Add notes and unresolved questions here as research progresses -->
+
+**Initial Observations:**
+- Industry validation provides external credibility for testing approach
+- Prevents "cargo cult" adoption of upstream patterns without understanding merit
+- Identifies opportunities for CSAPI to lead with industry best practices
+
+**Risks and Mitigation:**
+
+**Risk:** Popular libraries may have different complexity than CSAPI  
+**Mitigation:** Focus on universal patterns, not complexity-specific ones; normalize comparisons by component type
+
+**Risk:** Industry standards may conflict with upstream patterns  
+**Mitigation:** Document conflicts; recommend gradual adoption where appropriate; prioritize backward compatibility
+
+**Risk:** Time-consuming to analyze multiple libraries deeply  
+**Mitigation:** Focus on high-level patterns and key metrics; sample 2-3 tests per library for depth analysis; target 3-5 libraries only
+
+**Risk:** TypeScript testing is evolving; standards may be fluid  
+**Mitigation:** Focus on consensus patterns across multiple sources; note emerging trends separately; document recommendation confidence levels
+
+**Validation Strategy:**
+- Findings must be sourced (documentation + library examples)
+- Metrics must be quantified (coverage %, ratios, counts)
+- Comparisons must be objective (not subjective opinion)
+- Recommendations must be justified by industry practice
+- Gaps must be specific and actionable
+
+**Next Steps After Completion:**
+1. Compare findings with Sections 1-2 deliverables
 2. Validate upstream patterns against industry standards
 3. Identify gaps where CSAPI can improve on upstream
-4. Use industry standards as external validation for test quality checklist
+4. Use industry standards as external validation for test quality checklist (Section 36)
 5. Inform all subsequent testing sections with industry context
 
 ---
 
-## Risks and Mitigation
-
-**Risk:** Popular libraries may have different complexity than CSAPI  
-**Mitigation:** Focus on universal patterns, not complexity-specific ones; normalize comparisons
-
-**Risk:** Industry standards may conflict with upstream patterns  
-**Mitigation:** Document conflicts; recommend gradual adoption where appropriate
-
-**Risk:** Time-consuming to analyze multiple libraries deeply  
-**Mitigation:** Focus on high-level patterns and key metrics; sample 2-3 tests per library for depth
-
-**Risk:** TypeScript testing is evolving; standards may be fluid  
-**Mitigation:** Focus on consensus patterns across multiple sources; note emerging trends separately
-
----
-
-## Research Status
-
-- [ ] Phase 1: Documentation Survey (30-45 min)
-- [ ] Phase 2: Popular Library Analysis (45-60 min)
-- [ ] Phase 3: Best Practices Synthesis (15-30 min)
-- [ ] Phase 4: Documentation (15 min)
-- [ ] Deliverable Complete and Reviewed
-
-**Total Estimated Time:** 1-2 hours  
-**Actual Time:** _[To be filled during research]_  
-**Started:** _[Date]_  
-**Completed:** _[Date]_
+**Actual Research Time:** _[To be filled during research execution]_  
+**Started:** _[Date when research begins]_  
+**Completed:** _[Date when deliverable is finished]_
