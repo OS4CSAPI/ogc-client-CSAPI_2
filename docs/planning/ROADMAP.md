@@ -378,6 +378,51 @@ This roadmap update ensures 100% coverage of all work described in the [CSAPI Im
 
 ---
 
+## Development Standards
+
+**Recommended Development Workflow:**
+1. Write method signatures before implementation
+3. Add comprehensive JSDoc comments with parameters, return types, examples
+4. Implement functionality with inline documentation for complex logic
+5. Write tests as you implement (not deferred to later)
+6. Document edge cases and validation rules as discovered
+7. Add usage examples to JSDoc for common scenarios
+8. Validate against spec examples throughout
+9. Update documentation as you go - don't defer
+
+**Code Quality Standards:**
+- TypeScript strict mode enabled
+- 100% public API JSDoc coverage
+- >80% test coverage (statement and branch)
+- Lint-clean code (ESLint configuration)
+- No magic numbers or strings (use constants)
+- Consistent error handling patterns
+- Performance profiling for heavy operations
+- Follow three-tier type hierarchy
+- Use helper methods for code reuse (no inheritance)
+
+**Documentation Standards:**
+- Clear, concise method descriptions
+- Parameter descriptions with types and constraints
+- Return type documentation
+- Example code for common use cases
+- Links to relevant CSAPI specification sections
+- Error condition documentation
+- Performance characteristics noted where relevant
+- Type system documentation with IntelliSense examples
+
+**Research-Validated Standards:**
+- All architectural decisions backed by research (⭐⭐⭐⭐⭐ confidence)
+- Follow upstream patterns (100% consistency)
+- Helper methods for code reuse (0% inheritance)
+- Resource validation in all methods (~2 lines per method)
+- Flat file structure + formats/ subfolder
+- Three-tier type system (shared → ogc-api → csapi)
+- Complete integration code (64 lines exact)
+- Comprehensive test coverage (>80%)
+
+---
+
 ## Version History
 
 **Document:** CSAPI Implementation Roadmap (Standalone)  
