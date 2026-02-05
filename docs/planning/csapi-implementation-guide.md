@@ -1,7 +1,7 @@
 # CSAPI Implementation Guide for Camptocamp OGC Client Library
 
-**Last Updated:** February 4, 2026  
-**Version:** 5.0 (Architecture-Validated with Real-World Scenarios)
+**Last Updated:** February 5, 2026  
+**Version:** 6.0 (Complete Self-Contained Guide)
 
 ---
 
@@ -4363,13 +4363,25 @@ Every component described above aligns with these core project goals:
 
 ---
 
-**Document Version:** 4.0 (Implementation-Ready with Enhanced Detail)  
-**Previous Versions:** 
-- [v1.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v1.md) - Original architecture  
-- [v2.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v2.md) - Research-validated structure  
-- [v3.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v3.md) - Implementation details and roadmap  
-- [v4.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v4.md) - Hybrid file structure diagram
+## Version History
 
-**Date:** 2026-02-04  
+**Document Version:** 6.0 (Complete Self-Contained Guide)  
+**Date:** February 5, 2026  
 **Research Foundation:** 14 completed research plans with ⭐⭐⭐⭐⭐ confidence (98-100%)  
 **Status:** ✅ **ARCHITECTURE VALIDATED** with real-world scenarios and quantitative evidence
+
+**Version 6.0 Restoration (February 5, 2026):**
+- Restored 17 detailed implementation sections removed in v2.0
+- All resource method sections restored (Systems, Deployments, Procedures, Sampling Features, Properties, DataStreams, Observations, Control Streams, Commands)
+- All format handler sections restored (GeoJSON Handler, SensorML Handler, SWE Common Handler, Format Detector, Validator)
+- All infrastructure sections restored (Background Processing, Test Coverage, API Documentation)
+- Document now complete and self-contained with no archive dependencies
+- Total additions: ~900 lines of detailed implementation guidance
+- See [Phase 1 Reconnaissance Report](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/phase1-reconnaissance-report.md) for restoration methodology
+
+**Previous Versions:**
+- [v5.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v5.md) - Architecture-validated with real-world scenarios (pre-restoration)
+- [v4.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v4.md) - Hybrid file structure diagram
+- [v3.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v3.md) - Implementation details and roadmap
+- [v2.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v2.md) - Research-validated structure (sections consolidated)
+- [v1.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v1.md) - Original architecture with all detailed sections
