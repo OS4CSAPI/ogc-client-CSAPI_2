@@ -2,18 +2,18 @@
 
 **Section:** 7 of 38  
 **Phase:** 2 - Architecture Integration  
-**Estimated Time:** 1 hour  
-**Priority:** HIGH - Senior dev criticized lack of "end-to-end" tests
+**Status:** Research Planning Phase - Not Started  
+**Last Updated:** February 5, 2026  
+**Estimated Research Time:** 1 hour  
+**Estimated Test Implementation Lines:** N/A (this defines e2e scope; implementation in Phase 4 Task 2: ~500-800 lines)
 
 ---
 
-## Objective
+## 1. Research Objective
 
 Define what "end-to-end" means for a URL-building client library that doesn't make HTTP calls. Establish clear scope, boundaries, and test structure for e2e tests that satisfy the senior dev's "end-to-end" requirement while remaining appropriate for the library's architecture.
 
----
-
-## Why This Research Seventh
+**Why This Research Seventh:**
 
 **Primary Constraint:** Senior dev specifically criticized lack of "end-to-end" tests.
 
@@ -24,60 +24,72 @@ After defining test quality (Section 6), clarify what "end-to-end" means in CSAP
 - **Distinction** from integration tests
 - **Test pyramid** distribution (unit/integration/e2e ratios)
 
+**Sequencing Rationale:**
+Must follow quality definition (Section 6) to ensure e2e tests are "meaningful." Critical for Phase 4 Task 2 (Integration Tests = E2E Tests). Addresses senior dev's specific criticism directly.
+
 ---
 
-## Key Research Questions
+## 2. Research Questions
 
-### E2E Definition for URL-Building Libraries
+### Core Questions
+
+1. **What is "end-to-end" for a library that doesn't make HTTP calls?**
+2. **What are the scope, boundaries, entry/exit points for CSAPI e2e tests?**
+3. **What's the distinction between integration and e2e tests for CSAPI?**
+4. **What workflows constitute complete e2e coverage?**
+5. **What test pyramid distribution (unit/integration/e2e ratios) is appropriate?**
+6. **How do upstream and industry patterns define e2e for client libraries?**
+
+### Detailed Questions
+
+### Detailed Questions
+
+**E2E Definition for URL-Building Libraries (5 questions):**
 1. What is "end-to-end" for a library that doesn't make HTTP calls?
 2. Is e2e about multi-component interaction?
 3. Is e2e about complete workflows?
 4. Is e2e about full library API surface coverage?
 5. What's the "end" in "end-to-end" for CSAPI?
 
-### Scope and Boundaries
+**Scope and Boundaries (5 questions):**
 6. What's the entry point of an e2e test? (`OgcApiEndpoint.fromUrl()`?)
 7. What's the exit point of an e2e test? (URL string? Parsed format?)
 8. Does e2e include format parsing or just URL building?
 9. Does e2e include HTTP mocking or assume URLs are correct?
 10. What components must be involved for a test to be e2e?
 
-### Integration vs E2E Distinction
+**Integration vs E2E Distinction (5 questions):**
 11. What's the difference between integration and e2e for CSAPI?
 12. Where's the boundary?
 13. Are the 4 workflows in Implementation Guide integration or e2e?
 14. Can integration tests satisfy the e2e requirement?
 15. Do we need both integration AND e2e tests, or are they the same?
 
-### Workflow-Based E2E
+**Workflow-Based E2E (4 questions):**
 16. Is e2e about complete workflows (discovery → query → parse)?
 17. What workflows constitute e2e coverage?
 18. How do workflows differ from integration tests?
 19. How many workflow scenarios are sufficient?
 
-### Implementation Guide Workflows
-20. Discovery workflow: Is this e2e or integration?
-    - Connect → check conformance → list collections → retrieve resources
-21. Observation workflow: Is this e2e or integration?
-    - Systems → datastreams → observations → pagination → parsing
-22. Command workflow: Is this e2e or integration?
-    - Systems → control streams → feasibility → submit → status → result
-23. Cross-resource navigation: Is this e2e or integration?
-    - System → deployments → procedures → sampling features → datastreams → observations
+**Implementation Guide Workflows (4 questions):**
+20. Discovery workflow: Is this e2e or integration? (Connect → check conformance → list collections → retrieve resources)
+21. Observation workflow: Is this e2e or integration? (Systems → datastreams → observations → pagination → parsing)
+22. Command workflow: Is this e2e or integration? (Systems → control streams → feasibility → submit → status → result)
+23. Cross-resource navigation: Is this e2e or integration? (System → deployments → procedures → sampling features → datastreams → observations)
 
-### Upstream E2E Patterns
+**Upstream E2E Patterns (4 questions):**
 24. How does EDR define e2e tests?
 25. Do other upstream implementations have e2e tests?
 26. What patterns exist in upstream for e2e vs integration?
 27. What did upstream maintainers accept as e2e in PR #114?
 
-### Industry E2E Patterns
+**Industry E2E Patterns (4 questions):**
 28. How do TypeScript client libraries define e2e?
 29. Do client libraries without HTTP have e2e tests?
 30. What's the industry standard for e2e in URL-building libraries?
 31. Examples from @octokit/rest, axios, AWS SDK?
 
-### Test Pyramid Distribution
+**Test Pyramid Distribution (6 questions):**
 32. What's the recommended test pyramid for CSAPI?
 33. What % should be unit tests?
 34. What % should be integration tests?
@@ -85,7 +97,7 @@ After defining test quality (Section 6), clarify what "end-to-end" means in CSAP
 36. How does CSAPI test pyramid compare to upstream?
 37. How does it compare to industry standards?
 
-### E2E Test Structure
+**E2E Test Structure (6 questions):**
 38. How should e2e tests be organized?
 39. One e2e test file or multiple?
 40. How long should e2e tests be (lines per test)?
@@ -93,83 +105,120 @@ After defining test quality (Section 6), clarify what "end-to-end" means in CSAP
 42. What fixtures are required for e2e tests?
 43. How to mock HTTP responses for e2e tests (if needed)?
 
-### E2E Coverage Requirements
+**E2E Coverage Requirements (5 questions):**
 44. What must be covered by e2e tests?
 45. Do all 9 resource types need e2e coverage?
 46. Do all workflows need e2e coverage?
 47. What's the minimum viable e2e test suite?
 48. What's comprehensive e2e coverage?
 
-### Error Scenarios in E2E
+**Error Scenarios in E2E (3 questions):**
 49. Should e2e tests cover error scenarios?
 50. What error workflows are e2e vs unit?
 51. How deep should e2e error testing go?
 
-### Performance Considerations
+**Performance Considerations (3 questions):**
 52. Should e2e tests validate performance?
 53. Are e2e tests slower than integration tests?
 54. What's acceptable e2e test execution time?
 
 ---
 
-## Research Methodology
+## 3. Primary Resources
+
+- Section 1 Deliverable: EDR Test Pattern Blueprint (upstream e2e patterns from accepted PR #114)
+- Section 2 Deliverable: Upstream Test Consistency Matrix (e2e tests across implementations)
+- Section 3 Deliverable: TypeScript Testing Standards (industry e2e standards and test pyramid)
+- **Implementation Guide:** [docs/planning/csapi-implementation-guide.md](../../planning/csapi-implementation-guide.md) (4 workflow types specification)
+
+---
+
+## 4. Supporting Resources
+
+- Section 6 Deliverable: "Meaningful vs Trivial" Definition (quality criteria for e2e tests)
+- Senior dev feedback documentation (lack of e2e tests criticism)
+
+---
+
+## 5. Research Methodology
 
 ### Phase 1: Upstream E2E Analysis (20-25 minutes)
-1. Review Section 1 deliverable: Does EDR have e2e tests?
-2. Review Section 2 deliverable: Do other implementations have e2e tests?
-3. Extract e2e patterns from upstream
+
+**Objective:** Extract e2e patterns from proven upstream implementations
+
+**Tasks:**
+1. Review Section 1 deliverable: Does EDR have e2e tests in PR #114?
+2. Review Section 2 deliverable: Do other implementations (WFS, WMS, WMTS, STAC) have e2e tests?
+3. Extract e2e patterns from upstream (structure, scope, organization)
 4. Document e2e vs integration distinction in upstream
-5. Identify what upstream considers e2e
+5. Identify what upstream maintainers consider e2e (accepted patterns)
+6. Extract test pyramid distributions from upstream
 
 ### Phase 2: Industry E2E Analysis (15-20 minutes)
-1. Review Section 3 deliverable: Industry e2e standards
-2. Analyze client library e2e patterns
-3. Understand e2e for non-HTTP libraries
-4. Extract e2e scope definitions
-5. Document test pyramid distributions
+
+**Objective:** Understand industry standards for e2e in client libraries
+
+**Tasks:**
+1. Review Section 3 deliverable: Industry e2e standards for TypeScript client libraries
+2. Analyze client library e2e patterns (@octokit/rest, axios, AWS SDK)
+3. Understand e2e for non-HTTP libraries (URL builders, data transformers)
+4. Extract e2e scope definitions from industry
+5. Document test pyramid distributions (unit/integration/e2e ratios)
+6. Identify mocking strategies for e2e tests
 
 ### Phase 3: CSAPI E2E Definition (15-20 minutes)
-1. Apply upstream + industry patterns to CSAPI
-2. Define e2e scope specific to CSAPI architecture
-3. Clarify integration vs e2e boundary
-4. Map Implementation Guide workflows to integration/e2e
-5. Define test pyramid for CSAPI
+
+**Objective:** Define e2e scope specific to CSAPI architecture
+
+**Tasks:**
+1. Apply upstream + industry patterns to CSAPI context
+2. Define e2e scope specific to CSAPI architecture (URL builder + format parser)
+3. Clarify integration vs e2e boundary (component count, workflow completeness)
+4. Map Implementation Guide workflows to integration/e2e (4 workflows)
+5. Define test pyramid for CSAPI (% distribution)
+6. Define entry point (OgcApiEndpoint.fromUrl) and exit point (parsed results)
+7. Specify HTTP mocking strategy for e2e tests
 
 ### Phase 4: Documentation (10 minutes)
+
+**Objective:** Create comprehensive e2e scope and strategy document
+
+**Tasks:**
 1. Synthesize findings into e2e scope document
-2. Create clear definition and boundaries
-3. Provide concrete e2e test examples
-4. Define test pyramid distribution
-5. Create actionable e2e testing strategy
+2. Create clear definition and boundaries (in scope vs out of scope)
+3. Provide concrete e2e test examples (structure, assertions)
+4. Define test pyramid distribution with line counts
+5. Create actionable e2e testing strategy for Phase 4 Task 2
 
 ---
 
-## Resources Required
+## 6. Success Criteria
 
-### Primary Resources
-- Section 1 Deliverable: EDR Test Pattern Blueprint (e2e patterns)
-- Section 2 Deliverable: Upstream Test Consistency Matrix (e2e across implementations)
-- Section 3 Deliverable: TypeScript Testing Standards (industry e2e)
-- **Implementation Guide:** [docs/planning/csapi-implementation-guide.md](../../planning/csapi-implementation-guide.md) (4 workflow types)
+This research is complete when:
 
-### Supporting Resources
-- Section 6 Deliverable: "Meaningful vs Trivial" Definition (quality context)
-- Senior dev feedback on lack of e2e tests
-
-### Tools Needed
-- Test pyramid visualization
-- Workflow diagram for e2e scenarios
+- [ ] Clear definition of e2e for CSAPI (URL builder + format parser context)
+- [ ] Unambiguous integration vs e2e distinction with examples
+- [ ] Scope and boundaries defined (in scope vs out of scope)
+- [ ] 4 workflow specifications ready for implementation
+- [ ] Test pyramid distribution defined (unit/integration/e2e % and line counts)
+- [ ] E2E test structure and organization specified
+- [ ] HTTP mocking strategy defined for e2e tests
+- [ ] Coverage requirements clear (minimum viable vs comprehensive)
+- [ ] Addresses senior dev's e2e criticism specifically
+- [ ] Validated against upstream + industry patterns
+- [ ] All 54 research questions answered with specific findings
 
 ---
 
-## Deliverable Specification
+## 7. Deliverable
 
-### Document: "End-to-End Testing Scope and Strategy"
+**End-to-End Testing Scope and Strategy document**
+
 **Location:** `docs/research/testing/results/07-end-to-end-testing-scope.md`
 
-**Note:** This goes in `results/` not `findings/` because it's a synthesized, actionable strategy.
+**Note:** This goes in `results/` not `findings/` because it's a synthesized, actionable strategy document (not raw research findings).
 
-**Required Sections:**
+Content includes:
 
 1. **Executive Summary**
    - E2E definition for CSAPI
@@ -179,13 +228,15 @@ After defining test quality (Section 6), clarify what "end-to-end" means in CSAP
    - E2E coverage requirements
 
 2. **E2E Definition for URL-Building Libraries**
-   - What "end-to-end" means for CSAPI
+   - What "end-to-end" means for CSAPI specifically
    - Entry point: `OgcApiEndpoint.fromUrl()`
-   - Exit point: Complete workflow execution (URL + parsing)
-   - Components involved: All layers (endpoint → QueryBuilder → formats)
-   - Workflow completion: Multi-step scenarios
+   - Exit point: Complete workflow execution (URL building + format parsing)
+   - Components involved: All layers (endpoint → QueryBuilder → format parsers)
+   - Workflow completion: Multi-step scenarios from start to finish
 
 3. **E2E vs Integration Distinction**
+   
+   **Comparison Table:**
    ```markdown
    | Aspect | Integration Test | End-to-End Test |
    |--------|-----------------|-----------------|
@@ -193,6 +244,7 @@ After defining test quality (Section 6), clarify what "end-to-end" means in CSAP
    | Entry | Mid-level API | Top-level API |
    | Workflow | Partial | Complete |
    | Example | QueryBuilder + helpers | Endpoint → QueryBuilder → format parser |
+   | Lines per test | 20-50 | 100-200 |
    ```
 
 4. **E2E Scope and Boundaries**
@@ -213,18 +265,22 @@ After defining test quality (Section 6), clarify what "end-to-end" means in CSAP
      - Steps: Connect → conformance check → list collections → filter by type → retrieve resources
      - Components: OgcApiEndpoint, conformance detector, collection manager, QueryBuilder
      - Exit: Resource list with metadata
+     - Test length: ~100-150 lines
    - **Workflow 2: Observation Query**
      - Steps: Discover systems → find datastreams → query observations → paginate → parse results
      - Components: OgcApiEndpoint, QueryBuilder (systems, datastreams, observations), SWE Common parser
      - Exit: Parsed observation array
+     - Test length: ~150-200 lines
    - **Workflow 3: Command Submission**
      - Steps: Discover systems → find control streams → check feasibility → submit command → track status → retrieve results
      - Components: OgcApiEndpoint, QueryBuilder (systems, controlstreams, commands), status tracker
      - Exit: Command result with status
+     - Test length: ~150-200 lines
    - **Workflow 4: Cross-Resource Navigation**
      - Steps: System → deployments → procedures → sampling features → datastreams → observations
      - Components: OgcApiEndpoint, QueryBuilder (all resource types), navigation links
      - Exit: Complete resource graph
+     - Test length: ~100-150 lines
 
 6. **Test Pyramid Distribution**
    ```
@@ -246,16 +302,16 @@ After defining test quality (Section 6), clarify what "end-to-end" means in CSAP
         ~3,200-4,400 lines
          Component tests
    ```
-   - **Unit Tests (65-75%):** Individual component testing
-   - **Integration Tests (15-20%):** Multi-component interaction
-   - **E2E Tests (10-15%):** Complete workflows
+   - **Unit Tests (65-75%):** Individual component testing (QueryBuilder methods, format parsers, helpers)
+   - **Integration Tests (15-20%):** Multi-component interaction (2-3 components)
+   - **E2E Tests (10-15%):** Complete workflows (all components, top to bottom)
 
 7. **E2E Test Structure**
-   - File: `e2e.spec.ts` or `integration.e2e.spec.ts`
-   - Organization: One test per workflow
-   - Length: 100-200 lines per workflow test
-   - Setup: Mock HTTP responses for all endpoints in workflow
-   - Assertions: Validate complete workflow outcome + intermediate states
+   - **File:** `e2e.spec.ts` or `integration.e2e.spec.ts`
+   - **Organization:** One test per workflow (4 tests total)
+   - **Length:** 100-200 lines per workflow test
+   - **Setup:** Mock HTTP responses for all endpoints in workflow
+   - **Assertions:** Validate complete workflow outcome + intermediate states
 
 8. **E2E Test Example Structure**
    ```typescript
@@ -304,130 +360,126 @@ After defining test quality (Section 6), clarify what "end-to-end" means in CSAP
 9. **E2E Coverage Requirements**
    - **Minimum Viable:**
      - 1 test per workflow type (4 total)
-     - Happy path coverage
+     - Happy path coverage only
      - ~400-500 lines
    - **Comprehensive:**
      - 2-3 tests per workflow (variations, edge cases)
-     - Error scenario coverage
+     - Error scenario coverage (1-2 error workflows)
      - ~700-1,000 lines
-   - **Target for CSAPI:** Comprehensive (align with Phase 4 Task 2)
+   - **Target for CSAPI:** Comprehensive (align with Phase 4 Task 2 estimate: 500-800 lines)
 
 10. **Integration vs E2E Mapping**
     - **Implementation Guide "Integration Tests" = E2E Tests**
     - 4 workflow types = 4 e2e tests
-    - ~500-800 lines (Task 2 of Phase 4)
+    - Phase 4 Task 2: ~500-800 lines
     - This satisfies senior dev's e2e requirement
 
 11. **HTTP Mocking Strategy for E2E**
-    - Mock complete workflow responses
-    - Use realistic spec example fixtures
-    - Mock error responses for error workflows
-    - Mock pagination links
-    - Mock format negotiation
+    - Mock complete workflow responses (all endpoints in workflow)
+    - Use realistic spec example fixtures (real OGC API responses)
+    - Mock error responses for error workflows (404, 500, validation errors)
+    - Mock pagination links (rel="next", rel="prev")
+    - Mock format negotiation (Accept headers)
 
 12. **Error Workflows in E2E**
-    - Server error handling (404, 500)
-    - Validation errors (invalid parameters)
+    - Server error handling (404 Not Found, 500 Internal Server Error)
+    - Validation errors (invalid parameters, out of range)
     - Network errors (timeout, connection failure)
-    - Malformed responses
-    - Should have 1-2 error workflow e2e tests
+    - Malformed responses (invalid JSON, schema violations)
+    - **Target:** 1-2 error workflow e2e tests in comprehensive coverage
 
 13. **E2E Test Organization**
     - Single file: `e2e.spec.ts`
-    - 4-6 workflow tests
-    - Shared setup (mock infrastructure)
-    - Fixture directory for e2e scenarios
+    - 4-6 workflow tests (4 happy paths + 1-2 error workflows)
+    - Shared setup (mock infrastructure, beforeEach)
+    - Fixture directory for e2e scenarios: `fixtures/e2e/`
 
 14. **Validation Against Upstream**
-    - EDR e2e patterns (if any)
-    - Upstream integration test patterns
+    - EDR e2e patterns (if any in PR #114)
+    - Upstream integration test patterns (from Section 2)
     - Alignment or deviation justification
 
 15. **Validation Against Industry**
-    - Industry e2e standards for client libraries
-    - Test pyramid alignment
-    - Mocking strategy alignment
+    - Industry e2e standards for client libraries (from Section 3)
+    - Test pyramid alignment (65-75% unit, 15-20% integration, 10-15% e2e)
+    - Mocking strategy alignment (realistic fixtures, complete workflows)
 
 16. **Application to CSAPI Roadmap**
-    - Phase 4, Task 2: Integration Tests = E2E Tests
-    - ~500-800 lines for 4 workflows
-    - Write after Phases 1-3 complete (need all components)
+    - **Phase 4, Task 2: Integration Tests = E2E Tests**
+    - Time estimate: ~4-6 hours
+    - Line estimate: ~500-800 lines for 4 workflows
+    - Write after Phases 1-3 complete (need all components operational)
     - Validates complete implementation end-to-end
 
-### Success Criteria
+---
 
-✅ Clear definition of e2e for CSAPI  
-✅ Unambiguous integration vs e2e distinction  
-✅ Scope and boundaries defined  
-✅ 4 workflow specifications ready for implementation  
-✅ Test pyramid distribution defined  
-✅ E2E test structure and organization specified  
-✅ HTTP mocking strategy defined  
-✅ Coverage requirements clear (minimum vs comprehensive)  
-✅ Addresses senior dev's e2e criticism  
-✅ Validated against upstream + industry patterns  
+## 8. Dependencies
 
-### Validation
+**Must Complete Before Starting:**
+- Section 1: Upstream Blueprint Analysis (PR #114) - provides e2e patterns from accepted tests
+- Section 2: Upstream Test Consistency - provides e2e patterns across implementations
+- Section 3: TypeScript Testing Standards - provides industry e2e standards and test pyramid
+- Section 6: "Meaningful vs Trivial" Definition - provides quality criteria for e2e tests
 
-- Definition is clear and unambiguous
-- Scope is appropriate for URL-building library
-- Workflows are concrete and implementation-ready
-- Test pyramid aligns with upstream + industry
-- E2E tests are achievable within Phase 4 time estimates
-- Senior dev feedback addressed
+**Blocks:**
+- Section 14: Integration Test Workflow Design (implements these e2e specifications)
+- Section 36: Test Quality Checklist (includes e2e validation criteria)
 
 ---
 
-## Cross-References
+## 9. Research Status Checklist
 
-**Builds On:**
-- Section 1: EDR Test Blueprint (upstream e2e patterns)
-- Section 2: Upstream Test Consistency (e2e across implementations)
-- Section 3: TypeScript Testing Standards (industry e2e)
-- Section 6: "Meaningful vs Trivial" Definition (quality context)
-- Senior dev feedback (lack of e2e tests)
-
-**Critical For:**
-- Section 14: Integration Test Workflow Design (implements these e2e tests)
-- Section 36: Test Quality Checklist (e2e validation criteria)
+- [ ] Phase 1: Upstream E2E Analysis (20-25 min) - Complete
+- [ ] Phase 2: Industry E2E Analysis (15-20 min) - Complete
+- [ ] Phase 3: CSAPI E2E Definition (15-20 min) - Complete
+- [ ] Phase 4: Documentation (10 min) - Complete
+- [ ] Deliverable document created and reviewed
+- [ ] 4 workflow specifications finalized
+- [ ] Test pyramid distribution documented
 
 ---
 
-## Next Steps After Completion
+## 10. Notes and Open Questions
 
-1. Use definition to implement Phase 4 Task 2 (Integration Tests)
-2. Validate workflows align with Implementation Guide
-3. Design HTTP mocking infrastructure
-4. Create e2e fixture directory
-5. Reference during code review to validate e2e coverage
+<!-- Add notes and unresolved questions here as research progresses -->
+
+**Initial Observations:**
+- CSAPI doesn't make HTTP calls - e2e must account for this architecture
+- Senior dev's e2e criticism must be addressed specifically
+- Implementation Guide "Integration Tests" likely = E2E Tests
+- Test pyramid must be appropriate for URL-building library
+
+**Risks and Mitigation:**
+
+**Risk:** E2E may be over-scoped (too ambitious for library architecture)  
+**Mitigation:** Validate scope against upstream patterns; start with minimum viable (4 happy path workflows); align with Phase 4 timeline
+
+**Risk:** Integration and e2e may be conflated (unclear distinction)  
+**Mitigation:** Clear distinction in deliverable with comparison table; concrete examples of each type; validate against upstream/industry
+
+**Risk:** E2E may require actual HTTP calls (not practical for library)  
+**Mitigation:** Clearly define mocking strategy; validate against industry standards for client library testing; show examples
+
+**Risk:** E2E estimate may not fit Phase 4 timeline (4-6 hours for 500-800 lines)  
+**Mitigation:** Validate 100-200 lines per workflow is achievable; align with Implementation Guide estimates; show upstream examples
+
+**Validation Strategy:**
+- Definition is clear and unambiguous (not subjective)
+- Scope is appropriate for URL-building library (not full API client)
+- Workflows are concrete and implementation-ready (specific steps, components, assertions)
+- Test pyramid aligns with upstream + industry (validated percentages)
+- E2E tests are achievable within Phase 4 time estimates (realistic)
+- Senior dev feedback addressed specifically (e2e requirement met)
+
+**Next Steps After Completion:**
+1. Use definition to implement Phase 4 Task 2 (Integration Tests = E2E Tests)
+2. Validate workflows align with Implementation Guide specifications
+3. Design HTTP mocking infrastructure for e2e tests
+4. Create e2e fixture directory with workflow fixtures
+5. Reference during code review to validate e2e coverage completeness
 
 ---
 
-## Risks and Mitigation
-
-**Risk:** E2E may be over-scoped (too ambitious)  
-**Mitigation:** Validate scope against upstream patterns; start with minimum viable
-
-**Risk:** Integration and e2e may be conflated  
-**Mitigation:** Clear distinction in deliverable; concrete examples of each
-
-**Risk:** E2E may require HTTP calls (not practical)  
-**Mitigation:** Clearly define mocking strategy; validate against industry standards
-
-**Risk:** E2E estimate may not fit Phase 4 timeline  
-**Mitigation:** Validate 500-800 lines is achievable for 4 workflows
-
----
-
-## Research Status
-
-- [ ] Phase 1: Upstream E2E Analysis (20-25 min)
-- [ ] Phase 2: Industry E2E Analysis (15-20 min)
-- [ ] Phase 3: CSAPI E2E Definition (15-20 min)
-- [ ] Phase 4: Documentation (10 min)
-- [ ] Deliverable Complete and Reviewed
-
-**Total Estimated Time:** 1 hour  
-**Actual Time:** _[To be filled during research]_  
-**Started:** _[Date]_  
-**Completed:** _[Date]_
+**Actual Research Time:** _[To be filled during research execution]_  
+**Started:** _[Date when research begins]_  
+**Completed:** _[Date when deliverable is finished]_
