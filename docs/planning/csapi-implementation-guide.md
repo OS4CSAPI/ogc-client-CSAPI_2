@@ -3057,7 +3057,7 @@ The test coverage component extends the existing Jest test suite to cover all CS
 
 ### API Documentation: Extending Existing TypeDoc Documentation
 
-The API documentation component extends the existing TypeDoc documentation to cover all CSAPI additions. For CSAPI, we will add documentation for all new TypeScript interfaces and types, all new methods on OgcApiEndpoint, usage examples for every resource type and query pattern, format handler documentation, and migration guides for users of other CSAPI clients. The library uses TypeDoc to generate API documentation from TypeScript source code comments, providing type-aware documentation with cross-references and examples. The extension will add JSDoc comments to all new code, following the existing documentation standards and style.
+The API documentation component extends the existing TypeDoc documentation to cover all CSAPI additions. For CSAPI, we will add documentation for all new TypeScript interfaces and types, the new factory method and getters on OgcApiEndpoint (`csapi()`, `hasConnectedSystems`, `csapiCollections`), all 70-80 methods on the CSAPIQueryBuilder class, usage examples for every resource type and query pattern, format handler documentation, and migration guides for users of other CSAPI clients. The library uses TypeDoc to generate API documentation from TypeScript source code comments, providing type-aware documentation with cross-references and examples. The extension will add JSDoc comments to all new code, following the existing documentation standards and style.
 
 **Documentation to Add:**
 - **Interface Documentation**: All CSAPI TypeScript interfaces (System, Deployment, DataStream, Observation, etc.)
