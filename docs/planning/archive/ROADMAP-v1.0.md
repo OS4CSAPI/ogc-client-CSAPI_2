@@ -1,7 +1,7 @@
 # CSAPI Implementation Roadmap
 
 **Last Updated:** February 5, 2026  
-**Version:** 2.0 (Phase 2 Restructure - Incremental Testing)
+**Version:** 8.0 (Comprehensive Roadmap Update)
 
 ---
 
@@ -22,10 +22,10 @@ This roadmap outlines the complete implementation plan for adding Connected Syst
 
 **Roadmap Overview:**
 
-- **Phase 1: Core Structure (12-16 hours)** - Foundation: types, integration points, stub QueryBuilder, helper utilities (4 tasks)
-- **Phase 2: QueryBuilder (20-28 hours)** - Complete URL building for all 70-80 CSAPI methods across 9 resource types (9 tasks, one per resource type)
-- **Phase 3: Format Handling (16-28 hours)** - SensorML/SWE parsers + GeoJSON/Format Detector/Validator extensions (7 tasks)
-- **Phase 4: Worker & Tests (12-16 hours)** - Worker extensions, integration tests, documentation completion (4 tasks)
+- **Phase 1: Core Structure (12-16 hours)** - Foundation: types, integration points, stub QueryBuilder, helper utilities
+- **Phase 2: QueryBuilder (20-28 hours)** - Complete URL building for all 70-80 CSAPI methods across 9 resource types
+- **Phase 3: Format Handling (16-28 hours)** - SensorML/SWE parsers + GeoJSON/Format Detector/Validator extensions
+- **Phase 4: Worker & Tests (12-16 hours)** - Worker extensions, integration tests, documentation completion
 
 **Total Scope:**
 - **Implementation:** ~4,850-6,500 lines across 24 files
@@ -39,9 +39,9 @@ This roadmap outlines the complete implementation plan for adding Connected Syst
 
 **Success Factors:**
 - Write JSDoc documentation as you code (don't defer)
-- **Write tests immediately after each subtask** (not batched at end of phase)
+- Write tests as you implement (not in Phase 4 only)
 - Validate against spec examples throughout
-- Review coverage after each subtask (aim for >80%)
+- Review coverage after each phase (aim for >80%)
 
 ---
 
@@ -116,205 +116,60 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 
 ---
 
-### Phase 2: QueryBuilder Methods (Medium Complexity)
+### Phase 2: QueryBuilder (Medium Complexity)
 
 **Estimated Time:** 20-28 hours (3-4 weeks calendar time)
 
-**Goal:** Implement all 70-80 QueryBuilder methods for all 9 CSAPI resource types, with incremental testing after each resource type.
-
-**Task Structure:** Each task implements methods for one resource type, then writes tests immediately before moving to the next resource type.
+**Goal:** Implement all 70-80 QueryBuilder methods for all 9 CSAPI resource types.
 
 **Tasks:**
 
-1. **Systems Methods** (~2-2.5 hours implementation + ~0.5 hour testing, Medium complexity)
-   - **Implement 12 Systems methods in `url_builder.ts`:**
-     - `getSystems(options?)` - Collection query with pagination
-     - `getSystem(id, options?)` - Single system by ID
-     - `createSystem(body)` - POST new system
-     - `updateSystem(id, body)` - PUT/PATCH system
-     - `deleteSystem(id)` - DELETE system
-     - `getSystemHistory(id, options?)` - Temporal history
-     - `getSystemSubsystems(id, options?)` - Hierarchical navigation
-     - `getSystemDataStreams(id, options?)` - Part 2 link
-     - `getSystemControlStreams(id, options?)` - Part 2 link
-     - `getSystemSamplingFeatures(id, options?)` - Association link
-     - `getSystemDeployments(id, options?)` - Association link
-     - `getSystemProcedures(id, options?)` - Association link
-   - All methods validate resource availability (~2 lines per method)
+1. **Part 1 Resource Methods** (~10-14 hours, Medium complexity)
+   - Implement Systems methods (12 methods)
+     - `getSystems(options?)`, `getSystem(id, options?)`, `createSystem(body)`, `updateSystem(id, body)`, `deleteSystem(id)`
+     - `getSystemHistory(id, options?)`, `getSystemSubsystems(id, options?)`, `getSystemDataStreams(id, options?)`, `getSystemControlStreams(id, options?)`, `getSystemSamplingFeatures(id, options?)`, `getSystemDeployments(id, options?)`, `getSystemProcedures(id, options?)`
+   - Implement Deployments methods (8 methods)
+     - `getDeployments(options?)`, `getDeployment(id, options?)`, `createDeployment(body)`, `updateDeployment(id, body)`, `deleteDeployment(id)`
+     - `getDeploymentSubdeployments(id, options?)`, `getDeploymentSystems(id, options?)`, `getDeploymentHistory(id, options?)`
+   - Implement Procedures methods (8 methods)
+     - `getProcedures(options?)`, `getProcedure(id, options?)`, `createProcedure(body)`, `updateProcedure(id, body)`, `deleteProcedure(id)`
+     - `getProcedureSystems(id, options?)`, `getProcedureDataStreams(id, options?)`, `getProcedureHistory(id, options?)`
+   - Implement Sampling Features methods (8 methods)
+     - `getSamplingFeatures(options?)`, `getSamplingFeature(id, options?)`, `createSamplingFeature(body)`, `updateSamplingFeature(id, body)`, `deleteSamplingFeature(id)`
+     - `getSamplingFeatureSystems(id, options?)`, `getSamplingFeatureObservations(id, options?)`, `getSamplingFeatureHistory(id, options?)`
+   - Implement Properties methods (6 methods)
+     - `getProperties(options?)`, `getProperty(id, options?)`, `getPropertySystems(id, options?)`, `getPropertyDataStreams(id, options?)`, `getPropertyControlStreams(id, options?)`, `getPropertyHistory(id, options?)`
+   - All methods validate resource availability before building URLs (~2 lines per method)
    - All methods use helper functions for code reuse
    - **Write JSDoc:** Document each method with parameters, return types, query parameter descriptions, examples
-   - **Test immediately:** Add Systems method tests to `url_builder.spec.ts` (~40-50 lines tests)
-     - Test getSystems with pagination, filtering, bbox
-     - Test getSystem with specific ID
-     - Test CRUD operations (create/update/delete)
-     - Test navigation methods (subsystems, datastreams, associations)
-     - Test resource validation (unavailable resource throws error)
-     - Test query parameter encoding
+   - **Test:** Add tests for all Part 1 methods (~400-500 lines tests)
 
-2. **Deployments Methods** (~1.5-2 hours implementation + ~0.5 hour testing, Medium complexity)
-   - **Implement 8 Deployments methods in `url_builder.ts`:**
-     - `getDeployments(options?)` - Collection query
-     - `getDeployment(id, options?)` - Single deployment
-     - `createDeployment(body)` - POST new deployment
-     - `updateDeployment(id, body)` - PUT/PATCH deployment
-     - `deleteDeployment(id)` - DELETE deployment
-     - `getDeploymentSubdeployments(id, options?)` - Hierarchical navigation
-     - `getDeploymentSystems(id, options?)` - Associated systems
-     - `getDeploymentHistory(id, options?)` - Temporal history
-   - Validate resource availability, use helpers
-   - **Write JSDoc:** Document methods with parameters, examples
-   - **Test immediately:** Add Deployments tests (~30-40 lines tests)
-     - Test collection and individual retrieval
-     - Test CRUD operations
-     - Test subdeployments navigation
-     - Test temporal validity filtering
-
-3. **Procedures Methods** (~1.5-2 hours implementation + ~0.5 hour testing, Medium complexity)
-   - **Implement 8 Procedures methods in `url_builder.ts`:**
-     - `getProcedures(options?)` - Collection query
-     - `getProcedure(id, options?)` - Single procedure
-     - `createProcedure(body)` - POST new procedure
-     - `updateProcedure(id, body)` - PUT/PATCH procedure
-     - `deleteProcedure(id)` - DELETE procedure
-     - `getProcedureSystems(id, options?)` - Systems using procedure
-     - `getProcedureDataStreams(id, options?)` - DataStreams using procedure
-     - `getProcedureHistory(id, options?)` - Temporal history
-   - Validate resource availability, use helpers
-   - **Write JSDoc:** Document methods with parameters, examples
-   - **Test immediately:** Add Procedures tests (~30-40 lines tests)
-     - Test collection and retrieval
-     - Test CRUD operations
-     - Test system and datastream associations
-
-4. **Sampling Features Methods** (~1.5-2 hours implementation + ~0.5 hour testing, Medium complexity)
-   - **Implement 8 Sampling Features methods in `url_builder.ts`:**
-     - `getSamplingFeatures(options?)` - Collection query with spatial filtering
-     - `getSamplingFeature(id, options?)` - Single sampling feature
-     - `createSamplingFeature(body)` - POST new feature
-     - `updateSamplingFeature(id, body)` - PUT/PATCH feature
-     - `deleteSamplingFeature(id)` - DELETE feature
-     - `getSamplingFeatureSystems(id, options?)` - Systems at feature
-     - `getSamplingFeatureObservations(id, options?)` - Observations at feature
-     - `getSamplingFeatureHistory(id, options?)` - Temporal history
-   - Validate resource availability, use helpers
-   - **Write JSDoc:** Document methods with spatial query parameters, examples
-   - **Test immediately:** Add Sampling Features tests (~30-40 lines tests)
-     - Test spatial filtering (bbox, geometry)
-     - Test observation retrieval
-     - Test system associations
-
-5. **Properties Methods** (~1-1.5 hours implementation + ~0.5 hour testing, Medium complexity)
-   - **Implement 6 Properties methods in `url_builder.ts`:**
-     - `getProperties(options?)` - Collection query
-     - `getProperty(id, options?)` - Single property
-     - `getPropertySystems(id, options?)` - Systems observing property
-     - `getPropertyDataStreams(id, options?)` - DataStreams for property
-     - `getPropertyControlStreams(id, options?)` - Control streams for property
-     - `getPropertyHistory(id, options?)` - Temporal history
-   - Validate resource availability, use helpers
-   - **Write JSDoc:** Document methods with parameters, examples
-   - **Test immediately:** Add Properties tests (~25-30 lines tests)
-     - Test property retrieval
-     - Test system/datastream/controlstream associations
-
-6. **DataStreams Methods** (~2-2.5 hours implementation + ~0.5 hour testing, Medium-High complexity)
-   - **Implement 11 DataStreams methods in `url_builder.ts`:**
-     - `getDataStreams(options?)` - Collection query with phenomenonTime filtering
-     - `getDataStream(id, options?)` - Single datastream
-     - `createDataStream(body)` - POST new datastream
-     - `updateDataStream(id, body)` - PUT/PATCH datastream
-     - `deleteDataStream(id)` - DELETE datastream
-     - `getDataStreamSchema(id)` - SWE Common schema
-     - `getDataStreamObservations(id, options?)` - Observations in stream
-     - `createObservation(datastreamId, body)` - POST observation
-     - `getDataStreamSystems(id, options?)` - Systems producing stream
-     - `getDataStreamProcedures(id, options?)` - Procedures for stream
-     - `getDataStreamHistory(id, options?)` - Temporal history
-   - Validate resource availability, use helpers
-   - Support complete temporal query parameters (phenomenonTime, resultTime)
-   - **Write JSDoc:** Document methods with temporal patterns, schema retrieval, examples
-   - **Test immediately:** Add DataStreams tests (~45-55 lines tests)
-     - Test temporal filtering (phenomenonTime, resultTime)
-     - Test schema retrieval
-     - Test observation creation
-     - Test cursor-based pagination
-
-7. **Observations Methods** (~1.5-2 hours implementation + ~0.5 hour testing, Medium-High complexity)
-   - **Implement 9 Observations methods in `url_builder.ts`:**
-     - `getObservations(options?)` - Collection query with phenomenonTime
-     - `getObservation(id, options?)` - Single observation
-     - `createObservations(datastreamId, body)` - POST bulk observations
-     - `updateObservation(id, body)` - PUT/PATCH observation
-     - `deleteObservation(id)` - DELETE observation
-     - `getObservationDataStream(id)` - Parent datastream
-     - `getObservationSamplingFeature(id, options?)` - Sampling feature
-     - `getObservationSystem(id, options?)` - Observing system
-     - `getObservationHistory(id, options?)` - Temporal history
-   - Validate resource availability, use helpers
-   - Support temporal and spatial filtering
-   - **Write JSDoc:** Document methods with bulk creation patterns, temporal queries, examples
-   - **Test immediately:** Add Observations tests (~35-45 lines tests)
-     - Test temporal filtering
-     - Test bulk creation
-     - Test navigation to datastream/feature/system
-     - Test result format handling
-
-8. **Control Streams Methods** (~1.5-2 hours implementation + ~0.5 hour testing, Medium-High complexity)
-   - **Implement 8 Control Streams methods in `url_builder.ts`:**
-     - `getControlStreams(options?)` - Collection query
-     - `getControlStream(id, options?)` - Single control stream
-     - `createControlStream(body)` - POST new control stream
-     - `updateControlStream(id, body)` - PUT/PATCH control stream
-     - `deleteControlStream(id)` - DELETE control stream
-     - `getControlStreamSchema(id)` - SWE Common parameter schema
-     - `getControlStreamCommands(id, options?)` - Commands in stream
-     - `checkCommandFeasibility(controlStreamId, body)` - POST feasibility check
-   - Validate resource availability, use helpers
-   - **Write JSDoc:** Document methods with schema retrieval, feasibility checking, examples
-   - **Test immediately:** Add Control Streams tests (~30-40 lines tests)
-     - Test schema retrieval
-     - Test feasibility checking
-     - Test command listing
-
-9. **Commands Methods** (~1.5-2 hours implementation + ~0.5 hour testing, Medium-High complexity)
-   - **Implement 10 Commands methods in `url_builder.ts`:**
-     - `getCommands(options?)` - Collection query with issueTime/executionTime
-     - `getCommand(id, options?)` - Single command
-     - `createCommand(controlStreamId, body)` - POST single command
-     - `createCommands(controlStreamId, body)` - POST bulk commands
-     - `updateCommand(id, body)` - PUT/PATCH command
-     - `deleteCommand(id)` - DELETE command
-     - `getCommandStatus(id)` - Status resource
-     - `updateCommandStatus(id, body)` - Update status
-     - `getCommandResult(id)` - Result resource
-     - `cancelCommand(id)` - POST cancel operation
-   - Validate resource availability, use helpers
-   - Support temporal filtering on issueTime and executionTime
-   - **Write JSDoc:** Document methods with command lifecycle patterns, status tracking, examples
-   - **Test immediately:** Add Commands tests (~40-50 lines tests)
-     - Test temporal filtering (issueTime, executionTime)
-     - Test bulk command creation
-     - Test status updates and retrieval
-     - Test result retrieval
-     - Test cancel operation
+2. **Part 2 Resource Methods** (~10-14 hours, Medium complexity)
+   - Implement DataStreams methods (11 methods)
+     - `getDataStreams(options?)`, `getDataStream(id, options?)`, `createDataStream(body)`, `updateDataStream(id, body)`, `deleteDataStream(id)`
+     - `getDataStreamSchema(id)`, `getDataStreamObservations(id, options?)`, `createObservation(datastreamId, body)`, `getDataStreamSystems(id, options?)`, `getDataStreamProcedures(id, options?)`, `getDataStreamHistory(id, options?)`
+   - Implement Observations methods (9 methods)
+     - `getObservations(options?)`, `getObservation(id, options?)`, `createObservations(datastreamId, body)`, `updateObservation(id, body)`, `deleteObservation(id)`
+     - `getObservationDataStream(id)`, `getObservationSamplingFeature(id, options?)`, `getObservationSystem(id, options?)`, `getObservationHistory(id, options?)`
+   - Implement Control Streams methods (8 methods)
+     - `getControlStreams(options?)`, `getControlStream(id, options?)`, `createControlStream(body)`, `updateControlStream(id, body)`, `deleteControlStream(id)`
+     - `getControlStreamSchema(id)`, `getControlStreamCommands(id, options?)`, `checkCommandFeasibility(controlStreamId, body)`
+   - Implement Commands methods (10 methods)
+     - `getCommands(options?)`, `getCommand(id, options?)`, `createCommand(controlStreamId, body)`, `createCommands(controlStreamId, body)`, `updateCommand(id, body)`, `deleteCommand(id)`
+     - `getCommandStatus(id)`, `updateCommandStatus(id, body)`, `getCommandResult(id)`, `cancelCommand(id)`
+   - All methods validate resource availability
+   - All methods support complete query parameters (phenomenonTime, resultTime, issueTime, executionTime, cursor-based pagination, etc.)
+   - **Write JSDoc:** Document each method with complete parameter descriptions, temporal query patterns, pagination examples
+   - **Test:** Add tests for all Part 2 methods (~400-500 lines tests)
 
 **Phase 2 Deliverables:**
-- ✅ All 70-80 QueryBuilder methods implemented (9 resource types)
-- ✅ Complete query parameter support (spatial, temporal, pagination)
-- ✅ Resource validation in all methods (~2 lines per method)
+- ✅ All 70-80 QueryBuilder methods implemented
+- ✅ Complete query parameter support
+- ✅ Resource validation in all methods
 - ✅ Comprehensive test coverage (~800-1,000 lines tests)
 - ✅ All JSDoc documentation for QueryBuilder methods
-- ✅ Each resource type tested immediately after implementation
 
-**Dependencies:** Phase 1 (types, helpers, stub QueryBuilder, integration)
-
-**Why This Structure:**
-- **Early bug detection** - Helper function issues discovered with Systems, not Commands
-- **Architecture validation** - Patterns validated incrementally, not all at end
-- **Natural checkpoints** - Each resource type is a commit-able unit
-- **Fresh context** - Tests written while method details are fresh
-- **Prevents test debt** - Never more than 12 methods without tests
-- **Matches Phase 1 pattern** - Test after each task
+**Dependencies:** Phase 1 (types and integration)
 
 ---
 
@@ -488,11 +343,11 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 
 | Phase | Time | Complexity | Deliverables | Lines Added |
 |-------|------|------------|--------------|-------------|
-| **Phase 1** | 12-16 hrs | Low | Types, integration, stub builder, helpers (4 tasks) | ~500-600 + ~400-550 tests |
-| **Phase 2** | 20-28 hrs | Medium | Complete QueryBuilder - 9 resource types (9 tasks) | ~700-800 + ~800-1,000 tests |
-| **Phase 3** | 16-28 hrs | High | Format parsers + extensions (7 tasks) | ~3,600-5,050 + ~2,400-3,500 tests |
-| **Phase 4** | 12-16 hrs | Medium-High | Worker, tests, documentation (4 tasks) | ~50 + ~800-1,250 tests |
-| **TOTAL** | **60-88 hrs** | **Mixed** | **Complete CSAPI implementation (24 tasks)** | **~4,850-6,500 + ~4,400-6,300 tests** |
+| **Phase 1** | 12-16 hrs | Low | Types, integration, stub builder, helpers | ~500-600 + ~400-550 tests |
+| **Phase 2** | 20-28 hrs | Medium | Complete QueryBuilder (70-80 methods) | ~700-800 + ~800-1,000 tests |
+| **Phase 3** | 16-28 hrs | High | Format parsers + extensions | ~3,600-5,050 + ~2,400-3,500 tests |
+| **Phase 4** | 12-16 hrs | Medium-High | Worker, tests, documentation | ~50 + ~800-1,250 tests |
+| **TOTAL** | **60-88 hrs** | **Mixed** | **Complete CSAPI implementation** | **~4,850-6,500 + ~4,400-6,300 tests** |
 
 **Total Development Time:** 60-88 hours (average: 74 hours)  
 **Calendar Time:** 8-12 weeks (assuming 6-8 hours/week development pace)  
@@ -501,16 +356,25 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 **Key Success Factors:**
 - ✅ Write JSDoc documentation AS YOU CODE (don't defer)
 - ✅ Write method signatures before implementation (design first)
-- ✅ **Write tests IMMEDIATELY after each subtask** (Phase 2: test each resource type before moving to next)
+- ✅ Write tests AS YOU IMPLEMENT (not later in Phase 4)
 - ✅ Validate against spec examples throughout
 - ✅ Use helper methods for code reuse (prevents duplication)
 - ✅ Follow three-tier type hierarchy (prevents circular dependencies)
 - ✅ Test edge cases and errors as discovered (don't batch)
 - ✅ Document edge cases in JSDoc immediately
-- ✅ Review coverage after each subtask (aim for >80%)
+- ✅ Review coverage after each phase (aim for >80%)
 - ✅ Update this roadmap if estimates change
 
 **Confidence:** ⭐⭐⭐⭐⭐ (5/5) - Based on 13 research plans and component-level estimates
+
+**What Changed in v8.0:**
+This roadmap update ensures 100% coverage of all work described in the [CSAPI Implementation Guide](csapi-implementation-guide.md). Previous version (v7.0) roadmap was ~75-80% complete, missing:
+- GeoJSON Handler CSAPI property extraction tasks (now in Phase 3, Task 1)
+- Format Detector media type registration tasks (now in Phase 3, Task 2)
+- Validator CSAPI validation rule tasks (now in Phase 3, Task 3)
+- Worker message type additions (now in Phase 4, Task 1)
+- Explicit JSDoc documentation tasks throughout (now in every phase/task)
+- Updated time estimates to reflect all work (48-72 hrs → 60-88 hrs)
 
 ---
 
@@ -520,7 +384,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 1. Write method signatures before implementation
 3. Add comprehensive JSDoc comments with parameters, return types, examples
 4. Implement functionality with inline documentation for complex logic
-5. **Write tests immediately after completing each subtask (not batched)**
+5. Write tests as you implement (not deferred to later)
 6. Document edge cases and validation rules as discovered
 7. Add usage examples to JSDoc for common scenarios
 8. Validate against spec examples throughout
@@ -562,23 +426,16 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 ## Version History
 
 **Document:** CSAPI Implementation Roadmap (Standalone)  
-**Version:** 2.0 (Phase 2 Restructure - Incremental Testing)  
+**Version:** 1.0 (Extracted from Implementation Guide v8.0)  
 **Date:** February 5, 2026  
-**Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete with incremental testing strategy
+**Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete and accurate
 
-**Version 2.0 - Phase 2 Restructure (February 5, 2026):**
-- Restructured Phase 2 from 2 large tasks into **9 granular subtasks** (one per resource type)
-- Each subtask now includes immediate test writing (implement → test → commit)
-- Prevents test debt accumulation (max 12 methods without tests, not 70)
-- Validates architecture incrementally (helper functions tested with Systems, not Commands)
-- Creates natural checkpoints for commits and rollbacks
-- Aligns with Development Standards: "Write tests as you implement (not deferred to later)"
-- Aligns with Phase 1 pattern: test after each task
-- Total time unchanged (20-28 hours), but better distributed across 9 checkpoints
-- Phase 1 task order corrected: Types → Helpers → QueryBuilder → Integration
-
-**Previous Versions:**
-- [v1.0 (archived)](archive/ROADMAP-v1.0.md) - Original standalone roadmap with 2-task Phase 2 structure
+**Version 1.0 - Standalone Roadmap (February 5, 2026):**
+- Extracted roadmap phases from [CSAPI Implementation Guide v8.0](csapi-implementation-guide.md)
+- Restructured as standalone roadmap document focused on phasing and timelines
+- Removed architectural details (now in Implementation Guide)
+- Added explicit links to Implementation Guide for full context
+- Clarified this roadmap represents 100% of work from comprehensive research foundation
 
 **Roadmap Source:**
 This roadmap is based on the Implementation Roadmap section from the complete [CSAPI Implementation Guide](csapi-implementation-guide.md), which contains:
