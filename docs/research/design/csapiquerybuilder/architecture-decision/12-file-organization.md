@@ -29,13 +29,39 @@
 
 ## Key Questions to Answer
 
-- [ ] What is EDR's file structure?
-- [ ] One file for QueryBuilder or split across multiple?
-- [ ] How are types organized?
-- [ ] How would 9 separate client classes be organized?
-- [ ] What is the fixture organization pattern?
-- [ ] How are tests organized (per-resource or consolidated)?
-- [ ] What conventions must be followed?
+- [x] What is EDR's file structure?
+- [x] One file for QueryBuilder or split across multiple?
+- [x] How are types organized?
+- [x] How would 9 separate client classes be organized?
+- [x] What is the fixture organization pattern?
+- [x] How are tests organized (per-resource or consolidated)?
+- [x] What conventions must be followed?
+
+---
+
+## Synthesis Notes
+
+**Research Status:** ✅ COMPLETE
+
+**Key Findings:**
+
+1. **EDR File Structure:** 5 files (model.ts, url_builder.ts, helpers.ts + 2 tests), flat structure, 675 total lines
+2. **QueryBuilder Organization:** Single file (url_builder.ts), 380 lines for 1 resource → CSAPI needs 700-800 lines for 9 resources (78-89 lines/resource, more efficient than EDR)
+3. **Type Organization:** All types in model.ts (126 lines for EDR → 350-400 for CSAPI)
+4. **Multi-Class Estimate:** 9 builders = 36-41 total files (breaks flat structure convention, requires subdirectories)
+5. **Fixture Pattern:** fixtures/ogc-api/{api}/ with collection + item examples
+6. **Test Organization:** Colocated .spec.ts files next to implementation
+7. **Conventions:** Flat structure (<10 files), relative imports with .js, default export for classes
+
+**Convention Compliance:**
+- Single-class: ✅ 100% (9/9 rules)
+- Multi-class: ❌ 50-60% (4-5/9 rules, breaks flat structure)
+
+**Recommendation:** Single-class with 5-6 core files + formats/ subfolder (justified by 3,300+ lines)
+
+**Impact on Part 1 Decision:** Reinforces single-class choice - file organization is simpler, cleaner, follows precedent exactly
+
+**Detailed Analysis:** See [findings/12-file-organization-findings.md](findings/12-file-organization-findings.md)
 
 ---
 
