@@ -1142,10 +1142,8 @@ export interface SamplingFeature {
 
 **CSAPI resources can be returned in different formats:**
 - **GeoJSON / JSON-FG** (primary) - Standard spatial feature format
-- **[SensorML 3.0](https://docs.ogc.org/is/23-000r1/23-000r1.html)** ([OGC 23-000r1](https://docs.ogc.org/is/23-000r1/23-000r1.html))
-  - Primary: JSON (`application/sml+json`)
-  - Legacy: XML (`application/sensorml+xml`)
-- **[SWE Common 3.0](https://docs.ogc.org/is/23-011r1/23-011r1.html)** ([OGC 23-011r1](https://docs.ogc.org/is/23-011r1/23-011r1.html))
+- **[SensorML 3.0](https://docs.ogc.org/is/23-001/23-001.html)** ([OGC 23-001](https://docs.ogc.org/is/23-001/23-001.html)) - JSON only (`application/sml+json`)
+- **[SWE Common 3.0](https://docs.ogc.org/is/23-002/23-002.html)** ([OGC 23-002](https://docs.ogc.org/is/23-002/23-002.html))
   - JSON (`application/swe+json`)
   - Text/CSV (`application/swe+text`)
   - Binary (`application/swe+binary`)
