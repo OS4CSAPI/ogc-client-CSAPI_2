@@ -1141,10 +1141,15 @@ export interface SamplingFeature {
 ### Challenge: Multiple Representations
 
 **CSAPI resources can be returned in different formats:**
-- GeoJSON / JSON-FG (primary)
-- SensorML 3.0 (JSON)
-- SWE Common 3.0 (JSON)
-- JSON-LD
+- **GeoJSON / JSON-FG** (primary) - Standard spatial feature format
+- **[SensorML 3.0](https://docs.ogc.org/is/23-000r1/23-000r1.html)** ([OGC 23-000r1](https://docs.ogc.org/is/23-000r1/23-000r1.html))
+  - Primary: JSON (`application/sml+json`)
+  - Legacy: XML (`application/sensorml+xml`)
+- **[SWE Common 3.0](https://docs.ogc.org/is/23-011r1/23-011r1.html)** ([OGC 23-011r1](https://docs.ogc.org/is/23-011r1/23-011r1.html))
+  - JSON (`application/swe+json`)
+  - Text/CSV (`application/swe+text`)
+  - Binary (`application/swe+binary`)
+- **JSON-LD** - Semantic web format
 
 **Question:** Do we need separate types per format?
 
@@ -1158,10 +1163,10 @@ async getPosition(...): Promise<any>  // Could be GeoJSON, CoverageJSON, etc.
 ```
 
 **Why?**
-- Formats have radically different structures
-- TypeScript types for alternative formats are complex
-- Response parsing is format-dependent
-- Users specify format, know what they'll get
+- Formats have different structures (GeoJSON vs SensorML JSON vs SWE Common)
+- TypeScript types for alternative encodings (SML, SWE) are complex
+- Response parsing is format-dependent (different parsers needed)
+- Users specify format via `f` parameter or Accept header, know what they'll get
 
 ### Recommended CSAPI Approach
 
@@ -1182,23 +1187,26 @@ export interface System {
 ```
 
 **Rationale:**
-1. ✅ 90% of users will use GeoJSON format
-2. ✅ TypeScript is for compile-time safety, not runtime parsing
-3. ✅ Alternative formats have different structures (SensorML, SWE Common)
-4. ✅ Format parsers return parsed objects, not typed interfaces
+1. ✅ 90% of users will use GeoJSON format (simple spatial features)
+2. ✅ TypeScript types are for compile-time safety, not runtime parsing
+3. ✅ Alternative formats (SensorML JSON, SWE JSON/Text/Binary) have different schemas
+4. ✅ Format parsers return parsed objects validated at runtime, not typed at compile-time
 
 **For format-specific use:**
 
 ```typescript
-// Users can request specific format
+// Example: Request SensorML 3.0 JSON format
 const url = builder.getSystemUrl(systemId);
 const response = await fetch(url, { 
-  headers: { Accept: 'application/sml+json; version=3.0' } 
+  headers: { Accept: 'application/sml+json' } 
 });
-const json = await response.json();  // Parse as needed
+const sensorML = await response.json();  // Parse SensorML structure
+
+// Or use query parameter
+const smlUrl = builder.getSystemUrl(systemId, { f: 'application/sml+json' });
 ```
 
-**User mandate context:** Format parsing returns structured objects, but those objects don't need TypeScript type definitions (parsing validates structure at runtime).
+**User mandate context:** Format parsing (GeoJSON, SensorML 3.0, SWE Common 3.0) returns structured objects validated at runtime. TypeScript types defined only for primary GeoJSON format.
 
 ---
 
