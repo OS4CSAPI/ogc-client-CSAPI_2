@@ -1,7 +1,7 @@
 # CSAPI Implementation Guide for Camptocamp OGC Client Library
 
 **Last Updated:** February 5, 2026  
-**Version:** 7.0 (Complete with Query Parameters Reference)
+**Version:** 6.0 (Complete Self-Contained Guide)
 
 ---
 
@@ -1716,74 +1716,6 @@ The CSAPIQueryBuilder includes Commands resource methods to manage CSAPI Command
 - [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for Commands including status tracking and feasibility
 - [OGC SWE Common 3.0](https://docs.ogc.org/is/24-014/24-014.html): Format for command parameter encodings
 - [pr114-analysis.md](../research/upstream/pr114-analysis.md): Patterns for command submission and status polling
-
----
-
-### Complete Query Parameter Support
-
-> **📋 CENTRALIZED REFERENCE**
->
-> This section documents ALL query parameters used across CSAPI resources. Individual resource method sections above reference this section rather than repeating parameter documentation.
-
-This URL builder implements FULL query parameter support for CSAPI Parts 1 and 2, including all standard OGC API parameters and all CSAPI-specific extensions. This is NOT an MVP - we support the complete filtering and pagination capabilities defined in the CSAPI specifications.
-
-**Standard OGC API Parameters:**
-- `bbox`: Spatial bounding box filter (2D and 3D) for Systems, Deployments, Sampling Features
-- `datetime`: Temporal filter using ISO 8601 intervals for validTime filtering
-- `limit`: Maximum results per page (1 to 10,000 for Part 2)
-- `offset`: Skip N results for pagination
-- `f`: Format negotiation (json, geojson, sml+json, swe+json, swe+text)
-
-**CSAPI Common Parameters (Part 1):**
-- `id`: Filter by resource ID (multiple IDs supported as comma-separated list)
-- `uid`: Filter by unique identifier (URN-based filtering)
-- `q`: Full-text search across resource properties
-- `{propertyName}`: Filter by any resource property (e.g., `name=Weather%20Station`, `systemType=sosa:Sensor`)
-
-**CSAPI Hierarchical Parameters:**
-- `recursive`: Boolean flag for hierarchical queries (subsystems, subdeployments)
-  - `recursive=false`: Direct children only (default)
-  - `recursive=true`: All descendants at all nesting levels
-
-**CSAPI Relationship Parameters (Part 1):**
-- `parent`: Filter by parent system/deployment ID
-- `procedure`: Filter resources by associated procedure
-- `foi`: Filter by feature of interest
-- `observedProperty`: Filter by observed property URI
-- `controlledProperty`: Filter by controlled property URI
-- `system`: Filter resources by associated system
-- `baseProperty`: Filter properties by base property (hierarchy)
-- `objectType`: Filter by resource type
-
-**CSAPI Temporal Parameters (Part 2):**
-- `phenomenonTime`: When observation was made (ISO 8601 interval, primary temporal filter for observations)
-- `resultTime`: When observation result became available
-- `executionTime`: When command should be/was executed
-- `issueTime`: When command was issued
-
-**Pagination Modes:**
-- **Offset-based** (Part 1): `limit` + `offset` for predictable page navigation
-- **Cursor-based** (Part 2): `limit` + `cursor` for efficient large dataset streaming
-- **Temporal windowing** (Part 2): `phenomenonTime` intervals for time-series data
-
-**Advanced Filtering Capabilities:**
-- **Multiple ID filtering**: `id=sys1,sys2,sys3` (OR logic)
-- **Property-based filtering**: Any resource property can be used as query parameter
-- **Combined filters**: All parameters can be combined (AND logic between different parameter types)
-- **Nested endpoint filtering**: All query parameters work on nested endpoints (e.g., `/systems/{id}/subsystems?bbox=...&recursive=true`)
-
-**Format Negotiation:**
-- Query parameter: `f=json|geojson|sml+json|swe+json|swe+text|html`
-- HTTP Accept header: `application/json`, `application/geo+json`, `application/sml+json`, `application/swe+json`, `application/swe+text`
-- Format-specific parameters for Part 2: `obsFormat` (observation encoding), `cmdFormat` (command encoding)
-
-**References:**
-- [Query Parameter Requirements](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-query-parameters.md) - Complete catalog of all CSAPI query parameters
-- [OGC API - Common](https://docs.ogc.org/is/19-072/19-072.html) - Standard OGC API parameters (bbox, datetime, limit, offset, f)
-- [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) - Temporal parameter format specification
-- [Sub-Resource Navigation Requirements](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-subresource-navigation.md) - Query parameters on nested endpoints
-- [URL Building Architecture](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/url-building-analysis.md) - Parameter encoding and array handling
-- [Architecture Decision - Part 3: Query Parameters](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/design/csapiquerybuilder/architecture-decision/results/DECISION-part3-validation.md#decision-2-query-parameter-analysis) - 47% shared parameters, type-based clustering
 
 ---
 
@@ -4433,33 +4365,23 @@ Every component described above aligns with these core project goals:
 
 ## Version History
 
-**Document Version:** 7.0 (Complete with Query Parameters Reference)  
+**Document Version:** 6.0 (Complete Self-Contained Guide)  
 **Date:** February 5, 2026  
 **Research Foundation:** 14 completed research plans with ⭐⭐⭐⭐⭐ confidence (98-100%)  
 **Status:** ✅ **ARCHITECTURE VALIDATED** with real-world scenarios and quantitative evidence
 
-**Version 7.0 - Query Parameters Restoration (February 5, 2026):**
-- Restored "Complete Query Parameter Support" section accidentally removed in v3
-- Section was replaced with "Type System Architecture" in v3 commit 61d027a
-- ToC link remained but pointed to non-existent section (broken since v3)
-- ~70 lines of centralized query parameter documentation restored
-- Provides comprehensive reference for all CSAPI query parameters across Parts 1 & 2
-- Individual resource method sections reference this centralized documentation
-- Completes the restoration work from v6.0
-
 **Version 6.0 Restoration (February 5, 2026):**
-- Restored 17 detailed implementation sections intentionally removed in v2.0
+- Restored 17 detailed implementation sections removed in v2.0
 - All resource method sections restored (Systems, Deployments, Procedures, Sampling Features, Properties, DataStreams, Observations, Control Streams, Commands)
 - All format handler sections restored (GeoJSON Handler, SensorML Handler, SWE Common Handler, Format Detector, Validator)
 - All infrastructure sections restored (Background Processing, Test Coverage, API Documentation)
-- Document became complete and self-contained with no archive dependencies
+- Document now complete and self-contained with no archive dependencies
 - Total additions: ~900 lines of detailed implementation guidance
 - See [Phase 1 Reconnaissance Report](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/phase1-reconnaissance-report.md) for restoration methodology
 
 **Previous Versions:**
-- [v6.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v6.md) - Complete self-contained guide (17 sections restored)
 - [v5.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v5.md) - Architecture-validated with real-world scenarios (pre-restoration)
 - [v4.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v4.md) - Hybrid file structure diagram
-- [v3.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v3.md) - Implementation details and roadmap (Query Parameters accidentally removed)
-- [v2.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v2.md) - Research-validated structure (17 sections intentionally consolidated)
+- [v3.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v3.md) - Implementation details and roadmap
+- [v2.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v2.md) - Research-validated structure (sections consolidated)
 - [v1.0 (archived)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/planning/archive/csapi-implementation-guide-v1.md) - Original architecture with all detailed sections
