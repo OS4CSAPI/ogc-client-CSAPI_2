@@ -2615,7 +2615,398 @@ export interface Capability {
 
 ---
 
-*[Continue with existing format handler sections from v2.0 - GeoJSON Handler, SensorML Handler, SWE Common Handler, Format Detector, Validator, Worker Components, Testing Components, Documentation Components - these sections remain unchanged]*
+## Format Handler Components
+
+### GeoJSON Handler: Extending Existing Parser
+
+The GeoJSON handler is existing code in the library that parses GeoJSON Feature and FeatureCollection documents, supporting all seven geometry types (Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, GeometryCollection). For CSAPI, we will extend this handler with recognition and extraction of CSAPI-specific properties. The extension will recognize CSAPI-specific feature types through the `featureType` property and extract CSAPI resource properties from the feature `properties` object. CSAPI Part 1 resources (Systems, Deployments, Procedures, Sampling Features) are encoded as GeoJSON features with additional semantic properties like `systemType`, `assetType`, `uniqueIdentifier`, `validTime`, and association links to related resources. The extension will add type checking for these CSAPI properties and validation rules specific to each CSAPI feature type, while maintaining compatibility with generic GeoJSON handling for other OGC API standards.
+
+**CSAPI-Specific GeoJSON Properties:**
+- Systems: `systemType` (URI), `assetType` (enum), `uniqueIdentifier` (URI), `validTime` (period), association arrays (`subsystems`, `deployments`, `procedures`, `samplingFeatures`, `datastreams`, `controlstreams`)
+- Deployments: `deployedSystems` (array), `validTime` (period), spatial/temporal extent
+- Procedures: `procedureType` (URI), `methodKind` (URI), `attachedTo` (link to system)
+- Sampling Features: `samplingFeatureType` (URI), `sampledFeature` (link), `relatedSamplingFeature` (links)
+- All resources: `id`, `name`, `description`, `links` (HATEOAS navigation)
+
+**Validation Requirements:**
+- `uniqueIdentifier` must be valid URI (preferably URN format following RFC 8141)
+- `systemType` must be from SOSA/SSN vocabulary (`sosa:Sensor`, `sosa:Platform`, `sosa:Actuator`, `sosa:Sampler`, etc.)
+- `validTime` must be ISO 8601 temporal period or instant
+- Association arrays must contain valid resource links (href + rel) or inline features
+- Geometry must be valid per RFC 7946 (WGS84 coordinates, right-hand rule for polygons)
+
+**Implementation Type:** EXTENDING EXISTING CODE
+
+**References:**
+- [RFC 7946 (GeoJSON)](https://tools.ietf.org/html/rfc7946): Normative specification for GeoJSON format
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): CSAPI-specific GeoJSON property requirements
+- [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): GeoJSON schema definitions for Part 1 resources
+- [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Vocabulary for systemType and property URIs
+- [RFC 8141 (URN Syntax)](https://tools.ietf.org/html/rfc8141): uniqueIdentifier format requirements
+
+---
+
+### SensorML Handler: Building New Format Parser
+
+The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](https://docs.ogc.org/is/23-000/23-000.html) format documents that describe sensor systems, components, and processes in detail. SensorML 3.0 is the latest version of the JSON-native format from the Sensor Web Enablement (SWE) standards family, published in 2024, that provides rich metadata about sensors, actuators, and processing chains. CSAPI servers return SensorML 3.0 documents when describing Systems or Procedures, providing detailed technical specifications beyond what GeoJSON can express. We will build a parser that handles SensorML 3.0 system models (System, PhysicalComponent, PhysicalSystem, SystemConfiguration), component descriptions, capability specifications, input/output specifications, configuration parameters, operational modes, component connections, and temporal validity periods. The parser must convert SensorML 3.0 JSON documents into TypeScript objects that the library can work with.
+
+**SensorML 3.0 Document Types to Parse:**
+- **System**: Abstract system description with common properties (identification, classification, characteristics, capabilities, contacts)
+- **PhysicalComponent**: Single physical sensor or actuator with detailed specifications, position, and operating characteristics
+- **PhysicalSystem**: Composite system made of multiple components with spatial/functional connections and aggregation properties
+- **SystemConfiguration**: Reusable configuration profiles with parameter settings and mode definitions
+
+**SensorML 3.0 Elements to Extract:**
+- **Identification**: `uid` (unique identifier), `label`, `description`, `identifiers` (array of alternate identifiers)
+- **Classification**: `classifiers` array with type definitions, intended applications, sensor taxonomies
+- **ValidTime**: Temporal period when description is valid (ISO 8601 period)
+- **SecurityConstraints**: Access restrictions, usage limitations, classification levels
+- **Characteristics**: Observable properties, measurement ranges, resolution, accuracy, sensitivity (using SWE Common 3.0 DataRecord)
+- **Capabilities**: Operating conditions, survival ranges, response times, power requirements (using SWE Common 3.0 DataRecord)
+- **Constraints**: Physical or operational constraints limiting system use
+- **Contacts**: Responsible parties, manufacturers, operators with roles and contact information
+- **Documentation**: Links to user manuals, datasheets, specifications, images, videos
+- **FeaturesOfInterest**: What the system observes or controls (links to feature definitions)
+- **Inputs**: Data interfaces, observable properties, control inputs (using SWE Common 3.0 DataComponent definitions)
+- **Outputs**: Data outputs, actuated properties, status indicators (using SWE Common 3.0 DataComponent definitions)
+- **Parameters**: Configuration settings, calibration parameters, operational modes (using SWE Common 3.0 DataComponent definitions)
+- **Modes**: Operating modes with associated configurations and state transitions
+- **Components** (PhysicalSystem only): Array of component systems with roles and connections
+- **Connections** (PhysicalSystem only): Data flow and physical connections between components
+- **Position**: Location and orientation using GeoJSON Point or more complex positioning models
+
+**Parsing Capabilities:**
+- **Recursive component parsing**: Nested PhysicalSystems with full component hierarchy
+- **SWE Common 3.0 DataComponent integration**: Complete parsing of all DataComponent types
+- **Unit of measure parsing**: UCUM code support ([UCUM codes](http://unitsofmeasure.org/))
+- **Reference resolution**: External link dereferencing for procedures, datasheets, feature definitions
+- **Position/location parsing**: GeoJSON geometry plus orientation (quaternions, euler angles)
+- **Mode and configuration state management**: Operational modes with state definitions and transitions
+- **Connection graph traversal**: Component connection mapping (data flow, physical connections)
+- **Vocabulary resolution**: Automatic fetching of vocabulary terms from code spaces (SOSA, SSN, CF, QUDT)
+
+**References:**
+- [OGC SensorML 3.0](https://docs.ogc.org/is/23-000/23-000.html): Normative specification for SensorML 3.0 format
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Requirements for SensorML encoding in CSAPI
+- [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): SensorML media type definitions
+- [SensorML 3.0 JSON Schema](https://schemas.opengis.net/sensorML/3.0/): Official JSON schemas for validation
+- [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Client requirements for SensorML parsing
+- [UCUM Codes](http://unitsofmeasure.org/): Unit of measure code system
+
+**Implementation Type:** BUILDING NEW CODE
+
+---
+
+### SWE Common Handler: Building New Format Parser
+
+The SWE Common handler is new code we need to build to parse [OGC SWE Common 3.0](https://docs.ogc.org/is/24-014/24-014.html) format documents that define observation data schemas and encode actual observation results. SWE Common 3.0 is the latest version of the data encoding standard from the Sensor Web Enablement family, published in 2024, that describes structured measurement data with units, quality information, and constraints using a modernized JSON-native approach. CSAPI Part 2 uses SWE Common 3.0 extensively for DataStream schemas (defining what properties are observed and result structure) and Observation results (actual measurement values). We will build parsers for all three SWE Common 3.0 encodings: JSON (human-readable structured data), Text (CSV-style compact encoding), and Binary (efficient encoding for high-volume streaming). The handler must parse DataComponent schemas, extract values from encoded result formats, validate measurements against schemas, and convert between different encodings.
+
+**SWE Common 3.0 Data Components to Parse:**
+
+**Simple Components:**
+- **Quantity**: Numeric measurement with unit of measure (temperature, pressure, voltage)
+- **Count**: Integer count value (particle count, event count)
+- **Boolean**: True/false indicator (on/off status, alarm state)
+- **Text**: String value (station ID, observation notes)
+- **Time**: ISO 8601 timestamp (observation time, event time)
+- **Category**: Categorical value from controlled vocabulary (weather condition, quality flag)
+
+**Range Components (new in 3.0):**
+- **QuantityRange**: Range of numeric values with units (temperature range)
+- **CategoryRange**: Range of categorical values (quality range indicators)
+- **TimeRange**: Temporal interval (observation period, validity period)
+
+**Complex Components:**
+- **DataRecord**: Structured record containing multiple named fields (multi-property observation)
+- **DataArray**: Array of measurements with variable or fixed element count (time series, profile, trajectory)
+- **Vector**: Positional vector with coordinate reference system (3D location, velocity)
+- **Matrix**: Matrix of values with specified dimensions (covariance matrix, transformation matrix)
+- **DataChoice**: Choice between alternative structures (different measurement modes, conditional observations)
+- **GeometryData**: Geometric data encoded using GeoJSON geometry types (spatial observations, coverage areas)
+
+**SWE Common 3.0 Encodings to Support:**
+
+**JSON Encoding** (human-readable):
+```json
+{
+  "temperature": {"uom": {"code": "Cel"}, "value": 23.5},
+  "humidity": {"uom": {"code": "%"}, "value": 65.2}
+}
+```
+
+**Text Encoding** (CSV-style compact):
+```
+23.5,65.2
+24.1,63.8
+```
+
+**Binary Encoding** (efficient streaming):
+- IEEE 754 floating point (32-bit, 64-bit)
+- Integer encodings (signed/unsigned, 8/16/32/64-bit)
+- Base64 encoded blocks
+- Block compression support
+- Little-endian and big-endian byte order support
+
+**Schema Validation Requirements:**
+- **Result structure validation**: Matching result structure against DataStream schema
+- **Range validation**: Values within allowed ranges
+- **Unit validation**: UCUM code validation
+- **Array validation**: Array dimensions match schema element count specifications
+- **Quality validation**: Quality indicators follow schema
+- **Temporal validation**: Timestamps follow ISO 8601 format
+- **Categorical validation**: Categorical values from defined code space
+- **Text validation**: Text patterns match defined constraints
+- **Geometry validation**: GeometryData follows GeoJSON spec
+
+**Advanced 3.0 Features Support:**
+- **NilValues**: Representation of missing/invalid data with reason codes
+- **Quality**: Associated quality indicators (accuracy, precision, confidence, flags)
+- **Constraints**: AllowedValues (enumeration lists), AllowedIntervals (numeric ranges), AllowedTimes (temporal constraints), AllowedTokens (text patterns)
+- **ReferenceFrames**: Temporal reference frame definitions (UTC, TAI, GPS time) and spatial reference frame definitions (EPSG codes)
+- **CodeSpaces**: Controlled vocabulary support with vocabulary dereferencing
+- **Encoding conversion**: Bidirectional conversion between JSON ↔ Text ↔ Binary
+- **Streaming support**: Incremental parsing for large datasets
+- **Performance optimization**: Binary encoding for high-volume data
+
+**References:**
+- [OGC SWE Common 3.0](https://docs.ogc.org/is/24-014/24-014.html): Normative specification for SWE Common data encodings
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Requirements for SWE Common in DataStreams/Observations
+- [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): SWE Common media type definitions
+- [SWE Common 3.0 JSON Schema](https://schemas.opengis.net/sweCommon/3.0/): Official JSON schemas
+- [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Client requirements for SWE Common parsing
+- [pr114-analysis.md](../research/upstream/pr114-analysis.md): Implementation patterns for result parsing
+
+**Implementation Type:** BUILDING NEW CODE
+
+---
+
+### Format Detector: Extending Existing Content Negotiation
+
+The format detector is existing code that examines HTTP response headers (Content-Type) and document structure to determine what format a server returned. For CSAPI, we will extend this detector to recognize CSAPI media types. The extension will recognize new media types used by CSAPI servers: `application/sml+json` (SensorML-JSON encoding), `application/swe+json` (SWE Common JSON encoding), `application/swe+text` (SWE Common Text/CSV encoding), and `application/swe+binary` (SWE Common Binary encoding). The extension will add these media types to the library's format registry and route them to the appropriate new format handlers (SensorML handler, SWE Common handler). This follows the existing pattern where the detector checks Content-Type headers first, then falls back to document structure analysis if headers are missing or ambiguous.
+
+**Media Type Recognition:**
+- `application/sml+json` → Route to SensorML Handler
+- `application/swe+json` → Route to SWE Common Handler (JSON encoding)
+- `application/swe+text` → Route to SWE Common Handler (Text encoding)
+- `application/swe+binary` → Route to SWE Common Handler (Binary encoding)
+- `application/geo+json` with CSAPI `featureType` → Route to GeoJSON Handler with CSAPI extensions
+
+**Detection Strategy:**
+1. **Content-Type header parsing** (primary method): Full media type parsing with parameter extraction
+2. **Accept header negotiation**: Server-driven content negotiation with quality factors
+3. **Document structure analysis** (fallback): Root JSON property examination (SensorML: `type: PhysicalSystem`, SWE Common: `type: DataRecord`, CSAPI GeoJSON: `featureType` property)
+4. **Format-specific identifiers**: SensorML process types, SWE Common component types, CSAPI resource types
+5. **Binary format detection**: Magic numbers, byte order marks, structure signatures
+6. **Charset detection**: BOM detection, heuristic analysis
+
+**Implementation Type:** EXTENDING EXISTING CODE
+
+**References:**
+- [RFC 6838 (Media Type Specifications)](https://tools.ietf.org/html/rfc6838): Media type format and registration
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): CSAPI media types for Part 1
+- [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Part 1 media type definitions
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): CSAPI media types for Part 2 (SWE formats)
+- [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Part 2 media type definitions
+
+---
+
+### Validator: Extending Existing Validation Framework
+
+The validator is existing code that checks whether parsed documents conform to format specifications and semantic constraints. For CSAPI, we will extend this validator with validation of CSAPI requirements. The extension will check CSAPI-specific requirements: required properties for each resource type, valid enumeration values, URI format validation, temporal validity constraints, spatial constraint validation, association integrity, and schema conformance for Part 2 resources (Observation results must match DataStream schema, Command parameters must match ControlStream schema). The extension will add CSAPI validation rules to the existing validation pipeline, reporting errors and warnings through the same error handling mechanism used for other formats.
+
+**CSAPI Validation Rules:**
+
+**Part 1 Resource Validation:**
+- Systems: `uniqueIdentifier` (required URI), `systemType` (required, from SOSA vocabulary), `name` (required string)
+- Deployments: `validTime` (required temporal period), spatial extent (required)
+- Procedures: `procedureType` (required URI), attached system reference validation
+- Sampling Features: `sampledFeature` (required reference), geometry (required)
+- Properties: `definition` (required URI from vocabulary), `label` (required string)
+
+**Part 2 Resource Validation:**
+- DataStreams: schema validation (result schema must be valid SWE Common DataComponent), observed properties must reference existing Property resources
+- Observations: result validation (must conform to DataStream schema), temporal validation (phenomenonTime required)
+- Control Streams: schema validation (parameter schema must be valid SWE Common), system association (required)
+- Commands: parameter validation (must conform to ControlStream schema), execution time validation
+
+**Cross-Reference Validation:**
+- **Association links**: All links must have valid href, valid rel, optional type
+- **Resource references**: Referenced resources must exist or be valid external URIs
+- **Hierarchical integrity**: Parent-child relationships are consistent, no circular references
+- **Relationship consistency**: Bidirectional relationships are consistent
+- **Vocabulary references**: All vocabulary URIs dereferenceable
+- **Schema references**: DataStream/ControlStream schemas valid SWE Common
+- **Spatial references**: CRS codes valid (EPSG codes or URIs), coordinates within valid ranges
+- **Temporal references**: Reference frames valid, timezones valid, ISO 8601 compliance
+- **Unit references**: UCUM codes valid
+- **External references**: HTTP/HTTPS links reachable (optional validation)
+
+**Validation Error Reporting:**
+- **Error severity**: Error (invalid/unusable), Warning (questionable/suboptimal), Info (recommendations)
+- **Error context**: JSON path to error location, line/column numbers, surrounding context
+- **Error messages**: Clear description of problem, expected vs actual values, suggested fixes
+- **Error codes**: Machine-readable error codes for programmatic handling
+- **Batch validation**: All errors collected and reported together
+- **Validation summaries**: Count of errors/warnings/info messages, validation pass/fail status
+
+**Implementation Type:** EXTENDING EXISTING CODE
+
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Validation requirements for Part 1 resources
+- [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Part 1 schema definitions for validation
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Validation requirements for Part 2 resources
+- [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Part 2 schema definitions for validation
+- [csapi-part1-requirements.md](../research/requirements/csapi-part1-requirements.md): Required properties and constraints
+- [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Schema conformance requirements
+- [RFC 8141 (URN Syntax)](https://tools.ietf.org/html/rfc8141): URI validation rules
+
+---
+
+## Worker Components
+
+### Background Processing: Extending Existing Web Worker Pattern
+
+The background processing component extends the existing Web Worker infrastructure in the Camptocamp OGC Client Library (`src/worker/worker.ts`, `src/worker/utils.ts`, `src/worker/index.ts`) to move heavy parsing and validation work off the main thread, keeping browser UIs responsive. The upstream library currently uses this worker pattern to parse XML capabilities documents for WMS, WFS, and WMTS services, offloading computationally expensive XML parsing and processing to a Web Worker that runs in parallel and returns results asynchronously via message passing. The library provides a fallback mechanism for non-worker environments like Node.js or older browsers, where the same code runs synchronously on the main thread. For CSAPI, we will extend this proven worker pattern by adding new CSAPI-specific message types to handle: SensorML 3.0 parsing (complex hierarchical JSON document traversal), SWE Common 3.0 parsing (especially binary encoding decoding), large observation result set processing (thousands of observations with schema validation), bulk command validation, and schema validation operations.
+
+**CSAPI Operations to Move to Worker:**
+
+**Format Parsing (Heavy Operations):**
+- **SensorML 3.0 parsing**: Complex hierarchical JSON document parsing with recursive PhysicalSystem component trees
+- **SWE Common 3.0 parsing**: Binary encoding decoding (IEEE 754 float, multi-byte integers, byte order handling), Text/CSV parsing, JSON encoding with schema-driven validation
+- **Large observation arrays**: Parsing thousands of observations with result validation against DataStream schemas
+- **Large command arrays**: Bulk command parameter validation against ControlStream schemas
+- **GeoJSON feature collections**: Large spatial datasets with CSAPI-specific property extraction
+
+**Validation Operations (CPU-Intensive):**
+- **Schema validation**: Complex SWE Common DataComponent schema validation with constraint checking
+- **Observation result validation**: Validate observation results against DataStream result schemas
+- **Command parameter validation**: Validate command parameters against ControlStream parameter schemas
+- **Cross-reference validation**: Check resource association integrity across hierarchies
+
+**Query Operations (Memory/CPU Intensive):**
+- **Recursive hierarchy traversal**: Deep system/deployment trees with all descendants
+- **Spatial filtering**: bbox intersection calculations across large feature collections
+- **Temporal filtering**: phenomenonTime/resultTime interval matching across large observation sets
+
+**Worker Message Types to Add:**
+- `PARSE_SENSORML_3`: Input SensorML 3.0 JSON, output parsed System/PhysicalComponent/PhysicalSystem object
+- `PARSE_SWE_RESULT`: Input SWE Common encoded result (JSON/Text/Binary) + schema, output validated parsed values
+- `PARSE_SWE_BINARY`: Input Base64 binary block + schema, output decoded observation array
+- `VALIDATE_OBSERVATIONS`: Input observation array + DataStream schema, output validation results
+- `VALIDATE_COMMANDS`: Input command array + ControlStream schema, output validation results
+- `PARSE_OBSERVATION_ARRAY`: Input large observation array, output parsed and validated observations
+- `TRAVERSE_HIERARCHY`: Input system ID + recursive flag, output complete hierarchy tree
+- `FILTER_SPATIAL`: Input feature collection + bbox, output filtered features
+- `FILTER_TEMPORAL`: Input observation array + temporal interval, output filtered observations
+
+**Performance Benefits:**
+- Prevent main thread blocking during large data operations
+- Enable responsive UIs during heavy parsing
+- Parallel processing of multiple requests
+- Better utilization of multi-core CPUs
+
+**Fallback for Non-Worker Environments:**
+- Provide synchronous fallback implementation
+- Maintain same API surface
+- Graceful degradation in environments without Web Worker support
+
+**Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI message handlers to existing worker)
+
+**References:**
+- [pr114-analysis.md](../research/upstream/pr114-analysis.md): Worker patterns for EDR implementation
+- [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Performance requirements for large observation datasets
+
+---
+
+## Testing Components
+
+### Test Coverage: Extending Existing Test Suite
+
+The test coverage component extends the existing Jest test suite to cover all CSAPI functionality. For CSAPI, we will add test suites for every new component: format parsers (SensorML, SWE Common), resource methods (Systems, DataStreams, Observations, Commands, etc.), query builders, validators, and integration tests. The library has established testing patterns including unit tests (isolated component tests), integration tests (multi-component interaction), and fixture-based tests (using example documents from the spec). The extension will add CSAPI test fixtures (GeoJSON features, SensorML documents, SWE Common results), mock CSAPI responses, and test utilities specific to CSAPI validation. Test coverage should match the existing library standard (>80% code coverage).
+
+**CSAPI Test Suites to Create:**
+
+**Format Parser Tests:**
+- **GeoJSON CSAPI extensions**: All Part 1 resource types, all CSAPI-specific properties, all geometry types, validation rules
+- **SensorML 3.0 parser**: All system models, all elements, recursive component parsing, SWE Common integration
+- **SWE Common 3.0 parser**: All data components, all encodings (JSON, Text, Binary), constraint validation, quality indicators
+- **Format detector**: All CSAPI media types, fallback detection, error handling
+- **Validator**: All Part 1 validation rules, all Part 2 validation rules, cross-reference validation
+
+**Resource Method Tests (All CRUD + All Query Parameters):**
+- **Systems**: CRUD, subsystem hierarchy, all query parameters, pagination, format negotiation, error cases
+- **Deployments**: CRUD, subdeployment hierarchy, all query parameters, pagination, error cases
+- **Procedures**: CRUD, all query parameters, pagination, format negotiation, error cases
+- **Sampling Features**: CRUD, all query parameters, pagination, error cases
+- **Properties**: Read operations, all query parameters, pagination, error cases
+- **DataStreams**: CRUD, schema operations, all query parameters, pagination, error cases
+- **Observations**: CRUD, all temporal queries, both pagination modes, large result sets, bulk operations, all encodings, error cases
+- **Control Streams**: CRUD, schema operations, all query parameters, pagination, error cases
+- **Commands**: CRUD, status tracking, result retrieval, all temporal queries, both pagination modes, bulk operations, sync vs async, error cases
+
+**Query Builder Tests:**
+- **Canonical endpoints**: URL construction for all 9 resource types
+- **Nested endpoints**: All nesting patterns
+- **Query parameter encoding**: All spatial, temporal, relationship, common, hierarchical, pagination, format parameters
+- **Combined filtering**: Multiple query parameters together, parameter precedence
+- **Schema endpoints**: DataStream/ControlStream schema URLs
+- **Status/result endpoints**: Command status/result URLs
+- **Error cases**: Invalid parameters, malformed URLs
+
+**Integration Tests (End-to-End Workflows):**
+- **Discovery workflows**: Connect → check conformance → list collections → filter by type → retrieve resources
+- **Observation workflows**: Discover systems → find datastreams → query observations → paginate → parse results
+- **Command workflows**: Discover systems → find control streams → check feasibility → submit → track status → retrieve results
+- **Cross-resource navigation**: System → deployments → procedures → sampling features → datastreams → observations
+- **Format round-tripping**: Parse → validate → modify → serialize → parse (verify consistency)
+- **Hierarchical queries**: Recursive traversal with large hierarchies
+- **Error handling**: Server errors, validation errors, network errors, malformed responses
+
+**Test Fixtures:**
+- **Specification examples**: All example responses from CSAPI Parts 1 & 2 specifications
+- **Edge cases**: Empty collections, minimal resources, malformed data, boundary conditions
+- **Large datasets**: Paginated collections, large observation sets, complex hierarchies
+- **All format variations**: GeoJSON (all Part 1 types), SensorML 3.0 (all system types), SWE Common 3.0 (all encodings)
+- **Error responses**: All HTTP error codes, validation error types, malformed headers
+- **Schema fixtures**: DataStream schema examples, ControlStream parameter schemas
+
+**Test Coverage Targets:**
+- **Code coverage**: >80% statement coverage, >80% branch coverage, 100% public API coverage
+- **Resource coverage**: 100% of all CSAPI resource types, 100% of all query parameters, 100% of all format types
+- **Error coverage**: All error conditions documented in CSAPI specification
+
+**Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI test suites to existing Jest framework)
+
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Specification examples for test fixtures
+- [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): Part 1 endpoint testing specifications
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Part 2 examples for observation/command tests
+- [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Part 2 endpoint testing specifications
+
+---
+
+## Documentation Components
+
+### API Documentation: Extending Existing TypeDoc Documentation
+
+The API documentation component extends the existing TypeDoc documentation to cover all CSAPI additions. For CSAPI, we will add documentation for all new TypeScript interfaces and types, all new methods on OgcApiEndpoint, usage examples for every resource type and query pattern, format handler documentation, and migration guides for users of other CSAPI clients. The library uses TypeDoc to generate API documentation from TypeScript source code comments, providing type-aware documentation with cross-references and examples. The extension will add JSDoc comments to all new code, following the existing documentation standards and style.
+
+**Documentation to Add:**
+- **Interface Documentation**: All CSAPI TypeScript interfaces (System, Deployment, DataStream, Observation, etc.)
+- **Method Documentation**: All CSAPIQueryBuilder methods with parameter descriptions and examples
+- **Usage Examples**: Common workflows (discovery, observation queries, command submission)
+- **Format Documentation**: SensorML 3.0 and SWE Common 3.0 parsing examples
+- **Migration Guides**: For users of other CSAPI client libraries
+- **Query Parameter Reference**: Complete documentation of all query parameters
+- **Error Handling**: Common error scenarios and how to handle them
+
+**Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI docs to existing TypeDoc setup)
+
+**References:**
+- [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative references for documentation
+- [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): API reference documentation source
+- [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Part 2 specification references
+- [OGC API - Connected Systems Part 2: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-2.bundled.oas31.yaml): Part 2 API reference documentation source
 
 ---
 
