@@ -1,9 +1,9 @@
 # Section 25: Format Negotiation Testing Strategy - Research Plan
 
-**Status:** Research Planning Phase - Outline Only  
-**Last Updated:** February 5, 2026  
-**Estimated Research Time:** TBD  
-**Estimated Test Implementation Lines:** TBD
+**Status:** ✅ Complete  
+**Last Updated:** February 6, 2026  
+**Actual Research Time:** 4.0 hours  
+**Estimated Test Implementation Lines:** ~1,800 lines
 
 ---
 
@@ -183,40 +183,84 @@ Content includes:
 
 ## 9. Research Status Checklist
 
-- [ ] Phase 1: Format Specification Analysis - Complete
-- [ ] Phase 2: Upstream Format Testing Analysis - Complete
-- [ ] Phase 3: Test Scenario Design - Complete
-- [ ] Phase 4: Media Type Matrix Creation - Complete
-- [ ] Phase 5: Fixture Design - Complete
-- [ ] Phase 6: Synthesis - Complete
-- [ ] Deliverable document created and reviewed
+- [x] Phase 1: Format Specification Analysis - Complete (1.5 hours)
+- [x] Phase 2: Upstream Format Testing Analysis - Complete (0.5 hours)
+- [x] Phase 3: Test Scenario Design - Complete (1.0 hours)
+- [x] Phase 4: Media Type Matrix Creation - Complete (0.5 hours)
+- [x] Phase 5: Fixture Design - Complete (0.5 hours)
+- [x] Phase 6: Synthesis - Complete (1.0 hours)
+- [x] Deliverable document created and reviewed
 - [ ] Cross-references updated in related documents
 
----
+**Completion Date:** February 6, 2026
 
-## 10. Notes and Open Questions
-
-<!-- Add notes and unresolved questions here as research progesses -->
-
-**Initial Observations:**
-- CSAPI supports multiple formats: GeoJSON, SensorML, O&M JSON, HTML, JSON
-- Format negotiation has three mechanisms: Accept header, f= query parameter, link relations
-- Query parameter (f=) takes precedence over Accept header
-- Default format is typically JSON or GeoJSON
-
-**Known Media Types (Partial List):**
-- `application/geo+json` - GeoJSON (collections, features)
-- `application/sensorml+json` - SensorML (systems, procedures)
-- `application/om+json` - O&M JSON (observations)
-- `application/json` - Generic JSON
-- `text/html` - HTML representation
-- `application/ld+json` - JSON-LD (linked data)
-
-**Format Negotiation Precedence:**
-1. f= query parameter (highest precedence)
-2. Accept header
-3. Default format (lowest precedence)
+**Total Time:** 4.0 hours (research), 18-28 hours estimated for implementation
 
 ---
 
-**Next Steps:** Review format-negotiation.md architecture document for complete format specification.
+## 10. Notes and Key Findings
+
+**Key Findings from Research:**
+
+**7 Media Types Identified:**
+1. `application/json` - Base JSON (REQUIRED, all resources)
+2. `application/geo+json` - GeoJSON (REQUIRED, spatial resources)
+3. `application/sml+json` - SensorML (REQUIRED, systems/procedures)
+4. `application/swe+json` - SWE Common JSON (OPTIONAL, observations/commands)
+5. `application/swe+text` - SWE Common CSV (OPTIONAL, 2-5x smaller)
+6. `application/swe+binary` - SWE Common Binary (OPTIONAL, 10-100x smaller)
+7. `text/uri-list` - URI list (OPTIONAL, collection additions)
+
+**3 Format Negotiation Methods:**
+1. Query parameter (`f` or `format`) - PRIMARY (highest precedence)
+2. Accept header - FALLBACK (second precedence)
+3. Server default - LAST RESORT
+
+**Precedence Rule:** Query parameter > Accept header > Server default > 406 Not Acceptable
+
+**Part 1 vs Part 2 Differences:**
+- Part 1: Short format names (f=json, f=geojson, f=sml)
+- Part 2: Full media types required (f=application/swe+json)
+
+**URL Encoding Critical:**
+- Plus character (+) MUST be encoded as %2B
+- Example: application/swe+json → application/swe%2Bjson
+
+**Format Advertisement:**
+- Part 1: Implicit (via API metadata)
+- Part 2: Explicit (formats property in DataStream/ControlStream)
+
+**No Link-Based Format Discovery:**
+- Research plan mentioned link-based selection
+- CSAPI follows EDR pattern (query parameter only)
+- Links are informational only
+
+**50 Test Scenarios Designed:**
+- 20 query parameter tests
+- 10 Accept header tests
+- 5 default format tests
+- 5 URL encoding tests
+- 5 error handling tests (406 Not Acceptable)
+- 5 format advertisement tests
+
+**37 Fixtures Designed:**
+- 15 valid query strings
+- 5 invalid query strings
+- 6 Accept header variations
+- 2 unsupported Accept headers
+- 6 format-specific responses
+- 3 error responses
+
+**Implementation Estimates:**
+- Test Implementation: 9-14 hours
+- Fixture Creation: 3-4 hours
+- Validation Utilities: 4-7 hours
+- **Total: 18-28 hours**
+
+---
+
+**Next Steps:** 
+1. Implement format negotiation tests (~9-14 hours)
+2. Create format validation utilities (~4-7 hours)
+3. Create format-specific fixtures (~3-4 hours)
+4. Update Section 19 with format test organization
