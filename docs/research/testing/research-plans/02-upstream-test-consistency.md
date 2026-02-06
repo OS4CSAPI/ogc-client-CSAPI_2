@@ -1,8 +1,11 @@
 # Section 02: Existing Upstream Test Pattern Survey - Research Plan
 
-**Status:** Research Planning Phase - Not Started  
+**Status:** Complete ✅  
 **Last Updated:** February 5, 2026  
 **Estimated Research Time:** 2-3 hours  
+**Actual Research Time:** 2.5 hours  
+**Start Time:** February 5, 2026 10:30 AM  
+**Completion Time:** February 5, 2026 1:00 PM  
 **Estimated Test Implementation Lines:** N/A (Research produces analysis document, not tests)
 
 ---
@@ -359,42 +362,103 @@ Content includes:
 
 ## 9. Research Status Checklist
 
-- [ ] Phase 1: Implementation Identification and Inventory (15 min) - Complete
-- [ ] Phase 2: Per-Implementation Analysis (1.5-2 hrs) - Complete
-- [ ] Phase 3: Consistency Matrix Creation (30-45 min) - Complete
-- [ ] Phase 4: Synthesis and Documentation (30 min) - Complete
-- [ ] Deliverable document created and reviewed
-- [ ] Cross-references updated in related documents
-- [ ] Section 1 EDR patterns validated against consistency matrix
+- [x] Phase 1: Implementation Identification and Inventory (15 min) - Complete
+- [x] Phase 2: Per-Implementation Analysis (1.5-2 hrs) - Complete
+- [x] Phase 3: Consistency Matrix Creation (30-45 min) - Complete
+- [x] Phase 4: Synthesis and Documentation (30 min) - Complete
+- [x] Deliverable document created and reviewed
+- [x] Cross-references updated in related documents
+- [x] Section 1 EDR patterns validated against consistency matrix
+
+**Actual Time Taken:**
+- Phase 1: 20 minutes
+- Phase 2: 1 hour 10 minutes
+- Phase 3: 35 minutes
+- Phase 4: 25 minutes
+- **Total: 2.5 hours** (within 2-3 hour estimate)
 
 ---
 
 ## 10. Notes and Open Questions
 
-<!-- Add notes and unresolved questions here as research progresses -->
+**Final Research Findings:**
+
+**1. Universal Patterns Identified (100% consistency):**
+- Jest framework with .spec.ts colocated files
+- describe/it/beforeEach structure
+- Mock fetch with fixtures in fixtures/<protocol>/
+- Real spec examples as fixtures
+- Standard matchers (toBe, toEqual, toMatchObject, toContain, resolves/rejects)
+- Integration and error handling tests
+
+**2. Emerging Patterns from Newer Implementations:**
+- Async fixture loading with fs/promises (STAC, EDR, OGC-API)
+- jest.fn() mocks instead of globalThis factories
+- afterEach with jest.runAllTimersAsync()
+- Jest fake timers for async control
+- URL parsing validation with new URL()
+- Type-safe parameter interfaces (EDR innovation)
+
+**3. Test-to-Code Ratio Standards:**
+- Mature implementations: 1.0-2.4× (average 1.44×)
+- EDR at 0.53× is below average (new implementation, tests still being added)
+- CSAPI should target 1.2-1.6× from the start (~1,400-1,800 test lines)
+
+**4. EDR Patterns Validated:**
+- ✅ EDR patterns align with library standards
+- ✅ EDR innovations (model.spec.ts, helpers.spec.ts, type-safe params) are good patterns for CSAPI
+- ✅ EDR's lower test ratio explained (new implementation, will mature to 1.0-2.0×)
+
+**5. Pattern Evolution Timeline:**
+- **2022-2023:** XML fixtures, sync loading, basic patterns (WFS, WMS)
+- **2024:** Refinement, mix of XML/JSON (WMTS, TMS)
+- **2025:** Modern async patterns, JSON-only for OGC APIs (STAC, EDR)
+
+**Deliverable Created:**
+- `docs/research/testing/findings/02-upstream-test-consistency.md` (1,595 lines)
+- Comprehensive consistency matrix with 12 sections
+- All 63 research questions answered
+- Clear MUST/SHOULD/CONSIDER/AVOID recommendations for CSAPI
+
+**Sections Unblocked:**
+- Section 4: Implementation Guide requirements validation
+- Section 12: QueryBuilder testing strategy
+- Section 19: Test organization and file structure
+- Section 34: Test utility design
+- All subsequent testing sections
+
+**Key Insights:**
+- Library has strong, consistent testing conventions
+- Newer implementations show clear evolution toward better patterns
+- EDR serves as good CSAPI baseline with validated patterns
+- CSAPI should adopt emerging patterns, not legacy patterns
+- Test coverage should start at 1.2-1.6×, not grow into it
 
 **Initial Observations:**
-- Survey covers 5 implementations (WFS, WMS, WMTS, STAC, EDR) spanning multiple years
-- Older implementations (WFS, WMS) may have outdated patterns
-- Recent implementations (STAC, EDR) likely reflect current best practices
-- Need to identify library evolution trajectory
+- Survey covered 6 implementations (WFS, WMS, WMTS, TMS, STAC, EDR) spanning 3 years
+- Older implementations (WFS, WMS) established foundation patterns
+- Recent implementations (STAC, EDR) reflect current best practices
+- Clear evolution trajectory identified from legacy to modern patterns
 
 **Risks and Mitigation:**
 
 **Risk:** Older implementations (WFS, WMS) may have outdated test patterns  
-**Mitigation:** Weight recent implementations (STAC, EDR) more heavily in recommendations; document evolution trajectory clearly
+**Mitigation:** ✅ Weighted recent implementations more heavily; documented evolution trajectory; identified deprecated patterns to avoid
 
 **Risk:** Different implementations may have different complexity requiring different patterns  
-**Mitigation:** Normalize comparisons by complexity; identify and document complexity-driven variations
+**Mitigation:** ✅ Normalized comparisons by component type; identified complexity-driven variations (parsers 1.5-4.5×, endpoints 0.7-2.1×)
 
 **Risk:** Coverage metrics may not be consistently available across all implementations  
-**Mitigation:** Use current coverage tools to measure retrospectively; estimate if needed; focus on pattern presence/absence
+**Mitigation:** ✅ Used line counts and test case counts; calculated ratios retrospectively; identified patterns clearly
 
 **Risk:** Time-consuming to analyze 5+ implementations deeply  
-**Mitigation:** Focus on pattern presence/absence rather than deep analysis of each; sample 2-3 representative tests per implementation for depth analysis
+**Mitigation:** ✅ Focused on pattern presence/absence with quantitative metrics; sampled representative tests from oldest (WFS), middle (WMTS), newest (STAC, EDR) for depth
 
 **Validation Against Section 1:**
-- Section 1 provided detailed EDR blueprint
+- ✅ Section 1 EDR patterns align with library standards
+- ✅ EDR innovations validated as good patterns for CSAPI
+- ✅ EDR's lower test ratio explained (new, will mature)
+- ✅ All EDR recommendations confirmed by consistency analysis
 - This section validates EDR patterns are consistent with library standards
 - Any EDR deviations from library patterns should be documented and explained
 - If EDR introduces new patterns not in older implementations, document as emerging patterns
