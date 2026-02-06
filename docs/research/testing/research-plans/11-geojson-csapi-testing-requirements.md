@@ -1,10 +1,12 @@
 # Research Plan: GeoJSON CSAPI Extensions Testing Requirements
 
 **Section:** 11 of 38  
-**Status:** Not Started  
+**Status:** ✅ COMPLETED  
 **Last Updated:** February 5, 2026  
-**Estimated Time:** 1.5-2 hours  
-**Estimated Lines:** 500-800 lines
+**Completion Date:** February 5, 2026  
+**Actual Time:** 2 hours  
+**Actual Lines:** 15,000 words / ~1,200 lines  
+**Deliverable:** [11-geojson-csapi-testing-requirements.md](../11-geojson-csapi-testing-requirements.md)
 
 ---
 
@@ -376,22 +378,36 @@ Sections 9-10 addressed the complex formats (SensorML, SWE Common). Section 11 a
 ## 10. Notes and Open Questions
 
 **Risks and Mitigation:**
-- **Over-testing standard GeoJSON:** Focus exclusively on CSAPI-specific properties, trust existing RFC 7946 coverage
-- **Vocabulary validation strictness:** Implement configurable strictness (strict mode vs lenient mode with warnings)
-- **OpenSensorHub edge case coverage:** Supplement with hand-crafted fixtures for edge cases not found in real-world data
-- **Temporal property validation complexity:** Use strict ISO 8601 parser, provide clear error messages for invalid formats
+- **Over-testing standard GeoJSON:** ✅ RESOLVED - Document clearly specifies reuse strategy, what NOT to test
+- **Vocabulary validation strictness:** ✅ ADDRESSED - Defined exact vocabulary lists (SOSA/SSN URIs, assetType enum)
+- **OpenSensorHub edge case coverage:** ✅ PLANNED - Fixture plan includes ~30 fixtures: 10-15 spec, 10-15 OSH, 5-10 hand-crafted
+- **Temporal property validation complexity:** ✅ SPECIFIED - ISO 8601 validation rules, open-ended intervals, error conditions
 
 **Validation Strategy:**
-- Reuse existing GeoJSON parser for RFC 7946 compliance (geometry, standard properties, FeatureCollection)
-- Add CSAPI-specific property validation (uniqueIdentifier, featureType, resource-specific properties)
-- Validate controlled vocabularies (featureType, systemType, samplingFeatureType, procedureType)
-- Validate temporal properties (ISO 8601 intervals, open intervals)
-- Validate link structure (href, rel, type, title)
-- Test error conditions (missing required, invalid formats, unknown vocabularies)
+- ✅ Reuse strategy defined: Extend existing GeoJSON parser, don't duplicate RFC 7946 tests
+- ✅ CSAPI property validation: All properties documented with validation rules
+- ✅ Controlled vocabularies: Complete SOSA/SSN vocabulary lists documented
+- ✅ Temporal properties: ISO 8601 format, intervals, ordering rules specified
+- ✅ Link structure: HATEOAS link validation requirements defined
+- ✅ Error conditions: 7 error categories with examples
+
+**Research Completion Summary:**
+- ✅ All 74 research questions answered
+- ✅ All 5 resource types documented (Systems, Deployments, Procedures, SamplingFeatures, Properties)
+- ✅ 18 required sections completed
+- ✅ Reuse strategy clear (extend existing parser, focus on CSAPI properties)
+- ✅ Vocabulary validation requirements defined (SOSA/SSN, assetType)
+- ✅ Temporal validation specified (ISO 8601 periods, open-ended intervals)
+- ✅ Test organization designed (single file, 7 describe blocks, ~150 tests)
+- ✅ Test priorities defined (P0-P3: CRITICAL, HIGH, MEDIUM, LOW)
+- ✅ Anti-patterns documented (what NOT to test)
+- ✅ Fixture requirements (~30 total across 5 resource types)
+- ✅ Example test implementation provided
 
 **Next Steps After Completion:**
-1. Implement GeoJSON CSAPI tests in `src/ogc-api/formats/geojson-csapi.spec.ts`
-2. Source fixtures from Part 1 spec and OpenSensorHub
-3. Design fixture directory structure (fixtures/geojson-csapi/)
-4. Validate test coverage against deliverable specification
-5. Create test organization (7 describe blocks: Common, Systems, Deployments, Procedures, SamplingFeatures, Properties, Error Handling)
+1. ✅ COMPLETED: Comprehensive specification document created (15,000 words, 18 sections)
+2. TODO: Implement GeoJSON CSAPI tests in `src/ogc-api/formats/geojson-csapi.spec.ts`
+3. TODO: Source fixtures from Part 1 spec and OpenSensorHub
+4. TODO: Create fixture directory structure (fixtures/csapi-geojson/)
+5. TODO: Validate test coverage against deliverable specification
+6. TODO: Implement parser extensions following specification
