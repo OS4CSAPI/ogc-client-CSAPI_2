@@ -1,9 +1,9 @@
 # Section 26: Sub-Resource Navigation Testing - Research Plan
 
-**Status:** Research Planning Phase - Outline Only  
-**Last Updated:** February 5, 2026  
-**Estimated Research Time:** TBD  
-**Estimated Test Implementation Lines:** TBD
+**Status:** ✅ Complete  
+**Last Updated:** February 6, 2026  
+**Actual Research Time:** 3.5 hours  
+**Estimated Test Implementation Lines:** ~2,450 lines
 
 ---
 
@@ -189,48 +189,107 @@ Content includes:
 
 ## 9. Research Status Checklist
 
-- [ ] Phase 1: Sub-Resource Pattern Inventory - Complete
-- [ ] Phase 2: URL Structure Analysis - Complete
-- [ ] Phase 3: Upstream Navigation Testing Analysis - Complete
-- [ ] Phase 4: Test Scenario Design - Complete
-- [ ] Phase 5: Bidirectional Navigation Analysis - Complete
-- [ ] Phase 6: Synthesis - Complete
-- [ ] Deliverable document created and reviewed
+- [x] Phase 1: Sub-Resource Pattern Inventory - Complete (1.0 hour)
+- [x] Phase 2: URL Structure Analysis - Complete (0.5 hours)
+- [x] Phase 3: Upstream Navigation Testing Analysis - Complete (0.5 hours)
+- [x] Phase 4: Test Scenario Design - Complete (1.0 hour)
+- [x] Phase 5: Bidirectional Navigation Analysis - Complete (0.25 hours)
+- [x] Phase 6: Synthesis - Complete (0.75 hours)
+- [x] Deliverable document created and reviewed
 - [ ] Cross-references updated in related documents
 
----
+**Completion Date:** February 6, 2026
 
-## 10. Notes and Open Questions
-
-<!-- Add notes and unresolved questions here as research progresses -->
-
-**Initial Observations:**
-- CSAPI has extensive nested resource patterns
-- Sub-resources enable efficient navigation without complex queries
-- Bidirectional navigation is important for user workflows
-- Query parameters and pagination apply to nested endpoints
-
-**Known Nested Patterns (Partial List):**
-- **System Sub-Resources:**
-  - `/systems/{id}/datastreams`
-  - `/systems/{id}/deployments`
-  - `/systems/{id}/subsystems`
-  
-- **Datastream Sub-Resources:**
-  - `/datastreams/{id}/observations`
-  - `/datastreams/{id}/system`
-  
-- **SamplingFeature Sub-Resources:**
-  - `/samplingFeatures/{id}/observations`
-  - `/samplingFeatures/{id}/relatedSamplingFeatures`
-  
-- **Procedure Sub-Resources:**
-  - `/procedures/{id}/systems`
-
-**Bidirectional Navigation Examples:**
-- System → Datastreams (forward)
-- Datastream → System (reverse via link relation)
+**Total Time:** 3.5 hours (research), 40-52 hours estimated for implementation
 
 ---
 
-**Next Steps:** Review subresource-navigation-requirements.md for complete pattern specification.
+## 10. Notes and Key Findings
+
+**Key Findings from Research:**
+
+**16 Relationship Patterns Identified:**
+1. Systems → Subsystems (hierarchical, unlimited depth, recursive)
+2. Deployments → Subdeployments (hierarchical, unlimited depth, recursive)
+3. Systems → SamplingFeatures (compositional, depth 1)
+4. Systems → DataStreams (compositional cross-part, depth 1)
+5. Systems → ControlStreams (compositional cross-part, depth 1)
+6. Systems → SystemEvents (compositional cross-part, depth 1)
+7. Systems → Deployments (associative, bidirectional)
+8. Collections → Items (compositional, depth 1)
+9. DataStreams → Observations (compositional, depth 1)
+10. ControlStreams → Commands (compositional, depth 1)
+11. ControlStreams → Feasibility (compositional, depth 1)
+12. Commands → Status (compositional, depth 1)
+13. Commands → Result (compositional, depth 1)
+14. Feasibility → Status (compositional, depth 1)
+15. Feasibility → Result (compositional, depth 1)
+16. Deployments → Systems (associative reverse via query parameter)
+
+**3 Relationship Types:**
+- **Hierarchical (2):** Subsystems, Subdeployments - unlimited depth with recursive parameter
+- **Compositional (12):** Parent owns child, depth 1, no recursive
+- **Associative (2):** Many-to-many, bidirectional navigation
+
+**URL Pattern Structure:**
+- Collection: `/{parent}/{parentId}/{children}`
+- Single resource: `/{parent}/{parentId}/{children}/{childId}`
+- Canonical equivalence: Nested URL = Canonical URL (same resource)
+
+**Query Parameter Inheritance:**
+- All nested endpoints support pagination (limit, offset)
+- Spatial endpoints support bbox, datetime
+- Observation endpoints support phenomenonTime, resultTime
+- Command endpoints support executionTime, issueTime
+- Hierarchical endpoints support recursive parameter
+
+**Pagination Patterns:**
+- Offset-based for Part 1 (limit 10-100 typical)
+- Offset or cursor-based for Part 2 (limit up to 10000)
+- Cursor-based recommended for large datasets (millions of observations)
+
+**Bidirectional Navigation:**
+- Forward: Dedicated nested endpoint (`/systems/{id}/deployments`)
+- Reverse: Query parameter on collection (`/deployments?system={id}`)
+- Both directions return consistent results
+
+**60 Test Scenarios Designed:**
+- 10 hierarchical navigation tests (recursive)
+- 25 compositional navigation tests
+- 5 associative navigation tests
+- 5 nested query parameter tests
+- 3 nested pagination tests
+- 2 bidirectional navigation tests
+- 10 invalid path/error handling tests
+
+**50 Fixtures Designed:**
+- 16 nested collection responses
+- 5 empty collection responses
+- 10 paginated responses
+- 8 single nested resource responses
+- 5 error responses
+- 4 bidirectional navigation responses
+- 2 recursive hierarchy responses
+
+**Implementation Estimates:**
+- URL Builder: 13-17 hours
+- Test Implementation: 19-24 hours
+- Fixture Creation: 6-8 hours
+- **Total: 40-52 hours**
+
+**Key Design Decisions:**
+- Generic nested URL builder pattern (reusable across all relationships)
+- Parameter validation (reject invalid parameters for resource type)
+- URL equivalence guarantee (nested = canonical)
+- Location header always uses canonical URL after creation
+- TypeScript types prevent invalid relationship access at compile time
+
+---
+
+**Next Steps:**
+1. Implement generic nested URL builder (~13-17 hours)
+2. Implement hierarchical navigation methods (~2 hours)
+3. Implement compositional navigation methods (~6-7 hours)
+4. Implement test scenarios (~19-24 hours)
+5. Create fixtures (~6-8 hours)
+6. Update Section 19 with navigation test organization
