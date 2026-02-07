@@ -23,15 +23,43 @@ This project organizes test fixtures in a `fixtures/` directory at repository ro
 
 ```
 fixtures/
-├── ogc-api/                      # OGC API - Features (JSON, ~15 files)
+├── ogc-api/                      # OGC API - Features (JSON, ~15 files + subdirs)
 │   ├── sample-data.json
-│   ├── gnosis-earth.json
-│   ├── root-path.json
+│   ├── sample-data/              # Sample data with nested resources
+│   │   ├── collections.json
+│   │   ├── conformance.json
+│   │   ├── resources.json
+│   │   ├── styles.json
+│   │   ├── tileMatrixSets.json
+│   │   ├── tiles.json
+│   │   ├── notjson.json
+│   │   ├── collections/
+│   │   ├── styles/
+│   │   ├── tileMatrixSets/
+│   │   └── tiles/
 │   ├── sample-data-2.json
+│   ├── sample-data-2/
+│   ├── sample-data-root.json
+│   ├── sample-data-root/
+│   ├── gnosis-earth.json
+│   ├── gnosis-earth/             # Gnosis Earth API fixtures
+│   │   ├── collections.json
+│   │   ├── conformance.json
+│   │   ├── tileMatrixSets.json
+│   │   ├── collections/
+│   │   └── tileMatrixSets/
+│   ├── root-path.json
 │   ├── no-collection.json
+│   ├── no-collection/
 │   ├── invalid.json
-│   └── edr/                      # EDR (Environmental Data Retrieval) subdirectory
-│       └── sample-data-hub.json
+│   └── edr/                      # EDR (Environmental Data Retrieval)
+│       ├── sample-data-hub.json
+│       └── sample-data-hub/
+│           ├── collections.json
+│           ├── conformance.json
+│           ├── reservoir-api.json
+│           └── collections/
+│               └── reservoir-api.json
 │
 ├── wfs/                          # Web Feature Service (XML/JSON, ~30 files)
 │   ├── capabilities-pigma-1-1-0.xml
