@@ -159,26 +159,35 @@ fixtures/ogc-api/csapi/
 └── swe-common/
     ├── datarecord-simple.json
     ├── datarecord-nested.json
-    └── dataarr ay-2d.json
+    └── dataarray-2d.json
 ```
 
-**Fixture Metadata Format:**
+**Fixture Documentation:**
 
-```json
-{
-  "id": "sys-weather-001",
-  "type": "Feature",
-  "properties": { ... },
-  "_metadata": {
-    "specVersion": "OGC 23-001 v1.0.0",
-    "sourceURL": "https://docs.ogc.org/DRAFTS/23-001.html#example-7-2-1",
-    "createdDate": "2024-01-20",
-    "modifiedDate": "2024-02-06",
-    "validated": true,
-    "notes": "Weather station from spec example 7.2.1"
-  }
-}
+Each fixture directory should include a `README.md` documenting:
+- **Source**: Which OGC 23-001 v1.0.0 examples/sections each fixture is based on
+- **Purpose**: What each fixture tests (valid response, error case, edge case)
+- **Modifications**: Any changes made from spec examples
+- **Validation**: When last validated against spec
+
+Example `fixtures/ogc-api/csapi/systems/README.md`:
+```markdown
+# System Fixtures
+
+## system-weather-station-001.json
+- **Spec**: OGC 23-001 v1.0.0, Section 19.1.5, Example "System Feature in GeoJSON"
+- **Source**: https://docs.ogc.org/is/23-001/23-001.html#_system_representation
+- **Purpose**: Valid System resource (Sensor type, Equipment asset)
+- **Created**: 2024-01-20
+- **Last Validated**: 2026-02-07
+
+## system-traffic-camera-001.json  
+- **Spec**: Custom fixture (not from spec)
+- **Purpose**: Tests Platform type with camera subsystems
+- **Created**: 2024-01-25
 ```
+
+**Note**: Fixtures contain actual CSAPI resources (Systems, Deployments, etc.) per OGC 23-001 v1.0.0 specification. Documentation is SEPARATE from fixture content.
 
 ### 1.4 Tool Installation
 
