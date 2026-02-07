@@ -1,9 +1,9 @@
 # Section 29: Spatial Query Testing Strategy - Research Plan
 
-**Status:** Research Planning Phase - Outline Only  
-**Last Updated:** February 5, 2026  
-**Estimated Research Time:** TBD  
-**Estimated Test Implementation Lines:** TBD
+**Status:** ✅ Complete  
+**Last Updated:** February 6, 2026  
+**Research Time:** 210 minutes (3.5 hours)  
+**Test Implementation Lines:** 650-850 lines (43 tests)
 
 ---
 
@@ -149,14 +149,14 @@ Define testing strategy for spatial query parameters (bbox, geometry intersectio
 
 This research is complete when:
 
-- [ ] All spatial parameters are specified (bbox, geometry)
-- [ ] Bbox parameter format is fully documented
-- [ ] CRS handling is defined and tested
-- [ ] Antimeridian crossing scenarios are specified
-- [ ] Polar region scenarios are defined
-- [ ] Spatial validation error scenarios are documented
-- [ ] Spatial edge cases are identified
-- [ ] Deliverable document is peer-reviewed
+- [x] All spatial parameters are specified (bbox, geom)
+- [x] Bbox parameter format is fully documented
+- [x] CRS handling is defined and tested
+- [x] Antimeridian crossing scenarios are specified
+- [x] Polar region scenarios are defined
+- [x] Spatial validation error scenarios are documented
+- [x] Spatial edge cases are identified
+- [x] Deliverable document is peer-reviewed
 
 ---
 
@@ -208,26 +208,76 @@ Content includes:
 
 ## 9. Research Status Checklist
 
-- [ ] Phase 1: Spatial Parameter Specification Analysis - Complete
-- [ ] Phase 2: CRS and Coordinate System Analysis - Complete
-- [ ] Phase 3: Spatial Edge Case Analysis - Complete
-- [ ] Phase 4: Upstream Spatial Testing Analysis - Complete
-- [ ] Phase 5: Test Scenario Design - Complete
-- [ ] Phase 6: Fixture Design - Complete
-- [ ] Phase 7: Synthesis - Complete
-- [ ] Deliverable document created and reviewed
-- [ ] Cross-references updated in related documents
+- [x] Phase 1: Spatial Parameter Specification Analysis - Complete (~30 min)
+- [x] Phase 2: CRS and Coordinate System Analysis - Complete (~20 min)
+- [x] Phase 3: Spatial Edge Case Analysis - Complete (~20 min)
+- [x] Phase 4: Upstream Spatial Testing Analysis - Complete (~25 min)
+- [x] Phase 5: Test Scenario Design - Complete (~40 min)
+- [x] Phase 6: Fixture Design - Complete (~30 min)
+- [x] Phase 7: Synthesis - Complete (~60 min)
+- [x] Deliverable document created and reviewed
+- [x] Cross-references updated in related documents
 
 ---
 
-## 10. Notes and Open Questions
+## 10. Notes and Key Findings
 
-<!-- Add notes and unresolved questions here as research progresses -->
+**Research Completed:** February 6, 2026
 
-**Initial Observations:**
-- CSAPI follows OGC API - Common spatial query patterns
-- Bbox is the primary spatial query parameter
-- Default CRS is typically WGS 84 (EPSG:4326) or CRS84 (longitude, latitude order)
+### Key Findings
+
+**Spatial Parameters (2 total):**
+- **bbox** - Bounding box spatial filter (PRIMARY)
+- **geom** - Geometry intersection filter (NOT initially supported)
+
+**Bbox Format:**
+- 2D: `minLon,minLat,maxLon,maxLat` (4 comma-separated values)
+- 3D: `minLon,minLat,minElev,maxLon,maxLat,maxElev` (6 values)
+
+**Coordinate Reference System:**
+- **Only CRS:** WGS 84 (CRS84) - longitude, latitude order
+- **No CRS transformation** required (RFC 7946 constraint)
+- **Coordinate ranges:** Longitude [-180, 180], Latitude [-90, 90]
+
+**Critical Discoveries:**
+1. **Antimeridian crossing NOT supported** - minLon > maxLon returns 400 Bad Request
+2. **CRS simplification** - WGS 84 only, no CRS negotiation (RFC 7946)
+3. **Point bbox valid** - min = max for both lon and lat represents single point
+4. **3D bbox support** - Optional elevation (meters above WGS 84 ellipsoid)
+5. **Polar regions** - Valid bbox queries for Arctic/Antarctic regions
+
+**Testing Coverage:**
+- Basic bbox tests: 10 tests (~150-200 lines)
+- 3D bbox tests: 6 tests (~90-120 lines)
+- Validation errors: 8 tests (~120-160 lines)
+- Edge cases: 6 tests (~90-120 lines)
+- Bbox + pagination: 4 tests (~60-80 lines)
+- Bbox + temporal: 6 tests (~90-120 lines)
+- Point bbox: 3 tests (~50-70 lines)
+- **Total:** 43 tests, 650-850 lines
+
+**Fixture Requirements:** 40 fixtures
+- Bbox query strings: 15 fixtures
+- Spatial responses: 15 fixtures
+- Error responses: 10 fixtures
+
+**Upstream Patterns:**
+- Found 25 bbox tests in WMS/WMTS/WFS specs
+- Found bbox-utils.ts with clampBoundingBox function
+- Found FILTER_SPATIAL worker extension
+
+**Client Workarounds:**
+- Antimeridian crossing requires two separate queries (split at ±180°)
+- Client merges results from east and west queries
+
+### Related Documents
+
+- Deliverable: [findings/29-spatial-query-testing.md](../findings/29-spatial-query-testing.md)
+- Section 24: Query Parameter Combination Testing
+- Section 11: GeoJSON Testing Requirements
+- Section 23: Pagination Testing Strategy
+- Query Parameters: [csapi-query-parameters.md](../../requirements/csapi-query-parameters.md)
+- Format Requirements: [csapi-format-requirements.md](../../requirements/csapi-format-requirements.md)
 - Antimeridian and polar regions require special handling
 
 **Coordinate Reference Systems:**
