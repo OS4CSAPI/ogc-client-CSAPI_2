@@ -1,181 +1,115 @@
-# Test Fixtures: A Comprehensive Guide for Understanding Test Data
+# Test Fixtures Guide for CSAPI Testing
 
-**Abstract:** This document provides a comprehensive examination of test fixtures in software testing, with specific focus on their application in OGC API client testing. It explores the etymology, purpose, and practical implementation of fixture-based testing methodologies, drawing from established testing practices and industry standards.
-
-**Document Version:** 2.0  
-**Last Updated:** February 7, 2026  
-**Target Audience:** Software developers, test engineers, technical contributors, and project stakeholders
+**Version:** 2.0  
+**Last Updated:** February 7, 2026
 
 ---
 
-## Table of Contents
+## Testing Methodology Context
 
-1. [Introduction](#1-introduction)
-2. [Test Fixtures: Conceptual Foundation](#2-test-fixtures-conceptual-foundation)
-3. [Rationale for Fixture-Based Testing](#3-rationale-for-fixture-based-testing)
-4. [Fixture Organization in This Project](#4-fixture-organization-in-this-project)
-5. [Service-Specific Fixture Categories](#5-service-specific-fixture-categories)
-6. [Working with Test Fixtures](#6-working-with-test-fixtures)
-7. [Fixture Development Guidelines](#7-fixture-development-guidelines)
-8. [Naming Conventions and Standards](#8-naming-conventions-and-standards)
-9. [Fixture Maintenance and Evolution](#9-fixture-maintenance-and-evolution)
-10. [Troubleshooting and Quality Assurance](#10-troubleshooting-and-quality-assurance)
-11. [References](#11-references)
+The CSAPI contribution's testing strategy follows the upstream OGC client testing methodology established in existing implementations for WFS, WMS, WMTS, and OGC API - Features. This methodology, consistent with industry-standard practices observed in major open-source projects including jest-junit [1], OpenLayers [2], and React [3], employs test data fixtures as the primary mechanism for providing controlled, reproducible input to automated tests. Test data fixtures are version-controlled files containing complete examples of service responses that eliminate dependencies on live external services while enabling comprehensive coverage of edge cases, error conditions, and deprecated protocol versions [4][5].
 
----
+## Conceptual Foundation
 
-## 1. Introduction
+The term "fixture" derives from manufacturing quality control, where a fixture is a device that holds a workpiece in stable position during inspection operations [6]. Software testing adopted this terminology by analogy: test fixtures hold data in known states during test execution, preventing variation and ensuring repeatability. In the context of OGC client testing, fixtures are standalone data files in JSON or XML format representing service responses captured from real deployments, extracted from specifications, or handcrafted for specific test scenarios.
 
-### 1.1 Purpose and Scope
+Test fixture methodology addresses four fundamental testing principles identified in software engineering literature [7][8][9]. First, test isolation requires independence from external dependencies such as network availability and service state mutations. Second, test determinism demands identical results for identical code states, which live services cannot guarantee due to temporal data changes. Third, test execution speed enables rapid feedback loops, with fixture reads completing in under 1ms compared to 50-500ms network calls. Fourth, comprehensive test coverage requires exercising scenarios that live services rarely expose, including malformed responses, legacy format versions, and error conditions.
 
-This document serves as the authoritative reference for understanding and working with test fixtures in the ogc-client project. Test fixtures form the foundation of our testing infrastructure, providing controlled, reproducible data sets that enable reliable validation of OGC API client implementations.
+Research examining fixture practices across jest-junit, OpenLayers, and React projects (collectively representing over 1000 fixtures analyzed) identified a universal organizational pattern [10]. This pattern employs directory organization by service type, descriptive filenames encoding essential metadata, and complete reliance on git history for provenance tracking. Notably, none of these projects employ embedded metadata fields, sidecar documentation files, or per-directory README files. The pattern's dominance reflects its simplicity, clarity, and scalability across projects ranging from dozens to thousands of fixtures.
 
-The scope encompasses:
-- Conceptual foundations of test fixture methodology
-- Practical implementation patterns
-- Service-specific fixture requirements
-- Maintenance and quality standards
+## Fixture Organization
 
-### 1.2 Intended Audience
+This project organizes test fixtures in a `fixtures/` directory at repository root, with subdirectories corresponding to service protocols: `ogc-api/` for OGC API - Features, `wfs/` for Web Feature Service, `wms/` for Web Map Service, `wmts/` for Web Map Tile Service, `stac/` for SpatioTemporal Asset Catalogs, and `tms/` for Tile Map Service. Each subdirectory maintains a flat hierarchy where filenames encode operation type, data source, and protocol version using hyphenated format. For example, `capabilities-pigma-2-0-0.xml` identifies a WFS 2.0.0 GetCapabilities response captured from the Pigma GeoServer deployment. This naming convention follows the industry standard pattern observed in upstream projects, balancing human readability with machine parseability.
 
-This guide is designed for multiple stakeholder groups:
-- **Software developers** implementing or extending client functionality
-- **Test engineers** developing test suites
-- **Technical contributors** adding new service support
-- **Project stakeholders** seeking to understand testing methodology
+The project maintains approximately 80 fixtures as of February 2026, distributed across service types according to testing requirements. OGC API - Features fixtures (15 files) cover landing pages, collection metadata, and error responses in JSON format per OGC 17-069r4 [11]. WFS fixtures (30 files) span three major specification versions (1.0.0, 1.1.0, 2.0.0) in both XML and JSON encodings per OGC 09-025r2 [12], including GetCapabilities metadata documents, DescribeFeatureType schema definitions, GetFeature response data, and exception reports. WMS fixtures (20 files) provide GetCapabilities responses across versions 1.1.1 and 1.3.0 per OGC 06-042 [13], with deliberate character encoding variations (UTF-8, UTF-16, ISO-8859-15) to test internationalization handling. WMTS, STAC, and TMS fixtures provide coverage of tile service capabilities, Earth observation catalog structures, and legacy tiling protocols respectively.
 
----
+## Fixture Provenance
 
-## 2. Test Fixtures: Conceptual Foundation
+Fixtures originate from three primary sources, each serving distinct testing objectives within the comprehensive test strategy. Real-world service captures provide authentic responses from operational OGC deployments, ensuring client code handles implementation-specific variations in metadata completeness, namespace usage, and extension elements. These captures, such as `capabilities-pigma-2-0-0.xml` from the Pigma GeoServer WFS endpoint, preserve actual service behavior including quirks and deviations from strict specification compliance. The capture process involves direct HTTP requests to production endpoints with results committed to version control alongside documentation of source URL and capture date in git commit messages.
 
-### 2.1 Terminology and Etymology
+Specification-derived fixtures extract example responses directly from OGC standard documents, establishing baseline conformance expectations for strictly compliant implementations. These fixtures, such as `sample-data.json` based on OGC API - Features Part 1 examples, serve as reference implementations against which parsing logic validates correct interpretation of specification requirements. Specification examples typically represent idealized responses with complete metadata and canonical structure, complementing real-world captures that may exhibit legacy patterns or implementation shortcuts.
 
-The term "fixture" in software testing derives from its usage in manufacturing and quality control processes. In physical manufacturing, a fixture is "a device or apparatus designed to hold a workpiece in a stable position during machining, assembly, or inspection operations" [1]. This hardware fixture ensures consistent positioning, enabling repeatable measurements and operations.
+Handcrafted test fixtures target specific scenarios difficult to obtain from live services or specifications, including deliberate malformations for error handling validation, edge cases with minimal valid structure, and boundary conditions combining unusual but specification-legal element combinations. Examples include `invalid.json` containing syntax errors to verify parser error recovery and `no-collection.json` representing a valid OGC API root with zero collections. These fixtures enable comprehensive branch coverage in parsing logic, ensuring graceful degradation and appropriate error reporting under exceptional conditions.
 
-Software testing adopted this terminology by analogy. In the testing context, a fixture provides:
+## Working with Fixtures
 
-1. **Controlled State** - A known, stable data configuration
-2. **Repeatability** - Identical conditions across test executions  
-3. **Isolation** - Independence from external system variations
+Test code accesses fixtures through synchronous file system reads during test execution, using a helper function that constructs absolute paths from relative fixture identifiers. The canonical pattern employed throughout the test suite loads fixture content as strings, passes that content to the function under test, and asserts expected parsing results or error conditions. This approach, documented in testing literature as fixture-based testing [14], isolates the code under test from I/O concerns while maintaining deterministic behavior across test executions. Fixture loading occurs during test setup rather than within timed code paths, making synchronous reads acceptable despite general asynchronous I/O preferences in production code.
 
-The metaphor is apt: just as a manufacturing fixture prevents workpiece movement during measurement, a test data fixture prevents data variation during test execution.
+Understanding fixture content requires interpreting the filename encoding, examining test files that reference the fixture, and comparing structure to relevant OGC specifications. Filenames follow the pattern `{operation}-{source}-{version}.{extension}` where operation identifies the response type (capabilities, getfeature, exception-report), source identifies origin (service name for captures, "sample" for specs, descriptive term for handcrafted), version specifies the protocol version using hyphens (2-0-0 for version 2.0.0), and extension indicates format (xml, json, xsd). This encoding makes fixture purpose discoverable without requiring separate documentation files or embedded metadata fields that would complicate fixture maintenance.
 
-### 2.2 Test Fixture Classification
+Test files provide essential context for fixture usage, documenting through test descriptions what scenarios each fixture exercises and what parsing outcomes the fixture validates. Searching the codebase for fixture filename references reveals all tests depending on that fixture, establishing usage patterns and preventing inadvertent modifications that break existing tests. Git commit history supplies provenance information including capture source URLs, specification section references, creation rationale, and modification history, serving as the authoritative documentation trail for fixture evolution over time.
 
-Software testing literature identifies several fixture categories, each serving distinct purposes [2][3]:
+## Creating Fixtures
 
-**Setup/Teardown Fixtures**  
-Functions or methods that establish and clean up test environments. In frameworks like Jest, Pytest, or JUnit, these are implemented as `beforeEach`, `afterEach`, `setUp`, or `tearDown` hooks [4].
+New fixtures enter the repository through a documented process ensuring quality and maintainability. The developer first identifies which provenance category (real-world capture, specification example, or handcrafted scenario) best serves the testing need, then acquires or creates fixture content accordingly. Real-world captures use HTTP client tools to retrieve responses from production services, recording source URLs and capture timestamps. Specification examples transcribe or adapt content from OGC standard documents, noting specification section numbers. Handcrafted fixtures begin with valid examples then introduce deliberate modifications to create desired scenarios, ensuring resulting structure remains parseable unless specifically testing error recovery.
 
-**Database Fixtures**  
-Pre-populated database states used to establish known data conditions for integration testing. Common in web application testing where database interactions require validation [5].
+The fixture file is placed in the appropriate service-type subdirectory with a filename following the established naming convention. The filename must encode operation type, source identifier, and version information to enable fixture discovery without external documentation. Character encoding declarations must match file content, with UTF-8 preferred except when deliberately testing alternative encodings. Sensitive information including credentials, internal URLs, and personally identifiable data must be removed or anonymized before committing. Complex or large responses may be simplified to essential structure unless size itself is a relevant test characteristic.
 
-**Mock Service Fixtures**  
-Simulated service responses used to isolate units under test from external dependencies. Particularly valuable in microservices architectures [6].
+The git commit introducing a new fixture requires a descriptive commit message documenting fixture purpose, source provenance, capture or creation date, and testing rationale. For real-world captures, the message includes the complete source URL. For specification examples, the message cites the specification document and section number. For handcrafted fixtures, the message explains what scenario the fixture exercises and why existing fixtures proved insufficient. This commit message discipline ensures future maintainers can understand fixture provenance and modification history through git log examination alone, without requiring separate documentation infrastructure.
 
-**Test Data Fixtures**  
-Standalone data files (JSON, XML, CSV, etc.) containing sample inputs and expected outputs. This category represents the primary fixture type employed in this project.
+## Fixture Quality Standards
 
-### 2.3 Test Data Fixtures: Definition and Characteristics
+Fixture quality directly impacts test reliability and maintainability, requiring adherence to documented standards during creation and modification. Completeness demands that fixtures represent structurally complete responses with all required elements present per relevant specifications, correctly declared namespaces for XML, and well-formed syntax unless deliberately testing error handling. Structural validity can be mechanically verified using JSON schema validators for JSON fixtures and XML schema validators against published OGC schemas for XML fixtures. Invalid fixtures must include documentation explaining what aspect is deliberately malformed and what error condition the fixture exercises.
 
-For the purposes of this project, we define test data fixtures as:
+Realism ensures fixtures reflect authentic data characteristics observed in production deployments, including realistic string lengths, coordinate value ranges, metadata completeness patterns, and namespace usage. Fixtures captured from real services inherently satisfy realism requirements. Specification-derived and handcrafted fixtures require review to ensure invented data appears plausible, as unrealistic fixtures may miss edge cases that occur in actual service responses. However, minimalism dictates removing unnecessary complexity, particularly in large responses where size doesn't affect parsing logic under test. Sensitive information removal, simplification of repetitive structures, and reduction of overly verbose metadata improve fixture maintainability without compromising test effectiveness.
 
-> **Test Data Fixture:** A version-controlled file containing a complete, valid, or intentionally invalid example of data conforming to a specification, used to provide consistent input for automated tests without requiring external service calls.
+Documentation requirements emphasize that fixture purpose must be discoverable through filename, git history, and test usage rather than through embedded metadata or sidecar files. This documentation approach, validated through industry research [10], scales effectively as fixture counts grow while avoiding maintenance overhead of keeping separate documentation synchronized with fixture content. Test files that use fixtures provide living documentation of expected behavior, git commit messages provide provenance and evolution history, and filenames provide quick identification of fixture characteristics.
 
-Key characteristics include:
+## Naming Conventions
 
-- **Self-contained** - Complete data structures requiring no runtime modification
-- **Specification-compliant** - Adherence to relevant OGC or other standards
-- **Version-controlled** - Tracked in git alongside source code
-- **Documented** - Clear provenance and purpose through git history and naming
-- **Immutable during execution** - Read-only during test runs
+Fixture filenames encode essential metadata using a structured pattern that balances human readability with machine parseability: `{operation}-{source}-{version}.{extension}`. The operation component identifies response type using lowercase terms: "capabilities" for service metadata documents, "getfeature" for feature data responses, "describefeaturetype" for schema definitions, "exception-report" for error responses, "collection" or "collections" for collection metadata, and "root" for API landing pages. This vocabulary derives from OGC operation names, providing immediate recognition for developers familiar with the protocols.
+
+The source component distinguishes fixture origin using service names for real-world captures (pigma, brgm, geo2france), "sample" or "example" for specification-based fixtures, and descriptive terms for handcrafted scenarios (invalid, minimal, edge-case). This encoding enables filtering fixtures by origin type when selecting appropriate fixtures for new tests or identifying fixtures requiring updates after specification revisions. Source names use lowercase with hyphens separating multi-word identifiers, maintaining consistency with directory naming conventions and Unix filename traditions.
+
+Version encoding uses hyphens to separate version number components, transforming semantic versions like "2.0.0" into "2-0-0". This transformation avoids periods in filenames which can cause confusion with file extensions in some contexts. Version information positions between source and extension components, enabling filename-based sorting that groups fixtures by operation and source while maintaining version distinction. The extension component uses standard format identifiers: ".xml" for XML documents, ".json" for JSON data, ".xsd" for XML Schema Definition files. This naming convention emerged from analysis of fixture patterns in upstream projects [10] and represents the evolved industry standard balancing multiple competing requirements.
+
+## Fixture Maintenance
+
+Fixtures evolve through addition of new files, modification of existing content, deprecation of obsolete versions, and eventual removal of unused files. Addition follows the creation process documented in previous sections, with new fixtures entering through pull requests that include both the fixture file and tests exercising the fixture. Code review verifies fixture quality, appropriate naming, and adequate test coverage before merging. Modifications occur when specification updates require alignment, bugs are discovered in fixture structure, or enhanced test coverage demands richer fixture content. However, modifications to existing fixtures risk breaking tests in ways not immediately apparent, requiring careful analysis of all tests referencing the fixture before proceeding.
+
+The decision to modify an existing fixture versus creating a new fixture depends on fixture usage patterns and modification impact. If only one test uses the fixture and that test's requirements changed, modification is appropriate. If multiple tests use the fixture for different purposes, creating a new fixture preserves existing test behavior while enabling new test scenarios. Before modifying any fixture, developers must grep search the codebase for all references, run affected tests to establish baseline behavior, make the modification, re-run tests to detect regressions, and document the modification rationale in the git commit message.
+
+Deprecation marks fixtures as obsolete without immediate removal, typically occurring when specification versions reach end-of-life, fixtures are superseded by superior alternatives, or associated functionality is removed from the codebase. Deprecated fixtures remain in the repository with deprecation noted in git commit history, providing historical reference while discouraging new usage. Removal occurs only after verifying zero test references through codebase search, allowing a minimum deprecation period of six months, and achieving maintainer consensus. This conservative removal policy prevents inadvertent deletion of fixtures that, while currently unused, document important historical scenarios or protocol evolution.
+
+## Validation and Troubleshooting
+
+Fixture validation ensures structural correctness and specification compliance through both automated and manual techniques. Automated validation employs JSON schema validators for JSON fixtures, comparing fixture structure against published JSON schemas for OGC API protocols. XML fixtures validate against published XML schemas using xmllint or equivalent tools, with validation success confirming well-formedness and element structure compliance. These mechanical validations catch common errors including malformed syntax, missing required elements, incorrect namespace declarations, and type violations. Automated validation integrates into continuous integration pipelines, detecting fixture corruption before merge.
+
+Common fixture issues include file not found errors indicating incorrect paths or missing commits, character encoding problems manifesting as parser errors on international characters, and structural malformations detected during parsing. File not found errors resolve through verifying fixture existence in the filesystem, confirming filename spelling matches test references, and ensuring git commits include the fixture file. Encoding problems require checking declared encoding matches actual file encoding, with conversion tools like iconv correcting mismatches. Structural issues require validation against schemas and comparison to specification examples to identify deviations.
+
+Troubleshooting follows systematic diagnosis: reproduce the failure in isolation, examine fixture content for obvious issues, validate fixture against specification schema, compare fixture to known-good examples, review git history for recent modifications, and search for similar fixtures that parse successfully. Test descriptions and assertions provide clues about expected fixture characteristics, while specification documents define normative structure requirements. When fixtures prove irreparable, replacement using the creation process documented earlier often proves more efficient than extensive debugging of captured data with unclear provenance.
 
 ---
 
-## 3. Rationale for Fixture-Based Testing
+## References
 
-### 3.1 The Case for Test Fixtures
+[1] jest-junit GitHub Repository, https://github.com/jest-community/jest-junit, fixture analysis conducted Feb. 2026 examining `__mocks__/` directory containing 50+ fixtures.
 
-The decision to employ fixture-based testing rather than live service integration stems from well-established software testing principles [7][8]:
+[2] OpenLayers GitHub Repository, https://github.com/openlayers/openlayers, fixture analysis conducted Feb. 2026 examining `test/browser/spec/ol/format/` directory containing 100+ fixtures.
 
-**Principle 1: Test Isolation**  
-Effective unit and integration tests must isolate the code under test from external dependencies. Live service calls introduce uncontrolled variables—network latency, service availability, data mutations—that violate this principle. Fixtures eliminate these variables [9].
+[3] React Compiler GitHub Repository, https://github.com/facebook/react/tree/main/compiler, fixture analysis conducted Feb. 2026 examining `compiler/packages/babel-plugin-react-compiler/src/__tests__/fixtures/` directory containing 1000+ fixtures.
 
-**Principle 2: Test Determinism**  
-Tests must produce identical results given identical code states. External services may return different data over time (e.g., updated catalogs, changed endpoints), causing test failures unrelated to code changes. Fixtures guarantee deterministic behavior [10].
+[4] Meszaros, G., *xUnit Test Patterns: Refactoring Test Code*, Addison-Wesley, 2007.
 
-**Principle 3: Test Speed**  
-Test suites must execute quickly to enable rapid feedback loops [11]. Network calls add latency (typically 50-500ms per call), while fixture reads complete in <1ms. For suites with hundreds of tests, this difference is substantial.
+[5] Beck, K., *Test-Driven Development: By Example*, Addison-Wesley, 2002.
 
-**Principle 4: Test Coverage**  
-Comprehensive testing requires exercising edge cases, error conditions, and deprecated formats [12]. Live services rarely provide error responses on demand or maintain legacy format endpoints. Fixtures enable complete coverage.
+[6] ISO 1101:2017, *Geometrical product specifications (GPS) — Geometrical tolerancing — Tolerances of form, orientation, location and run-out*, International Organization for Standardization, 2017.
 
-### 3.2 Comparative Analysis: Live Testing vs. Fixtures
+[7] Feathers, M., *Working Effectively with Legacy Code*, Prentice Hall, 2004.
 
-Consider a typical WFS capabilities parsing test:
+[8] Freeman, S. and Pryce, N., *Growing Object-Oriented Software, Guided by Tests*, Addison-Wesley, 2009.
 
-**Live Service Approach:**
-```typescript
-test('parse WFS capabilities', async () => {
-  const response = await fetch('https://example.org/wfs?REQUEST=GetCapabilities');
-  const xml = await response.text();
-  const result = parseCapabilities(xml);
-  expect(result.version).toBe('2.0.0');
-});
-```
+[9] Martin, R. C., *Clean Code: A Handbook of Agile Software Craftsmanship*, Prentice Hall, 2008.
 
-**Problems:**
-- Network dependency (test fails if service unreachable)
-- Non-determinism (service may update responses)
-- Performance penalty (500ms+ per test)
-- Coverage limitations (service may not expose error cases)
-- External dependency (requires internet connectivity)
+[10] "Fixture Documentation Best Practices," Section 15 Part 2, ogc-client project internal research documentation, Feb. 2026. Analysis of industry patterns across jest-junit, OpenLayers, and React projects.
 
-**Fixture-Based Approach:**
-```typescript
-test('parse WFS capabilities', () => {
-  const xml = loadFixture('wfs/capabilities-pigma-2-0-0.xml');
-  const result = parseCapabilities(xml);
-  expect(result.version).toBe('2.0.0');
-  expect(result.serviceIdentification.title).toBe('GĂ©oInformations de la RĂ©gion Nouvelle Aquitaine');
-});
-```
+[11] Open Geospatial Consortium, "OGC API - Features - Part 1: Core," OGC 17-069r4, 2022, https://docs.ogc.org/is/17-069r4/17-069r4.html
 
-**Advantages:**
-- Zero network dependency (runs offline)
-- Deterministic (identical input every execution)
-- Fast (completes in <5ms)
-- Complete coverage (can create fixtures for any scenario)
-- Version-controlled (fixture changes tracked in git)
+[12] Open Geospatial Consortium, "Web Feature Service 2.0 Interface Standard," OGC 09-025r2, 2014, https://www.ogc.org/standards/wfs
 
-This comparison illustrates why fixture-based testing has become the industry standard for API client libraries [13][14][15].
+[13] Open Geospatial Consortium, "Web Map Service Implementation Specification," OGC 06-042, 2006, https://www.ogc.org/standards/wms
 
-### 3.3 Industry Precedent
-
-The fixture-based testing approach employed in this project aligns with established practices in major open-source projects. Research conducted on industry implementations [16] found:
-
-**jest-junit** (GitHub Actions testing framework)  
-Maintains `__mocks__/*.json` fixtures with zero embedded metadata. All fixtures use descriptive filenames encoding essential information. Analysis of 50+ fixtures confirmed universal pattern: no README files, no sidecar metadata, pure data files [17].
-
-**OpenLayers** (Web mapping library)  
-Employs `test/browser/spec/ol/` fixtures for format parsing tests. Over 100 fixtures examined showed consistent pattern: descriptive naming (e.g., `kml-basic.xml`, `geojson-point.json`), directory organization by format type, zero metadata files [18].
-
-**React Compiler** (Facebook/Meta)  
-Contains 1000+ fixtures in `compiler/packages/.../fixtures/`. Only special marker is `FIXTURE_ENTRYPOINT` for test harness identification. No embedded metadata, no documentation sidecars, reliance on git history for provenance [19].
-
-**Universal Pattern Identified:**
-```
-fixtures/
-├── service-type/
-│   ├── descriptive-name-version.ext
-│   └── another-fixture.ext
-```
-
-This organizational pattern has emerged as the de facto standard because:
-1. **Simplicity** - No additional infrastructure required
-2. **Clarity** - Filename communicates purpose
-3. **Maintainability** - Git history provides complete provenance
-4. **Scalability** - Works for 10 or 10,000 fixtures
+[14] Hunt, A. and Thomas, D., *The Pragmatic Programmer*, Addison-Wesley, 1999.
 
 ---
 
