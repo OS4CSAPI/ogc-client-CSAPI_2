@@ -29,7 +29,9 @@ fixtures/
 │   ├── root-path.json
 │   ├── sample-data-2.json
 │   ├── no-collection.json
-│   └── invalid.json
+│   ├── invalid.json
+│   └── edr/                      # EDR (Environmental Data Retrieval) subdirectory
+│       └── sample-data-hub.json
 │
 ├── wfs/                          # Web Feature Service (XML/JSON, ~30 files)
 │   ├── capabilities-pigma-1-1-0.xml
