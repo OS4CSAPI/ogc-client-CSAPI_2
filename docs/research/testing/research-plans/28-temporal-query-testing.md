@@ -192,14 +192,18 @@ Content includes:
 
 ## 9. Research Status Checklist
 
-- [ ] Phase 1: Temporal Parameter Specification Analysis - Complete
-- [ ] Phase 2: ISO 8601 Format Analysis - Complete
-- [ ] Phase 3: Upstream Temporal Testing Analysis - Complete
-- [ ] Phase 4: Test Scenario Design - Complete
-- [ ] Phase 5: Fixture Design - Complete
-- [ ] Phase 6: Synthesis - Complete
-- [ ] Deliverable document created and reviewed
-- [ ] Cross-references updated in related documents
+- [x] Phase 1: Temporal Parameter Specification Analysis - Complete
+- [x] Phase 2: ISO 8601 Format Analysis - Complete
+- [x] Phase 3: Upstream Temporal Testing Analysis - Complete
+- [x] Phase 4: Test Scenario Design - Complete
+- [x] Phase 5: Fixture Design - Complete
+- [x] Phase 6: Synthesis - Complete
+- [x] Deliverable document created and reviewed
+- [x] Cross-references updated in related documents
+
+**Status:** ✅ Complete  
+**Completion Date:** February 6, 2026  
+**Time Spent:** ~180 minutes (3 hours)
 
 ---
 
@@ -207,26 +211,57 @@ Content includes:
 
 <!-- Add notes and unresolved questions here as research progresses -->
 
-**Initial Observations:**
-- CSAPI defines multiple temporal parameters for different time semantics
-- ISO 8601 supports many formats (instants, intervals, durations, open-ended)
-- Open-ended intervals with `..` are critical for "all data up to now" queries
-- Timezone handling is critical for global deployment
+**Research Completed:** February 6, 2026
 
-**Temporal Parameter Semantics:**
-- **datetime**: Generic temporal query (OGC API - Common)
-- **phenomenonTime**: When observation was made (Part 2 - Observations)
-- **resultTime**: When observation result was produced (Part 2 - Observations)
-- **executionTime**: When command was executed (Part 2 - Commands)
-- **issueTime**: When command was issued (Part 2 - Commands)
+**Key Findings:**
+1. **Five Temporal Parameters Identified:**
+   - `datetime` - Generic temporal filter (OGC API - Common) for validTime
+   - `phenomenonTime` - When observation was made (Part 2)
+   - `resultTime` - When observation result was produced (Part 2)
+   - `executionTime` - When command was executed (Part 2)
+   - `issueTime` - When command was issued (Part 2)
 
-**ISO 8601 Edge Cases:**
-- Leap years (February 29th)
-- Daylight Saving Time transitions
-- Leap seconds
-- Midnight boundaries (end of day as 24:00:00 vs 00:00:00 next day)
-- Crossing antimeridian (date line)
+2. **ISO 8601 Format Complexity:**
+   - **Instants:** 7+ format variations (date-only, datetime, timezones, fractional seconds)
+   - **Intervals:** 4 types (closed, open-start, open-end, fully open)
+   - **Durations:** 7+ formats (P1Y, P1M, P1D, PT1H, PT30M, combined)
+   - **Special Values:** `latest` (resultTime only)
 
----
+3. **Open-Ended Intervals Critical:**
+   - `../..` - All data (no temporal bounds)
+   - `2024-01-01/..` - All data from 2024 onwards
+   - `../2024-12-31` - All data up to end of 2024
+   - **Use Case:** Streaming/real-time queries ("all observations after time X")
 
-**Next Steps:** Review OGC API - Common temporal query requirements and ISO 8601 specification for complete format coverage.
+4. **Timezone Handling:**
+   - Z notation (UTC): `2024-01-15T12:00:00Z`
+   - Offset notation: `2024-01-15T12:00:00+05:30`
+   - Valid range: -12:00 to +14:00
+   - Default: Assume UTC if omitted
+
+5. **Temporal Parameter Semantics Matter:**
+   - `phenomenonTime` vs `resultTime` captures sampling/processing delay
+   - `issueTime` vs `executionTime` captures command scheduling delay
+   - `latest` special value only for `resultTime` (real-time dashboards)
+
+6. **Edge Cases Identified:**
+   - Leap years (February 29th)
+   - DST transitions (spring forward, fall back)
+   - Leap seconds (23:59:60)
+   - Midnight boundaries (24:00:00 vs 00:00:00 next day)
+   - Antimeridian crossing (date line)
+
+**Test Coverage:**
+- **72 tests** across 9 test categories
+- **~950-1,300 lines** of test code
+- **55 fixtures** (query strings, responses, errors, edge cases)
+- **Priority:** 53 CRITICAL tests, 9 HIGH, 10 MEDIUM
+
+**Implementation Estimates:**
+- **Test Development:** 25-36 hours
+- **Fixture Creation:** 6-8 hours
+- **Total Effort:** 31-44 hours
+
+**Deliverable Location:** [findings/28-temporal-query-testing.md](../findings/28-temporal-query-testing.md)
+
+**No Open Questions** - Research complete and comprehensive.
