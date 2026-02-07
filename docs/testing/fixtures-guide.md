@@ -21,6 +21,54 @@ Research examining fixture practices across jest-junit, OpenLayers, and React pr
 
 This project organizes test fixtures in a `fixtures/` directory at repository root, with subdirectories corresponding to service protocols: `ogc-api/` for OGC API - Features, `wfs/` for Web Feature Service, `wms/` for Web Map Service, `wmts/` for Web Map Tile Service, `stac/` for SpatioTemporal Asset Catalogs, and `tms/` for Tile Map Service. Each subdirectory maintains a flat hierarchy where filenames encode operation type, data source, and protocol version using hyphenated format. For example, `capabilities-pigma-2-0-0.xml` identifies a WFS 2.0.0 GetCapabilities response captured from the Pigma GeoServer deployment. This naming convention follows the industry standard pattern observed in upstream projects, balancing human readability with machine parseability.
 
+```
+fixtures/
+├── ogc-api/                      # OGC API - Features (JSON, ~15 files)
+│   ├── sample-data.json
+│   ├── gnosis-earth.json
+│   ├── root-path.json
+│   ├── sample-data-2.json
+│   ├── no-collection.json
+│   └── invalid.json
+│
+├── wfs/                          # Web Feature Service (XML/JSON, ~30 files)
+│   ├── capabilities-pigma-1-1-0.xml
+│   ├── capabilities-pigma-2-0-0.xml
+│   ├── capabilities-geo2france-2-0-0.xml
+│   ├── capabilities-states-2-0-0.xml
+│   ├── describefeaturetype-pigma-1-1-0-xsd.xml
+│   ├── describefeaturetype-pigma-2-0-0-xsd.xml
+│   ├── getfeature-props-states-1-0-0.xml
+│   ├── getfeature-props-states-1-1-0.xml
+│   ├── getfeature-props-states-2-0-0.xml
+│   ├── getfeature-props-states-2-0-0.json
+│   ├── getfeature-hits-pigma-2-0-0.xml
+│   ├── exception-report-1-1-0.xml
+│   ├── exception-report-2-0-0.xml
+│   └── service-exception-report-1-0-0.xml
+│
+├── wms/                          # Web Map Service (XML, ~20 files)
+│   ├── capabilities-brgm-1-1-1.xml
+│   ├── capabilities-brgm-1-1-1-utf-16.xml
+│   ├── capabilities-brgm-1-1-1-iso-8859-15.xml
+│   ├── capabilities-brgm-1-3-0.xml
+│   ├── capabilities-states-1-3-0.xml
+│   └── service-exception-report-1-1-1.xml
+│
+├── wmts/                         # Web Map Tile Service (XML, ~10 files)
+│   ├── arcgis.xml
+│   └── ...
+│
+├── stac/                         # SpatioTemporal Asset Catalog (JSON, ~5 files)
+│   ├── root.json
+│   ├── collections.json
+│   └── conformance.json
+│
+└── tms/                          # Tile Map Service (XML, ~3 files)
+    ├── tms-resource-geopf.xml
+    └── tileMap-resource-geopf.xml
+```
+
 The project maintains approximately 80 fixtures as of February 2026, distributed across service types according to testing requirements. OGC API - Features fixtures (15 files) cover landing pages, collection metadata, and error responses in JSON format per OGC 17-069r4 [11]. WFS fixtures (30 files) span three major specification versions (1.0.0, 1.1.0, 2.0.0) in both XML and JSON encodings per OGC 09-025r2 [12], including GetCapabilities metadata documents, DescribeFeatureType schema definitions, GetFeature response data, and exception reports. WMS fixtures (20 files) provide GetCapabilities responses across versions 1.1.1 and 1.3.0 per OGC 06-042 [13], with deliberate character encoding variations (UTF-8, UTF-16, ISO-8859-15) to test internationalization handling. WMTS, STAC, and TMS fixtures provide coverage of tile service capabilities, Earth observation catalog structures, and legacy tiling protocols respectively.
 
 ## Fixture Provenance
