@@ -2,21 +2,50 @@
 
 **Research Section:** 33 of 38  
 **Phase:** 3 - Component Requirements  
-**Based On:**
-- Section 16: Worker Extensions Testing (Worker performance context)
-- Section 10: SWE Common Testing Requirements (parser testing)
-- Section 30: Bulk Operations Testing (large batch context)
-- Section 23: Pagination Testing (large collection context)
-- Browser Performance API documentation
-- Performance testing best practices
-
 **Research Completed:** February 6, 2026
 
 ---
 
-## Executive Summary
+# ⚠️ PERFORMANCE TESTING IS NOT IN SCOPE ⚠️
 
-This document defines comprehensive performance and efficiency testing requirements for the CSAPI client library, with focus on parser performance (especially Binary SWE Common), large dataset handling, Worker thread efficiency, and memory management. Performance testing ensures the library can handle production workloads without degrading user experience.
+## IMPORTANT DECISION: NO PERFORMANCE TESTING WILL BE IMPLEMENTED
+
+**This document is for REFERENCE ONLY.**
+
+**FIRM RULE:** Performance testing will **NOT** be implemented for this project.
+
+**Rationale:**
+- Upstream `ogc-client` has **ZERO** performance tests
+- We are matching upstream's testing approach
+- Performance testing adds significant complexity (46-64 hours estimated effort)
+- Performance testing requires specialized infrastructure (baseline tracking, statistical analysis, profiling)
+- Functional correctness is the priority - performance is secondary
+- If performance issues arise in production, they can be addressed reactively
+
+**What This Means:**
+- ❌ NO parser performance benchmarks will be created
+- ❌ NO memory usage tests will be implemented  
+- ❌ NO Worker performance tests will be created
+- ❌ NO API performance tests will be implemented
+- ❌ NO performance regression detection in CI/CD
+- ❌ NO baseline establishment or tracking
+- ❌ NO statistical performance analysis utilities
+
+**This Research Document:**
+This document contains the research findings on what performance testing *would* look like if it were in scope. It is preserved for:
+1. Future reference if performance testing becomes necessary
+2. Documentation of the decision-making process
+3. Understanding what was deliberately excluded from scope
+
+**Do NOT implement anything from this document. Performance testing is explicitly OUT OF SCOPE.**
+
+---
+
+## Executive Summary (REFERENCE ONLY - NOT TO BE IMPLEMENTED)
+
+This document defines what comprehensive performance and efficiency testing requirements *would be* for the CSAPI client library, with focus on parser performance (especially Binary SWE Common), large dataset handling, Worker thread efficiency, and memory management.
+
+**REMINDER: This is research only. None of these tests will be implemented.**
 
 ### Key Findings
 
