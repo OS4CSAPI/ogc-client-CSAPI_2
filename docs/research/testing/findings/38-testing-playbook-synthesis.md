@@ -162,32 +162,28 @@ fixtures/ogc-api/csapi/
     └── dataarray-2d.json
 ```
 
-**Fixture Documentation:**
+**Fixture Naming Convention:**
 
-Each fixture directory should include a `README.md` documenting:
-- **Source**: Which OGC 23-001 v1.0.0 examples/sections each fixture is based on
-- **Purpose**: What each fixture tests (valid response, error case, edge case)
-- **Modifications**: Any changes made from spec examples
-- **Validation**: When last validated against spec
+Follow existing project pattern - use descriptive filenames:
+- `system-{type}-{identifier}.json` (e.g., `system-weather-station-001.json`)
+- `deployment-{purpose}-{identifier}.json` (e.g., `deployment-arctic-mission-2025.json`)
+- `datastream-{property}-{identifier}.json` (e.g., `datastream-temperature-001.json`)
+- Include spec section in comments at top of fixture files based on OGC 23-001 v1.0.0
 
-Example `fixtures/ogc-api/csapi/systems/README.md`:
-```markdown
-# System Fixtures
-
-## system-weather-station-001.json
-- **Spec**: OGC 23-001 v1.0.0, Section 19.1.5, Example "System Feature in GeoJSON"
-- **Source**: https://docs.ogc.org/is/23-001/23-001.html#_system_representation
-- **Purpose**: Valid System resource (Sensor type, Equipment asset)
-- **Created**: 2024-01-20
-- **Last Validated**: 2026-02-07
-
-## system-traffic-camera-001.json  
-- **Spec**: Custom fixture (not from spec)
-- **Purpose**: Tests Platform type with camera subsystems
-- **Created**: 2024-01-25
+Example fixture header comment:
+```json
+{
+  "_comment": "Based on OGC 23-001 v1.0.0 Section 19.1.5 - System Feature in GeoJSON",
+  "type": "Feature",
+  "id": "123",
+  "properties": {
+    "uid": "urn:x-ogc:systems:001",
+    "name": "Weather Station 001"
+  }
+}
 ```
 
-**Note**: Fixtures contain actual CSAPI resources (Systems, Deployments, etc.) per OGC 23-001 v1.0.0 specification. Documentation is SEPARATE from fixture content.
+**Note**: Existing project fixtures (WFS, WMS, etc.) use descriptive names without additional documentation. Follow same pattern for CSAPI fixtures.
 
 ### 1.4 Tool Installation
 
