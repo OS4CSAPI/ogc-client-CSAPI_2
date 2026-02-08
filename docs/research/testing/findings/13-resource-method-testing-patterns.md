@@ -16,7 +16,8 @@
 - [Part 1 Requirements](../../requirements/csapi-part1-requirements.md)
 - [Part 2 Requirements](../../requirements/csapi-part2-requirements.md)
 - Section 6: [Meaningful vs Trivial Definition](06-meaningful-vs-trivial-definition.md) (test depth guidance)
-- Section 1-2: Upstream resource method test patterns
+- Section 1: [EDR Test Blueprint](01-edr-test-blueprint.md) (upstream resource method test patterns)
+- Section 2: [Upstream Test Consistency](02-upstream-test-consistency.md) (resource method patterns across implementations)
 
 **Document Purpose:** Define universal, reusable testing pattern for resource methods (CRUD operations: GET collection/item, POST, PUT, PATCH, DELETE) that can be systematically applied across all 9 CSAPI resource types (Systems, Deployments, Procedures, SamplingFeatures, Properties, DataStreams, Observations, ControlStreams, Commands), ensuring consistency, completeness, and quality with template-based approach supporting resource-specific variations, requiring ~25 fixtures and estimated 139 tests (1,390-1,668 lines) integrated with Section 12 QueryBuilder tests.
 
