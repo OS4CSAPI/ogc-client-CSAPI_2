@@ -1,18 +1,24 @@
 # Section 11: GeoJSON CSAPI Testing Requirements
 
-**Purpose:** Define comprehensive testing requirements for CSAPI-specific GeoJSON extensions that build upon existing RFC 7946 GeoJSON parser, focusing exclusively on CSAPI property validation and resource type semantics.
+**Research Plan:** [Research Plan 11: GeoJSON CSAPI Extensions Testing Requirements](../research-plans/11-geojson-csapi-testing-requirements.md)  
+**Research Questions:** 74 questions about CSAPI Part 1 GeoJSON requirements, existing GeoJSON parser analysis, resource type differentiation across 5 types, property validation (URI formats, controlled vocabularies, temporal), geometry handling, featureType vocabulary, temporal property validation, link validation, FeatureCollection testing, error handling, specification examples, OpenSensorHub real-world examples, and parser implementation testing  
+**Methodology:** 5-phase systematic analysis (CSAPI Part 1 GeoJSON requirements extraction for all 5 resource types → Existing parser analysis documenting RFC 7946 coverage and reuse strategy → Resource type deep dive defining Systems/Deployments/Procedures/SamplingFeatures/Properties specific testing → Example and fixture analysis from spec and OpenSensorHub → Test strategy design for integration with existing parser)  
+**Research Time:** 2 hours (February 5, 2026)
 
-**Context:** CSAPI Part 1 encodes 5 resource types (Systems, Deployments, Procedures, Sampling Features, Properties) as GeoJSON features with CSAPI-specific properties. Existing ogc-client library has GeoJSON parser with RFC 7946 compliance. CSAPI testing must extend this foundation with CSAPI property validation WITHOUT duplicating standard GeoJSON tests.
+**Primary Source(s):**
+- [CSAPI Part 1 Specification (23-001)](https://docs.ogc.org/is/23-001/23-001.html) (GeoJSON encoding sections)
+- [GeoJSON RFC 7946](https://tools.ietf.org/html/rfc7946)
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (GeoJSON handler extensions)
 
-**Date:** 2026-01-30
+**Supporting Resources:**
+- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (GeoJSON validation rules from Part 1)
+- [Part 1 Requirements Analysis](../../requirements/csapi-part1-requirements.md) (property definitions)
+- [Format Requirements Analysis](../../requirements/csapi-format-requirements.md) (GeoJSON requirements)
+- [OpenSensorHub Analysis](../../requirements/csapi-opensensorhub-analysis.md) (real-world GeoJSON examples)
+- Section 6: [Meaningful vs Trivial Definition](06-meaningful-vs-trivial-definition.md) (quality context for test depth)
+- Section 1-2: Upstream GeoJSON parser and tests (reuse strategy)
 
-**Dependencies:**
-- Section 8: CSAPI Specification Test Requirements (test philosophy, fixtures approach)
-- Section 6: "Meaningful vs Trivial" Definition (test depth criteria)
-- Section 1-2: Upstream Parser Analysis (existing GeoJSON capabilities)
-- CSAPI Part 1 Specification (resource property requirements)
-- RFC 7946 (GeoJSON standard)
-- SOSA/SSN Ontology (controlled vocabularies)
+**Document Purpose:** Define comprehensive testing requirements for CSAPI-specific GeoJSON extensions building on existing RFC 7946 GeoJSON parser, focusing exclusively on CSAPI property validation (uniqueIdentifier, featureType, systemType, vocabularies), temporal properties (validTime), and resource-specific properties across 5 Part 1 resource types (Systems, Deployments, Procedures, SamplingFeatures, Properties) with clear reuse strategy to avoid duplicating standard GeoJSON tests, requiring ~30 fixtures and estimated 492-829 test lines.
 
 ---
 
