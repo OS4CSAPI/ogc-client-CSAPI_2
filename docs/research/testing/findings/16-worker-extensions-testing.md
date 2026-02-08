@@ -1,8 +1,25 @@
 # Worker Extensions Testing Strategy
 
-**Research Completed:** February 6, 2026  
-**Research Time:** 2.5 hours  
-**Dependencies:** Sections 1, 2, 9, 10, 11
+**Research Plan:** [Research Plan 16: Worker Extensions Testing Strategy](../research-plans/16-worker-extensions-testing.md)
+
+**Research Questions:** 6 core questions about testing Worker message types in Jest, async parsing operations, fallback for non-worker environments, fixture requirements for heavy parsing, performance characteristics, and integration tests with parsers
+
+**Methodology:** 5-phase systematic analysis (Phase 1: Worker Architecture Analysis with message type mapping → Phase 2: Upstream Worker Test Analysis of camptocamp/ogc-client patterns → Phase 3: Jest Worker Testing Patterns evaluation → Phase 4: Test Scenario Design for 201 scenarios across 9 message types → Phase 5: Synthesis into comprehensive testing strategy)
+
+**Research Time:** 2.5 hours (February 6, 2026)
+
+**Primary Source(s):**
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (Worker Extensions section)
+- [ROADMAP](../../../planning/ROADMAP.md) (Phase 4: Task 1 - Worker Extensions)
+
+**Supporting Resources:**
+- Section 1: [EDR Test Blueprint](01-edr-test-blueprint.md) (upstream test patterns)
+- Section 2: [Upstream Test Consistency](02-upstream-test-consistency.md) (Worker test patterns from ogc-client)
+- Section 9: [SensorML Testing Requirements](09-sensorml-testing-requirements.md) (parser integration fixtures)
+- Section 10: [SWE Common Testing Requirements](10-swe-common-testing-requirements.md) (parser integration fixtures)
+- Section 11: [GeoJSON CSAPI Testing Requirements](11-geojson-csapi-testing-requirements.md) (parser integration fixtures)
+
+**Document Purpose:** Defines comprehensive testing strategy for 9 Web Worker message types with Jest testing patterns, async message passing test templates, fallback behavior scenarios, performance testing approach, and integration patterns with format parsers
 
 ---
 
