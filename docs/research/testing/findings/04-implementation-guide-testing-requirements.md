@@ -1,8 +1,24 @@
 # Implementation Guide Testing Requirements Analysis
 
-**Based On:** CSAPI Implementation Guide Section 9: Testing Components  
-**Cross-Referenced With:** Roadmap test estimates, Sections 1-3 research findings  
-**Research Completed:** February 5, 2026
+**Research Plan:** [docs/research/testing/research-plans/04-implementation-guide-testing-requirements.md](../research-plans/04-implementation-guide-testing-requirements.md)  
+**Research Questions:** 51 questions about test structure, estimates, coverage targets, test types, format parser requirements, and validation against patterns  
+**Methodology:** 3-phase analysis (implementation guide section analysis → cross-reference validation → documentation)  
+**Research Time:** 1.5 hours (February 5, 2026)  
+
+**Primary Sources:**
+- CSAPI Implementation Guide: [docs/planning/csapi-implementation-guide.md](../../../planning/csapi-implementation-guide.md)
+  - Section 9: Testing Components (primary focus)
+  - Component specifications throughout document
+- CSAPI Roadmap: [docs/planning/ROADMAP.md](../../../planning/ROADMAP.md)
+  - Test estimates by phase
+  - Incremental testing pattern
+
+**Supporting Resources:**
+- Section 1: EDR Test Pattern Blueprint (upstream EDR baseline)
+- Section 2: Upstream Test Consistency Matrix (library-wide patterns)
+- Section 3: TypeScript Testing Standards (industry benchmarks)
+
+**Document Purpose:** Extract and validate all testing requirements from the Implementation Guide against proven upstream patterns and industry standards to ensure implementation-ready specifications
 
 ---
 
