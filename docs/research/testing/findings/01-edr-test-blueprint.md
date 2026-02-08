@@ -1,9 +1,24 @@
 # EDR Test Pattern Blueprint (PR #114 Analysis)
 
-**Based On:** camptocamp/ogc-client PR #114 - OGC EDR URL Builder Support  
-**Merged:** August 29, 2025 by jahow  
-**Author:** C-Loftus (cgs-earth)  
-**Research Completed:** February 5, 2026
+**Research Plan:** [docs/research/testing/research-plans/01-pr114-blueprint-analysis.md](../research-plans/01-pr114-blueprint-analysis.md)  
+**Research Questions:** 71 detailed questions about test patterns, coverage, assertions, fixtures, and quality indicators  
+**Methodology:** 4-phase analysis (PR overview → test file analysis → pattern extraction → synthesis)  
+**Research Time:** 3.5 hours (February 5, 2026, 10:30 AM - 2:00 PM)  
+
+**Primary Source:** camptocamp/ogc-client PR #114 - OGC EDR URL Builder Support  
+**PR Details:**
+- Merged: August 29, 2025 by jahow
+- Author: C-Loftus (cgs-earth)
+- URL: https://github.com/camptocamp/ogc-client/pull/114
+
+**Supporting Resources:**
+- Local clone: camptocamp/ogc-client repository
+- EDR test files: src/ogc-api/edr/*.spec.ts, src/ogc-api/endpoint.spec.ts (EDR sections)
+- EDR fixtures: fixtures/ogc-api/edr/
+- OGC API - Environmental Data Retrieval specification
+- PR review comments and feedback
+
+**Document Purpose:** Extract complete testing blueprint from accepted upstream implementation to define what constitutes "meaningful" tests for CSAPI implementation
 
 ---
 
