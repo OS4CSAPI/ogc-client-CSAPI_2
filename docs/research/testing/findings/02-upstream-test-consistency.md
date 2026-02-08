@@ -1,8 +1,28 @@
 # Upstream Test Pattern Consistency Matrix
 
-**Based On:** camptocamp/ogc-client repository analysis - All implementations  
-**Implementations Surveyed:** WFS, WMS, WMTS, TMS, STAC, EDR (6 total)  
-**Research Completed:** February 5, 2026
+**Research Plan:** [docs/research/testing/research-plans/02-upstream-test-consistency.md](../research-plans/02-upstream-test-consistency.md)  
+**Research Questions:** 64 questions about consistency patterns, test-to-code ratios, fixtures, utilities, and evolution across implementations  
+**Methodology:** 4-phase analysis (implementation inventory → per-implementation analysis → consistency matrix creation → synthesis)  
+**Research Time:** 2.5 hours (February 5, 2026, 10:30 AM - 1:00 PM)  
+
+**Primary Sources:** 6 OGC implementations in camptocamp/ogc-client repository  
+**Implementations Surveyed:**
+- WFS (Web Feature Service) - 2022
+- WMS (Web Map Service) - 2022-2023
+- WMTS (Web Map Tile Service) - 2024
+- TMS (Tile Matrix Set) - 2024
+- STAC (SpatioTemporal Asset Catalog) - 2025
+- EDR (Environmental Data Retrieval) - 2025
+
+**Supporting Resources:**
+- All test files: src/wfs/*.spec.ts, src/wms/*.spec.ts, src/wmts/*.spec.ts, src/ogc-api/stac/*.spec.ts, src/ogc-api/edr/*.spec.ts
+- All fixtures: fixtures/wfs/, fixtures/wms/, fixtures/wmts/, fixtures/ogc-api/stac/, fixtures/ogc-api/edr/
+- Git history for implementation dates and evolution
+- Section 1: EDR Test Blueprint (for validation)
+- Architecture Patterns Analysis document
+- File Organization Strategy document
+
+**Document Purpose:** Validate EDR patterns against library-wide standards and identify universal testing conventions that CSAPI must follow for upstream acceptance
 
 ---
 
