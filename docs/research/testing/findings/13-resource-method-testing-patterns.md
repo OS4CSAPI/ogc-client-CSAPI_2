@@ -1,17 +1,26 @@
 # Section 13: Resource Method Testing Patterns (9 Resource Types)
 
-**Purpose:** Define universal, reusable testing pattern for resource methods (CRUD operations) that can be systematically applied across all 9 CSAPI resource types, ensuring consistency, completeness, and quality.
+**Research Plan:** [Research Plan 13: Resource Method Testing Patterns (9 Resource Types)](../research-plans/13-resource-method-testing-patterns.md)  
+**Research Questions:** 75 questions about CRUD operations overview, GET collection/item patterns, POST/PUT/PATCH/DELETE patterns, resource-specific testing across 9 types, query parameters by operation, request body validation, response validation, error conditions by operation, template design, and application guide for consistent testing across all resource types  
+**Methodology:** 4-phase systematic analysis (CRUD operations analysis documenting operations per resource type and identifying common patterns → Upstream resource method analysis from EDR and OGC API patterns → Template design creating universal describe block structure with shared utilities → Resource-specific differentiation documenting unique parameters per type with extension approach)  
+**Research Time:** 2 hours (February 6, 2026)
 
-**Context:** With 9 resource types (Systems, Deployments, Procedures, SamplingFeatures, Properties, DataStreams, Observations, ControlStreams, Commands) implementing similar CRUD patterns, need a consistent template to avoid test duplication while accommodating resource-specific variations.
+**Primary Source(s):**
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (Resource Method Tests specification)
+- [ROADMAP.md](../../../planning/ROADMAP.md) (Phase 2 lists 9 resource type tasks)
+- [CRUD Operations Requirements](../../requirements/csapi-crud-operations.md)
 
-**Date:** February 6, 2026
+**Supporting Resources:**
+- Section 12: [QueryBuilder Testing Strategy](12-querybuilder-testing-strategy.md) (resource methods use QueryBuilder to construct URLs)
+- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (resource operation specs from Part 1 & 2)
+- [Part 1 Requirements](../../requirements/csapi-part1-requirements.md)
+- [Part 2 Requirements](../../requirements/csapi-part2-requirements.md)
+- Section 6: [Meaningful vs Trivial Definition](06-meaningful-vs-trivial-definition.md) (test depth guidance)
+- Section 1-2: Upstream resource method test patterns
 
-**Dependencies:**
-- Section 12: QueryBuilder Testing Strategy (resource methods use QueryBuilder for URL construction)
-- Section 8: CSAPI Specification Test Requirements (resource operation specs from Part 1 & 2)
-- Section 6: "Meaningful vs Trivial" Definition (test depth guidance)
-- Section 1-2: Upstream Resource Method Test Patterns
-- CRUD Operations Requirements document
+**Document Purpose:** Define universal, reusable testing pattern for resource methods (CRUD operations: GET collection/item, POST, PUT, PATCH, DELETE) that can be systematically applied across all 9 CSAPI resource types (Systems, Deployments, Procedures, SamplingFeatures, Properties, DataStreams, Observations, ControlStreams, Commands), ensuring consistency, completeness, and quality with template-based approach supporting resource-specific variations, requiring ~25 fixtures and estimated 139 tests (1,390-1,668 lines) integrated with Section 12 QueryBuilder tests.
+
+---
 
 **Key Insight:** Resource method tests ARE QueryBuilder tests. This section defines the reusable PATTERN; Section 12 defines the detailed implementation plan. Together they provide complete testing strategy for ~80 methods.
 
