@@ -1,17 +1,25 @@
 # Section 14: Integration Test Workflow Design
 
-**Purpose:** Define concrete integration test scenarios for the 4 CSAPI workflows (Discovery, Observation, Command, Cross-Resource Navigation) with HTTP response mocking strategy, assertion patterns, and complete test specifications ready for implementation.
+**Research Plan:** [Research Plan 14: Integration Test Workflow Design](../research-plans/14-integration-test-workflow-design.md)
 
-**Context:** After unit-level testing patterns (Sections 12-13), integration tests validate multi-component interactions through realistic end-to-end workflows. These tests ensure components work together correctly and match real-world usage patterns.
+**Research Questions:** 7 core questions about structuring workflow tests (Discovery, Observation, Command, Cross-resource navigation workflows), mocking strategy, fixture requirements, and validation patterns across multi-step scenarios
 
-**Date:** February 6, 2026
+**Methodology:** 5-phase systematic analysis (Phase 1: Workflow Analysis with component interaction mapping → Phase 2: Test Scenario Design for each workflow type → Phase 3: Mocking Strategy with fixture sequencing → Phase 4: Validation Design with assertions per workflow → Phase 5: Synthesis into comprehensive specifications)
 
-**Dependencies:**
-- Section 1-2: Upstream Integration Test Patterns (EDR integration tests in endpoint.spec.ts)
-- Section 12: QueryBuilder URL Construction Testing Strategy (URL validation patterns)
-- Section 13: Resource Method Testing Patterns (CRUD operations testing)
-- Implementation Guide: 4 workflow specifications (Discovery, Observation, Command, Cross-Resource Navigation)
-- ROADMAP Phase 4: Integration test implementation plan (500-800 lines, 4-6 hours)
+**Research Time:** 2 hours (February 6, 2026)
+
+**Primary Source(s):**
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (Integration Tests section - 4 workflows)
+- [CSAPI Usage Scenarios Requirements](../../requirements/csapi-usage-scenarios.md)
+
+**Supporting Resources:**
+- Section 1: [EDR Test Blueprint](01-edr-test-blueprint.md) (upstream integration patterns)
+- Section 2: [Upstream Test Consistency](02-upstream-test-consistency.md) (ogc-api-js-edr integration examples)
+- Section 7: [End-to-End Testing Scope](07-end-to-end-testing-scope.md) (workflow vs e2e distinction)
+- Section 12: [QueryBuilder Testing Strategy](12-querybuilder-testing-strategy.md) (URL construction patterns)
+- Section 13: [Resource Method Testing Patterns](13-resource-method-testing-patterns.md) (HTTP request patterns)
+
+**Document Purpose:** Provides actionable specifications for implementing multi-component workflow integration tests across Discovery, Observation, Command, and Cross-resource Navigation workflows with concrete scenarios, mocking strategies, assertion patterns, and fixture requirements
 
 ---
 
