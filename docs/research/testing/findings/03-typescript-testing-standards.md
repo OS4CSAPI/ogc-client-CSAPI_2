@@ -1,9 +1,24 @@
 # TypeScript Client Library Testing Best Practices
 
-**Based On:** Industry standards from TypeScript ecosystem, Jest/Vitest documentation, popular client libraries  
-**Libraries Analyzed:** @octokit/rest.js (GitHub API), axios (HTTP client)  
-**Documentation Reviewed:** Jest documentation, TypeScript testing ecosystem  
-**Research Completed:** February 5, 2026
+**Research Plan:** [docs/research/testing/research-plans/03-typescript-testing-standards.md](../research-plans/03-typescript-testing-standards.md)  
+**Research Questions:** 60 questions about production-quality testing, coverage standards, mocking strategies, type testing, test pyramid, and best practices  
+**Methodology:** 4-phase analysis (documentation survey → popular library analysis → best practices synthesis → documentation)  
+**Research Time:** 1.5 hours (February 5, 2026)  
+
+**Primary Sources:**
+- TypeScript Handbook: https://www.typescriptlang.org/docs/handbook/
+- Jest Documentation: https://jestjs.io/docs/getting-started
+- @octokit/rest.js (GitHub API client) - test suite and patterns
+- axios (HTTP client) - test suite and patterns
+
+**Supporting Resources:**
+- Section 1: EDR Test Blueprint (for comparison)
+- Section 2: Upstream Test Consistency Matrix (for validation)
+- TypeScript testing guides and community best practices
+- Coverage.io and Codecov documentation
+- AWS SDK, Stripe API client (additional reference libraries)
+
+**Document Purpose:** Validate that upstream ogc-client testing patterns align with industry TypeScript ecosystem standards and identify enhancement opportunities for CSAPI
 
 ---
 
