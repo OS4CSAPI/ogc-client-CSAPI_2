@@ -1,8 +1,22 @@
 # Meaningful vs Trivial Test Quality Guide
 
-**Based On:** Lessons Learned Analysis, Upstream Patterns (Sections 1-2), TypeScript Industry Standards (Section 3)  
-**Primary Constraint:** Previous CSAPI tests rejected as "not meaningful, useful, deep, or end-to-end"  
-**Research Completed:** February 5, 2026
+**Research Plan:** [Research Plan 06: Meaningful vs Trivial Definition](../research-plans/06-meaningful-vs-trivial-definition.md)  
+**Research Questions:** 56 questions about test quality dimensions, assertion depth criteria, fixture quality standards, coverage depth standards, test organization patterns, and objective quality checklist validation  
+**Methodology:** 3-phase systematic analysis (Previous iteration analysis of lessons learned and gap analysis → Pattern synthesis from Sections 1-4 deliverables → Concrete examples creation with side-by-side comparisons)  
+**Research Time:** ~2 hours (February 5, 2026)
+
+**Primary Source(s):**
+- Lessons Learned Analysis (previous iteration feedback on test quality issues)
+- Gap Analysis (specific feedback from senior developer on trivial tests)
+- EDR Blueprint PR #114 (meaningful assertion patterns from upstream)
+
+**Supporting Resources:**
+- Section 1: Upstream Blueprint Analysis (PR #114 quality patterns)
+- Section 2: Upstream Test Consistency (mature pattern examples across 6 implementations)
+- Section 3: TypeScript Testing Standards (industry quality benchmarks)
+- Section 4: Implementation Guide Testing Requirements (architectural context)
+
+**Document Purpose:** Define objective, measurable criteria to distinguish meaningful tests (deep validation, edge cases, error handling, real fixtures) from trivial tests (superficial assertions, happy-path-only, synthetic mocks) with concrete side-by-side examples and actionable quality checklist for CSAPI test writing and review.
 
 ---
 
