@@ -1,14 +1,22 @@
 # CSAPI Specification Test Requirements Matrix
 
-**Research Section:** 8 of 38  
-**Phase:** 3 - Component Requirements  
-**Based On:**
-- CSAPI Part 1 Requirements Analysis (4,300 lines)
-- CSAPI Part 2 Requirements Analysis (6,022 lines)  
-- CSAPI Part 1 OpenAPI (6,442 lines)
-- CSAPI Part 2 OpenAPI (bundled schema definitions)
+**Research Plan:** [Research Plan 08: CSAPI Specification Test Requirements](../research-plans/08-csapi-specification-test-requirements.md)  
+**Research Questions:** 72 questions about normative requirements from CSAPI Parts 1 & 2, conformance classes, testable requirements for all 9 resource types, query parameters and validation rules, error conditions, specification examples as fixtures, OpenAPI schema requirements, format validation rules, test type mapping, and requirement traceability  
+**Methodology:** 4-phase systematic extraction (Part 1 specification deep dive extracting conformance classes and normative statements → Part 2 specification deep dive for dynamic resources and temporal/spatial queries → OpenAPI analysis parsing schemas and endpoints → Synthesis creating unified test requirement matrix with traceability)  
+**Research Time:** 2.5 hours (150 minutes) (February 5, 2026)
 
-**Research Completed:** February 5, 2026
+**Primary Source(s):**
+- CSAPI Part 1 Specification (23-001) and OpenAPI (bundled.oas31.yaml)
+- CSAPI Part 2 Specification (23-002) and OpenAPI (bundled.oas31.yaml)
+
+**Supporting Resources:**
+- Part 1 Requirements Analysis: csapi-part1-requirements.md (4,300 lines)
+- Part 2 Requirements Analysis: csapi-part2-requirements.md (6,022 lines)
+- Implementation Guide: csapi-implementation-guide.md (cross-validation)
+- Section 6: Meaningful vs Trivial Definition (quality criteria for testability)
+- Section 7: End-to-End Testing Scope (workflow context)
+
+**Document Purpose:** Extract all 250+ testable normative requirements (SHALL/MUST statements) from CSAPI Parts 1 & 2 specifications and OpenAPI definitions to create a comprehensive test requirement matrix covering 19 conformance classes, 9 resource types, query parameters, validation rules, error conditions, and format requirements, establishing the normative baseline for all CSAPI client library testing with complete requirement-to-test traceability.
 
 ---
 
