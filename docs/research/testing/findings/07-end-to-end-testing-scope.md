@@ -1,8 +1,21 @@
 # End-to-End Testing Scope and Strategy for CSAPI
 
-**Based On:** EDR Test Blueprint (Section 1), Upstream Consistency (Section 2), TypeScript Standards (Section 3), Implementation Guide  
-**Context:** URL-building library that does NOT make HTTP calls  
-**Research Completed:** February 5, 2026
+**Research Plan:** [Research Plan 07: End-to-End Testing Scope Definition](../research-plans/07-end-to-end-testing-scope.md)  
+**Research Questions:** 54 questions about e2e definition for URL-building libraries, scope and boundaries, integration vs e2e distinction, workflow-based testing, upstream and industry patterns, test pyramid distribution, test structure, coverage requirements, error scenarios, and performance considerations  
+**Methodology:** 3-phase systematic analysis (Upstream e2e analysis from Sections 1-2 → Industry e2e analysis from Section 3 and client library patterns → CSAPI e2e definition applying patterns to URL builder architecture)  
+**Research Time:** ~1 hour (70 minutes) (February 5, 2026)
+
+**Primary Source(s):**
+- Section 1: EDR Test Pattern Blueprint (upstream e2e patterns from accepted PR #114)
+- Section 2: Upstream Test Consistency Matrix (e2e tests across 6 implementations)
+- Section 3: TypeScript Testing Standards (industry e2e standards and test pyramid)
+- Implementation Guide: csapi-implementation-guide.md (4 workflow types specification)
+
+**Supporting Resources:**
+- Section 6: Meaningful vs Trivial Definition (quality criteria for e2e tests)
+- Senior dev feedback documentation (lack of e2e tests criticism)
+
+**Document Purpose:** Define what "end-to-end" means for a URL-building client library that doesn't make HTTP calls, establish clear scope and boundaries for e2e tests, specify 4 complete workflow tests that satisfy the senior dev's e2e requirement while aligning with industry standards for client library testing (integration tests = e2e tests with mocked HTTP responses).
 
 ---
 
