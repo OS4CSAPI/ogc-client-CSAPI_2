@@ -1,8 +1,22 @@
 # Roadmap Testing Integration Strategy
 
-**Based On:** CSAPI Roadmap v3.0 (34 tasks across 4 phases)  
-**Cross-Referenced With:** Section 4 (Implementation Guide Testing Requirements)  
-**Research Completed:** February 5, 2026
+**Research Plan:** [docs/research/testing/research-plans/05-roadmap-testing-integration.md](../research-plans/05-roadmap-testing-integration.md)  
+**Research Questions:** 62 questions about incremental testing workflow, test checkpoints, accumulation patterns, commit strategy, and test debt prevention  
+**Methodology:** 3-phase analysis (roadmap deep dive → cross-reference analysis → documentation)  
+**Research Time:** 1 hour (February 5, 2026)  
+
+**Primary Source:**
+- CSAPI Roadmap v3.0: [docs/planning/ROADMAP.md](../../../planning/ROADMAP.md)
+  - All 4 phases with 34 task breakdowns
+  - Test-immediately specifications
+  - Development Standards section
+  - Test line estimates per phase
+
+**Supporting Resources:**
+- Section 4: Implementation Guide Testing Requirements (validated test specifications)
+- CSAPI Implementation Guide: [docs/planning/csapi-implementation-guide.md](../../../planning/csapi-implementation-guide.md) (cross-reference validation)
+
+**Document Purpose:** Define the task-by-task incremental testing workflow for all 34 Roadmap tasks to prevent test debt accumulation and ensure tests are written immediately after each implementation subtask
 
 ---
 
