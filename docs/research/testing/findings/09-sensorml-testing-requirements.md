@@ -1,15 +1,23 @@
 # SensorML 3.0 Parser Testing Specification
 
-**Research Section:** 9 of 38  
-**Phase:** 3 - Component Requirements  
-**Based On:**
-- Section 8: CSAPI Specification Test Requirements (SensorML validation rules)
-- CSAPI Format Requirements Analysis (SensorML subset for CSAPI)
-- CSAPI Implementation Guide (SensorML parser specification)
-- SensorML 3.0 Specification
-- CSAPI Part 1 Requirements (SensorML conformance class)
+**Research Plan:** [Research Plan 09: SensorML 3.0 Format Testing Requirements](../research-plans/09-sensorml-testing-requirements.md)  
+**Research Questions:** 80 questions about SensorML 3.0 structure types, JSON schema validation rules, recursive structure testing, identification and classification, characteristics and capabilities integration, components and nesting depth, temporal validity, observable properties, error handling, specification examples, OpenSensorHub real-world examples, and parser implementation testing  
+**Methodology:** 4-phase systematic analysis (SensorML 3.0 specification deep dive extracting structure types and normative validation rules → JSON schema analysis for validation constraints → Example analysis from spec and OpenSensorHub real-world data → Test strategy design creating comprehensive test specification)  
+**Research Time:** ~2 hours (February 5, 2026)
 
-**Research Completed:** February 5, 2026
+**Primary Source(s):**
+- [SensorML 3.0 Specification (23-000)](https://docs.ogc.org/is/23-000/23-000.html)
+- [SensorML 3.0 JSON Schema](https://schemas.opengis.net/sensorML/3.0/)
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (SensorML parser specification)
+
+**Supporting Resources:**
+- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (SensorML validation rules)
+- [Format Requirements Analysis](../../requirements/csapi-format-requirements.md) (SensorML subset for CSAPI)
+- [OpenSensorHub Analysis](../../requirements/csapi-opensensorhub-analysis.md) (real-world SensorML examples)
+- Section 6: [Meaningful vs Trivial Definition](06-meaningful-vs-trivial-definition.md) (quality context for test depth)
+- Section 1-2: Upstream format parser test patterns
+
+**Document Purpose:** Define comprehensive testing requirements for the SensorML 3.0 parser covering all 4 structure types (PhysicalSystem, PhysicalComponent, SimpleProcess, AggregateProcess), validation rules, recursive component parsing up to 3 levels deep, SWE Common integration, error handling, and fixture requirements (~25 fixtures from spec examples and OpenSensorHub), establishing the testing pattern for all format parsers with estimated 500-800 test lines.
 
 ---
 
