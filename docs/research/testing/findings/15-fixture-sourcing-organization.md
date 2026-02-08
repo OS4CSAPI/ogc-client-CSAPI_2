@@ -1,22 +1,29 @@
 # Section 15: Fixture Sourcing and Organization Strategy
 
-**Purpose:** Define comprehensive strategy for sourcing, organizing, and maintaining all test fixtures required across the entire CSAPI test suite (unit tests, integration tests, format parsers, workflows).
+**Research Plan:** [Research Plan 15: Fixture Sourcing and Organization Strategy](../research-plans/15-fixture-sourcing-organization.md)
 
-**Context:** Sections 8-14 identified extensive fixture requirements across multiple test types, formats, and resource categories. This section consolidates these requirements and creates an actionable plan for fixture acquisition, organization, and lifecycle management.
+**Research Questions:** 7 core questions about fixture extraction from specifications, sourcing strategies (OpenSensorHub availability, hand-crafting needs), organization by resource type and format, reusability structures, provenance documentation, and synchronization with spec updates
 
-**Date:** 2025-01-31
+**Methodology:** 5-phase systematic analysis (Phase 1: Fixture Inventory cataloging ~280 fixtures across all test types → Phase 2: Fixture Sourcing Analysis evaluating specification examples and server availability → Phase 3: Organization Structure Design with directory hierarchies and naming conventions → Phase 4: Reusability and Maintenance Strategy with validation procedures → Phase 5: Synthesis into comprehensive execution plan)
 
-**Dependencies:**
-- Section 8: CSAPI Specification Test Requirements (25+ spec examples)
-- Section 9: SensorML Testing Requirements (~25 fixtures, 5+ categories)
-- Section 10: SWE Common Testing Requirements (~120 fixtures across 3 encodings)
-- Section 11: GeoJSON CSAPI Testing Requirements (GeoJSON feature fixtures)
-- Section 12: QueryBuilder Testing Strategy (5 universal fixtures)
-- Section 13: Resource Method Testing Patterns (23 resource fixtures)
-- Section 14: Integration Test Workflow Design (33 workflow fixtures)
-- CSAPI Parts 1 & 2 Specifications
-- SensorML 3.0 Specification (OGC 23-000)
-- SWE Common 3.0 Specification (OGC 24-014)
+**Research Time:** 3.5 hours (January 31, 2025)
+
+**Primary Source(s):**
+- [CSAPI Part 1 Specification](https://docs.ogc.org/is/23-001/23-001.html) (11 examples extracted)
+- [CSAPI Part 2 Specification](https://docs.ogc.org/is/23-002/23-002.html) (14+ examples extracted)
+- [SensorML 3.0 Specification (OGC 23-000)](https://docs.ogc.org/is/23-000/23-000.html) with [JSON Schema Repository](https://schemas.opengis.net/sensorML/3.0/json/)
+- [SWE Common 3.0 Specification (OGC 24-014)](https://docs.ogc.org/is/24-014/24-014.html) with Annex B.1-B.2 examples
+
+**Supporting Resources:**
+- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (25+ fixture requirements)
+- Section 9: [SensorML Testing Requirements](09-sensorml-testing-requirements.md) (~25 fixture requirements)
+- Section 10: [SWE Common Testing Requirements](10-swe-common-testing-requirements.md) (~120 fixture requirements)
+- Section 11: [GeoJSON CSAPI Testing Requirements](11-geojson-csapi-testing-requirements.md) (GeoJSON fixture requirements)
+- Section 12: [QueryBuilder Testing Strategy](12-querybuilder-testing-strategy.md) (5 universal fixtures)
+- Section 13: [Resource Method Testing Patterns](13-resource-method-testing-patterns.md) (23 resource fixtures)
+- Section 14: [Integration Test Workflow Design](14-integration-test-workflow-design.md) (33 workflow fixtures)
+
+**Document Purpose:** Provides a comprehensive plan for acquiring, organizing, and maintaining ~280 test fixtures across all test types with specific sourcing strategies, directory structure design, file naming conventions, reusability patterns, provenance tracking, and lifecycle management procedures
 
 ---
 
