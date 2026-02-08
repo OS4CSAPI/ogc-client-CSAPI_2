@@ -1,16 +1,24 @@
 # SWE Common 3.0 Parser Testing Specification
 
-**Research Section:** 10 of 38  
-**Phase:** 3 - Component Requirements  
-**Based On:**
-- Section 8: CSAPI Specification Test Requirements (SWE Common validation rules)
-- Section 9: SensorML Testing Requirements (integration context)
-- CSAPI Format Requirements Analysis (SWE Common subset for CSAPI)
-- CSAPI Implementation Guide (SWE Common parser specification)
-- SWE Common 3.0 Specification
-- CSAPI Part 2 Requirements (Observations and Commands encoding)
+**Research Plan:** [Research Plan 10: SWE Common 3.0 Format Testing Requirements](../research-plans/10-swe-common-testing-requirements.md)  
+**Research Questions:** 98 questions about SWE Common 3.0 component types across three encodings, JSON/Text/Binary encoding requirements, binary byte format specifications (endianness, IEEE 754, data types), component type testing, nested structures, schema validation for observations, UOM/quality/time reference frames, error handling per encoding, specification examples, OpenSensorHub fixtures, and parser implementation organization  
+**Methodology:** 5-phase systematic analysis (SWE Common 3.0 specification deep dive extracting all component types and encoding rules → JSON schema analysis for validation constraints → Binary encoding deep dive documenting byte-level formats (MOST CRITICAL) → Example and fixture analysis from spec and OpenSensorHub → Test strategy design creating comprehensive test specification with emphasis on binary encoding ~50% of effort)  
+**Research Time:** ~4.5 hours (February 5, 2026)
 
-**Research Completed:** February 5, 2026
+**Primary Source(s):**
+- [SWE Common 3.0 Specification (24-014)](https://docs.ogc.org/is/24-014/24-014.html)
+- [SWE Common 3.0 JSON Schema](https://schemas.opengis.net/sweCommon/3.0/)
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (SWE Common parser specification)
+
+**Supporting Resources:**
+- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (SWE Common validation rules)
+- Section 9: [SensorML Testing Requirements](09-sensorml-testing-requirements.md) (integration context - characteristics/capabilities use SWE Common)
+- [Format Requirements Analysis](../../requirements/csapi-format-requirements.md) (SWE Common subset for CSAPI)
+- [OpenSensorHub Analysis](../../requirements/csapi-opensensorhub-analysis.md) (real-world SWE Common examples)
+- Section 6: [Meaningful vs Trivial Definition](06-meaningful-vs-trivial-definition.md) (quality context for test depth)
+- Section 1-2: Upstream format parser test patterns
+
+**Document Purpose:** Define comprehensive testing requirements for the SWE Common 3.0 parser covering all 12+ component types (Quantity, Count, Boolean, Category, Text, Time, DataRecord, Vector, DataArray, Matrix, DataChoice, DataStream) across all three encodings (JSON, Text, Binary), with special emphasis on binary encoding byte-level validation (~50% of test effort, 865-1,284 lines), endianness handling, IEEE 754 edge cases, schema validation for observation conformance to DataStream schemas, and fixture requirements (~120 fixtures including binary .bin files with hex dumps), establishing comprehensive format testing with estimated 1,700-2,500 test lines.
 
 ---
 
