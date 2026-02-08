@@ -6,8 +6,8 @@
 **Research Time:** 2.5 hours (150 minutes) (February 5, 2026)
 
 **Primary Source(s):**
-- CSAPI Part 1 Specification (23-001) and [OpenAPI](../../standards/ogcapi-connectedsystems-1.bundled.oas31.yaml)
-- CSAPI Part 2 Specification (23-002) and [OpenAPI](../../standards/ogcapi-connectedsystems-2.bundled.oas31.yaml)
+- [CSAPI Part 1 Specification (23-001)](https://docs.ogc.org/is/23-001/23-001.html) and [OpenAPI](../../standards/ogcapi-connectedsystems-1.bundled.oas31.yaml)
+- [CSAPI Part 2 Specification (23-002)](https://docs.ogc.org/is/23-002/23-002.html) and [OpenAPI](../../standards/ogcapi-connectedsystems-2.bundled.oas31.yaml)
 
 **Supporting Resources:**
 - Part 1 Requirements Analysis: [csapi-part1-requirements.md](../../requirements/csapi-part1-requirements.md) (4,300 lines)
