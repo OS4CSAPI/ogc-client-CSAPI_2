@@ -1,16 +1,22 @@
 # Section 12: QueryBuilder URL Construction Testing Strategy
 
-**Purpose:** Define comprehensive testing strategy for CSAPIQueryBuilder covering all ~70-80 methods across 9 resource types with systematic URL validation that ensures deep, meaningful testing beyond trivial string checks.
+**Research Plan:** [Research Plan 12: QueryBuilder URL Construction Testing Strategy](../research-plans/12-querybuilder-testing-strategy.md)  
+**Research Questions:** 86 questions about CSAPIQueryBuilder architecture, method inventory across 9 resource types, URL validation depth (meaningful vs trivial), query parameter testing strategies, resource availability validation, nested endpoint construction, URL encoding edge cases, Implementation Guide specifications, upstream URL builder patterns, method categories and testing strategies, error handling, fixture requirements, test organization strategies, and test depth per method  
+**Methodology:** 4-phase systematic analysis (QueryBuilder method inventory listing all ~70-80 methods across 9 resource types → Upstream URL builder analysis from EDR and OGC API patterns → URL validation strategy design defining "meaningful" URL testing beyond trivial string checks → Method-by-method test planning documenting requirements per resource type with shared test patterns)  
+**Research Time:** ~3 hours (February 5, 2026)
 
-**Context:** CSAPIQueryBuilder is the primary developer-facing API with 70-80 methods for CRUD operations, query parameter construction, nested endpoint navigation, and resource availability validation. Testing must validate URL correctness (protocol, host, path, query parameters, encoding) while maintaining org across ~188 test scenarios.
+**Primary Source(s):**
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (CSAPIQueryBuilder specification with all method signatures)
+- [ROADMAP.md](../../../planning/ROADMAP.md) (Phase 2 lists 9 resource type tasks)
+- [URL Building Architecture](../../upstream/url-building-analysis.md)
 
-**Date:** February 5, 2026
+**Supporting Resources:**
+- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (query parameter specs from Part 1 & 2)
+- Section 6: [Meaningful vs Trivial Definition](06-meaningful-vs-trivial-definition.md) (URL testing depth guidance)
+- Section 1-2: Upstream URL builder test patterns (EDR, OGC API)
+- [Query Parameter Requirements](../../requirements/csapi-query-parameters.md)
 
-**Dependencies:**
-- Section 8: CSAPI Specification Test Requirements (query parameter specs)
-- Section 6: "Meaningful vs Trivial" Definition (URL testing depth)
-- Section 1-2: Upstream URL Builder Test Patterns (EDR, OGC API patterns)
-- Implementation Guide: CSAPIQueryBuilder specification (method signatures)
+**Document Purpose:** Define comprehensive testing strategy for CSAPIQueryBuilder covering all ~80 methods across 9 resource types (Systems, Deployments, Procedures, SamplingFeatures, Properties, DataStreams, Observations, ControlStreams, Commands) with systematic URL validation using parseAndValidateUrl utility that ensures deep, meaningful testing beyond trivial string checks, covering query parameter categories (pagination, temporal, spatial, filtering, optional, encoding), nested endpoint construction, resource availability validation, and URL encoding edge cases, requiring ~11 fixtures and estimated 188 tests (1,880-2,256 lines) organized across multiple files.
 
 ---
 
