@@ -1,10 +1,24 @@
 # Section 17: Coverage Targets and Metrics Definition
 
-**Research Date:** 2024-01-08  
-**Purpose:** Define specific coverage targets for each component type and establish meaningful coverage metrics beyond simple percentages
+**Research Plan:** [Research Plan 17: Coverage Targets and Metrics Definition](../research-plans/17-coverage-targets-metrics.md)
 
-**Status:** ✅ COMPLETE  
-**Dependencies:** Sections 1-16 (all complete)
+**Research Questions:** 7 core questions about overall coverage requirements, component-specific targets (QueryBuilder, parsers, types), branch vs statement coverage measurement, type definition coverage, meaningful coverage vs percentage coverage, high-threshold modules (95%+ vs 80%), and phase-based coverage tracking during incremental development
+
+**Methodology:** 6-phase systematic analysis (Phase 1: Upstream Coverage Analysis of existing configurations → Phase 2: Industry Standards Research for TypeScript libraries → Phase 3: Component-Specific Target Definition with rationale matrix → Phase 4: Meaningful Coverage Metrics beyond percentages → Phase 5: Implementation Strategy for Jest configuration → Phase 6: Synthesis into comprehensive coverage specification)
+
+**Research Time:** ~90 minutes (January 8, 2025)
+
+**Primary Source(s):**
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (Coverage targets: >80%)
+- [Jest Coverage Documentation](https://jestjs.io/docs/configuration#coveragethreshold)
+
+**Supporting Resources:**
+- Section 1: [EDR Test Blueprint](01-edr-test-blueprint.md) (upstream coverage analysis)
+- Section 2: [Upstream Test Consistency](02-upstream-test-consistency.md) (upstream coverage patterns)
+- Section 3: [TypeScript Testing Best Practices](03-typescript-library-testing-best-practices.md) (industry standards)
+- Sections 8-16: All component testing strategies (component-specific coverage needs)
+
+**Document Purpose:** Defines specific coverage targets for each component type (85-95% statement, 80-95% branch) with meaningful quality metrics beyond percentages, Jest configuration specifications, and incremental tracking strategy aligned with ROADMAP phases
 
 ---
 
