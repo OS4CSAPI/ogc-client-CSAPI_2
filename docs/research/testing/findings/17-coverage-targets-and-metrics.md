@@ -15,7 +15,7 @@
 **Supporting Resources:**
 - Section 1: [EDR Test Blueprint](01-edr-test-blueprint.md) (upstream coverage analysis)
 - Section 2: [Upstream Test Consistency](02-upstream-test-consistency.md) (upstream coverage patterns)
-- Section 3: [TypeScript Testing Best Practices](03-typescript-library-testing-best-practices.md) (industry standards)
+- Section 3: [TypeScript Testing Standards](03-typescript-testing-standards.md) (industry standards)
 - Sections 8-16: All component testing strategies (component-specific coverage needs)
 
 **Document Purpose:** Defines specific coverage targets for each component type (85-95% statement, 80-95% branch) with meaningful quality metrics beyond percentages, Jest configuration specifications, and incremental tracking strategy aligned with ROADMAP phases
