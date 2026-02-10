@@ -6,17 +6,17 @@
 **Research Time:** 1.5 hours (February 5, 2026)  
 
 **Primary Sources:**
-- TypeScript Handbook: https://www.typescriptlang.org/docs/handbook/
-- Jest Documentation: https://jestjs.io/docs/getting-started
-- @octokit/rest.js (GitHub API client) - test suite and patterns
-- axios (HTTP client) - test suite and patterns
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/)
+- [Jest Documentation](https://jestjs.io/docs/getting-started)
+- [@octokit/rest.js](https://github.com/octokit/rest.js) (GitHub API client - test suite and patterns)
+- [axios](https://github.com/axios/axios) (HTTP client - test suite and patterns)
 
 **Supporting Resources:**
-- Section 1: EDR Test Blueprint (for comparison)
-- Section 2: Upstream Test Consistency Matrix (for validation)
+- Section 1: [EDR Test Blueprint](01-edr-test-blueprint.md) (for comparison)
+- Section 2: [Upstream Test Consistency](02-upstream-test-consistency.md) (for validation)
 - TypeScript testing guides and community best practices
-- Coverage.io and Codecov documentation
-- AWS SDK, Stripe API client (additional reference libraries)
+- [Coverage.io](https://coverage.io/) and [Codecov](https://about.codecov.io/) documentation
+- [AWS SDK](https://github.com/aws/aws-sdk-js-v3), [Stripe API client](https://github.com/stripe/stripe-node) (additional reference libraries)
 
 **Document Purpose:** Validate that upstream ogc-client testing patterns align with industry TypeScript ecosystem standards and identify enhancement opportunities for CSAPI
 
