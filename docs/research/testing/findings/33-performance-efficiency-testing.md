@@ -1,8 +1,25 @@
 # Section 33: Performance and Efficiency Testing Strategy
 
-**Research Section:** 33 of 38  
-**Phase:** 3 - Component Requirements  
-**Research Completed:** February 6, 2026
+**Research Plan:** [Research Plan 33: Performance and Efficiency Testing](../research-plans/33-performance-efficiency-testing.md)
+
+**Research Questions:** 6 core questions about performance benchmarks, parser performance, large datasets, memory usage, Worker performance, and performance regression tests.
+
+**Methodology:** 6-phase systematic analysis (Phase 1: Performance Requirements Analysis → Phase 2: Benchmark Scenario Design → Phase 3: Upstream Performance Testing Analysis → Phase 4: Measurement Strategy Design → Phase 5: Test Infrastructure Design → Phase 6: Synthesis)
+
+**Research Time:** 90 minutes – February 6, 2026
+
+**Primary Source(s):**
+- [Implementation Guide](../../../planning/csapi-implementation-guide.md)
+- [SWE Common 3.0 Specification](https://docs.ogc.org/is/24-014/24-014.html)
+- Section 16: Worker testing strategy
+- Section 10: SWE Common testing specification
+
+**Supporting Resources:**
+- Section 30: [Bulk Operations Testing](30-bulk-operations-testing.md) (large batch performance)
+- Section 23: [Pagination Testing](23-pagination-testing.md) (large collection performance)
+- Browser performance APIs (Performance API, Memory API)
+
+**Document Purpose:** Performance testing strategy specification for parsers and large datasets (REFERENCE ONLY - performance testing is NOT in scope for this project, matching upstream's zero-performance-test approach).
 
 ---
 
