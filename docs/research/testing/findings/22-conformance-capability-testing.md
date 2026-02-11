@@ -1,8 +1,27 @@
 # Section 22: Conformance and Capability Testing - FINDINGS
 
-**Research Date:** February 5, 2026  
-**Status:** Complete  
-**Estimated Test Implementation:** 1200-1500 lines across 8 test files
+**Research Plan:** [Research Plan 22: Conformance and Capability Testing](../research-plans/22-conformance-capability-testing.md)
+
+**Research Questions:** 6 core questions about testing conformance class detection from /conformance endpoint, hasConnectedSystems method, resource availability checking, graceful degradation when resources unavailable, conformance scenarios requiring tests, and mocking different server capability profiles
+
+**Methodology:** 6-phase systematic analysis (Phase 1: CSAPI Conformance Class Analysis cataloging all Part 1 & Part 2 classes → Phase 2: Real Server Conformance Analysis of OpenSensorHub/52°North → Phase 3: Client Conformance Logic Analysis mapping conformance to behavior → Phase 4: Test Scenario Design for full/partial/missing conformance → Phase 5: Mocking Strategy for capability profiles → Phase 6: Synthesis into comprehensive conformance testing strategy)
+
+**Research Time:** ~4 hours (February 5, 2026)
+
+**Primary Source(s):**
+- [Conformance Capabilities Requirements](../../requirements/csapi-conformance-capabilities.md)
+- [52°North Analysis](../../requirements/csapi-52north-analysis.md) (partial conformance example)
+- [OpenSensorHub Analysis](../../requirements/csapi-opensensorhub-analysis.md) (full conformance example)
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (Conformance checking specification)
+
+**Supporting Resources:**
+- [CSAPI Part 1 Specification](https://docs.ogc.org/is/23-001/23-001.html) (conformance classes)
+- [CSAPI Part 2 Specification](https://docs.ogc.org/is/23-002/23-002.html) (conformance classes)
+- Section 1: [EDR Test Blueprint](01-edr-test-blueprint.md) (upstream conformance patterns)
+- Section 2: [Upstream Test Consistency](02-upstream-test-consistency.md) (capability testing)
+- Section 13: [Resource Method Testing Patterns](13-resource-method-testing-patterns.md) (resource availability)
+
+**Document Purpose:** Defines testing strategy for 25 modular CSAPI conformance classes with 8+ server capability profiles (minimal to full), conformance-based method availability, graceful degradation, resource availability checking, and mock /conformance responses, using 52°North's partial Part 2 implementation as primary test case
 
 ---
 
