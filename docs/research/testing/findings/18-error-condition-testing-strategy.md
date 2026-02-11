@@ -1,10 +1,26 @@
 # Section 18: Error Condition Testing Strategy
 
-**Research Date:** February 6, 2026  
-**Purpose:** Comprehensive strategy for testing all error conditions across all CSAPI components
+**Research Plan:** [Research Plan 18: Error Condition Testing Strategy](../research-plans/18-error-condition-testing.md)
 
-**Status:** ✅ COMPLETE  
-**Dependencies:** Sections 1, 2, 12, 13, 14 (all complete)
+**Research Questions:** 7 core questions about error types to test (validation, network, parse, conformance), meaningful error messages, CSAPI spec-defined error conditions, resource validation errors, malformed data errors in parsers, missing/invalid query parameter errors, and consistent error test structure
+
+**Methodology:** 6-phase systematic analysis (Phase 1: Error Taxonomy categorizing error types → Phase 2: Upstream Error Pattern Analysis of existing error handling → Phase 3: CSAPI Error Specification Analysis from OpenAPI schemas → Phase 4: Component-Specific Error Scenarios for QueryBuilder/parsers/resources/workflows → Phase 5: Error Test Pattern Design with consistent templates → Phase 6: Synthesis into comprehensive error testing strategy)
+
+**Research Time:** 120 minutes (February 6, 2026)
+
+**Primary Source(s):**
+- [Error Handling Design Analysis](../../upstream/error-handling-analysis.md)
+- [CSAPI Part 1 OpenAPI Specification](../../standards/ogcapi-connectedsystems-1.bundled.oas31.yaml) (error schemas)
+- [CSAPI Part 2 OpenAPI Specification](../../standards/ogcapi-connectedsystems-2.bundled.oas31.yaml) (error schemas)
+
+**Supporting Resources:**
+- Section 1: [EDR Test Blueprint](01-edr-test-blueprint.md) (upstream error test patterns)
+- Section 2: [Upstream Test Consistency](02-upstream-test-consistency.md) (error handling patterns)
+- Section 12: [QueryBuilder Testing Strategy](12-querybuilder-testing-strategy.md) (validation error scenarios)
+- Section 13: [Resource Method Testing Patterns](13-resource-method-testing-patterns.md) (resource error scenarios)
+- Section 14: [Integration Test Workflow Design](14-integration-test-workflow-design.md) (workflow error scenarios)
+
+**Document Purpose:** Establishes comprehensive error testing strategy covering 5 error categories (Validation, Network, Parse, Conformance, HTTP) with ~280-320 test scenarios, consistent test patterns, and minimal targeted error handling philosophy aligned with upstream patterns
 
 ---
 
