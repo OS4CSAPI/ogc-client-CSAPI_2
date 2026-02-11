@@ -1,18 +1,24 @@
 # Section 20: Test-to-Code Ratio Validation
 
-**Purpose:** Validate estimated test-to-code ratio (~0.9-1.0:1) is reasonable compared to upstream implementations and industry standards.
+**Research Plan:** [Research Plan 20: Test-to-Code Ratio Validation](../research-plans/20-test-to-code-ratio-validation.md)
 
-**Context:** Implementation Guide estimates ~4,850-6,500 implementation lines + ~4,400-6,300 test lines (ratio ~0.9-1.0:1). This validation confirms these estimates are appropriate before implementation begins.
+**Research Questions:** 6 core questions about test-to-code ratio in EDR implementation, ratios in other ogc-client implementations, whether ~0.9:1 is reasonable for client libraries, ratio variation by component type (QueryBuilder vs parsers), how incremental testing affects ratio, and whether estimates are missing any test types
 
-**Date:** 2025-02-06
+**Methodology:** 6-phase systematic analysis (Phase 1: Upstream Ratio Measurement calculating actual ratios in EDR/WFS/WMS/WMTS/STAC → Phase 2: Industry Benchmark Research for TypeScript client libraries → Phase 3: CSAPI Estimate Validation against upstream and industry standards → Phase 4: Component-Specific Ratio Analysis by type → Phase 5: Phase-by-Phase Ratio Tracking for incremental development → Phase 6: Synthesis with adjusted estimates and recommendations)
 
-**Dependencies:**
-- Section 1: Upstream Blueprint Analysis (EDR line counts)
-- Section 2: Upstream Test Pattern Survey (ratio patterns across APIs)
-- Section 3: TypeScript Client Library Testing Best Practices (industry standards)
-- Section 19: Test Organization and File Structure (detailed test file inventory)
-- Implementation Guide (line estimates to validate)
-- ROADMAP (phase-by-phase estimates)
+**Research Time:** ~2.5 hours (February 6, 2026)
+
+**Primary Source(s):**
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (line estimates: ~4,850-6,500 impl + ~4,500-6,000 test)
+- [ROADMAP](../../../planning/ROADMAP.md) (phase-by-phase estimates)
+
+**Supporting Resources:**
+- Section 1: [EDR Test Blueprint](01-edr-test-blueprint.md) (EDR implementation analysis with line counts)
+- Section 2: [Upstream Test Consistency](02-upstream-test-consistency.md) (upstream ratio analysis across implementations)
+- Section 3: [TypeScript Testing Standards](03-typescript-testing-standards.md) (industry standards for test-to-code ratio)
+- Section 19: [Test Organization and File Structure](19-test-organization-file-structure.md) (detailed test file inventory)
+
+**Document Purpose:** Validates estimated test-to-code ratio (~0.9:1) against upstream implementations (average 1.44:1) and industry standards (1.0-2.0:1), adjusts test line estimates from 4,400-6,300 to 4,150-5,850 lines (5-10% reduction), and establishes component-specific ratio expectations with phase-by-phase tracking procedures
 
 ---
 
