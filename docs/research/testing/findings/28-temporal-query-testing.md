@@ -1,15 +1,26 @@
 # Section 28: Temporal Query Testing Strategy
 
-**Research Section:** 28 of 38  
-**Phase:** 3 - Component Requirements  
-**Based On:**
-- Section 24: Query Parameter Combination Testing (temporal interactions)
-- Section 23: Pagination Testing Strategy (temporal + pagination)
-- Section 8: CSAPI Specification Review (temporal parameter definitions)
-- OGC API - Common (datetime parameter standard)
-- ISO 8601 Specification (temporal format standard)
+**Research Plan:** [Research Plan 28: Temporal Query Testing Strategy](../research-plans/28-temporal-query-testing.md)
 
-**Research Completed:** February 6, 2026
+**Research Questions:** 6 core questions about testing all ISO 8601 interval formats, open-ended intervals (`../..`, `2024-01-01/..`, `../2024-12-31`), instant vs interval queries, temporal parameter combinations, temporal edge cases, and temporal validation errors
+
+**Methodology:** 6-phase systematic analysis (Phase 1: Temporal Parameter Specification Analysis extracting 5 parameters (datetime, phenomenonTime, resultTime, executionTime, issueTime) → Phase 2: ISO 8601 Format Analysis documenting instants/intervals/durations → Phase 3: Upstream Temporal Testing Analysis of existing patterns → Phase 4: Test Scenario Design for all format variations → Phase 5: Fixture Design for query strings and responses → Phase 6: Synthesis into comprehensive temporal query testing strategy)
+
+**Research Time:** ~180 minutes (3 hours) (February 6, 2026)
+
+**Primary Source(s):**
+- [Query Parameter Requirements](../../requirements/csapi-query-parameters.md) (temporal parameters)
+- [ISO 8601 Specification](https://www.iso.org/iso-8601-date-and-time-format.html)
+- [CSAPI Part 2 Specification](https://docs.ogc.org/is/23-002/23-002.html) (temporal queries)
+- [OGC API - Common](https://docs.ogc.org/is/19-072/19-072.html) (temporal query patterns)
+
+**Supporting Resources:**
+- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (temporal parameter definitions)
+- Section 23: [Pagination Testing](23-pagination-testing.md) (temporal queries with pagination)
+- Section 24: [Query Parameter Combination Testing](24-query-parameter-combination-testing.md) (parameter interactions)
+- [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339) (ISO 8601 profile for internet timestamps)
+
+**Document Purpose:** Defines comprehensive testing strategy for 5 CSAPI temporal parameters with ISO 8601 format variations (instants, intervals, durations, open-ended), timezone handling (UTC, offset, Z notation), temporal parameter combinations, edge cases (leap years, DST, leap seconds), and validation errors across observations and commands
 
 ---
 
