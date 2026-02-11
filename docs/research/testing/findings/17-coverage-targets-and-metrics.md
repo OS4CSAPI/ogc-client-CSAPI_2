@@ -16,7 +16,15 @@
 - Section 1: [EDR Test Blueprint](01-edr-test-blueprint.md) (upstream coverage analysis)
 - Section 2: [Upstream Test Consistency](02-upstream-test-consistency.md) (upstream coverage patterns)
 - Section 3: [TypeScript Testing Standards](03-typescript-testing-standards.md) (industry standards)
-- Sections 8-16: All component testing strategies (component-specific coverage needs)
+- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (component coverage needs)
+- Section 9: [SensorML Testing Requirements](09-sensorml-testing-requirements.md) (parser coverage needs)
+- Section 10: [SWE Common Testing Requirements](10-swe-common-testing-requirements.md) (parser coverage needs)
+- Section 11: [GeoJSON CSAPI Testing Requirements](11-geojson-csapi-testing-requirements.md) (parser coverage needs)
+- Section 12: [QueryBuilder Testing Strategy](12-querybuilder-testing-strategy.md) (QueryBuilder coverage needs)
+- Section 13: [Resource Method Testing Patterns](13-resource-method-testing-patterns.md) (resource coverage needs)
+- Section 14: [Integration Test Workflow Design](14-integration-test-workflow-design.md) (integration coverage needs)
+- Section 15: [Fixture Sourcing Organization](15-fixture-sourcing-organization.md) (fixture coverage needs)
+- Section 16: [Worker Extensions Testing](16-worker-extensions-testing.md) (worker coverage needs)
 
 **Document Purpose:** Defines specific coverage targets for each component type (85-95% statement, 80-95% branch) with meaningful quality metrics beyond percentages, Jest configuration specifications, and incremental tracking strategy aligned with ROADMAP phases
 
