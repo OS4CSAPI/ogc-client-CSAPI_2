@@ -1,14 +1,28 @@
 # Section 27: Schema-Driven Validation Testing Strategy
 
-**Research Section:** 27 of 38  
-**Phase:** 3 - Component Requirements  
-**Based On:**
-- Section 8: CSAPI Specification Test Requirements (validation rules)
-- Section 10: SWE Common Testing Requirements (schema structure)
-- CSAPI Part 2 Requirements (DataStream/ControlStream schemas)
-- Worker Extensions Testing (VALIDATE_OBSERVATIONS, VALIDATE_COMMANDS)
+**Research Plan:** [Research Plan 27: Schema-Driven Validation Testing](../research-plans/27-schema-driven-validation-testing.md)
 
-**Research Completed:** February 6, 2026
+**Research Questions:** 6 core questions about testing observation result validation against DataStream schema, command parameter validation against ControlStream schema, schema mismatch scenarios, schema parsing (SWE Common schemas), fixtures needed for schema validation scenarios, and error messages for schema violations
+
+**Methodology:** 6-phase systematic analysis (Phase 1: Schema Specification Analysis of DataStream/ControlStream requirements → Phase 2: SWE Common Schema Analysis of 12+ component types → Phase 3: Upstream Schema Validation Analysis of existing patterns → Phase 4: Validation Scenario Design for 66 test scenarios → Phase 5: Fixture Design for valid/invalid observations and commands → Phase 6: Synthesis into comprehensive schema-driven validation testing strategy)
+
+**Research Time:** ~3.5 hours (February 6, 2026)
+
+**Primary Source(s):**
+- [CSAPI Part 2 Specification](https://docs.ogc.org/is/23-002/23-002.html) (schema requirements)
+- [Part 2 Requirements](../../requirements/csapi-part2-requirements.md)
+- [SWE Common 3.0 Specification](https://docs.ogc.org/is/24-014/24-014.html)
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (schema validation specifications)
+
+**Supporting Resources:**
+- Section 1: [EDR Test Blueprint](01-edr-test-blueprint.md) (upstream schema validation patterns)
+- Section 2: [Upstream Test Consistency](02-upstream-test-consistency.md) (validation patterns)
+- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (schema definitions)
+- Section 10: [SWE Common Testing Requirements](10-swe-common-testing-requirements.md) (schema component testing)
+- Section 16: [Worker Extensions Testing](16-worker-extensions-testing.md) (VALIDATE_OBSERVATIONS, VALIDATE_COMMANDS)
+- [JSON Schema standards](https://json-schema.org/specification.html)
+
+**Document Purpose:** Defines comprehensive testing strategy for dual CSAPI Part 2 schema validation system (DataStream resultSchema for observations, ControlStream parametersSchema for commands) with 66 test scenarios covering SWE Common 3.0 component validation, type mismatches, missing/extra fields, constraint violations, schema evolution, and error messaging
 
 ---
 
