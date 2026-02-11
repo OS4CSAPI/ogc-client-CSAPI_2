@@ -1,15 +1,26 @@
 # Section 31: Command Lifecycle Testing Strategy
 
-**Research Section:** 31 of 38  
-**Phase:** 3 - Component Requirements  
-**Based On:**
-- Section 13: Resource Method Testing Patterns (command operation patterns)
-- Section 27: Schema-Driven Validation Testing (command parameter validation)
-- Section 14: Integration Test Workflow Design (command workflow patterns)
-- CSAPI Part 2 Specification (OGC 23-002) - Command lifecycle and control operations
-- Command lifecycle state machine analysis
+**Research Plan:** [Research Plan 31: Command Lifecycle Testing Strategy](../research-plans/31-command-lifecycle-testing.md)
 
-**Research Completed:** February 6, 2026
+**Research Questions:** 6 core questions about command submission, status tracking, result retrieval, cancel operations, sync vs async commands, and fixtures.
+
+**Methodology:** 7-phase systematic analysis (Phase 1: Command Lifecycle Specification Analysis → Phase 2: Sync vs Async Analysis → Phase 3: Upstream Command Testing Analysis → Phase 4: Test Scenario Design → Phase 5: State Machine Testing → Phase 6: Fixture Design → Phase 7: Synthesis)
+
+**Research Time:** 55 minutes – February 6, 2026
+
+**Primary Source(s):**
+- [CSAPI Part 2 Specification](https://docs.ogc.org/is/23-002/23-002.html)
+- [Part 2 Requirements](../../requirements/csapi-part2-requirements.md)
+- [Usage Scenarios](../../requirements/csapi-usage-scenarios.md)
+- [Implementation Guide](../../../planning/csapi-implementation-guide.md)
+
+**Supporting Resources:**
+- Section 13: [Resource Method Testing Patterns](13-resource-method-testing-patterns.md) (individual operations)
+- Section 27: [Schema-Driven Validation Testing](27-schema-driven-validation-testing.md) (command parameter validation)
+- Section 30: [Bulk Operations Testing](30-bulk-operations-testing.md) (bulk command creation)
+- Section 14: [Integration Test Workflow Design](14-integration-test-workflow-design.md) (command workflow)
+
+**Document Purpose:** Testing strategy for complete command lifecycle from submission through status tracking, result retrieval, and cancellation, covering both synchronous and asynchronous command execution patterns.
 
 ---
 
