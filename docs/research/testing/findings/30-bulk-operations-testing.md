@@ -1,15 +1,26 @@
 # Section 30: Bulk Operations Testing Strategy
 
-**Research Section:** 30 of 38  
-**Phase:** 3 - Component Requirements  
-**Based On:**
-- Section 13: Resource Method Testing Patterns (individual operation patterns)
-- Section 18: Error Condition Testing (error handling patterns)
-- Section 27: Schema-Driven Validation Testing (item validation)
-- CSAPI Part 2 Specification (OGC 23-002) - bulk operations
-- OpenSensorHub implementation analysis - bulk insert patterns
+**Research Plan:** [Research Plan 30: Bulk Operations Testing Strategy](../research-plans/30-bulk-operations-testing.md)
 
-**Research Completed:** February 6, 2026
+**Research Questions:** 6 core questions about bulk observation creation, bulk command creation, request size limits, partial success/failure, error handling, and fixtures.
+
+**Methodology:** 6-phase systematic analysis (Phase 1: Bulk Operation Specification Analysis → Phase 2: Error Handling Analysis → Phase 3: Upstream Bulk Testing Analysis → Phase 4: Test Scenario Design → Phase 5: Fixture Design → Phase 6: Synthesis)
+
+**Research Time:** 90 minutes (1.5 hours) – February 6, 2026
+
+**Primary Source(s):**
+- [CSAPI Part 2 Specification](https://docs.ogc.org/is/23-002/23-002.html)
+- [Part 2 Requirements](../../requirements/csapi-part2-requirements.md)
+- [CRUD Operations Requirements](../../requirements/csapi-crud-operations.md)
+- [Implementation Guide](../../../planning/csapi-implementation-guide.md)
+
+**Supporting Resources:**
+- Section 13: [Resource Method Testing Patterns](13-resource-method-testing-patterns.md) (individual operations)
+- Section 18: [Error Condition Testing Strategy](18-error-condition-testing-strategy.md) (error patterns)
+- Section 27: [Schema-Driven Validation Testing](27-schema-driven-validation-testing.md) (bulk item validation)
+- Section 33: Performance Testing (bulk performance)
+
+**Document Purpose:** Testing strategy for bulk observation and command creation operations with transaction semantics, partial success/failure handling, and performance considerations for high-volume data ingestion.
 
 ---
 
