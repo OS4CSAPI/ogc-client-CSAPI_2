@@ -1,8 +1,27 @@
 # Section 24: Query Parameter Combination Testing - FINDINGS
 
-**Status:** ✅ Complete  
-**Research Date:** February 6, 2026  
-**Dependencies:** Section 8 (CSAPI Spec Review), Section 13 (Resource Method Testing), Section 23 (Pagination Testing)
+**Research Plan:** [Research Plan 24: Query Parameter Combination Testing](../research-plans/24-query-parameter-combination-testing.md)
+
+**Research Questions:** 6 core questions about CSAPI query parameters inventory, testing valid parameter combinations, testing invalid parameter combinations, parameter precedence rules, testing spatial + temporal + relationship parameters together, and handling conflicting parameters
+
+**Methodology:** 6-phase systematic analysis (Phase 1: Query Parameter Inventory extracting 32 parameters across Parts 1-3 → Phase 2: Combination Rules Analysis identifying precedence and interactions → Phase 3: Upstream Parameter Testing Analysis of existing patterns → Phase 4: Test Scenario Design for 120 scenarios across categories → Phase 5: Fixture Design for query strings and responses → Phase 6: Synthesis into comprehensive combination testing strategy)
+
+**Research Time:** 5.5 hours (February 6, 2026)
+
+**Primary Source(s):**
+- [Query Parameter Requirements](../../requirements/query-parameter-requirements.md)
+- [CSAPI Part 1 OpenAPI Specification](../../standards/ogcapi-connectedsystems-1.bundled.oas31.yaml)
+- [CSAPI Part 2 OpenAPI Specification](../../standards/ogcapi-connectedsystems-2.bundled.oas31.yaml)
+- [OGC API - Common](https://docs.ogc.org/is/19-072/19-072.html) (standard query parameters)
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md)
+
+**Supporting Resources:**
+- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (parameter definitions)
+- Section 13: [Resource Method Testing Patterns](13-resource-method-testing-patterns.md) (parameter handling)
+- Section 23: [Pagination Testing](23-pagination-testing.md) (limit/offset/cursor parameters)
+- [OGC API - Features](https://docs.ogc.org/is/17-069r4/17-069r4.html) (query parameter patterns)
+
+**Document Purpose:** Defines comprehensive testing strategy for 32 CSAPI query parameters across 7 categories (spatial, temporal, relationship, pagination, format, selection, hierarchical) with 120+ test scenarios covering valid/invalid combinations, parameter precedence rules (format > Accept, phenomenonTime > datetime, cursor > offset), and logical AND/OR operators
 
 ---
 
