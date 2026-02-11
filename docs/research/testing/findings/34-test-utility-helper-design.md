@@ -1,13 +1,25 @@
 # Section 34: Test Utility and Helper Design
 
-**Research Section:** 34 of 38  
-**Phase:** 3 - Component Requirements  
-**Based On:**
-- Section 1-2: Upstream Analysis (utility patterns from existing tests)
-- Section 19: Test Organization and File Structure (utility organization)
-- All previous sections (common patterns across all component tests)
+**Research Plan:** [Research Plan 34: Test Utility and Helper Design](../research-plans/34-test-utility-helper-design.md)
 
-**Research Completed:** February 6, 2026
+**Research Questions:** 6 core questions about URL validation utilities, fixture loading helpers, assertion helpers, mocking utilities, setup/teardown helpers, and upstream utilities.
+
+**Methodology:** 6-phase systematic analysis (Phase 1: Common Pattern Analysis → Phase 2: Upstream Utility Analysis → Phase 3: Utility Category Design → Phase 4: Utility Function Design → Phase 5: Reusability Strategy → Phase 6: Synthesis)
+
+**Research Time:** 90 minutes – February 6, 2026
+
+**Primary Source(s):**
+- Section 1-2 deliverables: Upstream test utilities
+- All previous section deliverables: Common test patterns
+- [File Organization Strategy](../../upstream/file-organization-analysis.md)
+- [Implementation Guide](../../../planning/csapi-implementation-guide.md)
+
+**Supporting Resources:**
+- Section 19: [Test Organization and File Structure](19-test-organization-file-structure.md) (utility organization)
+- [Jest documentation](https://jestjs.io/docs/expect) (custom matchers)
+- Testing Library utilities
+
+**Document Purpose:** Reusable test utilities and helper functions specification (50 functions across 6 categories: URL, Fixture, Assertion, Mocking, Setup/Teardown, Data Builders) to reduce duplication and improve test maintainability.
 
 ---
 
