@@ -1,8 +1,26 @@
 # Section 21: TypeScript Type Testing Strategy
 
-**Research Completed:** 2026-02-08  
-**Dependencies:** Sections 1, 2, 8  
-**Status:** Complete
+**Research Plan:** [Research Plan 21: TypeScript Type Testing Strategy](../research-plans/21-typescript-type-testing.md)
+
+**Research Questions:** 6 core questions about testing TypeScript interfaces compile correctly, type discrimination (union types), generic type constraints, type inference, upstream patterns for type testing, and whether compilation tests are sufficient or runtime tests needed
+
+**Methodology:** 6-phase systematic analysis (Phase 1: Upstream Type Test Analysis of EDR model patterns → Phase 2: Type Testing Tools Research evaluating tsd/dtslint vs TypeScript compiler → Phase 3: CSAPI Type Inventory cataloging all interfaces/unions/generics → Phase 4: Type Test Pattern Design for each category → Phase 5: Runtime vs Compile-Time Strategy definition → Phase 6: Synthesis into comprehensive type testing strategy)
+
+**Research Time:** 3.5 hours (February 8, 2026)
+
+**Primary Source(s):**
+- [TypeScript Types Analysis](../../upstream/typescript-types-analysis.md)
+- [Datatype Schema Requirements](../../requirements/csapi-datatype-schema-requirements.md)
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (Type system specification)
+
+**Supporting Resources:**
+- Section 1: [EDR Test Blueprint](01-edr-test-blueprint.md) (upstream type test patterns)
+- Section 2: [Upstream Test Consistency](02-upstream-test-consistency.md) (type testing approaches)
+- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (type definitions)
+- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
+- [tsd Library Documentation](https://github.com/SamVerschueren/tsd)
+
+**Document Purpose:** Defines compilation-based type testing strategy using TypeScript compiler + Jest (no specialized tools) for CSAPI's ~400 lines of type definitions across 20+ interfaces, 3 discriminated unions, and 5 type aliases, following upstream patterns with explicit type annotations and runtime validation only where needed
 
 ---
 
