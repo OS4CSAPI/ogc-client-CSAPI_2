@@ -1,16 +1,26 @@
 # Section 29: Spatial Query Testing Strategy
 
-**Research Section:** 29 of 38  
-**Phase:** 3 - Component Requirements  
-**Based On:**
-- Section 24: Query Parameter Combination Testing (spatial + other parameter interactions)
-- Section 11: GeoJSON Testing Requirements (spatial structures and CRS)
-- Section 8: CSAPI Specification Review (spatial parameter definitions)
-- Section 23: Pagination Testing Strategy (spatial + pagination)
-- OGC API - Features Part 1, Clause 7.15.3 (bbox parameter specification)
-- GeoJSON RFC 7946 (coordinate reference systems)
+**Research Plan:** [Research Plan 29: Spatial Query Testing Strategy](../research-plans/29-spatial-query-testing.md)
 
-**Research Completed:** February 6, 2026
+**Research Questions:** 6 core questions about bbox format, geometry intersection, CRS handling, spatial edge cases, validation errors, and fixtures.
+
+**Methodology:** 7-phase systematic analysis (Phase 1: Spatial Parameter Specification Analysis → Phase 2: CRS and Coordinate System Analysis → Phase 3: Spatial Edge Case Analysis → Phase 4: Upstream Spatial Testing Analysis → Phase 5: Test Scenario Design → Phase 6: Fixture Design → Phase 7: Synthesis)
+
+**Research Time:** 210 minutes (3.5 hours) – February 6, 2026
+
+**Primary Source(s):**
+- [Query Parameter Requirements](../../requirements/csapi-query-parameters.md)
+- [CSAPI Part 1 Specification](https://docs.ogc.org/is/23-001/23-001.html)
+- [GeoJSON RFC 7946](https://datatracker.ietf.org/doc/html/rfc7946)
+- [OGC API - Features Part 1](https://docs.ogc.org/is/17-069r3/17-069r3.html)
+
+**Supporting Resources:**
+- Section 24: [Query Parameter Combination Testing](24-query-parameter-combination-testing.md) (parameter interactions)
+- Section 11: [GeoJSON Testing Requirements](11-geojson-testing-requirements.md) (spatial structures)
+- Section 8: [CSAPI Specification Review](08-csapi-specification-review.md) (spatial definitions)
+- Section 23: [Pagination Testing Strategy](23-pagination-testing.md) (spatial + pagination)
+
+**Document Purpose:** Testing strategy for spatial query parameters (bbox) with geometry scenarios, CRS handling, and edge cases including antimeridian crossing and polar regions.
 
 ---
 
