@@ -1,17 +1,33 @@
 # Section 19: Test Organization and File Structure
 
-**Purpose:** Define complete test file structure, naming conventions, and organization strategy for CSAPI testing.
+**Research Plan:** [Research Plan 19: Test Organization and File Structure](../research-plans/19-test-organization-file-structure.md)
 
-**Context:** After all test content has been defined in Sections 8-18, this section organizes test files into a coherent structure matching upstream patterns and enabling maintainable, scalable test development.
+**Research Questions:** 7 core questions about test file inventory (names and purposes), organization by component vs resource type, file location (colocated vs separate test/ directory), naming conventions consistent with upstream, describe/it block structure, test utilities and helpers organization, and fixture organization
 
-**Date:** 2025-02-05
+**Methodology:** 6-phase systematic analysis (Phase 1: Upstream Test Structure Analysis of file patterns → Phase 2: Test File Inventory compilation from all component sections → Phase 3: Directory Structure Design for tests/fixtures/utilities → Phase 4: Naming Convention Definition for files and blocks → Phase 5: Test Structure Templates creation by test type → Phase 6: Synthesis into comprehensive organization specification)
 
-**Dependencies:**
-- Section 1: Upstream Blueprint Analysis (test file patterns)
-- Section 2: Upstream Test Pattern Survey (organization patterns)
-- Section 8-14: Component Testing Requirements (test specifications)
-- Section 15: Fixture Sourcing and Organization Strategy (fixture structure)
-- File Organization Analysis (upstream structure patterns)
+**Research Time:** ~95 minutes (February 5, 2025)
+
+**Primary Source(s):**
+- [File Organization Strategy](../../upstream/file-organization-analysis.md)
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (Test file specifications)
+
+**Supporting Resources:**
+- Section 1: [EDR Test Blueprint](01-edr-test-blueprint.md) (upstream test file patterns)
+- Section 2: [Upstream Test Consistency](02-upstream-test-consistency.md) (organization patterns across implementations)
+- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (test file requirements)
+- Section 9: [SensorML Testing Requirements](09-sensorml-testing-requirements.md) (test file requirements)
+- Section 10: [SWE Common Testing Requirements](10-swe-common-testing-requirements.md) (test file requirements)
+- Section 11: [GeoJSON CSAPI Testing Requirements](11-geojson-csapi-testing-requirements.md) (test file requirements)
+- Section 12: [QueryBuilder Testing Strategy](12-querybuilder-testing-strategy.md) (test file requirements)
+- Section 13: [Resource Method Testing Patterns](13-resource-method-testing-patterns.md) (test file requirements)
+- Section 14: [Integration Test Workflow Design](14-integration-test-workflow-design.md) (test file requirements)
+- Section 15: [Fixture Sourcing Organization](15-fixture-sourcing-organization.md) (fixture structure integration)
+- Section 16: [Worker Extensions Testing](16-worker-extensions-testing.md) (test file requirements)
+- Section 17: [Coverage Targets and Metrics](17-coverage-targets-and-metrics.md) (test file requirements)
+- Section 18: [Error Condition Testing Strategy](18-error-condition-testing-strategy.md) (test file requirements)
+
+**Document Purpose:** Defines complete test file structure with 22 test files in flat colocated organization, naming conventions matching upstream patterns (.spec.ts), directory structure for ~280 fixtures, test utility organization, and reusable test templates by type
 
 ---
 
