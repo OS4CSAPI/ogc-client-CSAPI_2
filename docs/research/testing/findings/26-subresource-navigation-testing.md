@@ -1,8 +1,27 @@
 # Section 26: Sub-Resource Navigation Testing - FINDINGS
 
-**Status:** ✅ Complete  
-**Research Date:** February 6, 2026  
-**Dependencies:** Section 8 (CSAPI Spec Review), Section 13 (Resource Method Testing), Section 23 (Pagination), Section 24 (Query Parameters)
+**Research Plan:** [Research Plan 26: Sub-Resource Navigation Testing](../research-plans/26-subresource-navigation-testing.md)
+
+**Research Questions:** 6 core questions about CSAPI nested resource patterns, testing sub-resource navigation paths, bidirectional navigation, query parameters on nested endpoints, filtering on nested resources, and handling invalid nested paths
+
+**Methodology:** 6-phase systematic analysis (Phase 1: Sub-Resource Pattern Inventory extracting 16 parent-child relationships → Phase 2: URL Structure Analysis for nested endpoint patterns → Phase 3: Upstream Navigation Testing Analysis of existing patterns → Phase 4: Test Scenario Design for 50+ scenarios → Phase 5: Bidirectional Navigation Analysis for reverse paths → Phase 6: Synthesis into comprehensive sub-resource navigation testing strategy)
+
+**Research Time:** 3.5 hours (February 6, 2026)
+
+**Primary Source(s):**
+- [Sub-Resource Navigation Requirements](../../requirements/subresource-navigation-requirements.md)
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (Sub-resource patterns)
+- [ROADMAP Phase 2](../../../planning/ROADMAP.md) (Sub-resource navigation implementation)
+- [CSAPI Part 1 Specification](https://docs.ogc.org/is/23-001/23-001.html) (resource relationships)
+- [CSAPI Part 2 Specification](https://docs.ogc.org/is/23-002/23-002.html) (resource relationships)
+
+**Supporting Resources:**
+- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (resource relationships)
+- Section 13: [Resource Method Testing Patterns](13-resource-method-testing-patterns.md) (navigation patterns)
+- Section 23: [Pagination Testing](23-pagination-testing.md) (pagination on nested endpoints)
+- Section 24: [Query Parameter Combination Testing](24-query-parameter-combination-testing.md) (parameters on nested endpoints)
+
+**Document Purpose:** Defines comprehensive testing strategy for 16 distinct CSAPI parent-child relationships across 3 relationship types (hierarchical with unlimited depth, compositional at depth 1, associative bidirectional) with URL construction patterns, query parameter inheritance, pagination on nested collections, and 50+ test scenarios
 
 ---
 
