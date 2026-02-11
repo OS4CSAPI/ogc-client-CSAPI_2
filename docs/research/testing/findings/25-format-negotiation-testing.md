@@ -1,8 +1,27 @@
 # Section 25: Format Negotiation Testing Strategy - FINDINGS
 
-**Status:** ✅ Complete  
-**Research Date:** February 6, 2026  
-**Dependencies:** Section 8 (CSAPI Spec Review), Section 24 (Query Parameter Testing), Format Requirements Documents
+**Research Plan:** [Research Plan 25: Format Negotiation Testing Strategy](../research-plans/25-format-negotiation-testing.md)
+
+**Research Questions:** 6 core questions about testing Accept header format negotiation, query parameter format selection (f=geojson), format discovery via links, CSAPI-supported media types, format precedence (Accept vs query param), and handling unsupported formats
+
+**Methodology:** 6-phase systematic analysis (Phase 1: Format Specification Analysis extracting CSAPI media types and precedence rules → Phase 2: Upstream Format Testing Analysis of existing patterns → Phase 3: Test Scenario Design for 50+ scenarios across negotiation methods → Phase 4: Media Type Matrix Creation mapping formats to resources → Phase 5: Fixture Design for Accept headers and format-specific responses → Phase 6: Synthesis into comprehensive format negotiation testing strategy)
+
+**Research Time:** 4.0 hours (February 6, 2026)
+
+**Primary Source(s):**
+- [Format Negotiation Architecture](../../../architecture/responses/format-negotiation.md)
+- [Format Requirements](../../requirements/format-requirements.md)
+- [CSAPI Part 1 Specification](https://docs.ogc.org/is/23-001/23-001.html) (media type definitions)
+- [CSAPI Part 2 Specification](https://docs.ogc.org/is/23-002/23-002.html) (media type definitions)
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md)
+
+**Supporting Resources:**
+- [HTTP Content Negotiation (RFC 7231)](https://datatracker.ietf.org/doc/html/rfc7231#section-5.3)
+- [OGC API - Common](https://docs.ogc.org/is/19-072/19-072.html) (format negotiation patterns)
+- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (format specifications)
+- Section 24: [Query Parameter Combination Testing](24-query-parameter-combination-testing.md) (f= parameter)
+
+**Document Purpose:** Defines testing strategy for 7 CSAPI media types with 3 format negotiation methods (query parameter f= as primary, Accept header as fallback, server default), format precedence rules (f > Accept > default > 406), and 40+ test scenarios covering format validation, URL encoding, and error handling
 
 ---
 
