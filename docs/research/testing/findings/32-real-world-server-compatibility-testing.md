@@ -1,14 +1,24 @@
 # Section 32: Real-World Server Compatibility Testing
 
-**Research Section:** 32 of 38  
-**Phase:** 3 - Component Requirements  
-**Based On:**
-- Section 22: Conformance and Capability Testing (conformance detection)
-- Section 8: CSAPI Specification Review (conformance classes)
-- OpenSensorHub Analysis (live server: http://45.55.99.236:8080/sensorhub/api)
-- 52°North Analysis (live server: https://csa.demo.52north.org/)
+**Research Plan:** [Research Plan 32: Real-World Server Compatibility Testing](../research-plans/32-real-world-server-compatibility-testing.md)
 
-**Research Completed:** February 6, 2026
+**Research Questions:** 6 core questions about OpenSensorHub testing, 52°North testing, server variations, partial conformance scenarios, server-specific quirks, and compatibility test suite structure.
+
+**Methodology:** 6-phase systematic analysis (Phase 1: Server Inventory and Analysis → Phase 2: Server Profile Analysis → Phase 3: Upstream Compatibility Testing Analysis → Phase 4: Test Scenario Design → Phase 5: Test Infrastructure Design → Phase 6: Synthesis)
+
+**Research Time:** 75 minutes – February 6, 2026
+
+**Primary Source(s):**
+- [OpenSensorHub Analysis](../../requirements/csapi-opensensorhub-analysis.md)
+- [52°North Analysis](../../requirements/csapi-52north-analysis.md)
+- [Conformance Capabilities](../../requirements/csapi-conformance-capabilities.md)
+- [Implementation Guide](../../../planning/csapi-implementation-guide.md)
+
+**Supporting Resources:**
+- Section 22: [Conformance and Capability Testing](22-conformance-capability-testing.md) (conformance detection)
+- Section 8: [CSAPI Specification Review](08-csapi-specification-review.md) (conformance classes)
+
+**Document Purpose:** Validation strategy for testing the TypeScript CSAPI client library against multiple real-world servers (OpenSensorHub with full conformance, 52°North with partial conformance) to ensure interoperability and graceful degradation.
 
 ---
 
