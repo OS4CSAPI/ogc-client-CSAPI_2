@@ -354,8 +354,8 @@ These numbers converge and are grounded in upstream data points.
 
 | ID | Severity | Document(s) | Issue | Status |
 |----|----------|-------------|-------|--------|
-| H1 | HIGH | 02 | Wrong resource type names (SensorThings terminology) | Open |
-| H2 | HIGH | 38 (vs 01,02,12) | `__tests__/` directory contradicts colocated pattern | Open |
+| H1 | HIGH | 02 | Wrong resource type names (SensorThings terminology) | **Resolved** |
+| H2 | HIGH | 38 (vs 01,02,12) | `__tests__/` directory contradicts colocated pattern | **Resolved** |
 | M1 | MEDIUM | 12, 38 | Conformance URIs unverified, inconsistent hyphenation | Open |
 | M2 | MEDIUM | 12 (vs 38) | Sync vs async QueryBuilder methods | Open |
 | M3 | MEDIUM | 38 | `OgcApiEndpoint.fromUrl()` doesn't exist upstream | Open |

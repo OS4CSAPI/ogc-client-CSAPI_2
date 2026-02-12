@@ -90,16 +90,13 @@ npm install
 src/
   ogc-api/
     csapi/
-      __tests__/
-        model.spec.ts
-        helpers.spec.ts
-        url_builder.spec.ts
-        parsers/
-          sensorml-parser.spec.ts
-          swe-common-parser.spec.ts
-        integration/
-          discovery.spec.ts
-          observation-workflow.spec.ts
+      model.spec.ts
+      helpers.spec.ts
+      url_builder.spec.ts
+      test-utils.ts
+      parsers/
+        sensorml-parser.spec.ts
+        swe-common-parser.spec.ts
 fixtures/
   ogc-api/
     csapi/
@@ -113,7 +110,7 @@ fixtures/
 
 **Create Test Utilities (Phase 1, Task 2):**
 
-`src/ogc-api/csapi/__tests__/test-utils.ts`:
+`src/ogc-api/csapi/test-utils.ts`:
 
 ```typescript
 import { URL } from 'url';
@@ -230,8 +227,8 @@ npm test
 npm run test:coverage
 
 # Should see:
-# PASS src/ogc-api/features/__tests__/url-builder.spec.ts
-# PASS src/ogc-api/tiles/__tests__/url-builder.spec.ts
+# PASS src/ogc-api/features/url-builder.spec.ts
+# PASS src/ogc-api/tiles/url-builder.spec.ts
 # ... (existing tests)
 ```
 
@@ -298,12 +295,12 @@ export interface SystemCollection extends FeatureCollection {
 
 **Step 2: Write type validation tests immediately (30 min)**
 
-Create `src/ogc-api/csapi/__tests__/model.spec.ts`:
+Create `src/ogc-api/csapi/model.spec.ts`:
 
 ```typescript
 /**
  * @fileoverview Type definition tests for CSAPI model
- * @module csapi/__tests__/model
+ * @module csapi/model
  * @specification OGC 23-001 v1.0.0, OGC 23-002 v1.0.0
  */
 
@@ -554,7 +551,7 @@ describe('Query Options', () => {
 npm test -- model.spec.ts
 
 # Should see:
-# PASS src/ogc-api/csapi/__tests__/model.spec.ts
+# PASS src/ogc-api/csapi/model.spec.ts
 #   CSAPI Type System
 #     System Interface
 #       ✓ conforms to GeoJSON Feature structure
@@ -636,12 +633,12 @@ export function buildResourceUrl(
 
 **Step 2: Write helper tests immediately (30 min)**
 
-Create `src/ogc-api/csapi/__tests__/helpers.spec.ts`:
+Create `src/ogc-api/csapi/helpers.spec.ts`:
 
 ```typescript
 /**
  * @fileoverview Tests for CSAPI helper utilities
- * @module csapi/__tests__/helpers
+ * @module csapi/helpers
  */
 
 import { buildResourceUrl } from '../helpers';
@@ -867,7 +864,7 @@ describe('parseDatetime', () => {
 npm test -- helpers.spec.ts
 
 # Should see:
-# PASS src/ogc-api/csapi/__tests__/helpers.spec.ts
+# PASS src/ogc-api/csapi/helpers.spec.ts
 #   CSAPI Helper Utilities
 #     buildResourceUrl
 #       ✓ builds collection resource URL
@@ -1003,12 +1000,12 @@ export class CSAPIQueryBuilder {
 
 **Step 2: Write QueryBuilder tests immediately (60 min)**
 
-Create `src/ogc-api/csapi/__tests__/url_builder.spec.ts`:
+Create `src/ogc-api/csapi/url_builder.spec.ts`:
 
 ```typescript
 /**
  * @fileoverview Tests for CSAPI QueryBuilder
- * @module csapi/__tests__/url_builder
+ * @module csapi/url_builder
  */
 
 import { CSAPIQueryBuilder } from '../url_builder';
@@ -1124,7 +1121,7 @@ describe('CSAPIQueryBuilder', () => {
 npm test -- url_builder.spec.ts
 
 # Should see:
-# PASS src/ogc-api/csapi/__tests__/url_builder.spec.ts
+# PASS src/ogc-api/csapi/url_builder.spec.ts
 #   CSAPIQueryBuilder
 #     Constructor
 #       ✓ initializes with collection info
@@ -1185,7 +1182,7 @@ export function checkHasConnectedSystems(endpoint: OgcApiEndpoint): boolean {
 
 **Step 2: Write conformance detection tests (30 min)**
 
-Add to `src/ogc-api/__tests__/info.spec.ts`:
+Add to `src/ogc-api/info.spec.ts`:
 
 ```typescript
 describe('checkHasConnectedSystems', () => {
@@ -1311,7 +1308,7 @@ export class OgcApiEndpoint {
 
 **Step 4: Write endpoint integration tests (60 min)**
 
-Add to `src/ogc-api/__tests__/endpoint.spec.ts`:
+Add to `src/ogc-api/endpoint.spec.ts`:
 
 ```typescript
 describe('OgcApiEndpoint - CSAPI Integration', () => {
@@ -1444,11 +1441,11 @@ export {
 npm test -- csapi
 
 # Should see:
-# PASS src/ogc-api/csapi/__tests__/model.spec.ts
-# PASS src/ogc-api/csapi/__tests__/helpers.spec.ts
-# PASS src/ogc-api/csapi/__tests__/url_builder.spec.ts
-# PASS src/ogc-api/__tests__/endpoint.spec.ts (CSAPI tests)
-# PASS src/ogc-api/__tests__/info.spec.ts (CSAPI tests)
+# PASS src/ogc-api/csapi/model.spec.ts
+# PASS src/ogc-api/csapi/helpers.spec.ts
+# PASS src/ogc-api/csapi/url_builder.spec.ts
+# PASS src/ogc-api/endpoint.spec.ts (CSAPI tests)
+# PASS src/ogc-api/info.spec.ts (CSAPI tests)
 #
 # Tests: 35 passed, 35 total
 # Coverage: Statement 90%, Branch 85%, Function 88%
@@ -1632,7 +1629,7 @@ describe('System Methods', () => {
 npm test -- url_builder.spec.ts
 
 # Should see:
-# PASS src/ogc-api/csapi/__tests__/url_builder.spec.ts
+# PASS src/ogc-api/csapi/url_builder.spec.ts
 #   CSAPIQueryBuilder
 #     Constructor (2 tests)
 #     System Methods (24 tests)
@@ -1753,7 +1750,7 @@ describe('SWE Common Parser', () => {
 npm test -- parsers
 
 # Should see:
-# PASS src/ogc-api/csapi/__tests__/parsers/swe-common-parser.spec.ts
+# PASS src/ogc-api/csapi/parsers/swe-common-parser.spec.ts
 #   SWE Common Parser
 #     parseDataRecord (8 tests)
 #     parseDataArray (6 tests)
@@ -1761,7 +1758,7 @@ npm test -- parsers
 #     parseMatrix (4 tests)
 #     parseChoice (4 tests)
 # 
-# PASS src/ogc-api/csapi/__tests__/parsers/sensorml-parser.spec.ts
+# PASS src/ogc-api/csapi/parsers/sensorml-parser.spec.ts
 #   SensorML Parser
 #     parseSimpleProcess (6 tests)
 #     parsePhysicalSystem (8 tests)
@@ -1836,14 +1833,14 @@ describe('Worker - CSAPI Support', () => {
 
 #### Task 4.2: Integration Tests (4-5 hours)
 
-**Create:** `src/ogc-api/csapi/__tests__/integration/`
+**Create:** `src/ogc-api/csapi/integration/`
 
 **Integration Test Pattern:**
 
 ```typescript
 /**
  * @fileoverview End-to-end integration tests for CSAPI workflows
- * @module csapi/__tests__/integration/discovery
+ * @module csapi/integration/discovery
  */
 
 describe('CSAPI Integration - Discovery Workflow', () => {
@@ -2279,7 +2276,7 @@ describe('Worker - [Feature]', () => {
 ```typescript
 /**
  * @fileoverview Tests for CSAPI QueryBuilder
- * @module csapi/__tests__/url_builder
+ * @module csapi/url_builder
  */
 
 import { CSAPIQueryBuilder } from '../url_builder';
@@ -2329,7 +2326,7 @@ describe('CSAPIQueryBuilder', () => {
 npm test -- url_builder.spec.ts
 
 # Output:
-# PASS src/ogc-api/csapi/__tests__/url_builder.spec.ts
+# PASS src/ogc-api/csapi/url_builder.spec.ts
 #   CSAPIQueryBuilder
 #     getSystems
 #       ✓ builds systems collection URL (5 ms)
@@ -2407,12 +2404,12 @@ export function parseDataRecord(data: any): any {
 
 **Step 3: Create test**
 
-Create `src/ogc-api/csapi/__tests__/parsers/swe-common-parser.spec.ts`:
+Create `src/ogc-api/csapi/parsers/swe-common-parser.spec.ts`:
 
 ```typescript
 /**
  * @fileoverview Tests for SWE Common parser
- * @module csapi/__tests__/parsers/swe-common-parser
+ * @module csapi/parsers/swe-common-parser
  */
 
 import { parseDataRecord } from '../../parsers/swe-common-parser';
@@ -2451,7 +2448,7 @@ describe('SWE Common Parser', () => {
 npm test -- swe-common-parser.spec.ts
 
 # Output:
-# PASS src/ogc-api/csapi/__tests__/parsers/swe-common-parser.spec.ts
+# PASS src/ogc-api/csapi/parsers/swe-common-parser.spec.ts
 #   SWE Common Parser
 #     parseDataRecord
 #       ✓ parses simple DataRecord (12 ms)
@@ -2492,12 +2489,12 @@ npm test -- swe-common-parser.spec.ts
 
 **Step 2: Create integration test**
 
-`src/ogc-api/csapi/__tests__/integration/discovery.spec.ts`:
+`src/ogc-api/csapi/integration/discovery.spec.ts`:
 
 ```typescript
 /**
  * @fileoverview Integration tests for CSAPI discovery workflow
- * @module csapi/__tests__/integration/discovery
+ * @module csapi/integration/discovery
  */
 
 import { OgcApiEndpoint } from '../../../endpoint';
@@ -2558,7 +2555,7 @@ describe('CSAPI Integration - Discovery Workflow', () => {
 npm test -- integration/discovery.spec.ts
 
 # Output:
-# PASS src/ogc-api/csapi/__tests__/integration/discovery.spec.ts
+# PASS src/ogc-api/csapi/integration/discovery.spec.ts
 #   CSAPI Integration - Discovery Workflow
 #     ✓ discovers CSAPI capabilities and navigates resources (45 ms)
 ```
@@ -2814,7 +2811,7 @@ npm test -- --testNamePattern="getSystems"
 
 **Run tests for specific folder:**
 ```bash
-npm test -- csapi/__tests__/
+npm test -- csapi/
 ```
 
 **Watch mode (re-run on file changes):**
@@ -3203,9 +3200,9 @@ afterEach(() => {
 - Section 36: Quality Checklist (validation)
 
 **Code Examples:**
-- `src/ogc-api/features/__tests__/` (upstream patterns)
-- `src/ogc-api/edr/__tests__/` (EDR implementation)
-- `src/ogc-api/csapi/__tests__/` (CSAPI tests)
+- `src/ogc-api/features/` (upstream patterns)
+- `src/ogc-api/edr/` (EDR implementation)
+- `src/ogc-api/csapi/` (CSAPI tests)
 
 **Team Resources:**
 - Tech lead: Architecture questions
@@ -3253,7 +3250,7 @@ const endpoint = createMockEndpoint({ id: 'col1', links: [] });
 ```typescript
 /**
  * @fileoverview Tests for [component name]
- * @module csapi/__tests__/[path]
+ * @module csapi/[path]
  * @specification OGC [spec] v[version]
  */
 ```

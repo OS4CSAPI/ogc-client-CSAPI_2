@@ -1069,7 +1069,7 @@ jest.useFakeTimers();
 
 ### Scaling to 9 Resource Types
 
-**Challenge:** EDR has 1 QueryBuilder; CSAPI needs 9 (Systems, Deployments, DataStreams, Observations, ObservedProperties, Sensors, Procedures, SamplingFeatures, FeaturesOfInterest)
+**Challenge:** EDR has 1 QueryBuilder; CSAPI needs 9 (Systems, Deployments, Procedures, SamplingFeatures, Properties, DataStreams, Observations, ControlStreams, Commands)
 
 **Adaptation Strategy:**
 
@@ -1082,11 +1082,11 @@ src/ogc-api/csapi/
   deployments-builder.spec.ts        (140 lines - Deployments CRUD + validTime)
   datastreams-builder.spec.ts        (120 lines - DataStreams CRUD)
   observations-builder.spec.ts       (100 lines - Observations CRUD)
-  observed-properties-builder.spec.ts (80 lines)
-  sensors-builder.spec.ts            (80 lines)
   procedures-builder.spec.ts         (80 lines)
   sampling-features-builder.spec.ts  (80 lines)
-  features-of-interest-builder.spec.ts (80 lines)
+  properties-builder.spec.ts         (80 lines)
+  controlstreams-builder.spec.ts     (80 lines)
+  commands-builder.spec.ts           (80 lines)
 ```
 
 **Pros:** Clear separation, easy to maintain, follows EDR pattern scaled up  
@@ -1098,9 +1098,9 @@ src/ogc-api/csapi/
   model.spec.ts                      (100 lines)
   helpers.spec.ts                    (150 lines)
   core-resources-builder.spec.ts     (360 lines - Systems, Deployments, DataStreams)
-  observation-resources-builder.spec.ts (260 lines - Observations, ObservedProperties)
-  sensor-resources-builder.spec.ts   (240 lines - Sensors, Procedures)
-  feature-resources-builder.spec.ts  (160 lines - SamplingFeatures, FeaturesOfInterest)
+  observation-resources-builder.spec.ts (260 lines - Observations, Properties)
+  dynamic-data-builder.spec.ts       (240 lines - ControlStreams, Commands)
+  feature-resources-builder.spec.ts  (160 lines - SamplingFeatures, Procedures)
 ```
 
 **Pros:** Fewer files (6 test files), related resources grouped  
@@ -1232,9 +1232,9 @@ describe('OgcApiEndpoint with CSAPI', () => {
     
     it('lists CSAPI collections', async () => {
       await expect(endpoint.csapiCollections).resolves.toEqual([
-        'systems', 'deployments', 'datastreams', 'observations',
-        'observedProperties', 'sensors', 'procedures',
-        'samplingFeatures', 'featuresOfInterest'
+        'systems', 'deployments', 'procedures', 'samplingFeatures',
+        'properties', 'datastreams', 'observations',
+        'controlstreams', 'commands'
       ]);
     });
   });
