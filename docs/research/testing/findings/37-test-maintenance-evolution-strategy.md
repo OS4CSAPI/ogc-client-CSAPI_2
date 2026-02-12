@@ -454,8 +454,8 @@ it('includes required system properties', () => {
     "specVersion": "1.0.0",
     "specDate": "2024-01-15",
     "specUrls": {
-      "part1": "https://docs.ogc.org/DRAFTS/23-001.html",
-      "part2": "https://docs.ogc.org/DRAFTS/23-002.html",
+      "part1": "https://docs.ogc.org/is/23-001/23-001.html",
+      "part2": "https://docs.ogc.org/is/23-002/23-002.html",
       "part3": "https://docs.ogc.org/DRAFTS/23-003.html"
     }
   }
@@ -485,7 +485,7 @@ it('includes required system properties', () => {
   "properties": { ... },
   "_metadata": {
     "specVersion": "OGC 23-001 v1.0.0",
-    "sourceURL": "https://docs.ogc.org/DRAFTS/23-001.html#example-7-2-1",
+    "sourceURL": "https://docs.ogc.org/is/23-001/23-001.html#example-7-2-1",
     "createdDate": "2024-01-20",
     "modifiedDate": "2024-02-01",
     "validated": true,

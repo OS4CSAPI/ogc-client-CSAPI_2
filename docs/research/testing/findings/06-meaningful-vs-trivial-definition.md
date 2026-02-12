@@ -1851,7 +1851,7 @@ it('returns item URL with simple ID', () => { ... }); // Branch 3
  * Fixture: NOAA NDBC Weather Station System
  * Source: OGC API - Connected Systems Part 1 Specification
  * Section: 7.2.1 System Resource Example
- * URL: http://docs.ogc.org/DRAFTS/23-001.html#systems-resource
+ * URL: https://docs.ogc.org/is/23-001/23-001.html#systems-resource
  * 
  * Description: Real-world example of a weather station system deployed
  * as a mooring buoy off Cape Hatteras, North Carolina.

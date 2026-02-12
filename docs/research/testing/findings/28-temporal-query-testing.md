@@ -1386,7 +1386,7 @@ client.observations.list({
 - **OGC API - Common:** Temporal query parameter (datetime) definition
 - **ISO 8601:2004:** Date and time format standard
 - **RFC 3339:** ISO 8601 profile for internet protocols
-- **CSAPI Part 2 Specification:** OGC 23-002r1 (temporal parameter definitions)
+- **CSAPI Part 2 Specification:** OGC 23-002 (temporal parameter definitions) — https://docs.ogc.org/is/23-002/23-002.html
 
 ### 9.2 Related Research
 

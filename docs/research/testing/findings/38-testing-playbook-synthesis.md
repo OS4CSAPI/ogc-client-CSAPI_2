@@ -3212,7 +3212,7 @@ afterEach(() => {
 **External Resources:**
 - Jest documentation: https://jestjs.io/docs/getting-started
 - TypeScript testing: https://www.typescriptlang.org/docs/handbook/testing.html
-- CSAPI spec: https://docs.ogc.org/DRAFTS/23-001.html
+- CSAPI spec: https://docs.ogc.org/is/23-001/23-001.html
 
 ---
 
@@ -3281,8 +3281,8 @@ it('[test name]', () => {
 
 ### 9.4 Specification Links
 
-- **OGC 23-001:** https://docs.ogc.org/DRAFTS/23-001.html
-- **OGC 23-002:** https://docs.ogc.org/DRAFTS/23-002.html
+- **OGC 23-001:** https://docs.ogc.org/is/23-001/23-001.html
+- **OGC 23-002:** https://docs.ogc.org/is/23-002/23-002.html
 - **OGC 23-003:** https://docs.ogc.org/DRAFTS/23-003.html
 - **SWE Common:** http://www.opengis.net/doc/IS/SWE/2.0
 - **SensorML:** http://www.opengis.net/doc/IS/SensorML/2.0

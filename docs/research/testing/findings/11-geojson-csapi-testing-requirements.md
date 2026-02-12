@@ -2284,7 +2284,7 @@ function validateSystemType(systemType: string): void {
 ### 18.1 Specifications
 
 **CSAPI:**
-- [OGC Connected Systems API - Part 1: Feature Resources](https://docs.ogc.org/DRAFTS/23-001r0.html)
+- [OGC Connected Systems API - Part 1: Feature Resources](https://docs.ogc.org/is/23-001/23-001.html)
   - Section 7: Systems Resource
   - Section 8: Deployments Resource
   - Section 9: Procedures Resource

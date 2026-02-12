@@ -1540,7 +1540,7 @@ class CSAPIClient {
 
 ### 11.1 Specifications
 
-- **CSAPI Part 2 Specification:** OGC 23-002r1 (Connected Systems API - Part 2: Dynamic Data)
+- **CSAPI Part 2 Specification:** OGC 23-002 (Connected Systems API - Part 2: Dynamic Data) — https://docs.ogc.org/is/23-002/23-002.html
 - **SWE Common 3.0:** OGC 24-014 (Sensor Web Enablement Common Data Model 3.0)
 - **JSON Schema Specification:** draft-07
 

@@ -136,7 +136,7 @@ http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/dynamic-data
 
 The actual OGC CSAPI specification draft conformance class URIs need to be verified. Using incorrect URIs in fixtures would cause the `checkHasConnectedSystems()` function to work in tests (matching the fixture's incorrect URIs) but fail against real servers.
 
-**Recommendation:** Before implementation, verify the exact conformance class URIs from the OGC 23-001r1 and 23-002r0 specification drafts. Update all fixture files and conformance checking code to use the verified URIs.
+**Recommendation:** Before implementation, verify the exact conformance class URIs from the published OGC 23-001 and 23-002 specifications (https://docs.ogc.org/is/23-001/23-001.html and https://docs.ogc.org/is/23-002/23-002.html). Update all fixture files and conformance checking code to use the verified URIs.
 
 ---
 
@@ -356,7 +356,7 @@ These numbers converge and are grounded in upstream data points.
 |----|----------|-------------|-------|--------|
 | H1 | HIGH | 02 | Wrong resource type names (SensorThings terminology) | **Resolved** |
 | H2 | HIGH | 38 (vs 01,02,12) | `__tests__/` directory contradicts colocated pattern | **Resolved** |
-| M1 | MEDIUM | 12, 38 | Conformance URIs unverified, inconsistent hyphenation | Open |
+| M1 | MEDIUM | 12, 38 | Conformance URIs unverified, inconsistent hyphenation | **Partially Resolved** — Draft spec URLs fixed across docs 06, 11, 27, 28, 37, 38; conformance URI verification still needed |
 | M2 | MEDIUM | 12 (vs 38) | Sync vs async QueryBuilder methods | Open |
 | M3 | MEDIUM | 38 | `OgcApiEndpoint.fromUrl()` doesn't exist upstream | Open |
 | M4 | MEDIUM | 38 (vs 12) | Space encoded as `+` vs `%20` | Open |
