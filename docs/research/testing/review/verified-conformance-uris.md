@@ -78,6 +78,56 @@ Source: Annex A (Normative), Conformance Class Abstract Test Suite
 
 ---
 
+## Published Spec vs. Live Server: Full Comparison
+
+Side-by-side comparison of every conformance class defined in the published OGC specifications against what the live OSH SensorHub server reports at its `/conformance` endpoint.
+
+### Part 1: Feature Resources (`ogcapi-connectedsystems-1/1.0`)
+
+| Conformance Class | Published Spec (Annex A) | Live Server | Match? |
+|---|---|---|---|
+| Common | `/conf/api-common` | `/conf/core` | **MISMATCH** — spec says `api-common`, server uses legacy `core` |
+| System | `/conf/system` | `/conf/system` | YES |
+| Subsystem | `/conf/subsystem` | `/conf/subsystem` | YES |
+| Deployment | `/conf/deployment` | `/conf/deployment` | YES |
+| Subdeployment | `/conf/subdeployment` | `/conf/subdeployment` | YES |
+| Procedure | `/conf/procedure` | `/conf/procedure` | YES |
+| Sampling Features | `/conf/sf` | `/conf/sf` | YES |
+| Property | `/conf/property` | `/conf/property` | YES |
+| Advanced Filtering | `/conf/advanced-filtering` | *not reported* | **ABSENT** — optional, server doesn't implement |
+| Create/Replace/Delete | `/conf/create-replace-delete` | `/conf/create-replace-delete` | YES |
+| Update | `/conf/update` | *not reported* | **ABSENT** — optional, server doesn't implement |
+| GeoJSON Encoding | `/conf/geojson` | `/conf/geojson` | YES |
+| SensorML Encoding | `/conf/sensorml` | `/conf/sensorml` | YES |
+
+### Part 2: Dynamic Data (`ogcapi-connectedsystems-2/1.0`)
+
+| Conformance Class | Published Spec (Annex A) | Live Server | Match? |
+|---|---|---|---|
+| Common | `/conf/api-common` | *not separately listed* | **ABSENT** — not reported by server |
+| Datastream | `/conf/datastream` | `/conf/datastream` | YES |
+| ControlStream | `/conf/controlstream` | `/conf/controlstream` | YES |
+| Feasibility | `/conf/feasibility` | *not reported* | **ABSENT** — optional, server doesn't implement |
+| System Event | `/conf/system-event` | `/conf/system-event` | YES |
+| Advanced Filtering | `/conf/advanced-filtering` | *not reported* | **ABSENT** — optional, server doesn't implement |
+| Create/Replace/Delete | `/conf/create-replace-delete` | `/conf/create-replace-delete` | YES |
+| Update | `/conf/update` | *not reported* | **ABSENT** — optional, server doesn't implement |
+| JSON Encoding | `/conf/json` | `/conf/json` | YES |
+| SWE Common JSON | `/conf/swecommon-json` | `/conf/swecommon-json` | YES |
+| SWE Common Text | `/conf/swecommon-text` | `/conf/swecommon-text` | YES |
+| SWE Common Binary | `/conf/swecommon-binary` | `/conf/swecommon-binary` | YES |
+
+### Server-Only (not in published Parts 1 or 2)
+
+| Live Server URI | Notes |
+|---|---|
+| `.../connectedsystems-1/1.0/conf/core` | Legacy name for `/conf/api-common`; renamed in final spec |
+| `.../connectedsystems-2/1.0/conf/system-history` | Not a separate class in published Part 2; server extension |
+| `.../connectedsystems-3/1.0/conf/websocket` | Part 3 — not yet verified against published spec |
+| `.../connectedsystems-3/1.0/conf/mqtt` | Part 3 — not yet verified against published spec |
+
+---
+
 ## Server Deviations from Published Standard
 
 The live OSH SensorHub server was built against drafts of the specification and has the following deviations from the published final standard:
