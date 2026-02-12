@@ -87,10 +87,10 @@ CSAPI defines 25 modular conformance classes with no mandatory "core" - servers 
 | **A.6: Advanced Filtering** | `/conf/advanced-filtering` | ❌ Optional | - | CQL2 for dynamic resources |
 | **A.7: Create/Replace/Delete** | `/conf/create-replace-delete` | ❌ Optional | - | POST, PUT, DELETE |
 | **A.8: Update** | `/conf/update` | ❌ Optional | A.7 | PATCH operations |
-| **A.9: Observations Encoding - JSON** | `/conf/o-and-m-json` | ✅ If A.2 | - | `application/om+json` (required) |
-| **A.10: Observations Encoding - SWE JSON** | `/conf/swe-json` | ❌ Optional | - | `application/swe+json` |
-| **A.11: Observations Encoding - SWE Text** | `/conf/swe-text` | ❌ Optional | - | `application/swe+text` |
-| **A.12: Observations Encoding - SWE Binary** | `/conf/swe-binary` | ❌ Optional | - | `application/swe+binary` |
+| **A.9: Observations Encoding - JSON** | `/conf/json` | ✅ If A.2 | - | `application/om+json` (required) |
+| **A.10: Observations Encoding - SWE JSON** | `/conf/swecommon-json` | ❌ Optional | - | `application/swe+json` |
+| **A.11: Observations Encoding - SWE Text** | `/conf/swecommon-text` | ❌ Optional | - | `application/swe+text` |
+| **A.12: Observations Encoding - SWE Binary** | `/conf/swecommon-binary` | ❌ Optional | - | `application/swe+binary` |
 
 **Minimum Requirements:**
 - If implementing Part 2: Part 2 A.1 + at least 1 dynamic resource (A.2 or A.3) + required encoding (A.9 for DataStreams)
@@ -251,9 +251,9 @@ Part 2 (Dynamic Data)
 ```json
 {
   "conformsTo": [
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/system",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/geojson"
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/geojson"
   ]
 }
 ```
@@ -265,9 +265,9 @@ Part 2 (Dynamic Data)
 ```json
 {
   "conformsTo": [
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/deployment",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/sensorml"
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sensorml"
   ]
 }
 ```
@@ -279,13 +279,13 @@ Part 2 (Dynamic Data)
 ```json
 {
   "conformsTo": [
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/system",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/subsystem",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/create-replace-delete",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/update",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/geojson",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/sensorml"
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/subsystem",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/create-replace-delete",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/update",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/geojson",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sensorml"
   ]
 }
 ```
@@ -297,13 +297,13 @@ Part 2 (Dynamic Data)
 ```json
 {
   "conformsTo": [
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/system",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/deployment",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/geojson",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/api-common",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/datastream",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/o-and-m-json"
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/geojson",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/json"
   ]
 }
 ```
@@ -316,13 +316,13 @@ Part 2 (Dynamic Data)
 ```json
 {
   "conformsTo": [
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/system",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/geojson",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/api-common",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/controlstream",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/feasibility",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/o-and-m-json"
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/geojson",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/controlstream",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/feasibility",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/json"
   ]
 }
 ```
@@ -378,35 +378,35 @@ class CSAPIClient {
   private detectCapabilities(): ServerCapabilities {
     return {
       // Part 1 resources
-      hasSystems: this.hasConformance('ogcapi-connected-systems-1/1.0/conf/system'),
-      hasSubsystems: this.hasConformance('ogcapi-connected-systems-1/1.0/conf/subsystem'),
-      hasDeployments: this.hasConformance('ogcapi-connected-systems-1/1.0/conf/deployment'),
-      hasSubdeployments: this.hasConformance('ogcapi-connected-systems-1/1.0/conf/subdeployment'),
-      hasProcedures: this.hasConformance('ogcapi-connected-systems-1/1.0/conf/procedure'),
-      hasSamplingFeatures: this.hasConformance('ogcapi-connected-systems-1/1.0/conf/sf'),
-      hasProperties: this.hasConformance('ogcapi-connected-systems-1/1.0/conf/property'),
+      hasSystems: this.hasConformance('ogcapi-connectedsystems-1/1.0/conf/system'),
+      hasSubsystems: this.hasConformance('ogcapi-connectedsystems-1/1.0/conf/subsystem'),
+      hasDeployments: this.hasConformance('ogcapi-connectedsystems-1/1.0/conf/deployment'),
+      hasSubdeployments: this.hasConformance('ogcapi-connectedsystems-1/1.0/conf/subdeployment'),
+      hasProcedures: this.hasConformance('ogcapi-connectedsystems-1/1.0/conf/procedure'),
+      hasSamplingFeatures: this.hasConformance('ogcapi-connectedsystems-1/1.0/conf/sf'),
+      hasProperties: this.hasConformance('ogcapi-connectedsystems-1/1.0/conf/property'),
       
       // Part 2 resources
-      hasDataStreams: this.hasConformance('ogcapi-connected-systems-2/1.0/conf/datastream'),
-      hasControlStreams: this.hasConformance('ogcapi-connected-systems-2/1.0/conf/controlstream'),
-      hasCommandFeasibility: this.hasConformance('ogcapi-connected-systems-2/1.0/conf/feasibility'),
-      hasSystemEvents: this.hasConformance('ogcapi-connected-systems-3/1.0/conf/system-event'),
+      hasDataStreams: this.hasConformance('ogcapi-connectedsystems-2/1.0/conf/datastream'),
+      hasControlStreams: this.hasConformance('ogcapi-connectedsystems-2/1.0/conf/controlstream'),
+      hasCommandFeasibility: this.hasConformance('ogcapi-connectedsystems-2/1.0/conf/feasibility'),
+      hasSystemEvents: this.hasConformance('ogcapi-connectedsystems-3/1.0/conf/system-event'),
       
       // Operations
-      hasCRUD: this.hasConformance('ogcapi-connected-systems-1/1.0/conf/create-replace-delete') ||
-               this.hasConformance('ogcapi-connected-systems-2/1.0/conf/create-replace-delete'),
-      hasUpdate: this.hasConformance('ogcapi-connected-systems-1/1.0/conf/update') ||
-                 this.hasConformance('ogcapi-connected-systems-2/1.0/conf/update'),
-      hasAdvancedFiltering: this.hasConformance('ogcapi-connected-systems-1/1.0/conf/advanced-filtering') ||
-                            this.hasConformance('ogcapi-connected-systems-2/1.0/conf/advanced-filtering'),
+      hasCRUD: this.hasConformance('ogcapi-connectedsystems-1/1.0/conf/create-replace-delete') ||
+               this.hasConformance('ogcapi-connectedsystems-2/1.0/conf/create-replace-delete'),
+      hasUpdate: this.hasConformance('ogcapi-connectedsystems-1/1.0/conf/update') ||
+                 this.hasConformance('ogcapi-connectedsystems-2/1.0/conf/update'),
+      hasAdvancedFiltering: this.hasConformance('ogcapi-connectedsystems-1/1.0/conf/advanced-filtering') ||
+                            this.hasConformance('ogcapi-connectedsystems-2/1.0/conf/advanced-filtering'),
       
       // Formats
-      supportsGeoJSON: this.hasConformance('ogcapi-connected-systems-1/1.0/conf/geojson'),
-      supportsSensorML: this.hasConformance('ogcapi-connected-systems-1/1.0/conf/sensorml'),
-      supportsOMJSON: this.hasConformance('ogcapi-connected-systems-2/1.0/conf/o-and-m-json'),
-      supportsSWEJSON: this.hasConformance('ogcapi-connected-systems-2/1.0/conf/swe-json'),
-      supportsSWEText: this.hasConformance('ogcapi-connected-systems-2/1.0/conf/swe-text'),
-      supportsSWEBinary: this.hasConformance('ogcapi-connected-systems-2/1.0/conf/swe-binary'),
+      supportsGeoJSON: this.hasConformance('ogcapi-connectedsystems-1/1.0/conf/geojson'),
+      supportsSensorML: this.hasConformance('ogcapi-connectedsystems-1/1.0/conf/sensorml'),
+      supportsOMJSON: this.hasConformance('ogcapi-connectedsystems-2/1.0/conf/json'),
+      supportsSWEJSON: this.hasConformance('ogcapi-connectedsystems-2/1.0/conf/swecommon-json'),
+      supportsSWEText: this.hasConformance('ogcapi-connectedsystems-2/1.0/conf/swecommon-text'),
+      supportsSWEBinary: this.hasConformance('ogcapi-connectedsystems-2/1.0/conf/swecommon-binary'),
     };
   }
   
@@ -564,7 +564,7 @@ describe('CSAPI Conformance Detection', () => {
         ok: true,
         json: () => Promise.resolve({
           conformsTo: [
-            'http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common'
+            'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common'
           ]
         })
       });
@@ -1183,7 +1183,7 @@ describe('Scenario 8: Malformed Conformance', () => {
     globalThis.fetch = jest.fn().mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({
-        conformsTo: 'http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/system'
+        conformsTo: 'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system'
       })
     });
     
@@ -1243,32 +1243,32 @@ fixtures/ogc-api/csapi/
     "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
     "http://www.opengis.net/spec/ogcapi-features-4/1.0/conf/create-replace-delete",
     
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/system",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/subsystem",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/deployment",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/subdeployment",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/procedure",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/sf",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/property",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/advanced-filtering",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/create-replace-delete",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/update",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/geojson",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/sensorml",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/subsystem",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/subdeployment",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/procedure",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sf",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/property",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/advanced-filtering",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/create-replace-delete",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/update",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/geojson",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sensorml",
     
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/api-common",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/datastream",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/controlstream",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/feasibility",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/system-event",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/advanced-filtering",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/create-replace-delete",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/update",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/o-and-m-json",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/swe-json",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/swe-text",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/swe-binary"
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/controlstream",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/feasibility",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/system-event",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/advanced-filtering",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/create-replace-delete",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/update",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/json",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/swecommon-json",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/swecommon-text",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/swecommon-binary"
   ]
 }
 ```
@@ -1277,27 +1277,27 @@ fixtures/ogc-api/csapi/
 ```json
 {
   "conformsTo": [
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/system",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/subsystem",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/deployment",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/subdeployment",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/procedure",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/sf",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/property",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/advanced-filtering",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/create-replace-delete",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/update",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/geojson",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/sensorml",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/subsystem",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/subdeployment",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/procedure",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sf",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/property",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/advanced-filtering",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/create-replace-delete",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/update",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/geojson",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sensorml",
     
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/api-common",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/datastream",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/advanced-filtering",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/create-replace-delete",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/update",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/o-and-m-json",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/swe-json"
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/advanced-filtering",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/create-replace-delete",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/update",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/json",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/swecommon-json"
   ]
 }
 ```
@@ -1306,9 +1306,9 @@ fixtures/ogc-api/csapi/
 ```json
 {
   "conformsTo": [
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/system",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/geojson"
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/geojson"
   ]
 }
 ```
@@ -1390,7 +1390,7 @@ beforeEach(() => {
 // src/ogc-api/csapi/info.ts
 export function checkHasConnectedSystems([conformance]: [ConformanceClass[]]): boolean {
   return conformance.indexOf(
-    'http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common'
+    'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common'
   ) > -1;
 }
 
@@ -1398,7 +1398,7 @@ export function checkHasConnectedSystems([conformance]: [ConformanceClass[]]): b
 describe('checkHasConnectedSystems', () => {
   it('returns true when Part 1 common conformance present', () => {
     const conformance = [
-      'http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common'
+      'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common'
     ];
     expect(checkHasConnectedSystems([conformance])).toBe(true);
   });
@@ -1622,36 +1622,36 @@ describe('CSAPI Integration - [PROFILE] Server', () => {
 ### Part 1 URIs
 
 ```
-http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common
-http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/system
-http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/subsystem
-http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/deployment
-http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/subdeployment
-http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/procedure
-http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/sf
-http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/property
-http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/advanced-filtering
-http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/create-replace-delete
-http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/update
-http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/geojson
-http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/sensorml
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/subsystem
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/subdeployment
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/procedure
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sf
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/property
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/advanced-filtering
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/create-replace-delete
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/update
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/geojson
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sensorml
 ```
 
 ### Part 2 URIs
 
 ```
-http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/api-common
-http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/datastream
-http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/controlstream
-http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/feasibility
-http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/system-event
-http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/advanced-filtering
-http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/create-replace-delete
-http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/update
-http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/o-and-m-json
-http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/swe-json
-http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/swe-text
-http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/swe-binary
+http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/api-common
+http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream
+http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/controlstream
+http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/feasibility
+http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/system-event
+http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/advanced-filtering
+http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/create-replace-delete
+http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/update
+http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/json
+http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/swecommon-json
+http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/swecommon-text
+http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/swecommon-binary
 ```
 
 ---

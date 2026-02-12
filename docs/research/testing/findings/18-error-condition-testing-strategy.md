@@ -886,8 +886,8 @@ it('handles empty collection gracefully', ...);
   "conformsTo": [
     "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
     "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
-    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system-features",
-    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment-features"
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment"
   ]
 }
 ```

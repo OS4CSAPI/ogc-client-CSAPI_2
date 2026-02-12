@@ -1663,15 +1663,15 @@ describe('Resource availability validation', () => {
        "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json",
        "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
        "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson",
-       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system-features",
-       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment-features",
-       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/procedure-features",
-       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/samplingfeature-features",
-       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/property-features",
-       "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream-schema",
-       "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/observation-features",
-       "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/controlstream-schema",
-       "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/command-features"
+       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system",
+       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment",
+       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/procedure",
+       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sf",
+       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/property",
+       "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream",
+       "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream",
+       "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/controlstream",
+       "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/controlstream"
      ]
    }
    ```
@@ -1682,11 +1682,11 @@ describe('Resource availability validation', () => {
      "conformsTo": [
        "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
        "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
-       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system-features",
-       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment-features",
-       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/procedure-features",
-       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/samplingfeature-features",
-       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/property-features"
+       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system",
+       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment",
+       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/procedure",
+       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sf",
+       "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/property"
      ]
    }
    ```
@@ -2142,15 +2142,15 @@ fixtures/csapi-querybuilder/
     "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html",
     "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
     "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson",
-    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system-features",
-    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment-features",
-    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/procedure-features",
-    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/samplingfeature-features",
-    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/property-features",
-    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream-schema",
-    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/observation-features",
-    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/controlstream-schema",
-    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/command-features"
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/procedure",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sf",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/property",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/controlstream",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/controlstream"
   ]
 }
 ```

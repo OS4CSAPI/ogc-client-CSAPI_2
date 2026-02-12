@@ -255,13 +255,13 @@ Authorization: Basic <base64-encoded-credentials>
     "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
     "http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections",
     "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/system",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/deployment",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/procedure",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/create-replace-delete",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/geojson",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/sensorml"
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/procedure",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/create-replace-delete",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/geojson",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sensorml"
   ]
 }
 ```
@@ -1484,8 +1484,8 @@ describe('Graceful Degradation', () => {
             json: () => Promise.resolve({
               conformsTo: [
                 'http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core',
-                'http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common',
-                'http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/system'
+                'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common',
+                'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system'
               ]
             })
           });
@@ -1526,8 +1526,8 @@ describe('Graceful Degradation', () => {
             json: () => Promise.resolve({
               conformsTo: [
                 'http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core',
-                'http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common',
-                'http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/system'
+                'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common',
+                'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system'
                 // No create-replace-delete conformance
               ]
             })

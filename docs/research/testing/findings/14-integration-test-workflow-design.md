@@ -270,8 +270,8 @@ describe('CSAPI Discovery', () => {
 
 **Assertions:**
 - ✅ `hasConnectedSystems` returns true
-- ✅ Conformance fixture includes `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/core`
-- ✅ Conformance fixture includes `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/dynamic-data`
+- ✅ Conformance fixture includes `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common`
+- ✅ Conformance fixture includes `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream`
 
 **Fixtures:**
 - `fixtures/csapi/root.json` (landing page)

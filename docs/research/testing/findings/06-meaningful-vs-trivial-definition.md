@@ -1618,8 +1618,8 @@ describe('complete workflow: endpoint detection to cross-resource query', () => 
     
     // 2. Conformance validation
     const conformance = await endpoint.info().conformsTo;
-    expect(conformance).toContain('http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/req/core');
-    expect(conformance).toContain('http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/req/datastreams');
+    expect(conformance).toContain('http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common');
+    expect(conformance).toContain('http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream');
     
     // 3. Collection listing
     const collections = await endpoint.csapiCollections;
@@ -1628,7 +1628,7 @@ describe('complete workflow: endpoint detection to cross-resource query', () => 
       expect.objectContaining({
         id: 'systems',
         conformsTo: expect.arrayContaining([
-          'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/req/create'
+          'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/create-replace-delete'
         ])
       })
     );

@@ -1167,13 +1167,13 @@ export function checkHasConnectedSystems(endpoint: OgcApiEndpoint): boolean {
   // Check for CSAPI Part 1 Core conformance
   const hasPart1 = conformance.some(uri => 
     uri.includes('connected-systems/part1/core') ||
-    uri.includes('ogcapi-connected-systems-1')
+    uri.includes('ogcapi-connectedsystems-1')
   );
   
   // Check for CSAPI Part 2 Dynamic Data conformance
   const hasPart2 = conformance.some(uri =>
     uri.includes('connected-systems/part2/dynamic-data') ||
-    uri.includes('ogcapi-connected-systems-2')
+    uri.includes('ogcapi-connectedsystems-2')
   );
   
   return hasPart1 && hasPart2;
@@ -1192,9 +1192,9 @@ describe('checkHasConnectedSystems', () => {
   it('detects CSAPI support from conformance classes', () => {
     const endpoint = {
       conformance: [
-        'http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core',
-        'http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/core',
-        'http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/dynamic-data'
+        'http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/api-common',
+        'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common',
+        'http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream'
       ]
     };
 
@@ -1207,7 +1207,7 @@ describe('checkHasConnectedSystems', () => {
   it('returns false if Part 1 missing', () => {
     const endpoint = {
       conformance: [
-        'http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/dynamic-data'
+        'http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream'
       ]
     };
 
@@ -1220,7 +1220,7 @@ describe('checkHasConnectedSystems', () => {
   it('returns false if Part 2 missing', () => {
     const endpoint = {
       conformance: [
-        'http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/core'
+        'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common'
       ]
     };
 
@@ -1320,8 +1320,8 @@ describe('OgcApiEndpoint - CSAPI Integration', () => {
       const endpoint = await OgcApiEndpoint.fromUrl(
         'http://example.com/api',
         { conformance: [
-          'http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/core',
-          'http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/dynamic-data'
+          'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common',
+          'http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream'
         ]}
       );
 
@@ -2481,8 +2481,8 @@ npm test -- swe-common-parser.spec.ts
     }
   ],
   "conformance": [
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/core",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/dynamic-data"
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream"
   ]
 }
 ```
