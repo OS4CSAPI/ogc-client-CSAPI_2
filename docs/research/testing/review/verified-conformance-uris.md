@@ -1,9 +1,11 @@
-# Verified CSAPI Conformance Class URIs
+# CSAPI Conformance Class URIs — Authoritative Reference
 
-**Verified Against:** Live OSH SensorHub CSAPI server  
-**Verification Date:** 2026-02-12  
-**Server Endpoint:** `/conformance`  
-**Status:** GROUND TRUTH — use these URIs in all fixtures, tests, and implementation code
+**Primary Authority:** Published OGC Implementation Standards  
+- [OGC 23-001 — Part 1: Feature Resources](https://docs.ogc.org/is/23-001/23-001.html)  
+- [OGC 23-002 — Part 2: Dynamic Data](https://docs.ogc.org/is/23-002/23-002.html)  
+**Cross-referenced Against:** Live OSH SensorHub CSAPI server (`/conformance` endpoint)  
+**Last Updated:** 2026-02-12  
+**Status:** AUTHORITATIVE — published specification takes precedence over any single server implementation
 
 ---
 
@@ -16,48 +18,97 @@ ogcapi-connectedsystems-1    ← CORRECT (no hyphen between "connected" and "sys
 ogcapi-connected-systems-1   ← WRONG (hyphenated variant found in docs 22, 38)
 ```
 
-This resolves the M1 uncertainty about "connectedsystems" vs "connected-systems". **The non-hyphenated form is correct.**
+Confirmed in both published specifications AND the live server. **The non-hyphenated form is correct.**
 
 ---
 
-## Verified Conformance Classes
+## Authoritative Conformance Classes (from Published Specifications)
 
-### Part 1: Feature Resources (`ogcapi-connectedsystems-1`)
+### Part 1: Feature Resources (`ogcapi-connectedsystems-1`) — OGC 23-001
 
-| Conformance Class | Full URI |
-|---|---|
-| Core | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/core` |
-| System | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system` |
-| Subsystem | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/subsystem` |
-| Deployment | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment` |
-| Subdeployment | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/subdeployment` |
-| Procedure | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/procedure` |
-| Sampling Features | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sf` |
-| Property | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/property` |
-| CRUD | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/create-replace-delete` |
-| GeoJSON Encoding | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/geojson` |
-| SensorML Encoding | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sensorml` |
+Source: Annex A (Normative), Conformance Class Abstract Test Suite
 
-### Part 2: Dynamic Data (`ogcapi-connectedsystems-2`)
+| Conformance Class | Full URI | Spec Clause |
+|---|---|---|
+| Common | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common` | Clause 8 |
+| System | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system` | Clause 9 |
+| Subsystem | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/subsystem` | Clause 10 |
+| Deployment | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment` | Clause 11 |
+| Subdeployment | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/subdeployment` | Clause 12 |
+| Procedure | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/procedure` | Clause 13 |
+| Sampling Features | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sf` | Clause 14 |
+| Property | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/property` | Clause 15 |
+| Advanced Filtering | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/advanced-filtering` | Clause 16 |
+| Create/Replace/Delete | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/create-replace-delete` | Clause 17 |
+| Update | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/update` | Clause 18 |
+| GeoJSON Encoding | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/geojson` | Clause 19.1 |
+| SensorML Encoding | `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/sensorml` | Clause 19.2 |
 
-| Conformance Class | Full URI |
-|---|---|
-| DataStream | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream` |
-| ControlStream | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/controlstream` |
-| System History | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/system-history` |
-| System Event | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/system-event` |
-| CRUD | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/create-replace-delete` |
-| JSON Encoding | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/json` |
-| SWE Common JSON | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/swecommon-json` |
-| SWE Common Text | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/swecommon-text` |
-| SWE Common Binary | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/swecommon-binary` |
+**Total: 13 conformance classes**
+
+### Part 2: Dynamic Data (`ogcapi-connectedsystems-2`) — OGC 23-002
+
+Source: Annex A (Normative), Conformance Class Abstract Test Suite
+
+| Conformance Class | Full URI | Spec Clause |
+|---|---|---|
+| Common | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/api-common` | Clause 8 |
+| Datastream | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream` | Clause 9 |
+| ControlStream | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/controlstream` | Clause 10 |
+| Feasibility | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/feasibility` | Clause 11 |
+| System Event | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/system-event` | Clause 12 |
+| Advanced Filtering | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/advanced-filtering` | Clause 13 |
+| Create/Replace/Delete | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/create-replace-delete` | Clause 14 |
+| Update | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/update` | Clause 15 |
+| JSON Encoding | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/json` | Clause 16.1 |
+| SWE Common JSON | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/swecommon-json` | Clause 16.2 |
+| SWE Common Text | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/swecommon-text` | Clause 16.3 |
+| SWE Common Binary | `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/swecommon-binary` | Clause 16.4 |
+
+**Total: 12 conformance classes**
 
 ### Part 3: Pub/Sub (`ogcapi-connectedsystems-3`)
 
-| Conformance Class | Full URI |
+> **Note:** Part 3 has not yet been verified against a published OGC standard. The URIs below are from the live server only and should be treated as provisional.
+
+| Conformance Class | Full URI | Source |
+|---|---|---|
+| WebSocket | `http://www.opengis.net/spec/ogcapi-connectedsystems-3/1.0/conf/websocket` | Server only |
+| MQTT | `http://www.opengis.net/spec/ogcapi-connectedsystems-3/1.0/conf/mqtt` | Server only |
+
+---
+
+## Server Deviations from Published Standard
+
+The live OSH SensorHub server was built against drafts of the specification and has the following deviations from the published final standard:
+
+### Deviation 1: `core` vs `api-common`
+
+| | Published Spec | Live Server |
+|---|---|---|
+| Part 1 Common class | `/conf/api-common` | `/conf/core` |
+| Part 2 Common class | `/conf/api-common` | *(not separately listed)* |
+
+**Impact for our client:** Our fixtures and detection code must use `/conf/api-common` (the spec-correct name). However, our code should also recognize `/conf/core` as a server-side alias to ensure compatibility with pre-finalization server implementations.
+
+### Deviation 2: Server-only classes not in published Parts 1 or 2
+
+| Server URI | Notes |
 |---|---|
-| WebSocket | `http://www.opengis.net/spec/ogcapi-connectedsystems-3/1.0/conf/websocket` |
-| MQTT | `http://www.opengis.net/spec/ogcapi-connectedsystems-3/1.0/conf/mqtt` |
+| `.../connectedsystems-2/1.0/conf/system-history` | Not a separate conformance class in published Part 2; may be bundled under another class or be a server extension |
+
+### Deviation 3: Spec classes absent from server
+
+These are defined in the published standard but the live server does not report them. This is expected — they are optional conformance classes that the server has not implemented:
+
+| Conformance Class | Part | Spec URI |
+|---|---|---|
+| Advanced Filtering | 1 | `.../connectedsystems-1/1.0/conf/advanced-filtering` |
+| Update | 1 | `.../connectedsystems-1/1.0/conf/update` |
+| Common | 2 | `.../connectedsystems-2/1.0/conf/api-common` |
+| Feasibility | 2 | `.../connectedsystems-2/1.0/conf/feasibility` |
+| Advanced Filtering | 2 | `.../connectedsystems-2/1.0/conf/advanced-filtering` |
+| Update | 2 | `.../connectedsystems-2/1.0/conf/update` |
 
 ---
 
@@ -67,7 +118,7 @@ This resolves the M1 uncertainty about "connectedsystems" vs "connected-systems"
 
 **Documents affected:** 22, 38  
 **Pattern:** `ogcapi-connected-systems-1` (hyphenated) instead of `ogcapi-connectedsystems-1`  
-**Impact:** HIGH — code using this prefix will never match real server conformance responses  
+**Impact:** HIGH — code using this prefix will never match real conformance responses  
 **Scope:** ~60+ occurrences across docs 22 and 38
 
 ### Problem 2: Wrong Conformance Class Names
@@ -75,7 +126,7 @@ This resolves the M1 uncertainty about "connectedsystems" vs "connected-systems"
 **Documents affected:** 06, 12, 14, 18  
 **Pattern:** Invented class names that don't exist in the specification
 
-| Wrong (in docs) | Correct (from server) | Affected Docs |
+| Wrong (in docs) | Correct (from spec) | Affected Docs |
 |---|---|---|
 | `conf/system-features` | `conf/system` | 12, 18 |
 | `conf/deployment-features` | `conf/deployment` | 12, 18 |
@@ -87,32 +138,33 @@ This resolves the M1 uncertainty about "connectedsystems" vs "connected-systems"
 | `conf/controlstream-schema` | `conf/controlstream` | 12 |
 | `conf/command-features` | *(no match — commands don't have a separate conf class)* | 12 |
 | `conf/dynamic-data` | *(not a real class name)* | 14, 38 |
-| `req/core` | `conf/core` (uses `/req/` instead of `/conf/`) | 06 |
-| `req/datastreams` | `conf/datastream` | 06 |
+| `req/core` | `conf/api-common` (wrong prefix `/req/` AND wrong name `core`) | 06 |
+| `req/datastreams` | `conf/datastream` (wrong prefix AND plural) | 06 |
 | `req/create` | `conf/create-replace-delete` | 06 |
 
 ### Problem 3: Wrong Encoding Class Names (Doc 22 only)
 
-| Wrong (in doc 22) | Correct (from server) |
+| Wrong (in doc 22) | Correct (from spec) |
 |---|---|
 | `conf/o-and-m-json` | `conf/json` |
 | `conf/swe-json` | `conf/swecommon-json` |
 | `conf/swe-text` | `conf/swecommon-text` |
 | `conf/swe-binary` | `conf/swecommon-binary` |
 
-### Problem 4: Invented Classes (not published by server)
+### Problem 4: Previously flagged as "invented" — now confirmed in published spec
 
-These appear in research docs but are not in the server's conformance list:
-- `conf/api-common` (docs 22) — server does not publish this separately
-- `conf/feasibility` (doc 22) — not on this server (may be optional)
-- `conf/update` (doc 22) — not on this server (may be optional)
-- `conf/advanced-filtering` (doc 22) — not on this server (may be optional)
+The following were previously flagged as "not published by server" but are now **confirmed as valid** conformance classes in the published specification. The server simply doesn't implement them:
 
-> **Note:** Classes marked "may be optional" could be valid conformance classes that this particular server simply doesn't implement. They should be verified against the published specification before being removed from documentation.
+- `conf/api-common` — **VALID** (published in both Part 1 and Part 2, Clause 8)
+- `conf/feasibility` — **VALID** (published in Part 2, Clause 11)
+- `conf/update` — **VALID** (published in both Part 1 and Part 2)
+- `conf/advanced-filtering` — **VALID** (published in both Part 1 and Part 2)
+
+> Doc 22 had these correct all along. However, Doc 22 also has the hyphenated namespace problem, so the full URIs are still wrong.
 
 ---
 
-## Landing Page Resource Links (Also Verified)
+## Landing Page Resource Links (Verified from Server)
 
 The server's landing page confirms these rel types and endpoint paths:
 
@@ -131,16 +183,18 @@ The server's landing page confirms these rel types and endpoint paths:
 
 ## Recommended Fixture for `checkHasConnectedSystems()`
 
-Based on verified server output, the minimum conformance fixture for CSAPI detection should include:
+Based on the published specification, the minimum conformance fixture for CSAPI detection should include:
 
 ```json
 {
   "conformsTo": [
-    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/core",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common",
     "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system",
     "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/geojson"
   ]
 }
 ```
 
-The detection function should check for `ogcapi-connectedsystems-1` (no hyphen) in the conformance URI strings.
+The detection function should:
+1. Check for `ogcapi-connectedsystems-1` (no hyphen) in the conformance URI strings
+2. Accept both `/conf/api-common` (spec-correct) and `/conf/core` (server legacy) for maximum compatibility

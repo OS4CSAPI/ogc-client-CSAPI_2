@@ -118,21 +118,26 @@ Document 38, the synthesis playbook that's meant to be the definitive implementa
 
 **Documents:** 06, 12, 14, 18, 22, 38  
 **Quality Layer:** Content Accuracy  
-**Severity:** ~~MEDIUM~~ → **ELEVATED TO HIGH** — Verified against live server; multiple documents use wrong URIs  
-**Status:** **RESOLVED (Verified)** — See [verified-conformance-uris.md](verified-conformance-uris.md)
+**Severity:** ~~MEDIUM~~ → **ELEVATED TO HIGH** — Verified against both published specifications AND live server; multiple documents use wrong URIs  
+**Status:** **RESOLVED (Verified against published standard)** — See [verified-conformance-uris.md](verified-conformance-uris.md)
 
-**Problem:** Documents use conformance class URIs that do not match what real CSAPI servers publish. Verified against a live OSH SensorHub instance on 2026-02-12, we found:
+**Problem:** Documents use conformance class URIs that do not match the published OGC standards. Cross-referenced against both the published specifications ([OGC 23-001](https://docs.ogc.org/is/23-001/23-001.html), [OGC 23-002](https://docs.ogc.org/is/23-002/23-002.html)) and a live OSH SensorHub instance on 2026-02-12, we found:
 
 1. **Wrong namespace prefix:** Docs 22 and 38 use `ogcapi-connected-systems-1` (hyphenated). The correct form is `ogcapi-connectedsystems-1` (no hyphen). (~60+ occurrences)
-2. **Wrong class names:** Doc 12 uses invented names like `system-features`, `deployment-features`, `samplingfeature-features`. The correct names are `system`, `deployment`, `sf`, etc. (~26 occurrences)
+2. **Wrong class names:** Doc 12 uses invented names like `system-features`, `deployment-features`, `samplingfeature-features`. The correct names per the published spec are `system`, `deployment`, `sf`, etc. (~26 occurrences)
 3. **Wrong encoding class names:** Doc 22 uses `o-and-m-json`, `swe-json`. The correct names are `json`, `swecommon-json`, etc.
-4. **Non-existent class:** Docs 14 and 38 reference `conf/dynamic-data` which is not a real conformance class.
+4. **Non-existent class:** Docs 14 and 38 reference `conf/dynamic-data` which is not a real conformance class in the published standard.
+
+**Important note on authority:** The live server uses `/conf/core` for the common conformance class, but the **published specification** (Annex A of both 23-001 and 23-002) defines this as `/conf/api-common`. The published standard takes precedence. Our code should accept both for compatibility.
 
 ```
-# VERIFIED correct URIs (from live server):
-http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/core
+# SPEC-CORRECT URIs (from published OGC 23-001, 23-002):
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common
 http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system
 http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream
+
+# SERVER LEGACY (valid for compatibility, but not spec-correct):
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/core
 
 # WRONG (Doc 12):
 http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system-features
@@ -141,7 +146,7 @@ http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system-features
 http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/core
 ```
 
-**Resolution:** Verified conformance URIs are documented in [verified-conformance-uris.md](verified-conformance-uris.md). Individual document corrections will be applied during Phase 2-4 reviews. All fixture files and implementation code MUST use the verified URIs from that reference.
+**Resolution:** Conformance URIs verified against the published OGC Implementation Standards are documented in [verified-conformance-uris.md](verified-conformance-uris.md). The published specification is the authoritative source; server deviations are noted. Individual document corrections will be applied during Phase 2-4 reviews. All fixture files and implementation code MUST use the spec-correct URIs from that reference.
 
 ---
 
@@ -361,7 +366,7 @@ These numbers converge and are grounded in upstream data points.
 |----|----------|-------------|-------|--------|
 | H1 | HIGH | 02 | Wrong resource type names (SensorThings terminology) | **Resolved** |
 | H2 | HIGH | 38 (vs 01,02,12) | `__tests__/` directory contradicts colocated pattern | **Resolved** |
-| M1 | ~~MEDIUM~~ HIGH | 06, 12, 14, 18, 22, 38 | Conformance URIs verified against live server — wrong prefix, wrong class names | **Resolved** — [verified-conformance-uris.md](verified-conformance-uris.md) |
+| M1 | ~~MEDIUM~~ HIGH | 06, 12, 14, 18, 22, 38 | Conformance URIs verified against published OGC specs (23-001, 23-002) AND live server — wrong prefix, wrong class names, server uses legacy `core` vs spec's `api-common` | **Resolved** — [verified-conformance-uris.md](verified-conformance-uris.md) |
 | M2 | MEDIUM | 12 (vs 38) | Sync vs async QueryBuilder methods | Open |
 | M3 | MEDIUM | 38 | `OgcApiEndpoint.fromUrl()` doesn't exist upstream | Open |
 | M4 | MEDIUM | 38 (vs 12) | Space encoded as `+` vs `%20` | Open |
@@ -382,7 +387,7 @@ The foundation documents are solid. The issues found are correctable and do not 
 
 2. **During Phase 2 reviews:** Check each category's documents against the corrected resource type list and file location convention. Flag any documents that inherited Doc 02's wrong names or Doc 38's `__tests__/` pattern.
 
-3. **Track M2-M4 as known errata:** These don't need to block Phase 2 but should be resolved before implementation begins. M1 (conformance URIs) has been **verified and resolved** — see [verified-conformance-uris.md](verified-conformance-uris.md). During Phase 2-4 reviews, fix the wrong conformance URIs in each document using that reference.
+3. **Track M2-M4 as known errata:** These don't need to block Phase 2 but should be resolved before implementation begins. M1 (conformance URIs) has been **verified and resolved** by cross-referencing the published OGC Implementation Standards (23-001 Part 1 and 23-002 Part 2) with a live server — see [verified-conformance-uris.md](verified-conformance-uris.md). The published specification is the authoritative source; the server's `/conf/core` is noted as a legacy alias for the spec-correct `/conf/api-common`. During Phase 2-4 reviews, fix the wrong conformance URIs in each document using that reference.
 
 ### Phase 2 Categories to Review
 
