@@ -274,7 +274,7 @@ async *listSystemsPaginated(params?: QueryParams): AsyncGenerator<System> {
 
 ```typescript
 it('applies pagination parameters', async () => {
-  const url = await builder.getResourceTypes({ limit: 50, offset: 100 });
+  const url = builder.getResourceTypes({ limit: 50, offset: 100 });
   parseAndValidateUrl(url, {
     pathname: '/resourcetypes',
     query: {
@@ -870,7 +870,7 @@ it('applies pagination parameters', async () => {
 describe('Offset-Based Pagination', () => {
   describe('Basic Navigation', () => {
     it('constructs first page URL', async () => {
-      const url = await builder.getSystems({ limit: 10, offset: 0 });
+      const url = builder.getSystems({ limit: 10, offset: 0 });
       parseAndValidateUrl(url, {
         pathname: '/systems',
         query: {
@@ -881,7 +881,7 @@ describe('Offset-Based Pagination', () => {
     });
 
     it('constructs middle page URL', async () => {
-      const url = await builder.getSystems({ limit: 10, offset: 50 });
+      const url = builder.getSystems({ limit: 10, offset: 50 });
       parseAndValidateUrl(url, {
         pathname: '/systems',
         query: {
@@ -892,7 +892,7 @@ describe('Offset-Based Pagination', () => {
     });
 
     it('constructs last page URL', async () => {
-      const url = await builder.getSystems({ limit: 10, offset: 190 });
+      const url = builder.getSystems({ limit: 10, offset: 190 });
       parseAndValidateUrl(url, {
         pathname: '/systems',
         query: {
@@ -1036,7 +1036,7 @@ describe('Offset-Based Pagination', () => {
 describe('Cursor-Based Pagination', () => {
   describe('Basic Navigation', () => {
     it('constructs first page URL without cursor', async () => {
-      const url = await builder.getObservations('ds1', { limit: 100 });
+      const url = builder.getObservations('ds1', { limit: 100 });
       parseAndValidateUrl(url, {
         pathname: '/datastreams/ds1/observations',
         query: {
@@ -1048,7 +1048,7 @@ describe('Cursor-Based Pagination', () => {
 
     it('constructs next page URL with cursor', async () => {
       const cursor = 'eyJpZCI6MTAwfQ==';
-      const url = await builder.getObservations('ds1', { 
+      const url = builder.getObservations('ds1', { 
         limit: 100, 
         cursor 
       });
@@ -1108,7 +1108,7 @@ describe('Cursor-Based Pagination', () => {
 
   describe('Part 2 Limits', () => {
     it('accepts limit up to 10,000', async () => {
-      const url = await builder.getObservations('ds1', { limit: 10000 });
+      const url = builder.getObservations('ds1', { limit: 10000 });
       parseAndValidateUrl(url, {
         pathname: '/datastreams/ds1/observations',
         query: {
@@ -1192,7 +1192,7 @@ describe('Cursor-Based Pagination', () => {
 ```typescript
 describe('Pagination with Filtering', () => {
   it('paginates with bbox filter', async () => {
-    const url = await builder.getSystems({ 
+    const url = builder.getSystems({ 
       bbox: [-10, -10, 10, 10], 
       limit: 50, 
       offset: 0 
@@ -1208,7 +1208,7 @@ describe('Pagination with Filtering', () => {
   });
 
   it('paginates with datetime filter', async () => {
-    const url = await builder.getSystems({ 
+    const url = builder.getSystems({ 
       datetime: '2024-01-01/2024-12-31', 
       limit: 100 
     });
@@ -1222,7 +1222,7 @@ describe('Pagination with Filtering', () => {
   });
 
   it('paginates with phenomenonTime filter', async () => {
-    const url = await builder.getObservations('ds1', { 
+    const url = builder.getObservations('ds1', { 
       phenomenonTime: '2024-01-01/..', 
       limit: 1000, 
       cursor: 'abc123' 
@@ -1238,7 +1238,7 @@ describe('Pagination with Filtering', () => {
   });
 
   it('paginates with parent filter', async () => {
-    const url = await builder.getSystems({ 
+    const url = builder.getSystems({ 
       parent: 'sys123', 
       limit: 20, 
       offset: 0 
@@ -1254,7 +1254,7 @@ describe('Pagination with Filtering', () => {
   });
 
   it('paginates with multiple filters', async () => {
-    const url = await builder.getSystems({ 
+    const url = builder.getSystems({ 
       bbox: [-180, -90, 180, 90],
       datetime: '2024-01-01/..',
       systemType: 'sensor',

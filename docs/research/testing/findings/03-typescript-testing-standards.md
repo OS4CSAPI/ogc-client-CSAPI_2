@@ -856,7 +856,7 @@ const systems: System[] = await systemsBuilder.list();
   it('should fetch from real CSAPI server', async () => {
     const endpoint = new OgcApiEndpoint('https://test.server.com/csapi/');
     const builder = await endpoint.csapi('systems');  // Real HTTP call
-    const systems = await builder.list();  // Real HTTP call
+    const systems = builder.list();  // Real HTTP call
     expect(systems.length).toBeGreaterThan(0);
   });
   ```

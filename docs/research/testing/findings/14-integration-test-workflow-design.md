@@ -111,7 +111,7 @@
    - Example: `OgcApiEndpoint` + `ConformanceReader` + `CSAPIQueryBuilder`
 
 2. **Public API Entry:**
-   - Enters through public API (`OgcApiEndpoint.fromUrl()`)
+   - Enters through public API (`new OgcApiEndpoint()`)
    - Does NOT directly instantiate internal classes
    - Example: `await endpoint.csapi('sensors')` NOT `new CSAPIQueryBuilder(...)`
 
@@ -443,7 +443,7 @@ describe('CSAPI Observation Retrieval', () => {
 
   it('queries systems with spatial bbox filter', async () => {
     // Integration: builder → URL construction → spatial parameter encoding
-    const url = await builder.getSystems({
+    const url = builder.getSystems({
       bbox: { minLon: -122.5, minLat: 37.5, maxLon: -122.0, maxLat: 38.0 }
     });
     
@@ -469,7 +469,7 @@ describe('CSAPI Observation Retrieval', () => {
 it('navigates from system to datastreams', async () => {
   // Integration: builder → nested URL construction → resource validation
   const systemId = 'sensor-sf-001';
-  const url = await builder.getSystemDataStreams(systemId);
+  const url = builder.getSystemDataStreams(systemId);
   
   expect(url).toContain(`/systems/${systemId}/datastreams`);
 });
@@ -490,7 +490,7 @@ it('navigates from system to datastreams', async () => {
 ```typescript
 it('queries observations with phenomenonTime filter', async () => {
   // Integration: builder → URL construction → temporal parameter encoding
-  const url = await builder.getDataStreamObservations('ds-temp-001', {
+  const url = builder.getDataStreamObservations('ds-temp-001', {
     phenomenonTime: '2024-01-01T00:00:00Z/2024-01-31T23:59:59Z'
   });
   
@@ -514,7 +514,7 @@ it('queries observations with phenomenonTime filter', async () => {
 ```typescript
 it('paginates observation results', async () => {
   // Integration: builder → URL construction → pagination parameters
-  const url1 = await builder.getDataStreamObservations('ds-temp-001', {
+  const url1 = builder.getDataStreamObservations('ds-temp-001', {
     phenomenonTime: '2024-01-01T00:00:00Z/2024-01-31T23:59:59Z',
     limit: 100,
     offset: 0
@@ -524,7 +524,7 @@ it('paginates observation results', async () => {
   expect(url1).toContain('offset=0');
   
   // Second page
-  const url2 = await builder.getDataStreamObservations('ds-temp-001', {
+  const url2 = builder.getDataStreamObservations('ds-temp-001', {
     phenomenonTime: '2024-01-01T00:00:00Z/2024-01-31T23:59:59Z',
     limit: 100,
     offset: 100
@@ -556,7 +556,7 @@ it('parses GeoJSON observation collection', async () => {
     json: async () => observationCollectionFixture
   });
   
-  const url = await builder.getDataStreamObservations('ds-temp-001');
+  const url = builder.getDataStreamObservations('ds-temp-001');
   const response = await fetch(url);
   const geojson = await response.json();
   
@@ -584,7 +584,7 @@ it('parses GeoJSON observation collection', async () => {
 ```typescript
 it('queries observations with phenomenonTime, resultTime, and limit', async () => {
   // Integration: builder → URL construction → multiple parameters
-  const url = await builder.getObservations({
+  const url = builder.getObservations({
     phenomenonTime: '2024-01-01T00:00:00Z/2024-01-31T23:59:59Z',
     resultTime: '2024-01-01T00:00:00Z/..',
     datastream: 'ds-temp-001',
@@ -624,7 +624,7 @@ it('handles empty observation collection', async () => {
     })
   });
   
-  const url = await builder.getDataStreamObservations('ds-temp-001', {
+  const url = builder.getDataStreamObservations('ds-temp-001', {
     phenomenonTime: '1900-01-01T00:00:00Z/1900-01-31T23:59:59Z'
   });
   const response = await fetch(url);
@@ -650,17 +650,17 @@ it('handles empty observation collection', async () => {
 ```typescript
 it('navigates from observation back to system', async () => {
   // Integration: builder → multiple nested URL constructions
-  const observationUrl = await builder.getObservations({ limit: 1 });
+  const observationUrl = builder.getObservations({ limit: 1 });
   
   // Get first observation ID (from mocked response)
   const observationId = 'obs-001';
   
   // Navigate to datastream
-  const datastreamUrl = await builder.getObservationDataStream(observationId);
+  const datastreamUrl = builder.getObservationDataStream(observationId);
   expect(datastreamUrl).toContain(`/observations/${observationId}/datastream`);
   
   // Navigate to system
-  const systemUrl = await builder.getObservationSystem(observationId);
+  const systemUrl = builder.getObservationSystem(observationId);
   expect(systemUrl).toContain(`/observations/${observationId}/system`);
 });
 ```
@@ -723,7 +723,7 @@ describe('CSAPI Command Submission', () => {
   it('navigates from system to control streams', async () => {
     // Integration: builder → nested URL construction
     const systemId = 'camera-ptz-001';
-    const url = await builder.getSystemControlStreams(systemId);
+    const url = builder.getSystemControlStreams(systemId);
     
     expect(url).toContain(`/systems/${systemId}/controlstreams`);
   });
@@ -744,7 +744,7 @@ describe('CSAPI Command Submission', () => {
 ```typescript
 it('checks command feasibility before submission', async () => {
   // Integration: builder → POST URL construction → parameter validation
-  const url = await builder.checkCommandFeasibility('cs-pan-001', {
+  const url = builder.checkCommandFeasibility('cs-pan-001', {
     parameters: { pan: 45, tilt: 0, zoom: 2 }
   });
   
@@ -768,7 +768,7 @@ it('checks command feasibility before submission', async () => {
 ```typescript
 it('submits command with parameters', async () => {
   // Integration: builder → POST URL construction → Location header handling
-  const url = await builder.createCommand('cs-pan-001', {
+  const url = builder.createCommand('cs-pan-001', {
     parameters: { pan: 45, tilt: 0, zoom: 2 }
   });
   
@@ -831,7 +831,7 @@ it('polls command status until completion', async () => {
     });
   
   // Poll 1
-  const url1 = await builder.getCommandStatus(commandId);
+  const url1 = builder.getCommandStatus(commandId);
   expect(url1).toContain(`/commands/${commandId}/status`);
   const status1 = await (await fetch(url1)).json();
   expect(status1.status).toBe('PENDING');
@@ -867,7 +867,7 @@ it('polls command status until completion', async () => {
 it('retrieves command result after completion', async () => {
   // Integration: builder → result URL construction
   const commandId = 'cmd-001';
-  const url = await builder.getCommandResult(commandId);
+  const url = builder.getCommandResult(commandId);
   
   expect(url).toContain(`/commands/${commandId}/result`);
   
@@ -914,7 +914,7 @@ it('handles command failure gracefully', async () => {
     })
   });
   
-  const url = await builder.getCommandStatus(commandId);
+  const url = builder.getCommandStatus(commandId);
   const status = await (await fetch(url)).json();
   
   expect(status.status).toBe('FAILED');
@@ -939,7 +939,7 @@ it('handles command failure gracefully', async () => {
 it('cancels running command', async () => {
   // Integration: builder → cancel URL construction
   const commandId = 'cmd-003';
-  const url = await builder.cancelCommand(commandId);
+  const url = builder.cancelCommand(commandId);
   
   expect(url).toContain(`/commands/${commandId}/cancel`);
   
@@ -1015,7 +1015,7 @@ describe('CSAPI Cross-Resource Navigation', () => {
   it('navigates from system to deployments', async () => {
     // Integration: builder → nested URL construction
     const systemId = 'weather-station-001';
-    const url = await builder.getSystemDeployments(systemId);
+    const url = builder.getSystemDeployments(systemId);
     
     expect(url).toContain(`/systems/${systemId}/deployments`);
   });
@@ -1036,7 +1036,7 @@ describe('CSAPI Cross-Resource Navigation', () => {
 ```typescript
 it('navigates from system to procedures', async () => {
   const systemId = 'weather-station-001';
-  const url = await builder.getSystemProcedures(systemId);
+  const url = builder.getSystemProcedures(systemId);
   
   expect(url).toContain(`/systems/${systemId}/procedures`);
 });
@@ -1056,7 +1056,7 @@ it('navigates from system to procedures', async () => {
 ```typescript
 it('navigates from system to sampling features', async () => {
   const systemId = 'weather-station-001';
-  const url = await builder.getSystemSamplingFeatures(systemId);
+  const url = builder.getSystemSamplingFeatures(systemId);
   
   expect(url).toContain(`/systems/${systemId}/samplingFeatures`);
 });
@@ -1078,14 +1078,14 @@ it('navigates from system through datastreams to observations', async () => {
   const systemId = 'weather-station-001';
   
   // System → DataStreams
-  const datastreamsUrl = await builder.getSystemDataStreams(systemId);
+  const datastreamsUrl = builder.getSystemDataStreams(systemId);
   expect(datastreamsUrl).toContain(`/systems/${systemId}/datastreams`);
   
   // Assume first datastream ID from mocked response
   const datastreamId = 'ds-temperature-001';
   
   // DataStream → Observations
-  const observationsUrl = await builder.getDataStreamObservations(datastreamId);
+  const observationsUrl = builder.getDataStreamObservations(datastreamId);
   expect(observationsUrl).toContain(`/datastreams/${datastreamId}/observations`);
 });
 ```
@@ -1108,11 +1108,11 @@ it('navigates backward from observation to system', async () => {
   const observationId = 'obs-001';
   
   // Observation → SamplingFeature
-  const samplingFeatureUrl = await builder.getObservationSamplingFeature(observationId);
+  const samplingFeatureUrl = builder.getObservationSamplingFeature(observationId);
   expect(samplingFeatureUrl).toContain(`/observations/${observationId}/samplingFeature`);
   
   // Observation → System
-  const systemUrl = await builder.getObservationSystem(observationId);
+  const systemUrl = builder.getObservationSystem(observationId);
   expect(systemUrl).toContain(`/observations/${observationId}/system`);
 });
 ```
@@ -1443,7 +1443,7 @@ const builder = await endpoint.csapi('sensors');
 expect(builder).toBeInstanceOf(CSAPIQueryBuilder);
 
 // Step 4: Construct URL
-const url = await builder.getSystems();
+const url = builder.getSystems();
 expect(new URL(url).pathname).toBe('/systems');
 ```
 
@@ -1581,7 +1581,7 @@ describe('CSAPI [Workflow Name]', () => {
     // Integration: [components involved] → [interactions]
     
     // ACT: Perform workflow step
-    const result = await builder.someMethod(params);
+    const result = builder.someMethod(params);
     
     // ASSERT: Validate result
     expect(result).toMatchExpectedStructure();
@@ -1596,17 +1596,17 @@ describe('CSAPI [Workflow Name]', () => {
 it('completes multi-step workflow', async () => {
   // Step 1: [Description]
   // Integration: [components] → [interaction]
-  const step1Result = await builder.step1Method();
+  const step1Result = builder.step1Method();
   expect(step1Result).toBe(expectedValue1);
   
   // Step 2: [Description]
   // Integration: [components] → [interaction]
-  const step2Result = await builder.step2Method(step1Result);
+  const step2Result = builder.step2Method(step1Result);
   expect(step2Result).toBe(expectedValue2);
   
   // Step 3: [Description]
   // Integration: [components] → [interaction]
-  const step3Result = await builder.step3Method(step2Result);
+  const step3Result = builder.step3Method(step2Result);
   expect(step3Result).toMatchStructure();
 });
 ```
@@ -1616,17 +1616,17 @@ it('completes multi-step workflow', async () => {
 ```typescript
 it('validates state transitions', async () => {
   // Initial state
-  let state = await builder.getInitialState();
+  let state = builder.getInitialState();
   expect(state.status).toBe('INITIAL');
   
   // Transition 1: INITIAL → PROCESSING
   await builder.triggerTransition1();
-  state = await builder.getState();
+  state = builder.getState();
   expect(state.status).toBe('PROCESSING');
   
   // Transition 2: PROCESSING → COMPLETED
   await builder.triggerTransition2();
-  state = await builder.getState();
+  state = builder.getState();
   expect(state.status).toBe('COMPLETED');
 });
 ```
@@ -1646,7 +1646,7 @@ it('handles [error condition] gracefully', async () => {
   );
   
   // OR: Expect error to be caught and handled
-  const result = await builder.methodWithFallback();
+  const result = builder.methodWithFallback();
   expect(result).toBe(fallbackValue);
 });
 ```
@@ -1678,7 +1678,7 @@ it('handles DNS resolution failure', async () => {
   );
   
   await expect(
-    OgcApiEndpoint.fromUrl('https://api.invalid.com')
+    new OgcApiEndpoint('https://api.invalid.com')
   ).rejects.toThrow(/ENOTFOUND/);
 });
 ```
@@ -1823,7 +1823,7 @@ it('handles command feasibility check failure', async () => {
     })
   });
   
-  const url = await builder.checkCommandFeasibility('cs-001', { pan: 90 });
+  const url = builder.checkCommandFeasibility('cs-001', { pan: 90 });
   const response = await (await fetch(url, { method: 'POST' })).json();
   
   expect(response.result.feasible).toBe(false);
@@ -1952,7 +1952,7 @@ it('validates command state transitions', async () => {
 
 ```typescript
 it('validates first page state', async () => {
-  const url = await builder.getObservations({ limit: 100, offset: 0 });
+  const url = builder.getObservations({ limit: 100, offset: 0 });
   const response = await (await fetch(url)).json();
   
   expect(response.features).toHaveLength(100);
@@ -1970,7 +1970,7 @@ it('validates first page state', async () => {
 
 ```typescript
 it('validates last page state', async () => {
-  const url = await builder.getObservations({ limit: 100, offset: 400 });
+  const url = builder.getObservations({ limit: 100, offset: 400 });
   const response = await (await fetch(url)).json();
   
   expect(response.features).toHaveLength(100);

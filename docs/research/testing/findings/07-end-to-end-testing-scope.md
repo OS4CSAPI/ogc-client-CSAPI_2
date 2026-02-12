@@ -38,7 +38,7 @@ Previous implementation was rejected for lacking "end-to-end" tests. For CSAPI, 
 | Aspect | Integration Test | End-to-End Test (CSAPI) |
 |--------|-----------------|-------------------------|
 | **Scope** | 2-3 components | All components (endpoint → QueryBuilder → format) |
-| **Entry Point** | Mid-level (QueryBuilder creation) | Top-level (`OgcApiEndpoint.fromUrl()`) |
+| **Entry Point** | Mid-level (QueryBuilder creation) | Top-level (`new OgcApiEndpoint()`) |
 | **Workflow** | Partial (single operation) | Complete (discovery → query → parse) |
 | **Components** | QueryBuilder + helpers | Endpoint + conformance + collections + QueryBuilder + format detection |
 | **Example** | `builder.getSystems({ limit: 10 })` | Discovery → list collections → create builder → query systems → detect format |
@@ -80,7 +80,7 @@ Previous implementation was rejected for lacking "end-to-end" tests. For CSAPI, 
 ### E2E Scope Boundaries
 
 **IN SCOPE (what e2e tests DO cover):**
-- ✅ Complete workflows from `OgcApiEndpoint.fromUrl()` to parsed results
+- ✅ Complete workflows from `new OgcApiEndpoint()` to parsed results
 - ✅ Multi-resource navigation (Systems → Deployments → DataStreams → Observations)
 - ✅ Conformance-based behavior (adapt based on server capabilities)
 - ✅ Format detection and negotiation (GeoJSON, SensorML, SWE Common)
@@ -100,25 +100,25 @@ Previous implementation was rejected for lacking "end-to-end" tests. For CSAPI, 
 Based on Implementation Guide requirements:
 
 1. **Discovery Workflow** (~100-150 lines)
-   - Entry: `OgcApiEndpoint.fromUrl(url)`
+   - Entry: `new OgcApiEndpoint(url)`
    - Steps: Connect → conformance check → list collections → filter by type → create builder → check available resources
    - Exit: QueryBuilder with validated resources
    - Components: Endpoint, conformance parser, collection parser, QueryBuilder factory
 
 2. **Observation Query Workflow** (~150-200 lines)
-   - Entry: `OgcApiEndpoint.fromUrl(url)`
+   - Entry: `new OgcApiEndpoint(url)`
    - Steps: Discover systems → find datastreams → query observations → paginate → parse SWE Common results
    - Exit: Parsed observation array with typed results
    - Components: Endpoint, QueryBuilder (systems, datastreams, observations), SWE Common parser
 
 3. **Command Submission Workflow** (~150-200 lines)
-   - Entry: `OgcApiEndpoint.fromUrl(url)`
+   - Entry: `new OgcApiEndpoint(url)`
    - Steps: Discover systems → find control streams → check feasibility → submit command → track status → retrieve results
    - Exit: Command result with status tracking
    - Components: Endpoint, QueryBuilder (systems, controlstreams, commands), status tracker
 
 4. **Cross-Resource Navigation Workflow** (~100-150 lines)
-   - Entry: `OgcApiEndpoint.fromUrl(url)`
+   - Entry: `new OgcApiEndpoint(url)`
    - Steps: System → deployments → procedures → sampling features → datastreams → observations
    - Exit: Complete resource graph showing relationships
    - Components: Endpoint, QueryBuilder (all 9 resource types), link resolver
@@ -155,7 +155,7 @@ it('should complete observation query workflow end-to-end', async () => {
   });
   
   // 1. Endpoint detection (HTTP call #1: landing page)
-  const endpoint = await OgcApiEndpoint.fromUrl('https://api.example.com/');
+  const endpoint = new OgcApiEndpoint('https://api.example.com/');
   
   // 2. Conformance check (HTTP call #2: conformance)
   expect(await endpoint.hasConnectedSystems).toBe(true);
@@ -184,7 +184,7 @@ it('should complete observation query workflow end-to-end', async () => {
 
 ### Entry and Exit Points
 
-**Entry Point:** Always `OgcApiEndpoint.fromUrl(url)`
+**Entry Point:** Always `new OgcApiEndpoint(url)`
 - First interaction with the library
 - Triggers endpoint detection
 - Loads conformance and collections
@@ -261,7 +261,7 @@ it('should complete observation query workflow end-to-end', async () => {
 - Tests ALL components together (5+ layers)
 - Only mocks external HTTP calls
 - Complete workflow (multi-step)
-- Entry at top-level API (`OgcApiEndpoint.fromUrl()`)
+- Entry at top-level API (`new OgcApiEndpoint()`)
 - ~100-200 lines
 - Examples:
   - Discovery workflow (7 steps across all layers)
@@ -313,7 +313,7 @@ describe('CSAPI observation workflow end-to-end', () => {
     });
     
     // Entry: Top-level (fresh start)
-    const endpoint = await OgcApiEndpoint.fromUrl('http://test/');
+    const endpoint = new OgcApiEndpoint('http://test/');
     
     // Step 1: Verify CSAPI support (conformance check)
     expect(await endpoint.hasConnectedSystems).toBe(true);
@@ -385,7 +385,7 @@ These are **complete workflows across all components** = E2E tests, not integrat
 ### In Scope: What E2E Tests Cover
 
 ✅ **1. Complete Workflows:**
-- Entry: `OgcApiEndpoint.fromUrl(url)`
+- Entry: `new OgcApiEndpoint(url)`
 - All steps from discovery to final result
 - Multi-resource navigation paths
 - Realistic user scenarios
@@ -466,7 +466,7 @@ These are **complete workflows across all components** = E2E tests, not integrat
 **Purpose:** Validate endpoint detection, conformance checking, collection listing, and QueryBuilder creation
 
 **Steps:**
-1. Connect to endpoint via `OgcApiEndpoint.fromUrl(url)` (HTTP: landing page)
+1. Connect to endpoint via `new OgcApiEndpoint(url)` (HTTP: landing page)
 2. Check CSAPI support via `endpoint.hasConnectedSystems` (HTTP: conformance)
 3. List CSAPI collections via `endpoint.csapiCollections` (HTTP: collections)
 4. Filter collections by resource type (client-side)
@@ -480,7 +480,7 @@ These are **complete workflows across all components** = E2E tests, not integrat
 - QueryBuilder factory
 - Resource validator
 
-**Entry:** `OgcApiEndpoint.fromUrl('https://api.example.com/')`
+**Entry:** `new OgcApiEndpoint('https://api.example.com/')`
 
 **Exit:** Validated `CSAPIQueryBuilder` with confirmed resource availability
 
@@ -512,7 +512,7 @@ describe('CSAPI Discovery Workflow E2E', () => {
     });
     
     // Step 1: Connect
-    const endpoint = await OgcApiEndpoint.fromUrl('http://test/');
+    const endpoint = new OgcApiEndpoint('http://test/');
     expect(endpoint).toBeInstanceOf(OgcApiEndpoint);
     
     // Step 2: Check conformance
@@ -559,7 +559,7 @@ describe('CSAPI Discovery Workflow E2E', () => {
 - SWE Common parser
 - Pagination link resolver
 
-**Entry:** `OgcApiEndpoint.fromUrl('https://api.example.com/')`
+**Entry:** `new OgcApiEndpoint('https://api.example.com/')`
 
 **Exit:** Array of parsed observations with typed results
 
@@ -596,7 +596,7 @@ describe('CSAPI Observation Query Workflow E2E', () => {
     });
     
     // Discovery steps
-    const endpoint = await OgcApiEndpoint.fromUrl('http://test/');
+    const endpoint = new OgcApiEndpoint('http://test/');
     expect(await endpoint.hasConnectedSystems).toBe(true);
     const builder = await endpoint.csapi('sensors');
     
@@ -653,7 +653,7 @@ describe('CSAPI Observation Query Workflow E2E', () => {
 - Command status tracker
 - Command result parser
 
-**Entry:** `OgcApiEndpoint.fromUrl('https://api.example.com/')`
+**Entry:** `new OgcApiEndpoint('https://api.example.com/')`
 
 **Exit:** Command result with final status (completed, failed, cancelled)
 
@@ -696,7 +696,7 @@ describe('CSAPI Command Submission Workflow E2E', () => {
     });
     
     // Discovery steps
-    const endpoint = await OgcApiEndpoint.fromUrl('http://test/');
+    const endpoint = new OgcApiEndpoint('http://test/');
     const builder = await endpoint.csapi('actuators');
     
     // Step 1: Find systems with command capability
@@ -748,7 +748,7 @@ describe('CSAPI Command Submission Workflow E2E', () => {
 - Link resolver (nested resource navigation)
 - Resource relationship validator
 
-**Entry:** `OgcApiEndpoint.fromUrl('https://api.example.com/')`
+**Entry:** `new OgcApiEndpoint('https://api.example.com/')`
 
 **Exit:** Complete resource graph showing 6-hop navigation path
 
@@ -785,7 +785,7 @@ describe('CSAPI Cross-Resource Navigation Workflow E2E', () => {
     });
     
     // Discovery steps
-    const endpoint = await OgcApiEndpoint.fromUrl('http://test/');
+    const endpoint = new OgcApiEndpoint('http://test/');
     const builder = await endpoint.csapi('sensors');
     
     // Navigation chain (6 hops)
@@ -1400,7 +1400,7 @@ it('should handle 404 Not Found gracefully in observation workflow', async () =>
   });
   
   // Discovery succeeds
-  const endpoint = await OgcApiEndpoint.fromUrl('http://test/');
+  const endpoint = new OgcApiEndpoint('http://test/');
   const builder = await endpoint.csapi('sensors');
   
   // Systems query succeeds
@@ -1422,7 +1422,7 @@ it('should handle 404 Not Found gracefully in observation workflow', async () =>
 it('should throw validation error for invalid query parameters', async () => {
   mockDiscoveryWorkflow('http://test');
   
-  const endpoint = await OgcApiEndpoint.fromUrl('http://test/');
+  const endpoint = new OgcApiEndpoint('http://test/');
   const builder = await endpoint.csapi('sensors');
   
   // Invalid temporal parameter format
@@ -1620,7 +1620,7 @@ it('should throw validation error for invalid query parameters', async () => {
    - Complete multi-component workflows
    - All library layers tested together
    - HTTP mocked with realistic fixtures
-   - Entry: `OgcApiEndpoint.fromUrl()`
+   - Entry: `new OgcApiEndpoint()`
    - Exit: Parsed results or validated URLs
 
 2. **E2E vs Integration distinction:**
@@ -1703,7 +1703,7 @@ it('should throw validation error for invalid query parameters', async () => {
 ### E2E Definition for URL-Building Libraries (5 questions)
 
 **Q1: What is "end-to-end" for a library that doesn't make HTTP calls?**
-A: Complete workflows across all library components with mocked HTTP responses, from `OgcApiEndpoint.fromUrl()` to URL construction + format detection.
+A: Complete workflows across all library components with mocked HTTP responses, from `new OgcApiEndpoint()` to URL construction + format detection.
 
 **Q2: Is e2e about multi-component interaction?**
 A: Yes, e2e must test all library layers together (endpoint, conformance, collections, QueryBuilder, format detection, parsers).
@@ -1720,7 +1720,7 @@ A: Exit point varies by workflow: validated QueryBuilder (discovery), parsed obs
 ### Scope and Boundaries (5 questions)
 
 **Q6: What's the entry point of an e2e test?**
-A: Always `OgcApiEndpoint.fromUrl(url)` - the first user interaction with the library.
+A: Always `new OgcApiEndpoint(url)` - the first user interaction with the library.
 
 **Q7: What's the exit point of an e2e test?**
 A: Varies by workflow: QueryBuilder instance, parsed results, command status, or validated URL structure.
@@ -1740,7 +1740,7 @@ A: All library layers: Endpoint, conformance parser, collection parser, QueryBui
 A: Integration tests 2-3 components (partial workflow, ~20-50 lines). E2E tests all components (complete workflow, ~100-200 lines).
 
 **Q12: Where's the boundary?**
-A: Entry point: integration starts mid-level (QueryBuilder already created), e2e starts top-level (`OgcApiEndpoint.fromUrl()`).
+A: Entry point: integration starts mid-level (QueryBuilder already created), e2e starts top-level (`new OgcApiEndpoint()`).
 
 **Q13: Are the 4 workflows in Implementation Guide integration or e2e?**
 A: E2E - they test complete workflows across all components from top-level API.

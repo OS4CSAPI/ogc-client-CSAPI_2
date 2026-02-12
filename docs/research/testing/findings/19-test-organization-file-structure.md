@@ -638,7 +638,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
   });
   
   it('constructs systems collection URL', async () => {
-    const url = await builder.getSystems();
+    const url = builder.getSystems();
     
     // Use test utility for URL validation
     parseAndValidateUrl(url, {
@@ -727,7 +727,7 @@ describe('CSAPIQueryBuilder - ResourceName', () => {
   
   describe('getResources()', () => {
     it('constructs collection URL without parameters', async () => {
-      const url = await builder.getResources();
+      const url = builder.getResources();
       parseAndValidateUrl(url, {
         protocol: 'https:',
         pathname: '/resources'
@@ -735,7 +735,7 @@ describe('CSAPIQueryBuilder - ResourceName', () => {
     });
     
     it('applies pagination parameters', async () => {
-      const url = await builder.getResources({ limit: 50, offset: 100 });
+      const url = builder.getResources({ limit: 50, offset: 100 });
       parseAndValidateUrl(url, {
         pathname: '/resources',
         query: {
@@ -746,7 +746,7 @@ describe('CSAPIQueryBuilder - ResourceName', () => {
     });
     
     it('applies filtering parameters', async () => {
-      const url = await builder.getResources({
+      const url = builder.getResources({
         systemType: 'sosa:Sensor',
         q: 'temperature'
       });
@@ -762,14 +762,14 @@ describe('CSAPIQueryBuilder - ResourceName', () => {
   
   describe('getResource()', () => {
     it('constructs single resource URL', async () => {
-      const url = await builder.getResource('res-123');
+      const url = builder.getResource('res-123');
       parseAndValidateUrl(url, {
         pathname: '/resources/res-123'
       });
     });
     
     it('encodes resource ID with special characters', async () => {
-      const url = await builder.getResource('res/123');
+      const url = builder.getResource('res/123');
       parseAndValidateUrl(url, {
         pathname: '/resources/res%2F123'
       });
@@ -778,7 +778,7 @@ describe('CSAPIQueryBuilder - ResourceName', () => {
   
   describe('createResource()', () => {
     it('constructs POST URL', async () => {
-      const url = await builder.createResource({ /* body */ });
+      const url = builder.createResource({ /* body */ });
       parseAndValidateUrl(url, {
         pathname: '/resources'
       });
@@ -822,7 +822,7 @@ describe('Integration - WorkflowName Workflow', () => {
     
     // Step 2: Get resource collection
     const builder = await endpoint.csapi(collections[0].id);
-    const resources = await builder.getResources();
+    const resources = builder.getResources();
     
     // Step 3: Verify results
     expect(resources).toBeDefined();
@@ -835,7 +835,7 @@ describe('Integration - WorkflowName Workflow', () => {
     });
     
     const builder = await endpoint.csapi('test-collection');
-    const resources = await builder.getResources();
+    const resources = builder.getResources();
     expect(resources.features).toHaveLength(0);
   });
   
@@ -1102,7 +1102,7 @@ describe('CSAPIQueryBuilder', () => {
   });
   
   it('constructs URL correctly', async () => {
-    const url = await builder.getSystems({ limit: 10 });
+    const url = builder.getSystems({ limit: 10 });
     
     // Use utility for structured validation
     parseAndValidateUrl(url, {

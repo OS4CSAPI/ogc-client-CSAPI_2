@@ -375,7 +375,7 @@ describe('CSAPIQueryBuilder', () => {
   let builder: CSAPIQueryBuilder;
   
   beforeEach(async () => {
-    endpoint = await OgcApiEndpoint.fromUrl('http://test/csapi/');
+    endpoint = new OgcApiEndpoint('http://test/csapi/');
     builder = await endpoint.csapi('full-collection');
   });
   
@@ -393,12 +393,12 @@ describe('CSAPIQueryBuilder', () => {
   
   describe('getSystems', () => {
     it('should build collection URL', async () => {
-      const url = await builder.getSystems();
+      const url = builder.getSystems();
       expect(url).toBe('http://test/csapi/collections/systems/items');
     });
     
     it('should build URL with pagination', async () => {
-      const url = await builder.getSystems({ limit: 10, offset: 20 });
+      const url = builder.getSystems({ limit: 10, offset: 20 });
       const parsed = new URL(url);
       expect(parsed.searchParams.get('limit')).toBe('10');
       expect(parsed.searchParams.get('offset')).toBe('20');
@@ -437,7 +437,7 @@ describe('OgcApiEndpoint CSAPI integration', () => {
   let endpoint: OgcApiEndpoint;
   
   beforeEach(async () => {
-    endpoint = await OgcApiEndpoint.fromUrl('http://test/csapi/');
+    endpoint = new OgcApiEndpoint('http://test/csapi/');
   });
   
   it('should detect CSAPI collections', () => {
@@ -558,48 +558,48 @@ describe('Systems methods', () => {
   let builder: CSAPIQueryBuilder;
   
   beforeEach(async () => {
-    endpoint = await OgcApiEndpoint.fromUrl('http://test/csapi/');
+    endpoint = new OgcApiEndpoint('http://test/csapi/');
     builder = await endpoint.csapi('systems-collection');
   });
   
   describe('CRUD operations', () => {
     it('should create system (POST)', async () => {
-      const url = await builder.createSystem({ /* body */ });
+      const url = builder.createSystem({ /* body */ });
       expect(url).toContain('/collections/systems/items');
       expect(url).not.toContain('?'); // No query params for POST
     });
     
     it('should get single system (GET)', async () => {
-      const url = await builder.getSystem('sys-123');
+      const url = builder.getSystem('sys-123');
       expect(url).toBe('http://test/csapi/collections/systems/items/sys-123');
     });
     
     it('should update system (PUT)', async () => {
-      const url = await builder.updateSystem('sys-123', { /* body */ });
+      const url = builder.updateSystem('sys-123', { /* body */ });
       expect(url).toBe('http://test/csapi/collections/systems/items/sys-123');
     });
     
     it('should delete system (DELETE)', async () => {
-      const url = await builder.deleteSystem('sys-123');
+      const url = builder.deleteSystem('sys-123');
       expect(url).toBe('http://test/csapi/collections/systems/items/sys-123');
     });
   });
   
   describe('collection queries', () => {
     it('should get systems with pagination', async () => {
-      const url = await builder.getSystems({ limit: 10, offset: 20 });
+      const url = builder.getSystems({ limit: 10, offset: 20 });
       const parsed = new URL(url);
       expect(parsed.searchParams.get('limit')).toBe('10');
       expect(parsed.searchParams.get('offset')).toBe('20');
     });
     
     it('should get systems with bbox filter', async () => {
-      const url = await builder.getSystems({ bbox: [-180, -90, 180, 90] });
+      const url = builder.getSystems({ bbox: [-180, -90, 180, 90] });
       expect(url).toContain('bbox=-180,-90,180,90');
     });
     
     it('should get systems with systemType filter', async () => {
-      const url = await builder.getSystems({ systemType: 'sensor' });
+      const url = builder.getSystems({ systemType: 'sensor' });
       const parsed = new URL(url);
       expect(parsed.searchParams.get('systemType')).toBe('sensor');
     });
@@ -607,17 +607,17 @@ describe('Systems methods', () => {
   
   describe('navigation methods', () => {
     it('should get system subsystems', async () => {
-      const url = await builder.getSystemSubsystems('sys-123');
+      const url = builder.getSystemSubsystems('sys-123');
       expect(url).toContain('/systems/items/sys-123/subsystems');
     });
     
     it('should get system datastreams', async () => {
-      const url = await builder.getSystemDataStreams('sys-123');
+      const url = builder.getSystemDataStreams('sys-123');
       expect(url).toContain('/systems/items/sys-123/datastreams');
     });
     
     it('should get system sampling features', async () => {
-      const url = await builder.getSystemSamplingFeatures('sys-123');
+      const url = builder.getSystemSamplingFeatures('sys-123');
       expect(url).toContain('/systems/items/sys-123/samplingFeatures');
     });
   });
@@ -1268,7 +1268,7 @@ describe('CSAPI Integration Tests', () => {
   describe('Discovery workflow', () => {
     it('should discover and query CSAPI collections', async () => {
       // Connect
-      const endpoint = await OgcApiEndpoint.fromUrl('http://test/csapi/');
+      const endpoint = new OgcApiEndpoint('http://test/csapi/');
       
       // Check conformance
       expect(endpoint.hasConnectedSystems).toBe(true);
@@ -1281,26 +1281,26 @@ describe('CSAPI Integration Tests', () => {
       const builder = await endpoint.csapi(collections[0].id);
       
       // Query systems
-      const systems = await builder.getSystems({ limit: 10 });
+      const systems = builder.getSystems({ limit: 10 });
       expect(systems).toBeDefined();
     });
   });
   
   describe('Observation workflow', () => {
     it('should query observations end-to-end', async () => {
-      const endpoint = await OgcApiEndpoint.fromUrl('http://test/csapi/');
+      const endpoint = new OgcApiEndpoint('http://test/csapi/');
       const builder = await endpoint.csapi('systems-collection');
       
       // Get systems
-      const systems = await builder.getSystems();
+      const systems = builder.getSystems();
       const systemId = systems.features[0].id;
       
       // Get datastreams
-      const datastreams = await builder.getSystemDataStreams(systemId);
+      const datastreams = builder.getSystemDataStreams(systemId);
       const datastreamId = datastreams.features[0].id;
       
       // Query observations
-      const observations = await builder.getDataStreamObservations(datastreamId, {
+      const observations = builder.getDataStreamObservations(datastreamId, {
         phenomenonTime: '2024-01-01T00:00:00Z/2024-12-31T23:59:59Z',
         limit: 100
       });
@@ -1608,7 +1608,7 @@ describe('CSAPIQueryBuilder', () => {
   
   // Shared setup for ALL 9 resource types
   beforeEach(async () => {
-    endpoint = await OgcApiEndpoint.fromUrl('http://test/csapi/');
+    endpoint = new OgcApiEndpoint('http://test/csapi/');
     builder = await endpoint.csapi('full-collection');
   });
   

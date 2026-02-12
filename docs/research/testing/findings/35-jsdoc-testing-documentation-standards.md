@@ -445,7 +445,7 @@ describe('System Pagination', () => {
  * @specification OGC 23-001 §7.2.3 (Spatial Filtering)
  */
 it('should filter systems by bounding box', async () => {
-  const url = await builder.getSystems({ 
+  const url = builder.getSystems({ 
     bbox: [-180, -90, 180, 90] 
   });
   // Test implementation...
@@ -639,7 +639,7 @@ describe('Pagination', () => {
 **Example 1: No Documentation (Self-Explanatory)**
 ```typescript
 it('should construct systems collection URL', async () => {
-  const url = await builder.getSystems();
+  const url = builder.getSystems();
   
   parseAndValidateUrl(url, {
     pathname: '/systems',
@@ -683,7 +683,7 @@ it('should include all required system properties', async () => {
  * @specification OGC 23-002 §8.4.2 (Temporal Filtering)
  */
 it('should filter observations by closed datetime interval', async () => {
-  const url = await builder.getObservations({
+  const url = builder.getObservations({
     datetime: '2024-01-01T00:00:00Z/2024-12-31T23:59:59Z'
   });
   
@@ -916,7 +916,7 @@ it('should <action> <expected result>', async () => {
  * @fixture fixtures/csapi/observations/storm-event.json (500 observations, 2-hour window)
  */
 it('should retrieve observations within datetime range', async () => {
-  const url = await builder.getObservations({
+  const url = builder.getObservations({
     datetime: '2024-10-15T14:00:00Z/2024-10-15T16:00:00Z'
   });
   expectQueryParam(url, 'datetime', /2024-10-15T14:00:00Z\/2024-10-15T16:00:00Z/);
@@ -1275,7 +1275,7 @@ it('should encode bbox parameter correctly', async () => {
  *   conformance: ['systems', 'deployments']
  * });
  * const builder = await endpoint.csapi('test-collection');
- * const url = await builder.getSystems();
+ * const url = builder.getSystems();
  * ```
  */
 ```
@@ -1457,17 +1457,17 @@ it('should retrieve observations from deployed system datastream', async () => {
 **✅ Good:**
 ```typescript
 it('should construct systems collection URL', async () => {
-  const url = await builder.getSystems();
+  const url = builder.getSystems();
   parseAndValidateUrl(url, { pathname: '/systems' });
 });
 
 it('should include limit parameter', async () => {
-  const url = await builder.getSystems({ limit: 10 });
+  const url = builder.getSystems({ limit: 10 });
   expectQueryParam(url, 'limit', '10');
 });
 
 it('should include bbox parameter', async () => {
-  const url = await builder.getSystems({ bbox: [0, 0, 1, 1] });
+  const url = builder.getSystems({ bbox: [0, 0, 1, 1] });
   expectQueryParam(url, 'bbox', '0,0,1,1');
 });
 ```
@@ -1489,7 +1489,7 @@ it('should include bbox parameter', async () => {
  * It calls builder.getSystems() and expects the result to be a valid URL.
  */
 it('should return valid URL', async () => {
-  const url = await builder.getSystems();
+  const url = builder.getSystems();
   expectValidUrl(url);
 });
 ```
@@ -1503,7 +1503,7 @@ it('should return valid URL', async () => {
 **✅ Fix: Remove JSDoc (test is self-explanatory)**
 ```typescript
 it('should return valid URL', async () => {
-  const url = await builder.getSystems();
+  const url = builder.getSystems();
   expectValidUrl(url);
 });
 ```
@@ -1629,7 +1629,7 @@ it('should have required properties', async () => {
 **❌ Bad:**
 ```typescript
 it('should handle edge case', async () => {
-  const url = await builder.getSystems({ 
+  const url = builder.getSystems({ 
     datetime: '../2024-12-31T23:59:59Z' 
   });
   expectQueryParam(url, 'datetime', '../2024-12-31T23:59:59Z');
@@ -1652,7 +1652,7 @@ it('should handle edge case', async () => {
  * @specification RFC 3339 §5.6 (Time Intervals)
  */
 it('should handle open interval (unbounded start)', async () => {
-  const url = await builder.getSystems({ 
+  const url = builder.getSystems({ 
     datetime: '../2024-12-31T23:59:59Z' 
   });
   expectQueryParam(url, 'datetime', '../2024-12-31T23:59:59Z');
@@ -1764,7 +1764,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
   
   describe('getSystems()', () => {
     it('should construct systems collection URL', async () => {
-      const url = await builder.getSystems();
+      const url = builder.getSystems();
       
       parseAndValidateUrl(url, {
         pathname: '/systems',
@@ -1778,7 +1778,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
      * @specification OGC 23-001 §6.3 (Pagination)
      */
     it('should include limit parameter', async () => {
-      const url = await builder.getSystems({ limit: 10 });
+      const url = builder.getSystems({ limit: 10 });
       expectQueryParam(url, 'limit', '10');
     });
     
@@ -1791,7 +1791,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
      * @specification OGC 23-001 §7.2.3 (Spatial Filtering)
      */
     it('should include bbox parameter', async () => {
-      const url = await builder.getSystems({ 
+      const url = builder.getSystems({ 
         bbox: [-180, -90, 180, 90] 
       });
       expectQueryParam(url, 'bbox', '-180,-90,180,90');
@@ -1800,7 +1800,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
   
   describe('getSystem()', () => {
     it('should construct individual system URL', async () => {
-      const url = await builder.getSystem('sys-123');
+      const url = builder.getSystem('sys-123');
       
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123'
@@ -1818,7 +1818,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
    */
   describe('getSystemHistory()', () => {
     it('should construct system history URL', async () => {
-      const url = await builder.getSystemHistory('sys-123');
+      const url = builder.getSystemHistory('sys-123');
       
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123/history'
@@ -1829,7 +1829,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
      * @specification OGC 23-001 §7.2.4, RFC 3339 §5.6
      */
     it('should include datetime filter', async () => {
-      const url = await builder.getSystemHistory('sys-123', {
+      const url = builder.getSystemHistory('sys-123', {
         datetime: '2024-01-01T00:00:00Z/2024-12-31T23:59:59Z'
       });
       
@@ -1922,14 +1922,14 @@ export function parseAndValidateUrl(
  */
 it('should retrieve observations from deployed system datastream', async () => {
   // Step 1: Find deployment by location
-  const deploymentUrl = await builder.getDeployments({ 
+  const deploymentUrl = builder.getDeployments({ 
     bbox: [-123, 44, -121, 46] 
   });
   const deployments = await fetch(deploymentUrl).then(r => r.json());
   const deployment = deployments.features[0];
   
   // Step 2: Get datastreams for deployed system
-  const datastreamUrl = await builder.getDatastreamsForSystem(
+  const datastreamUrl = builder.getDatastreamsForSystem(
     deployment.properties.system.id
   );
   const datastreams = await fetch(datastreamUrl).then(r => r.json());
@@ -1938,7 +1938,7 @@ it('should retrieve observations from deployed system datastream', async () => {
   );
   
   // Step 3: Query recent observations
-  const obsUrl = await builder.getObservationsForDatastream(
+  const obsUrl = builder.getObservationsForDatastream(
     tempDatastream.id,
     { 
       datetime: '../2024-02-06T00:00:00Z',  // Open interval: all observations up to now

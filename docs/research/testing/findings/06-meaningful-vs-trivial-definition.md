@@ -193,7 +193,7 @@ it('should parse SensorML PhysicalSystem with complete component hierarchy', () 
 ```typescript
 // Only tests one method in isolation (not actually end-to-end)
 it('should work end-to-end', async () => {
-  const endpoint = await OgcApiEndpoint.fromUrl('http://test/csapi/');
+  const endpoint = new OgcApiEndpoint('http://test/csapi/');
   const builder = await endpoint.csapi('systems');
   const url = builder.getSystems();
   expect(url).toBeDefined();
@@ -205,7 +205,7 @@ it('should work end-to-end', async () => {
 // Tests complete workflow: detection → collection → query → navigation
 it('should support complete workflow from endpoint detection to cross-resource query', async () => {
   // 1. Endpoint detection
-  const endpoint = await OgcApiEndpoint.fromUrl('http://test/csapi/');
+  const endpoint = new OgcApiEndpoint('http://test/csapi/');
   expect(await endpoint.hasConnectedSystems).toBe(true);
   
   // 2. Collection listing
@@ -1256,7 +1256,7 @@ it('should throw error when invalid', () => {
 ```typescript
 describe('resource availability validation', () => {
   it('should throw EndpointError when systems resource unavailable in collection', () => {
-    const minimalEndpoint = await OgcApiEndpoint.fromUrl('http://test/minimal/');
+    const minimalEndpoint = new OgcApiEndpoint('http://test/minimal/');
     const builder = await minimalEndpoint.csapi('minimal-collection');
     
     expect(() => builder.getSystem('sys-123'))
@@ -1590,7 +1590,7 @@ describe('DateTimeParameter union type', () => {
 ❌ **TRIVIAL:**
 ```typescript
 it('should work end-to-end', async () => {
-  const endpoint = await OgcApiEndpoint.fromUrl('http://test/csapi/');
+  const endpoint = new OgcApiEndpoint('http://test/csapi/');
   const builder = await endpoint.csapi('systems');
   const url = builder.getSystems();
   expect(url).toBeDefined();
@@ -1609,7 +1609,7 @@ describe('complete workflow: endpoint detection to cross-resource query', () => 
   let endpoint: OgcApiEndpoint;
   
   beforeEach(async () => {
-    endpoint = await OgcApiEndpoint.fromUrl('http://test/csapi/sample-data/');
+    endpoint = new OgcApiEndpoint('http://test/csapi/sample-data/');
   });
   
   it('supports full discovery → collection → query → navigation workflow', async () => {
@@ -1670,7 +1670,7 @@ describe('complete workflow: endpoint detection to cross-resource query', () => 
   
   it('handles errors gracefully in workflow', async () => {
     // 1. Non-CSAPI endpoint
-    const nonCSAPIEndpoint = await OgcApiEndpoint.fromUrl('http://test/features-only/');
+    const nonCSAPIEndpoint = new OgcApiEndpoint('http://test/features-only/');
     expect(await nonCSAPIEndpoint.hasConnectedSystems).toBe(false);
     await expect(nonCSAPIEndpoint.csapi('systems'))
       .rejects.toThrow('Endpoint does not support OGC API - Connected Systems');
@@ -1943,7 +1943,7 @@ describe('CSAPIQueryBuilder', () => {
   let builder: CSAPIQueryBuilder;
   
   beforeEach(async () => {
-    endpoint = await OgcApiEndpoint.fromUrl('http://test/csapi/');
+    endpoint = new OgcApiEndpoint('http://test/csapi/');
     builder = await endpoint.csapi('systems');
   });
   

@@ -285,7 +285,7 @@ it('retrieves system', async () => {
 // ✅ E2E - Complete workflow
 it('completes observation query workflow end-to-end', async () => {
   // 1. Detect CSAPI endpoint
-  const endpoint = await OgcApiEndpoint.fromUrl('https://api.example.com');
+  const endpoint = new OgcApiEndpoint('https://api.example.com');
   expect(endpoint).toSupportCSAPI();
   
   // 2. Retrieve systems collection
@@ -526,7 +526,7 @@ describe('error conditions', () => {
 ```typescript
 it('completes system-to-observations workflow', async () => {
   // 1. Endpoint detection
-  const endpoint = await OgcApiEndpoint.fromUrl(API_URL);
+  const endpoint = new OgcApiEndpoint(API_URL);
   
   // 2. List systems
   const systems = await endpoint.getFeatures('systems');
@@ -1040,7 +1040,7 @@ describe('System-to-Observation workflow', () => {
     });
     
     // 1. Detect CSAPI endpoint
-    const endpoint = await OgcApiEndpoint.fromUrl('https://api.example.com');
+    const endpoint = new OgcApiEndpoint('https://api.example.com');
     expect(endpoint).toSupportCSAPI();
     
     // 2. Query systems
@@ -1544,7 +1544,7 @@ describe('endpoint', () => {
   let endpoint;
   
   it('creates endpoint', async () => {
-    endpoint = await OgcApiEndpoint.fromUrl(API_URL);
+    endpoint = new OgcApiEndpoint(API_URL);
   });
   
   it('queries systems', async () => {
@@ -1556,7 +1556,7 @@ describe('endpoint', () => {
 // ✅ SOLUTION - Independent tests
 describe('endpoint', () => {
   it('creates endpoint and queries systems', async () => {
-    const endpoint = await OgcApiEndpoint.fromUrl(API_URL);
+    const endpoint = new OgcApiEndpoint(API_URL);
     const systems = await endpoint.getFeatures('systems');
     // Self-contained
   });
@@ -1564,7 +1564,7 @@ describe('endpoint', () => {
   // Or use beforeEach
   let endpoint;
   beforeEach(async () => {
-    endpoint = await OgcApiEndpoint.fromUrl(API_URL);
+    endpoint = new OgcApiEndpoint(API_URL);
   });
   
   it('queries systems', async () => {

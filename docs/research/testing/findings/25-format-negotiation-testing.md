@@ -138,10 +138,10 @@ This document defines a comprehensive testing strategy covering:
 **Implementation:**
 ```typescript
 // Query parameter method
-const url = await builder.getSystems({ f: 'geojson' });
+const url = builder.getSystems({ f: 'geojson' });
 // → /systems?f=geojson
 
-const url = await builder.getObservations('ds123', { 
+const url = builder.getObservations('ds123', { 
   f: 'application/swe+binary' 
 });
 // → /datastreams/ds123/observations?f=application%2Fswe%2Bbinary
@@ -650,11 +650,11 @@ Content-Type: application/json
 ```typescript
 // Try format, handle 406 error
 try {
-  const system = await builder.getSystems('sys123', { f: 'sml' });
+  const system = builder.getSystems('sys123', { f: 'sml' });
 } catch (error) {
   if (error.status === 406) {
     // Fall back to default format
-    const system = await builder.getSystems('sys123');
+    const system = builder.getSystems('sys123');
   }
 }
 ```
@@ -678,9 +678,9 @@ try {
 **Discovery Pattern:**
 ```typescript
 // Check supported formats before requesting
-const datastream = await builder.getDataStream('ds123');
+const datastream = builder.getDataStream('ds123');
 if (datastream.formats.includes('application/swe+binary')) {
-  const observations = await builder.getObservations('ds123', {
+  const observations = builder.getObservations('ds123', {
     f: 'application/swe+binary'
   });
 }
@@ -977,7 +977,7 @@ describe('Response Validation', () => {
 
 describe('Format Negotiation', () => {
   it('applies format parameter to URL', async () => {
-    const url = await builder.getSystems('sys123', { f: 'geojson' });
+    const url = builder.getSystems('sys123', { f: 'geojson' });
     parseAndValidateUrl(url, {
       pathname: '/systems/sys123',
       query: { f: 'geojson' }
@@ -985,7 +985,7 @@ describe('Format Negotiation', () => {
   });
 
   it('encodes + in format parameter', async () => {
-    const url = await builder.getObservations('ds123', 'obs123', { 
+    const url = builder.getObservations('ds123', 'obs123', { 
       f: 'application/swe+json' 
     });
     parseAndValidateUrl(url, {
@@ -997,7 +997,7 @@ describe('Format Negotiation', () => {
   it('handles precedence: query param over Accept header', async () => {
     // Query parameter specified → use query parameter
     // (Accept header not sent by client library)
-    const url = await builder.getSystems('sys123', { f: 'sml' });
+    const url = builder.getSystems('sys123', { f: 'sml' });
     expect(url).toContain('f=sml');
   });
 });
@@ -1323,7 +1323,7 @@ describe.each([
   { format: 'sml', expected: 'application/sml+json' },
 ])('Format negotiation: $format', ({ format, expected }) => {
   it(`returns ${expected} for f=${format}`, async () => {
-    const url = await builder.getSystems('sys123', { f: format });
+    const url = builder.getSystems('sys123', { f: format });
     expect(url).toContain(`f=${format}`);
     
     // Mock response

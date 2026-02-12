@@ -188,7 +188,7 @@ describe('CSAPIQueryBuilder - ResourceTypes', () => {
   // ============================================================
   describe('getResourceTypes()', () => {
     it('constructs collection URL without parameters', async () => {
-      const url = await builder.getResourceTypes();
+      const url = builder.getResourceTypes();
       parseAndValidateUrl(url, {
         protocol: 'https:',
         pathname: '/resourcetypes',
@@ -197,7 +197,7 @@ describe('CSAPIQueryBuilder - ResourceTypes', () => {
     });
     
     it('applies pagination parameters', async () => {
-      const url = await builder.getResourceTypes({ limit: 50, offset: 100 });
+      const url = builder.getResourceTypes({ limit: 50, offset: 100 });
       parseAndValidateUrl(url, {
         pathname: '/resourcetypes',
         query: {
@@ -208,7 +208,7 @@ describe('CSAPIQueryBuilder - ResourceTypes', () => {
     });
     
     it('applies spatial bbox filter', async () => {
-      const url = await builder.getResourceTypes({
+      const url = builder.getResourceTypes({
         bbox: { minLon: -122.5, minLat: 37.5, maxLon: -122.0, maxLat: 38.0 }
       });
       parseAndValidateUrl(url, {
@@ -231,7 +231,7 @@ describe('CSAPIQueryBuilder - ResourceTypes', () => {
   // ============================================================
   describe('getResourceType(id)', () => {
     it('constructs single item URL', async () => {
-      const url = await builder.getResourceType('resource-123');
+      const url = builder.getResourceType('resource-123');
       parseAndValidateUrl(url, {
         pathname: '/resourcetypes/resource-123',
         query: {}
@@ -239,7 +239,7 @@ describe('CSAPIQueryBuilder - ResourceTypes', () => {
     });
     
     it('encodes resource ID with special characters', async () => {
-      const url = await builder.getResourceType('resource/123');
+      const url = builder.getResourceType('resource/123');
       parseAndValidateUrl(url, {
         pathname: '/resourcetypes/resource%2F123'
       });
@@ -248,7 +248,7 @@ describe('CSAPIQueryBuilder - ResourceTypes', () => {
     });
     
     it('applies format parameter', async () => {
-      const url = await builder.getResourceType('resource-123', { format: 'json' });
+      const url = builder.getResourceType('resource-123', { format: 'json' });
       parseAndValidateUrl(url, {
         pathname: '/resourcetypes/resource-123',
         query: {
@@ -263,7 +263,7 @@ describe('CSAPIQueryBuilder - ResourceTypes', () => {
   // ============================================================
   describe('createResourceType(body)', () => {
     it('constructs POST URL', async () => {
-      const url = await builder.createResourceType({
+      const url = builder.createResourceType({
         type: 'Feature',
         properties: { name: 'New Resource' }
       });
@@ -279,7 +279,7 @@ describe('CSAPIQueryBuilder - ResourceTypes', () => {
   // ============================================================
   describe('updateResourceType(id, body)', () => {
     it('constructs PUT URL', async () => {
-      const url = await builder.updateResourceType('resource-123', {
+      const url = builder.updateResourceType('resource-123', {
         type: 'Feature',
         properties: { name: 'Updated Resource' }
       });
@@ -290,7 +290,7 @@ describe('CSAPIQueryBuilder - ResourceTypes', () => {
     });
     
     it('encodes resource ID', async () => {
-      const url = await builder.updateResourceType('resource/123', {});
+      const url = builder.updateResourceType('resource/123', {});
       parseAndValidateUrl(url, {
         pathname: '/resourcetypes/resource%2F123'
       });
@@ -302,7 +302,7 @@ describe('CSAPIQueryBuilder - ResourceTypes', () => {
   // ============================================================
   describe('deleteResourceType(id)', () => {
     it('constructs DELETE URL without cascade', async () => {
-      const url = await builder.deleteResourceType('resource-123');
+      const url = builder.deleteResourceType('resource-123');
       parseAndValidateUrl(url, {
         pathname: '/resourcetypes/resource-123',
         query: {}
@@ -310,7 +310,7 @@ describe('CSAPIQueryBuilder - ResourceTypes', () => {
     });
     
     it('constructs DELETE URL with cascade', async () => {
-      const url = await builder.deleteResourceType('resource-123', { cascade: true });
+      const url = builder.deleteResourceType('resource-123', { cascade: true });
       parseAndValidateUrl(url, {
         pathname: '/resourcetypes/resource-123',
         query: {
@@ -340,7 +340,7 @@ describe('CSAPIQueryBuilder - ResourceTypes', () => {
     });
     
     it('encodes special characters in query values', async () => {
-      const url = await builder.getResourceTypes({
+      const url = builder.getResourceTypes({
         q: 'test value #1'
       });
       parseAndValidateUrl(url, {
@@ -422,7 +422,7 @@ describe('CSAPIQueryBuilder - ResourceTypes', () => {
 ```typescript
 // Add to GET collection tests:
 it('applies systemType filter', async () => {
-  const url = await builder.getSystems({ systemType: 'sosa:Sensor' });
+  const url = builder.getSystems({ systemType: 'sosa:Sensor' });
   parseAndValidateUrl(url, {
     pathname: '/systems',
     query: { systemType: 'sosa:Sensor' }
@@ -432,7 +432,7 @@ it('applies systemType filter', async () => {
 });
 
 it('applies parent filter for hierarchical query', async () => {
-  const url = await builder.getSystems({ parent: 'parent-system-123' });
+  const url = builder.getSystems({ parent: 'parent-system-123' });
   parseAndValidateUrl(url, {
     pathname: '/systems',
     query: { parent: 'parent-system-123' }
@@ -442,14 +442,14 @@ it('applies parent filter for hierarchical query', async () => {
 // Add navigation tests:
 describe('getSystemSubsystems()', () => {
   it('constructs subsystems URL', async () => {
-    const url = await builder.getSystemSubsystems('sys-123');
+    const url = builder.getSystemSubsystems('sys-123');
     parseAndValidateUrl(url, {
       pathname: '/systems/sys-123/subsystems'
     });
   });
   
   it('applies recursive parameter', async () => {
-    const url = await builder.getSystemSubsystems('sys-123', { recursive: true });
+    const url = builder.getSystemSubsystems('sys-123', { recursive: true });
     parseAndValidateUrl(url, {
       pathname: '/systems/sys-123/subsystems',
       query: { recursive: 'true' }
@@ -459,7 +459,7 @@ describe('getSystemSubsystems()', () => {
 
 describe('getSystemDataStreams()', () => {
   it('constructs datastreams URL', async () => {
-    const url = await builder.getSystemDataStreams('sys-123');
+    const url = builder.getSystemDataStreams('sys-123');
     parseAndValidateUrl(url, {
       pathname: '/systems/sys-123/datastreams'
     });
@@ -481,7 +481,7 @@ describe('getSystemDataStreams()', () => {
 ```typescript
 // Add to GET collection tests:
 it('applies validTime filter', async () => {
-  const url = await builder.getDeployments({ 
+  const url = builder.getDeployments({ 
     validTime: '2024-01-01/2024-12-31' 
   });
   parseAndValidateUrl(url, {
@@ -493,14 +493,14 @@ it('applies validTime filter', async () => {
 // Add navigation tests:
 describe('getDeploymentSubdeployments()', () => {
   it('constructs subdeployments URL', async () => {
-    const url = await builder.getDeploymentSubdeployments('deploy-123');
+    const url = builder.getDeploymentSubdeployments('deploy-123');
     parseAndValidateUrl(url, {
       pathname: '/deployments/deploy-123/subdeployments'
     });
   });
   
   it('applies recursive parameter', async () => {
-    const url = await builder.getDeploymentSubdeployments('deploy-123', { recursive: true });
+    const url = builder.getDeploymentSubdeployments('deploy-123', { recursive: true });
     parseAndValidateUrl(url, {
       pathname: '/deployments/deploy-123/subdeployments',
       query: { recursive: 'true' }
@@ -523,7 +523,7 @@ describe('getDeploymentSubdeployments()', () => {
 ```typescript
 // Add to GET collection tests:
 it('applies procedureType filter', async () => {
-  const url = await builder.getProcedures({ procedureType: 'algorithm' });
+  const url = builder.getProcedures({ procedureType: 'algorithm' });
   parseAndValidateUrl(url, {
     pathname: '/procedures',
     query: { procedureType: 'algorithm' }
@@ -533,7 +533,7 @@ it('applies procedureType filter', async () => {
 // Add navigation tests:
 describe('getProcedureSystems()', () => {
   it('constructs systems URL', async () => {
-    const url = await builder.getProcedureSystems('proc-123');
+    const url = builder.getProcedureSystems('proc-123');
     parseAndValidateUrl(url, {
       pathname: '/procedures/proc-123/systems'
     });
@@ -556,7 +556,7 @@ describe('getProcedureSystems()', () => {
 ```typescript
 // Add to GET collection tests:
 it('applies samplingFeatureType filter', async () => {
-  const url = await builder.getSamplingFeatures({ 
+  const url = builder.getSamplingFeatures({ 
     samplingFeatureType: 'station' 
   });
   parseAndValidateUrl(url, {
@@ -568,14 +568,14 @@ it('applies samplingFeatureType filter', async () => {
 // Add navigation tests:
 describe('getSamplingFeatureObservations()', () => {
   it('constructs observations URL', async () => {
-    const url = await builder.getSamplingFeatureObservations('sf-123');
+    const url = builder.getSamplingFeatureObservations('sf-123');
     parseAndValidateUrl(url, {
       pathname: '/samplingFeatures/sf-123/observations'
     });
   });
   
   it('applies temporal filter to observations', async () => {
-    const url = await builder.getSamplingFeatureObservations('sf-123', {
+    const url = builder.getSamplingFeatureObservations('sf-123', {
       phenomenonTime: '2024-01-01/..'
     });
     parseAndValidateUrl(url, {
@@ -607,7 +607,7 @@ describe('getSamplingFeatureObservations()', () => {
 // Add navigation tests only (no CRUD operations):
 describe('getPropertySystems()', () => {
   it('constructs systems URL', async () => {
-    const url = await builder.getPropertySystems('prop-123');
+    const url = builder.getPropertySystems('prop-123');
     parseAndValidateUrl(url, {
       pathname: '/properties/prop-123/systems'
     });
@@ -616,7 +616,7 @@ describe('getPropertySystems()', () => {
 
 describe('getPropertyDataStreams()', () => {
   it('constructs datastreams URL', async () => {
-    const url = await builder.getPropertyDataStreams('prop-123');
+    const url = builder.getPropertyDataStreams('prop-123');
     parseAndValidateUrl(url, {
       pathname: '/properties/prop-123/datastreams'
     });
@@ -645,7 +645,7 @@ describe('getPropertyDataStreams()', () => {
 ```typescript
 // Add to GET collection tests:
 it('applies observedProperty filter', async () => {
-  const url = await builder.getDataStreams({ 
+  const url = builder.getDataStreams({ 
     observedProperty: 'temperature' 
   });
   parseAndValidateUrl(url, {
@@ -655,7 +655,7 @@ it('applies observedProperty filter', async () => {
 });
 
 it('applies phenomenonTime filter', async () => {
-  const url = await builder.getDataStreams({ 
+  const url = builder.getDataStreams({ 
     phenomenonTime: '2024-01-01/2024-12-31' 
   });
   parseAndValidateUrl(url, {
@@ -667,7 +667,7 @@ it('applies phenomenonTime filter', async () => {
 // Add special method tests:
 describe('getDataStreamSchema()', () => {
   it('constructs schema URL', async () => {
-    const url = await builder.getDataStreamSchema('ds-123');
+    const url = builder.getDataStreamSchema('ds-123');
     parseAndValidateUrl(url, {
       pathname: '/datastreams/ds-123/schema'
     });
@@ -676,7 +676,7 @@ describe('getDataStreamSchema()', () => {
 
 describe('getDataStreamObservations()', () => {
   it('constructs observations URL', async () => {
-    const url = await builder.getDataStreamObservations('ds-123');
+    const url = builder.getDataStreamObservations('ds-123');
     parseAndValidateUrl(url, {
       pathname: '/datastreams/ds-123/observations'
     });
@@ -705,7 +705,7 @@ describe('getDataStreamObservations()', () => {
 ```typescript
 // Add to GET collection tests:
 it('applies datastream filter', async () => {
-  const url = await builder.getObservations({ datastream: 'ds-123' });
+  const url = builder.getObservations({ datastream: 'ds-123' });
   parseAndValidateUrl(url, {
     pathname: '/observations',
     query: { datastream: 'ds-123' }
@@ -713,7 +713,7 @@ it('applies datastream filter', async () => {
 });
 
 it('applies phenomenonTime filter', async () => {
-  const url = await builder.getObservations({ 
+  const url = builder.getObservations({ 
     phenomenonTime: '2024-01-01T00:00:00Z/2024-01-31T23:59:59Z' 
   });
   parseAndValidateUrl(url, {
@@ -723,7 +723,7 @@ it('applies phenomenonTime filter', async () => {
 });
 
 it('applies resultTime filter', async () => {
-  const url = await builder.getObservations({ 
+  const url = builder.getObservations({ 
     resultTime: '2024-01-01T00:00:00Z/..' 
   });
   parseAndValidateUrl(url, {
@@ -733,7 +733,7 @@ it('applies resultTime filter', async () => {
 });
 
 it('applies multiple temporal filters', async () => {
-  const url = await builder.getObservations({ 
+  const url = builder.getObservations({ 
     phenomenonTime: '2024-01-01/..',
     resultTime: '2024-01-02/..'
   });
@@ -749,7 +749,7 @@ it('applies multiple temporal filters', async () => {
 // Add navigation tests:
 describe('getObservationDataStream()', () => {
   it('constructs datastream URL', async () => {
-    const url = await builder.getObservationDataStream('obs-123');
+    const url = builder.getObservationDataStream('obs-123');
     parseAndValidateUrl(url, {
       pathname: '/observations/obs-123/datastream'
     });
@@ -758,7 +758,7 @@ describe('getObservationDataStream()', () => {
 
 describe('getObservationSamplingFeature()', () => {
   it('constructs sampling feature URL', async () => {
-    const url = await builder.getObservationSamplingFeature('obs-123');
+    const url = builder.getObservationSamplingFeature('obs-123');
     parseAndValidateUrl(url, {
       pathname: '/observations/obs-123/samplingFeature'
     });
@@ -767,7 +767,7 @@ describe('getObservationSamplingFeature()', () => {
 
 describe('getObservationSystem()', () => {
   it('constructs system URL', async () => {
-    const url = await builder.getObservationSystem('obs-123');
+    const url = builder.getObservationSystem('obs-123');
     parseAndValidateUrl(url, {
       pathname: '/observations/obs-123/system'
     });
@@ -793,7 +793,7 @@ describe('getObservationSystem()', () => {
 // Add special method tests:
 describe('getControlStreamSchema()', () => {
   it('constructs schema URL', async () => {
-    const url = await builder.getControlStreamSchema('cs-123');
+    const url = builder.getControlStreamSchema('cs-123');
     parseAndValidateUrl(url, {
       pathname: '/controlstreams/cs-123/schema'
     });
@@ -802,7 +802,7 @@ describe('getControlStreamSchema()', () => {
 
 describe('checkCommandFeasibility()', () => {
   it('constructs feasibility check URL', async () => {
-    const url = await builder.checkCommandFeasibility('cs-123', {
+    const url = builder.checkCommandFeasibility('cs-123', {
       parameters: { value: 10 }
     });
     parseAndValidateUrl(url, {
@@ -830,7 +830,7 @@ describe('checkCommandFeasibility()', () => {
 ```typescript
 // Add to GET collection tests:
 it('applies controlstream filter', async () => {
-  const url = await builder.getCommands({ controlstream: 'cs-123' });
+  const url = builder.getCommands({ controlstream: 'cs-123' });
   parseAndValidateUrl(url, {
     pathname: '/commands',
     query: { controlstream: 'cs-123' }
@@ -838,7 +838,7 @@ it('applies controlstream filter', async () => {
 });
 
 it('applies executionTime filter', async () => {
-  const url = await builder.getCommands({ 
+  const url = builder.getCommands({ 
     executionTime: '2024-01-01/..' 
   });
   parseAndValidateUrl(url, {
@@ -850,7 +850,7 @@ it('applies executionTime filter', async () => {
 // Add special method tests:
 describe('getCommandStatus()', () => {
   it('constructs status URL', async () => {
-    const url = await builder.getCommandStatus('cmd-123');
+    const url = builder.getCommandStatus('cmd-123');
     parseAndValidateUrl(url, {
       pathname: '/commands/cmd-123/status'
     });

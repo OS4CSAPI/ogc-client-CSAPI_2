@@ -347,7 +347,7 @@ if (optional_params.parameter_name) {
 
 ```typescript
 it('applies bbox filter', async () => {
-  const url = await builder.getSystems({ 
+  const url = builder.getSystems({ 
     bbox: { minLon: -180, minLat: -90, maxLon: 180, maxLat: 90 } 
   });
   parseAndValidateUrl(url, {
@@ -370,7 +370,7 @@ it('applies bbox filter', async () => {
 
 ```typescript
 it('paginates with bbox filter', async () => {
-  const url = await builder.getSystems({ 
+  const url = builder.getSystems({ 
     bbox: [-10, -10, 10, 10], 
     limit: 50, 
     offset: 0 

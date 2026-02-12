@@ -183,6 +183,8 @@ The upstream EDR QueryBuilder methods (`buildAreaDownloadUrl`, `buildLocationsDo
 
 **Recommendation:** Standardize on synchronous QueryBuilder URL methods throughout all documents. Remove `async/await` from test examples that call URL construction methods. Reserve async patterns for endpoint-level methods that require fixture loading (e.g., `endpoint.csapi('collection')`).
 
+**Resolution:** Removed `await` from 302 synchronous QueryBuilder method calls across 14 documents (03, 04, 05, 12, 13, 14, 18, 19, 23, 24, 25, 26, 34, 35). Five `await builder.` instances intentionally retained — these are in error-handling test patterns where `await` is part of expected-throw logic, not URL construction. Verified against upstream: EDR `build*` methods are synchronous (return `string`), while getting the builder itself is async (`await endpoint.edr()`).
+
 ---
 
 ### Issue M3: Invented Factory Method `OgcApiEndpoint.fromUrl()`
@@ -215,6 +217,8 @@ Where `fetch` is globally mocked to return fixtures for the constructed URLs.
 
 **Recommendation:** Replace `OgcApiEndpoint.fromUrl()` examples with the upstream constructor pattern (`new OgcApiEndpoint(url)`) and ensure the global fetch mock is set up to serve the appropriate fixtures.
 
+**Resolution:** Replaced all 60 occurrences of `OgcApiEndpoint.fromUrl()` with `new OgcApiEndpoint()` across 8 documents (04, 05, 06, 07, 14, 18, 36, 38). Zero remaining `fromUrl` references. Note: some instances passed fixture data as a second argument — the real constructor doesn't accept this, but it conveys test intent and will need adapting to the mocked-fetch pattern during implementation.
+
 ---
 
 ### Issue M4: URL-Encoded Space Character Inconsistency
@@ -240,6 +244,8 @@ expect(url).toContain('q=weather%20station%20%231');  // %20 for spaces
 Both are valid per RFC 3986 / RFC 1866, but the test assertions are incompatible. If the implementation uses `URLSearchParams`, the Doc 12 tests will fail. If it uses manual encoding, the Doc 38 tests will fail.
 
 **Recommendation:** Decide on one encoding standard for spaces in query parameters. Since the upstream EDR uses `new URL()` + `searchParams.set()` (which uses `+` for spaces in form data but `%20` for path segments), verify the actual encoding behavior and standardize all test assertions to match.
+
+**Resolution:** Standardized on `%20` encoding. Updated Doc 38's `buildQueryString` helper to add `.replace(/\+/g, '%20')` normalization (matching upstream's `setQueryParams()` pattern in `http-utils.ts`), and fixed the test assertion from `Weather+Station+%231` to `Weather%20Station%20%231`. Doc 12 already used `%20` consistently. Doc 24's `+` references are intentionally in "bad input" sections showing what NOT to do — no changes needed there.
 
 ---
 
@@ -323,7 +329,7 @@ Document 02's timeline analysis (2022-2023 Foundation → 2024 Refinement → 20
 
 ### P4: Actionable Test Code Examples (Docs 12, 38)
 
-Documents 12 and 38 provide near-production-ready test code. The Systems resource tests in Doc 12 Section 5.2 (~200 lines) cover all 12 methods with proper `parseAndValidateUrl` usage, and could serve as a direct implementation template (after fixing the async/sync issue from M2).
+Documents 12 and 38 provide near-production-ready test code. The Systems resource tests in Doc 12 Section 5.2 (~200 lines) cover all 12 methods with proper `parseAndValidateUrl` usage, and could serve as a direct implementation template (M2 async/sync issue has been resolved).
 
 ### P5: Comprehensive Method Coverage Verification (Doc 12)
 
@@ -353,10 +359,10 @@ These numbers converge and are grounded in upstream data points.
 | Client-orientation | ✅ | ✅ | ✅ | ✅ | ✅ Yes |
 | Fixture structure | Hierarchical | Hierarchical | Hierarchical | Hierarchical | ✅ Yes |
 | Test-to-code ratio target | — | 1.2-1.6× | 1.2-1.6× (188 tests) | — | ✅ Yes |
-| QB methods sync/async | Sync | — | Mixed (M2) | Sync | ⚠️ Partial |
-| Conformance URIs | — | — | Variant A (M1) | Variant B (M1) | ⚠️ No |
-| Endpoint construction | `new OgcApiEndpoint()` | `new OgcApiEndpoint()` | Mixed | `.fromUrl()` (M3) | ⚠️ Partial |
-| Space encoding | %20 | — | %20 | + (M4) | ⚠️ No |
+| QB methods sync/async | Sync | — | ~~Mixed (M2)~~ Sync | Sync | ✅ Yes (M2 resolved) |
+| Conformance URIs | — | — | ~~Variant A~~ Corrected (M1) | ~~Variant B~~ Corrected (M1) | ✅ Yes (M1 resolved) |
+| Endpoint construction | `new OgcApiEndpoint()` | `new OgcApiEndpoint()` | `new OgcApiEndpoint()` | ~~`.fromUrl()`~~ `new OgcApiEndpoint()` (M3) | ✅ Yes (M3 resolved) |
+| Space encoding | %20 | — | %20 | ~~+~~ %20 (M4) | ✅ Yes (M4 resolved) |
 
 ---
 
@@ -367,9 +373,9 @@ These numbers converge and are grounded in upstream data points.
 | H1 | HIGH | 02 | Wrong resource type names (SensorThings terminology) | **Resolved** |
 | H2 | HIGH | 38 (vs 01,02,12) | `__tests__/` directory contradicts colocated pattern | **Resolved** |
 | M1 | ~~MEDIUM~~ HIGH | 06, 12, 14, 18, 22, 38 | Conformance URIs verified against published OGC specs (23-001, 23-002) AND live server — wrong prefix, wrong class names, server uses legacy `core` vs spec's `api-common` | **Resolved** — [verified-conformance-uris.md](verified-conformance-uris.md) |
-| M2 | MEDIUM | 12 (vs 38) | Sync vs async QueryBuilder methods | Open |
-| M3 | MEDIUM | 38 | `OgcApiEndpoint.fromUrl()` doesn't exist upstream | Open |
-| M4 | MEDIUM | 38 (vs 12) | Space encoded as `+` vs `%20` | Open |
+| M2 | MEDIUM | 03,04,05,12,13,14,18,19,23,24,25,26,34,35 | Sync vs async QueryBuilder methods — removed `await` from 302 sync method calls | **Resolved** |
+| M3 | MEDIUM | 04,05,06,07,14,18,36,38 | `OgcApiEndpoint.fromUrl()` doesn't exist upstream — replaced 60 occurrences with `new OgcApiEndpoint()` | **Resolved** |
+| M4 | MEDIUM | 38 (vs 12) | Space encoded as `+` vs `%20` — standardized on `%20`, updated `buildQueryString` and assertions | **Resolved** |
 | L1 | LOW | 01 | Speculative CSAPI application code (noted, not a defect) | Informational |
 | L2 | LOW | 12 | `createTestEndpoint` placeholder | Track as impl work |
 | L3 | LOW | 12 | sortBy/sortOrder gap acknowledged | Track in backlog |
@@ -387,7 +393,7 @@ The foundation documents are solid. The issues found are correctable and do not 
 
 2. **During Phase 2 reviews:** Check each category's documents against the corrected resource type list and file location convention. Flag any documents that inherited Doc 02's wrong names or Doc 38's `__tests__/` pattern.
 
-3. **Track M2-M4 as known errata:** These don't need to block Phase 2 but should be resolved before implementation begins. M1 (conformance URIs) has been **verified and resolved** by cross-referencing the published OGC Implementation Standards (23-001 Part 1 and 23-002 Part 2) with a live server — see [verified-conformance-uris.md](verified-conformance-uris.md). The published specification is the authoritative source; the server's `/conf/core` is noted as a legacy alias for the spec-correct `/conf/api-common`. During Phase 2-4 reviews, fix the wrong conformance URIs in each document using that reference.
+3. **~~Track M2-M4 as known errata~~ All medium issues resolved:** M1 (conformance URIs) was **verified and resolved** by cross-referencing the published OGC Implementation Standards (23-001 Part 1 and 23-002 Part 2) with a live server — see [verified-conformance-uris.md](verified-conformance-uris.md). M2 (async/sync) resolved by removing 302 unnecessary `await` calls across 14 docs. M3 (`fromUrl()`) resolved by replacing 60 occurrences with `new OgcApiEndpoint()` across 8 docs. M4 (space encoding) resolved by standardizing on `%20` in Doc 38's helper and assertions. The published specification is the authoritative source; the server's `/conf/core` is noted as a legacy alias for the spec-correct `/conf/api-common`. During Phase 2-4 reviews, fix the wrong conformance URIs in each document using that reference.
 
 ### Phase 2 Categories to Review
 
@@ -433,7 +439,7 @@ Based on Foundation Validation, the recommended Phase 2 review order (highest ri
 | Quality Layer | Score | Notes |
 |---------------|-------|-------|
 | Structural Integrity | ✅ PASS | 25 sections, comprehensive resource coverage |
-| Content Accuracy | ⚠️ ISSUE | Conformance URIs uncertain (M1), async methods (M2) |
+| Content Accuracy | ✅ PASS | ~~Conformance URIs uncertain (M1), async methods (M2)~~ Both resolved |
 | Internal Consistency | ✅ PASS | All 9 resource types follow consistent pattern |
 | Practical Utility | ✅ PASS | Near-production-ready test code, detailed matrices |
 | Strategic Value | ✅ PASS | Upstream validation in Section 23 confirms alignment |
@@ -444,8 +450,8 @@ Based on Foundation Validation, the recommended Phase 2 review order (highest ri
 | Quality Layer | Score | Notes |
 |---------------|-------|-------|
 | Structural Integrity | ✅ PASS | 10 parts, detailed step-by-step workflows |
-| Content Accuracy | ⚠️ ISSUE | `fromUrl()` invention (M3), URI variants (M1) |
-| Internal Consistency | ⚠️ ISSUE | `__tests__/` contradicts Docs 01/02/12 (H2), space encoding (M4) |
+| Content Accuracy | ✅ PASS | ~~`fromUrl()` invention (M3), URI variants (M1)~~ Both resolved |
+| Internal Consistency | ✅ PASS | ~~`__tests__/` contradicts (H2), space encoding (M4)~~ Both resolved |
 | Practical Utility | ✅ PASS | Complete implementation workflows, troubleshooting guide |
 | Strategic Value | ✅ PASS | Comprehensive synthesis with progress tracking |
 | Client Orientation | ✅ PASS | Quality checklist explicitly addresses client orientation |

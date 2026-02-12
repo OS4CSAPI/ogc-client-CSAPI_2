@@ -137,7 +137,7 @@ These utilities are **CSAPI innovations** required for Connected Systems API tes
 **Current Pattern (Repeated):**
 ```typescript
 // Repeated in 50+ test files
-const url = await builder.getSystems({ limit: 10 });
+const url = builder.getSystems({ limit: 10 });
 const parsed = new URL(url);
 
 expect(parsed.protocol).toBe('https:');
@@ -148,7 +148,7 @@ expect(parsed.searchParams.get('limit')).toBe('10');
 
 **Abstracted Utility:**
 ```typescript
-const url = await builder.getSystems({ limit: 10 });
+const url = builder.getSystems({ limit: 10 });
 
 parseAndValidateUrl(url, {
   protocol: 'https:',
@@ -430,7 +430,7 @@ expect(url).toContain('param=value');
 **CSAPI Abstraction:**
 
 ```typescript
-const url = await builder.getSystems();
+const url = builder.getSystems();
 
 parseAndValidateUrl(url, {
   protocol: 'https:',
@@ -487,7 +487,7 @@ src/
 ```typescript
 describe('URL Construction', () => {
   it('constructs systems URL with query params', async () => {
-    const url = await builder.getSystems({ limit: 10, bbox: [0,0,1,1] });
+    const url = builder.getSystems({ limit: 10, bbox: [0,0,1,1] });
     
     parseAndValidateUrl(url, {
       protocol: 'https:',
@@ -631,7 +631,7 @@ describe('CSAPIQueryBuilder', () => {
   });
   
   it('constructs systems URL', async () => {
-    const url = await builder.getSystems();
+    const url = builder.getSystems();
     expect(url).toContain('/systems');
   });
 });
@@ -1551,7 +1551,7 @@ mockFetchOnce(
   mockResource('system', { id: 'sys-123' })
 );
 
-const system = await builder.getSystem('sys-123');
+const system = builder.getSystem('sys-123');
 // Returns mocked response
 ```
 
@@ -1699,7 +1699,7 @@ it('constructs systems URL', withTestEndpoint(
   { conformance: ['systems'] },
   async (endpoint) => {
     const builder = await endpoint.csapi('test');
-    const url = await builder.getSystems();
+    const url = builder.getSystems();
     expect(url).toContain('/systems');
   }
 ));
@@ -2291,7 +2291,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
   });
   
   it('constructs systems collection URL', async () => {
-    const url = await builder.getSystems();
+    const url = builder.getSystems();
     
     // Parse and validate URL manually
     const parsed = new URL(url);
@@ -2301,14 +2301,14 @@ describe('CSAPIQueryBuilder - Systems', () => {
   });
   
   it('includes limit parameter', async () => {
-    const url = await builder.getSystems({ limit: 10 });
+    const url = builder.getSystems({ limit: 10 });
     
     const parsed = new URL(url);
     expect(parsed.searchParams.get('limit')).toBe('10');
   });
   
   it('includes bbox parameter', async () => {
-    const url = await builder.getSystems({ bbox: [0, 0, 1, 1] });
+    const url = builder.getSystems({ bbox: [0, 0, 1, 1] });
     
     const parsed = new URL(url);
     expect(parsed.searchParams.get('bbox')).toBe('0,0,1,1');
@@ -2354,7 +2354,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
   });
   
   it('constructs systems collection URL', async () => {
-    const url = await builder.getSystems();
+    const url = builder.getSystems();
     
     parseAndValidateUrl(url, {
       protocol: 'https:',
@@ -2364,12 +2364,12 @@ describe('CSAPIQueryBuilder - Systems', () => {
   });
   
   it('includes limit parameter', async () => {
-    const url = await builder.getSystems({ limit: 10 });
+    const url = builder.getSystems({ limit: 10 });
     expectQueryParam(url, 'limit', '10');
   });
   
   it('includes bbox parameter', async () => {
-    const url = await builder.getSystems({ bbox: [0, 0, 1, 1] });
+    const url = builder.getSystems({ bbox: [0, 0, 1, 1] });
     expectQueryParam(url, 'bbox', '0,0,1,1');
   });
   

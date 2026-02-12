@@ -849,19 +849,19 @@ describe('Systems methods', () => {
   let builder: CSAPIQueryBuilder;
   
   beforeEach(async () => {
-    endpoint = await OgcApiEndpoint.fromUrl('http://test/csapi/');
+    endpoint = new OgcApiEndpoint('http://test/csapi/');
     builder = await endpoint.csapi('systems-collection');
   });
   
   describe('CRUD operations', () => {
     it('creates system (POST)', async () => {
-      const url = await builder.createSystem({ /* body */ });
+      const url = builder.createSystem({ /* body */ });
       expect(url).toContain('/collections/systems/items');
       expect(url).not.toContain('?'); // No query params for POST
     });
     
     it('gets single system (GET)', async () => {
-      const url = await builder.getSystem('sys-123');
+      const url = builder.getSystem('sys-123');
       expect(url).toBe('http://test/csapi/collections/systems/items/sys-123');
     });
     
@@ -870,21 +870,21 @@ describe('Systems methods', () => {
   
   describe('collection queries', () => {
     it('gets systems with pagination', async () => {
-      const url = await builder.getSystems({ limit: 10, offset: 20 });
+      const url = builder.getSystems({ limit: 10, offset: 20 });
       const parsed = new URL(url);
       expect(parsed.searchParams.get('limit')).toBe('10');
       expect(parsed.searchParams.get('offset')).toBe('20');
     });
     
     it('gets systems with bbox filter', async () => {
-      const url = await builder.getSystems({ bbox: [-180, -90, 180, 90] });
+      const url = builder.getSystems({ bbox: [-180, -90, 180, 90] });
       expect(url).toContain('bbox=-180,-90,180,90');
     });
   });
   
   describe('navigation methods', () => {
     it('gets system datastreams', async () => {
-      const url = await builder.getSystemDataStreams('sys-123');
+      const url = builder.getSystemDataStreams('sys-123');
       expect(url).toContain('/systems/items/sys-123/datastreams');
     });
   });
@@ -1001,7 +1001,7 @@ describe('CSAPIQueryBuilder', () => {
   let builder: CSAPIQueryBuilder;
   
   beforeEach(async () => {
-    endpoint = await OgcApiEndpoint.fromUrl('http://test/csapi/');
+    endpoint = new OgcApiEndpoint('http://test/csapi/');
     builder = await endpoint.csapi('full-collection');
   });
   
@@ -1055,7 +1055,7 @@ All QueryBuilder tests should use URL parsing for robust validation:
 
 ```typescript
 it('builds URL with query parameters', async () => {
-  const url = await builder.getSystems({ systemType: 'sensor', limit: 10 });
+  const url = builder.getSystems({ systemType: 'sensor', limit: 10 });
   
   // Parse URL
   const parsed = new URL(url);
@@ -2156,7 +2156,7 @@ Add table from Roadmap to Implementation Guide showing test lines per resource (
 Use URL parsing for robust URL validation in tests:
 
 ```typescript
-const url = await builder.getSystems({ systemType: 'sensor', limit: 10 });
+const url = builder.getSystems({ systemType: 'sensor', limit: 10 });
 const parsed = new URL(url);
 
 expect(parsed.protocol).toBe('https:');

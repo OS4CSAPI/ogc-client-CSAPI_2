@@ -173,19 +173,19 @@ src/ogc-api/csapi/url_builder-commands.spec.ts    (~150-220 lines, 20 tests)
 ```typescript
 // Example 1: String containment checks
 it('returns systems URL', async () => {
-  const url = await builder.getSystems();
+  const url = builder.getSystems();
   expect(url).toContain('/systems');  // ❌ Too shallow
 });
 
 // Example 2: Exact string matching
 it('constructs correct URL', async () => {
-  const url = await builder.getSystems({ limit: 10 });
+  const url = builder.getSystems({ limit: 10 });
   expect(url).toBe('https://api.example.com/systems?limit=10');  // ❌ Brittle
 });
 
 // Example 3: Regex checks
 it('has query parameters', async () => {
-  const url = await builder.getSystems({ limit: 10 });
+  const url = builder.getSystems({ limit: 10 });
   expect(url).toMatch(/\?limit=\d+/);  // ❌ Doesn't validate values
 });
 ```
@@ -203,7 +203,7 @@ it('has query parameters', async () => {
 ```typescript
 // Example 1: Structured URL validation
 it('constructs systems collection URL with pagination', async () => {
-  const url = await builder.getSystems({ limit: 10, offset: 20 });
+  const url = builder.getSystems({ limit: 10, offset: 20 });
   
   const parsed = parseAndValidateUrl(url, {
     protocol: 'https:',
@@ -226,7 +226,7 @@ it('constructs systems collection URL with pagination', async () => {
 
 // Example 2: Query parameter type validation
 it('constructs systems URL with spatial filter', async () => {
-  const url = await builder.getSystems({
+  const url = builder.getSystems({
     bbox: { minLon: -180, minLat: -90, maxLon: 180, maxLat: 90 }
   });
   
@@ -243,7 +243,7 @@ it('constructs systems URL with spatial filter', async () => {
 
 // Example 3: Optional parameter handling
 it('omits optional parameters when not provided', async () => {
-  const url = await builder.getSystems();  // No options
+  const url = builder.getSystems();  // No options
   
   const parsed = parseAndValidateUrl(url, {
     pathname: '/systems',
@@ -356,7 +356,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
   });
   
   it('constructs systems collection URL', async () => {
-    const url = await builder.getSystems();
+    const url = builder.getSystems();
     
     parseAndValidateUrl(url, {
       protocol: 'https:',
@@ -366,7 +366,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
   });
   
   it('constructs systems URL with all query parameters', async () => {
-    const url = await builder.getSystems({
+    const url = builder.getSystems({
       limit: 10,
       offset: 20,
       bbox: { minLon: -180, minLat: -90, maxLon: 180, maxLat: 90 },
@@ -411,7 +411,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
 ```typescript
 describe('Pagination parameters', () => {
   it('uses default limit when not specified', async () => {
-    const url = await builder.getSystems();
+    const url = builder.getSystems();
     const parsed = parseAndValidateUrl(url, {
       pathname: '/systems'
     });
@@ -420,14 +420,14 @@ describe('Pagination parameters', () => {
   });
   
   it('applies custom limit', async () => {
-    const url = await builder.getSystems({ limit: 50 });
+    const url = builder.getSystems({ limit: 50 });
     parseAndValidateUrl(url, {
       query: { limit: '50' }
     });
   });
   
   it('applies offset for pagination', async () => {
-    const url = await builder.getSystems({ limit: 20, offset: 40 });
+    const url = builder.getSystems({ limit: 20, offset: 40 });
     parseAndValidateUrl(url, {
       query: {
         limit: '20',
@@ -437,14 +437,14 @@ describe('Pagination parameters', () => {
   });
   
   it('handles edge case: limit=0', async () => {
-    const url = await builder.getSystems({ limit: 0 });
+    const url = builder.getSystems({ limit: 0 });
     parseAndValidateUrl(url, {
       query: { limit: '0' }
     });
   });
   
   it('handles large limit values', async () => {
-    const url = await builder.getSystems({ limit: 10000 });
+    const url = builder.getSystems({ limit: 10000 });
     parseAndValidateUrl(url, {
       query: { limit: '10000' }
     });
@@ -458,7 +458,7 @@ describe('Pagination parameters', () => {
 ```typescript
 describe('Temporal parameters', () => {
   it('encodes ISO 8601 instant', async () => {
-    const url = await builder.getObservations('ds-123', {
+    const url = builder.getObservations('ds-123', {
       phenomenonTime: '2024-01-15T10:30:00Z'
     });
     parseAndValidateUrl(url, {
@@ -469,7 +469,7 @@ describe('Temporal parameters', () => {
   });
   
   it('encodes ISO 8601 interval', async () => {
-    const url = await builder.getObservations('ds-123', {
+    const url = builder.getObservations('ds-123', {
       phenomenonTime: '2024-01-01T00:00:00Z/2024-12-31T23:59:59Z'
     });
     parseAndValidateUrl(url, {
@@ -480,7 +480,7 @@ describe('Temporal parameters', () => {
   });
   
   it('encodes open-ended interval (start/..)', async () => {
-    const url = await builder.getObservations('ds-123', {
+    const url = builder.getObservations('ds-123', {
       phenomenonTime: '2024-01-01T00:00:00Z/..'
     });
     parseAndValidateUrl(url, {
@@ -491,7 +491,7 @@ describe('Temporal parameters', () => {
   });
   
   it('encodes open-ended interval (../end)', async () => {
-    const url = await builder.getObservations('ds-123', {
+    const url = builder.getObservations('ds-123', {
       phenomenonTime: '../2024-12-31T23:59:59Z'
     });
     parseAndValidateUrl(url, {
@@ -502,7 +502,7 @@ describe('Temporal parameters', () => {
   });
   
   it('handles multiple temporal filters', async () => {
-    const url = await builder.getObservations('ds-123', {
+    const url = builder.getObservations('ds-123', {
       phenomenonTime: '2024-01-01T00:00:00Z/..',
       resultTime: '2024-01-02T00:00:00Z/..'
     });
@@ -522,7 +522,7 @@ describe('Temporal parameters', () => {
 ```typescript
 describe('Spatial parameters', () => {
   it('encodes bbox as comma-separated coordinates', async () => {
-    const url = await builder.getSystems({
+    const url = builder.getSystems({
       bbox: { minLon: -122.5, minLat: 37.5, maxLon: -122.0, maxLat: 38.0 }
     });
     parseAndValidateUrl(url, {
@@ -533,7 +533,7 @@ describe('Spatial parameters', () => {
   });
   
   it('handles integer bbox coordinates', async () => {
-    const url = await builder.getSystems({
+    const url = builder.getSystems({
       bbox: { minLon: -180, minLat: -90, maxLon: 180, maxLat: 90 }
     });
     parseAndValidateUrl(url, {
@@ -544,7 +544,7 @@ describe('Spatial parameters', () => {
   });
   
   it('encodes WKT geometry', async () => {
-    const url = await builder.getSystems({
+    const url = builder.getSystems({
       geometry: 'POINT(-122.08 37.42)'
     });
     parseAndValidateUrl(url, {
@@ -564,7 +564,7 @@ describe('Spatial parameters', () => {
 ```typescript
 describe('Filtering parameters', () => {
   it('filters by systemType vocabulary', async () => {
-    const url = await builder.getSystems({
+    const url = builder.getSystems({
       systemType: 'http://www.w3.org/ns/sosa/Sensor'
     });
     parseAndValidateUrl(url, {
@@ -577,7 +577,7 @@ describe('Filtering parameters', () => {
   });
   
   it('filters by multiple criteria', async () => {
-    const url = await builder.getSystems({
+    const url = builder.getSystems({
       systemType: 'sosa:Sensor',
       deployment: 'deploy-123',
       q: 'temperature'
@@ -592,7 +592,7 @@ describe('Filtering parameters', () => {
   });
   
   it('filters by property name and value', async () => {
-    const url = await builder.getSystems({
+    const url = builder.getSystems({
       'properties.name': 'Weather Station Alpha'
     });
     parseAndValidateUrl(url, {
@@ -650,7 +650,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
   
   describe('getSystems()', () => {
     it('constructs collection URL without parameters', async () => {
-      const url = await builder.getSystems();
+      const url = builder.getSystems();
       parseAndValidateUrl(url, {
         protocol: 'https:',
         pathname: '/systems'
@@ -658,7 +658,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
     });
     
     it('applies pagination parameters', async () => {
-      const url = await builder.getSystems({ limit: 50, offset: 100 });
+      const url = builder.getSystems({ limit: 50, offset: 100 });
       parseAndValidateUrl(url, {
         pathname: '/systems',
         query: {
@@ -669,7 +669,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
     });
     
     it('applies spatial bbox filter', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         bbox: { minLon: -122.5, minLat: 37.5, maxLon: -122.0, maxLat: 38.0 }
       });
       parseAndValidateUrl(url, {
@@ -681,7 +681,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
     });
     
     it('applies temporal datetime filter', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         datetime: '2024-01-01T00:00:00Z/2024-12-31T23:59:59Z'
       });
       parseAndValidateUrl(url, {
@@ -693,7 +693,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
     });
     
     it('applies multiple filters', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         limit: 25,
         bbox: { minLon: -180, minLat: -90, maxLon: 180, maxLat: 90 },
         systemType: 'sosa:Sensor',
@@ -711,7 +711,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
     });
     
     it('enables recursive subsystem traversal', async () => {
-      const url = await builder.getSystems({ recursive: true });
+      const url = builder.getSystems({ recursive: true });
       parseAndValidateUrl(url, {
         pathname: '/systems',
         query: {
@@ -721,7 +721,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
     });
     
     it('encodes special characters in query values', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         q: 'weather station #1'
       });
       parseAndValidateUrl(url, {
@@ -737,21 +737,21 @@ describe('CSAPIQueryBuilder - Systems', () => {
   
   describe('getSystem()', () => {
     it('constructs single system URL', async () => {
-      const url = await builder.getSystem('sys-123');
+      const url = builder.getSystem('sys-123');
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123'
       });
     });
     
     it('encodes system ID with special characters', async () => {
-      const url = await builder.getSystem('sys/123');
+      const url = builder.getSystem('sys/123');
       parseAndValidateUrl(url, {
         pathname: '/systems/sys%2F123'
       });
     });
     
     it('applies format parameter', async () => {
-      const url = await builder.getSystem('sys-123', { format: 'sml' });
+      const url = builder.getSystem('sys-123', { format: 'sml' });
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123',
         query: {
@@ -763,7 +763,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
   
   describe('createSystem()', () => {
     it('constructs POST URL', async () => {
-      const url = await builder.createSystem({
+      const url = builder.createSystem({
         type: 'Feature',
         properties: { name: 'New System' }
       });
@@ -775,7 +775,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
   
   describe('updateSystem()', () => {
     it('constructs PUT URL', async () => {
-      const url = await builder.updateSystem('sys-123', {
+      const url = builder.updateSystem('sys-123', {
         type: 'Feature',
         properties: { name: 'Updated System' }
       });
@@ -785,7 +785,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
     });
     
     it('encodes system ID', async () => {
-      const url = await builder.updateSystem('sys/123', { /* body */ });
+      const url = builder.updateSystem('sys/123', { /* body */ });
       parseAndValidateUrl(url, {
         pathname: '/systems/sys%2F123'
       });
@@ -794,7 +794,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
   
   describe('deleteSystem()', () => {
     it('constructs DELETE URL without cascade', async () => {
-      const url = await builder.deleteSystem('sys-123');
+      const url = builder.deleteSystem('sys-123');
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123',
         query: {}
@@ -802,7 +802,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
     });
     
     it('constructs DELETE URL with cascade', async () => {
-      const url = await builder.deleteSystem('sys-123', { cascade: true });
+      const url = builder.deleteSystem('sys-123', { cascade: true });
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123',
         query: {
@@ -814,14 +814,14 @@ describe('CSAPIQueryBuilder - Systems', () => {
   
   describe('getSystemSubsystems()', () => {
     it('constructs subsystems URL', async () => {
-      const url = await builder.getSystemSubsystems('sys-123');
+      const url = builder.getSystemSubsystems('sys-123');
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123/subsystems'
       });
     });
     
     it('enables recursive traversal', async () => {
-      const url = await builder.getSystemSubsystems('sys-123', { recursive: true });
+      const url = builder.getSystemSubsystems('sys-123', { recursive: true });
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123/subsystems',
         query: {
@@ -831,7 +831,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
     });
     
     it('applies pagination', async () => {
-      const url = await builder.getSystemSubsystems('sys-123', {
+      const url = builder.getSystemSubsystems('sys-123', {
         limit: 20,
         offset: 40
       });
@@ -847,14 +847,14 @@ describe('CSAPIQueryBuilder - Systems', () => {
   
   describe('getSystemDataStreams()', () => {
     it('constructs datastreams URL', async () => {
-      const url = await builder.getSystemDataStreams('sys-123');
+      const url = builder.getSystemDataStreams('sys-123');
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123/datastreams'
       });
     });
     
     it('filters by observed property', async () => {
-      const url = await builder.getSystemDataStreams('sys-123', {
+      const url = builder.getSystemDataStreams('sys-123', {
         observedProperty: 'temperature'
       });
       parseAndValidateUrl(url, {
@@ -866,7 +866,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
     });
     
     it('applies pagination', async () => {
-      const url = await builder.getSystemDataStreams('sys-123', {
+      const url = builder.getSystemDataStreams('sys-123', {
         limit: 10,
         offset: 20
       });
@@ -882,14 +882,14 @@ describe('CSAPIQueryBuilder - Systems', () => {
   
   describe('getSystemControlStreams()', () => {
     it('constructs controlstreams URL', async () => {
-      const url = await builder.getSystemControlStreams('sys-123');
+      const url = builder.getSystemControlStreams('sys-123');
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123/controlstreams'
       });
     });
     
     it('filters by controlled property', async () => {
-      const url = await builder.getSystemControlStreams('sys-123', {
+      const url = builder.getSystemControlStreams('sys-123', {
         controlledProperty: 'valve-position'
       });
       parseAndValidateUrl(url, {
@@ -901,7 +901,7 @@ describe('CSAPIQueryBuilder - Systems', () => {
     });
     
     it('applies pagination', async () => {
-      const url = await builder.getSystemControlStreams('sys-123', {
+      const url = builder.getSystemControlStreams('sys-123', {
         limit: 10
       });
       parseAndValidateUrl(url, {
@@ -915,14 +915,14 @@ describe('CSAPIQueryBuilder - Systems', () => {
   
   describe('getSystemSamplingFeatures()', () => {
     it('constructs sampling features URL', async () => {
-      const url = await builder.getSystemSamplingFeatures('sys-123');
+      const url = builder.getSystemSamplingFeatures('sys-123');
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123/samplingFeatures'
       });
     });
     
     it('applies pagination', async () => {
-      const url = await builder.getSystemSamplingFeatures('sys-123', {
+      const url = builder.getSystemSamplingFeatures('sys-123', {
         limit: 15,
         offset: 30
       });
@@ -938,14 +938,14 @@ describe('CSAPIQueryBuilder - Systems', () => {
   
   describe('getSystemDeployments()', () => {
     it('constructs deployments URL', async () => {
-      const url = await builder.getSystemDeployments('sys-123');
+      const url = builder.getSystemDeployments('sys-123');
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123/deployments'
       });
     });
     
     it('applies pagination', async () => {
-      const url = await builder.getSystemDeployments('sys-123', {
+      const url = builder.getSystemDeployments('sys-123', {
         limit: 5
       });
       parseAndValidateUrl(url, {
@@ -959,14 +959,14 @@ describe('CSAPIQueryBuilder - Systems', () => {
   
   describe('getSystemProcedures()', () => {
     it('constructs procedures URL', async () => {
-      const url = await builder.getSystemProcedures('sys-123');
+      const url = builder.getSystemProcedures('sys-123');
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123/procedures'
       });
     });
     
     it('applies pagination', async () => {
-      const url = await builder.getSystemProcedures('sys-123', {
+      const url = builder.getSystemProcedures('sys-123', {
         limit: 8
       });
       parseAndValidateUrl(url, {
@@ -980,14 +980,14 @@ describe('CSAPIQueryBuilder - Systems', () => {
   
   describe('getSystemHistory()', () => {
     it('constructs history URL', async () => {
-      const url = await builder.getSystemHistory('sys-123');
+      const url = builder.getSystemHistory('sys-123');
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123/history'
       });
     });
     
     it('applies temporal filter', async () => {
-      const url = await builder.getSystemHistory('sys-123', {
+      const url = builder.getSystemHistory('sys-123', {
         datetime: '2024-01-01/..'
       });
       parseAndValidateUrl(url, {
@@ -1254,21 +1254,21 @@ describe('CSAPIQueryBuilder - Systems', () => {
 describe('Nested endpoint construction', () => {
   describe('System → DataStreams', () => {
     it('constructs nested datastreams URL', async () => {
-      const url = await builder.getSystemDataStreams('sys-123');
+      const url = builder.getSystemDataStreams('sys-123');
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123/datastreams'
       });
     });
     
     it('encodes parent system ID', async () => {
-      const url = await builder.getSystemDataStreams('sys/123');
+      const url = builder.getSystemDataStreams('sys/123');
       parseAndValidateUrl(url, {
         pathname: '/systems/sys%2F123/datastreams'
       });
     });
     
     it('applies query parameters to nested URL', async () => {
-      const url = await builder.getSystemDataStreams('sys-123', {
+      const url = builder.getSystemDataStreams('sys-123', {
         limit: 10,
         observedProperty: 'temperature'
       });
@@ -1284,14 +1284,14 @@ describe('Nested endpoint construction', () => {
   
   describe('DataStream → Observations', () => {
     it('constructs nested observations URL', async () => {
-      const url = await builder.getDataStreamObservations('ds-456');
+      const url = builder.getDataStreamObservations('ds-456');
       parseAndValidateUrl(url, {
         pathname: '/datastreams/ds-456/observations'
       });
     });
     
     it('applies temporal filters to observations', async () => {
-      const url = await builder.getDataStreamObservations('ds-456', {
+      const url = builder.getDataStreamObservations('ds-456', {
         phenomenonTime: '2024-01-01T00:00:00Z/..',
         limit: 100
       });
@@ -1307,14 +1307,14 @@ describe('Nested endpoint construction', () => {
   
   describe('ControlStream → Commands', () => {
     it('constructs nested commands URL', async () => {
-      const url = await builder.getControlStreamCommands('cs-789');
+      const url = builder.getControlStreamCommands('cs-789');
       parseAndValidateUrl(url, {
         pathname: '/controlstreams/cs-789/commands'
       });
     });
     
     it('applies temporal filters to commands', async () => {
-      const url = await builder.getControlStreamCommands('cs-789', {
+      const url = builder.getControlStreamCommands('cs-789', {
         issueTime: '2024-01-01/..',
         executionTime: '2024-01-02/..'
       });
@@ -1330,7 +1330,7 @@ describe('Nested endpoint construction', () => {
   
   describe('Hierarchical navigation', () => {
     it('constructs subsystems URL with recursive traversal', async () => {
-      const url = await builder.getSystemSubsystems('sys-123', {
+      const url = builder.getSystemSubsystems('sys-123', {
         recursive: true
       });
       parseAndValidateUrl(url, {
@@ -1342,7 +1342,7 @@ describe('Nested endpoint construction', () => {
     });
     
     it('constructs subdeployments URL with recursive traversal', async () => {
-      const url = await builder.getDeploymentSubdeployments('deploy-456', {
+      const url = builder.getDeploymentSubdeployments('deploy-456', {
         recursive: true
       });
       parseAndValidateUrl(url, {
@@ -1385,14 +1385,14 @@ describe('Nested endpoint construction', () => {
 describe('URL encoding edge cases', () => {
   describe('Space encoding', () => {
     it('encodes spaces as %20 in query parameter values', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         q: 'weather station'
       });
       expect(url).toContain('q=weather%20station');
     });
     
     it('encodes spaces in system IDs', async () => {
-      const url = await builder.getSystem('system 123');
+      const url = builder.getSystem('system 123');
       parseAndValidateUrl(url, {
         pathname: '/systems/system%20123'
       });
@@ -1401,14 +1401,14 @@ describe('URL encoding edge cases', () => {
   
   describe('Forward slash encoding', () => {
     it('encodes slashes in system IDs', async () => {
-      const url = await builder.getSystem('sys/123');
+      const url = builder.getSystem('sys/123');
       parseAndValidateUrl(url, {
         pathname: '/systems/sys%2F123'
       });
     });
     
     it('encodes slashes in query parameter values', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         q: 'path/to/sensor'
       });
       expect(url).toContain('q=path%2Fto%2Fsensor');
@@ -1417,28 +1417,28 @@ describe('URL encoding edge cases', () => {
   
   describe('Special character encoding', () => {
     it('encodes ampersands', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         q: 'temp&pressure'
       });
       expect(url).toContain('q=temp%26pressure');
     });
     
     it('encodes equals signs', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         q: 'value=10'
       });
       expect(url).toContain('q=value%3D10');
     });
     
     it('encodes plus signs', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         q: 'temp+5'
       });
       expect(url).toContain('q=temp%2B5');
     });
     
     it('encodes hash characters', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         q: 'station#1'
       });
       expect(url).toContain('q=station%231');
@@ -1447,14 +1447,14 @@ describe('URL encoding edge cases', () => {
   
   describe('URI encoding in values', () => {
     it('encodes URI vocabulary values', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         systemType: 'http://www.w3.org/ns/sosa/Sensor'
       });
       expect(url).toContain('systemType=http%3A%2F%2Fwww.w3.org%2Fns%2Fsosa%2FSensor');
     });
     
     it('encodes colon and slashes in URIs', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         systemType: 'sosa:Sensor'
       });
       expect(url).toContain('systemType=sosa%3ASensor');
@@ -1463,14 +1463,14 @@ describe('URL encoding edge cases', () => {
   
   describe('International character encoding', () => {
     it('encodes UTF-8 characters', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         q: 'Zürich weather station'
       });
       expect(url).toContain('q=Z%C3%BCrich%20weather%20station');
     });
     
     it('encodes system IDs with international characters', async () => {
-      const url = await builder.getSystem('sys-zürich-001');
+      const url = builder.getSystem('sys-zürich-001');
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-z%C3%BCrich-001'
       });
@@ -1479,7 +1479,7 @@ describe('URL encoding edge cases', () => {
   
   describe('Already encoded values', () => {
     it('does not double-encode already encoded slashes', async () => {
-      const url = await builder.getSystem('sys%2F123');
+      const url = builder.getSystem('sys%2F123');
       // Should NOT become sys%252F123 (double-encoded)
       parseAndValidateUrl(url, {
         pathname: '/systems/sys%2F123'
@@ -1487,7 +1487,7 @@ describe('URL encoding edge cases', () => {
     });
     
     it('does not double-encode already encoded URIs', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         systemType: 'http%3A%2F%2Fexample.com%2FSensor'
       });
       // Should NOT double-encode the already-encoded value
@@ -1497,7 +1497,7 @@ describe('URL encoding edge cases', () => {
   
   describe('Comma preservation in arrays', () => {
     it('preserves commas in bbox encoding', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         bbox: { minLon: -180, minLat: -90, maxLon: 180, maxLat: 90 }
       });
       // Commas should NOT be encoded in bbox
@@ -1538,7 +1538,7 @@ describe('Resource availability validation', () => {
     });
     
     it('constructs URL when resource is available', async () => {
-      const url = await builder.getSystems();
+      const url = builder.getSystems();
       expect(url).toBeDefined();
       parseAndValidateUrl(url, {
         pathname: '/systems'
@@ -1546,7 +1546,7 @@ describe('Resource availability validation', () => {
     });
     
     it('constructs nested URL when both parent and nested available', async () => {
-      const url = await builder.getSystemDataStreams('sys-123');
+      const url = builder.getSystemDataStreams('sys-123');
       expect(url).toBeDefined();
       parseAndValidateUrl(url, {
         pathname: '/systems/sys-123/datastreams'
@@ -1593,10 +1593,10 @@ describe('Resource availability validation', () => {
       const builder = await endpoint.csapi('test-collection');
       
       // Part 1 methods should work
-      const systemsUrl = await builder.getSystems();
+      const systemsUrl = builder.getSystems();
       expect(systemsUrl).toBeDefined();
       
-      const deploymentsUrl = await builder.getDeployments();
+      const deploymentsUrl = builder.getDeployments();
       expect(deploymentsUrl).toBeDefined();
     });
     
@@ -1620,10 +1620,10 @@ describe('Resource availability validation', () => {
       const builder = await endpoint.csapi('test-collection');
       
       // Part 2 methods should work
-      const datastreamsUrl = await builder.getDataStreams();
+      const datastreamsUrl = builder.getDataStreams();
       expect(datastreamsUrl).toBeDefined();
       
-      const observationsUrl = await builder.getObservations();
+      const observationsUrl = builder.getObservations();
       expect(observationsUrl).toBeDefined();
     });
   });
@@ -1756,7 +1756,7 @@ describe('Error condition handling', () => {
   
   describe('Optional parameter handling', () => {
     it('omits null optional parameters from URL', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         limit: 10,
         offset: null  // Explicitly null
       });
@@ -1770,7 +1770,7 @@ describe('Error condition handling', () => {
     });
     
     it('omits undefined optional parameters from URL', async () => {
-      const url = await builder.getSystems({
+      const url = builder.getSystems({
         limit: 10,
         offset: undefined
       });
@@ -2048,7 +2048,7 @@ export function validateEncoding(
 **Usage:**
 ```typescript
 it('encodes bbox correctly', async () => {
-  const url = await builder.getSystems({
+  const url = builder.getSystems({
     bbox: { minLon: -180, minLat: -90, maxLon: 180, maxLat: 90 }
   });
   validateEncoding(url, 'bbox', /-?\d+,-?\d+,-?\d+,-?\d+/);

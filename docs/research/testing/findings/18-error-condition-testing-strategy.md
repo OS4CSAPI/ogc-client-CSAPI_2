@@ -262,7 +262,7 @@ if (options?.outputFormat && !linkWithFormat) {
 it('warns but continues when optional format not found', async () => {
   const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
   
-  const url = await builder.getSystems({ f: 'invalid-format' });
+  const url = builder.getSystems({ f: 'invalid-format' });
   
   expect(consoleSpy).toHaveBeenCalledWith(
     expect.stringContaining('output format type was not found')
@@ -702,7 +702,7 @@ describe('Error recovery', () => {
     await expect(builder.getSystem('invalid')).rejects.toThrow();
     
     // Second operation succeeds
-    const url = await builder.getSystem('valid-id');
+    const url = builder.getSystem('valid-id');
     expect(url).toBeDefined();
   });
 });
@@ -719,7 +719,7 @@ describe('Error isolation', () => {
     );
     
     // Operation 2 succeeds (different resource)
-    const url = await builder.getSystems();
+    const url = builder.getSystems();
     expect(url).toBeDefined();
     
     // Operation 3 fails again (same error)
@@ -1099,7 +1099,7 @@ CSAPI error handling fully aligns with upstream patterns. No deviations.
 describe('OgcApiEndpoint.csapi()', () => {
   describe('Error Conditions', () => {
     it('throws EndpointError when CSAPI not supported', async () => {
-      const endpoint = await OgcApiEndpoint.fromUrl(
+      const endpoint = new OgcApiEndpoint(
         'http://example.com',
         { conformance: conformanceNoCSAPI }  // Fixture without CSAPI
       );
@@ -1170,7 +1170,7 @@ describe('SensorML Parser - Error Conditions', () => {
 // File: src/ogc-api/csapi/integration.spec.ts
 describe('CSAPI Integration - Error Scenarios', () => {
   it('handles missing collection gracefully', async () => {
-    const endpoint = await OgcApiEndpoint.fromUrl('http://example.com');
+    const endpoint = new OgcApiEndpoint('http://example.com');
     
     // Should propagate 404 from server
     await expect(

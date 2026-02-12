@@ -489,7 +489,7 @@ GET /deployments/deploy-001/systems  (if supported)
 **Test 1: Get Direct Subsystems (No Recursive)**
 ```typescript
 it('gets direct subsystems of a system', async () => {
-  const url = await builder.getSystemSubsystems('wx-001');
+  const url = builder.getSystemSubsystems('wx-001');
   parseAndValidateUrl(url, {
     pathname: '/systems/wx-001/subsystems'
   });
@@ -499,7 +499,7 @@ it('gets direct subsystems of a system', async () => {
 **Test 2: Get All Subsystems (Recursive)**
 ```typescript
 it('gets all nested subsystems recursively', async () => {
-  const url = await builder.getSystemSubsystems('wx-001', { recursive: true });
+  const url = builder.getSystemSubsystems('wx-001', { recursive: true });
   parseAndValidateUrl(url, {
     pathname: '/systems/wx-001/subsystems',
     query: { recursive: 'true' }
@@ -510,7 +510,7 @@ it('gets all nested subsystems recursively', async () => {
 **Test 3: Filter Subsystems by Property**
 ```typescript
 it('filters subsystems by observed property', async () => {
-  const url = await builder.getSystemSubsystems('wx-001', {
+  const url = builder.getSystemSubsystems('wx-001', {
     observedProperty: 'http://qudt.org/vocab/quantitykind/Temperature'
   });
   parseAndValidateUrl(url, {
@@ -523,7 +523,7 @@ it('filters subsystems by observed property', async () => {
 **Test 4: Paginate Subsystems**
 ```typescript
 it('paginates subsystems collection', async () => {
-  const url = await builder.getSystemSubsystems('wx-001', {
+  const url = builder.getSystemSubsystems('wx-001', {
     limit: 50,
     offset: 100
   });
@@ -537,7 +537,7 @@ it('paginates subsystems collection', async () => {
 **Test 5: Combine Recursive with Filters**
 ```typescript
 it('combines recursive parameter with filters', async () => {
-  const url = await builder.getSystemSubsystems('wx-001', {
+  const url = builder.getSystemSubsystems('wx-001', {
     recursive: true,
     observedProperty: 'temperature',
     bbox: [-122, 37, -121, 38]
@@ -569,7 +569,7 @@ it('combines recursive parameter with filters', async () => {
 **Test 11: Get Sampling Features for System**
 ```typescript
 it('gets sampling features for a system', async () => {
-  const url = await builder.getSystemSamplingFeatures('wx-001');
+  const url = builder.getSystemSamplingFeatures('wx-001');
   parseAndValidateUrl(url, {
     pathname: '/systems/wx-001/samplingFeatures'
   });
@@ -579,7 +579,7 @@ it('gets sampling features for a system', async () => {
 **Test 12: Filter Sampling Features by FOI**
 ```typescript
 it('filters sampling features by feature of interest', async () => {
-  const url = await builder.getSystemSamplingFeatures('wx-001', {
+  const url = builder.getSystemSamplingFeatures('wx-001', {
     foi: 'http://example.org/foi/region-A'
   });
   parseAndValidateUrl(url, {
@@ -592,7 +592,7 @@ it('filters sampling features by feature of interest', async () => {
 **Test 13: Spatial Filter on Sampling Features**
 ```typescript
 it('applies bbox filter to sampling features', async () => {
-  const url = await builder.getSystemSamplingFeatures('wx-001', {
+  const url = builder.getSystemSamplingFeatures('wx-001', {
     bbox: [-180, -90, 180, 90]
   });
   parseAndValidateUrl(url, {
@@ -607,7 +607,7 @@ it('applies bbox filter to sampling features', async () => {
 **Test 14: Get DataStreams for System**
 ```typescript
 it('gets datastreams for a system', async () => {
-  const url = await builder.getSystemDataStreams('wx-001');
+  const url = builder.getSystemDataStreams('wx-001');
   parseAndValidateUrl(url, {
     pathname: '/systems/wx-001/datastreams'
   });
@@ -617,7 +617,7 @@ it('gets datastreams for a system', async () => {
 **Test 15: Filter DataStreams by Observed Property**
 ```typescript
 it('filters datastreams by observed property', async () => {
-  const url = await builder.getSystemDataStreams('wx-001', {
+  const url = builder.getSystemDataStreams('wx-001', {
     observedProperty: 'http://qudt.org/vocab/quantitykind/Temperature'
   });
   parseAndValidateUrl(url, {
@@ -630,7 +630,7 @@ it('filters datastreams by observed property', async () => {
 **Test 16: Filter DataStreams by Phenomenon Time**
 ```typescript
 it('filters datastreams by phenomenon time', async () => {
-  const url = await builder.getSystemDataStreams('wx-001', {
+  const url = builder.getSystemDataStreams('wx-001', {
     phenomenonTime: '2024-01-01T00:00:00Z/..'
   });
   parseAndValidateUrl(url, {
@@ -645,7 +645,7 @@ it('filters datastreams by phenomenon time', async () => {
 **Test 17: Get Observations for DataStream**
 ```typescript
 it('gets observations for a datastream', async () => {
-  const url = await builder.getDataStreamObservations('ds-123');
+  const url = builder.getDataStreamObservations('ds-123');
   parseAndValidateUrl(url, {
     pathname: '/datastreams/ds-123/observations'
   });
@@ -655,7 +655,7 @@ it('gets observations for a datastream', async () => {
 **Test 18: Filter Observations by Time Range**
 ```typescript
 it('filters observations by phenomenon time range', async () => {
-  const url = await builder.getDataStreamObservations('ds-123', {
+  const url = builder.getDataStreamObservations('ds-123', {
     phenomenonTime: '2024-01-15T00:00:00Z/2024-01-16T00:00:00Z'
   });
   parseAndValidateUrl(url, {
@@ -668,7 +668,7 @@ it('filters observations by phenomenon time range', async () => {
 **Test 19: Get Latest Observations**
 ```typescript
 it('gets latest observations with limit', async () => {
-  const url = await builder.getDataStreamObservations('ds-123', {
+  const url = builder.getDataStreamObservations('ds-123', {
     resultTime: 'latest',
     limit: 1000
   });
@@ -682,7 +682,7 @@ it('gets latest observations with limit', async () => {
 **Test 20: Paginate Observations**
 ```typescript
 it('paginates large observation datasets', async () => {
-  const url = await builder.getDataStreamObservations('ds-123', {
+  const url = builder.getDataStreamObservations('ds-123', {
     limit: 10000,
     offset: 50000
   });
@@ -698,7 +698,7 @@ it('paginates large observation datasets', async () => {
 **Test 21: Get ControlStreams for System**
 ```typescript
 it('gets control streams for a system', async () => {
-  const url = await builder.getSystemControlStreams('wx-001');
+  const url = builder.getSystemControlStreams('wx-001');
   parseAndValidateUrl(url, {
     pathname: '/systems/wx-001/controlstreams'
   });
@@ -708,7 +708,7 @@ it('gets control streams for a system', async () => {
 **Test 22: Filter ControlStreams by Controlled Property**
 ```typescript
 it('filters control streams by controlled property', async () => {
-  const url = await builder.getSystemControlStreams('wx-001', {
+  const url = builder.getSystemControlStreams('wx-001', {
     controlledProperty: 'http://example.org/properties/heater-power'
   });
   parseAndValidateUrl(url, {
@@ -723,7 +723,7 @@ it('filters control streams by controlled property', async () => {
 **Test 23: Get Commands for ControlStream**
 ```typescript
 it('gets commands for a control stream', async () => {
-  const url = await builder.getControlStreamCommands('cs-456');
+  const url = builder.getControlStreamCommands('cs-456');
   parseAndValidateUrl(url, {
     pathname: '/controlstreams/cs-456/commands'
   });
@@ -733,7 +733,7 @@ it('gets commands for a control stream', async () => {
 **Test 24: Filter Commands by Execution Time**
 ```typescript
 it('filters commands by execution time', async () => {
-  const url = await builder.getControlStreamCommands('cs-456', {
+  const url = builder.getControlStreamCommands('cs-456', {
     executionTime: '2024-01-15T00:00:00Z/..'
   });
   parseAndValidateUrl(url, {
@@ -748,7 +748,7 @@ it('filters commands by execution time', async () => {
 **Test 25: Get Status for Command**
 ```typescript
 it('gets status reports for a command', async () => {
-  const url = await builder.getCommandStatus('cmd-789');
+  const url = builder.getCommandStatus('cmd-789');
   parseAndValidateUrl(url, {
     pathname: '/commands/cmd-789/status'
   });
@@ -758,7 +758,7 @@ it('gets status reports for a command', async () => {
 **Test 26: Get Latest Status**
 ```typescript
 it('gets latest status for command', async () => {
-  const url = await builder.getCommandStatus('cmd-789', { limit: 1 });
+  const url = builder.getCommandStatus('cmd-789', { limit: 1 });
   parseAndValidateUrl(url, {
     pathname: '/commands/cmd-789/status',
     query: { limit: '1' }
@@ -771,7 +771,7 @@ it('gets latest status for command', async () => {
 **Test 27: Get Result for Command**
 ```typescript
 it('gets result for a command', async () => {
-  const url = await builder.getCommandResult('cmd-789');
+  const url = builder.getCommandResult('cmd-789');
   parseAndValidateUrl(url, {
     pathname: '/commands/cmd-789/result'
   });
@@ -797,7 +797,7 @@ it('gets result for a command', async () => {
 **Test 36: Get Deployments for System**
 ```typescript
 it('gets deployments for a system', async () => {
-  const url = await builder.getSystemDeployments('wx-001');
+  const url = builder.getSystemDeployments('wx-001');
   parseAndValidateUrl(url, {
     pathname: '/systems/wx-001/deployments'
   });
@@ -807,7 +807,7 @@ it('gets deployments for a system', async () => {
 **Test 37: Filter Deployments by Time**
 ```typescript
 it('filters system deployments by datetime', async () => {
-  const url = await builder.getSystemDeployments('wx-001', {
+  const url = builder.getSystemDeployments('wx-001', {
     datetime: '2024-01-01T00:00:00Z/..'
   });
   parseAndValidateUrl(url, {
@@ -820,7 +820,7 @@ it('filters system deployments by datetime', async () => {
 **Test 38: Filter Active Deployments**
 ```typescript
 it('gets only active deployments for system', async () => {
-  const url = await builder.getSystemDeployments('wx-001', {
+  const url = builder.getSystemDeployments('wx-001', {
     datetime: new Date().toISOString() // Current time
   });
   expect(url).toContain('/systems/wx-001/deployments');
@@ -833,7 +833,7 @@ it('gets only active deployments for system', async () => {
 **Test 39: Query Systems by Deployment**
 ```typescript
 it('finds systems in a deployment via query parameter', async () => {
-  const url = await builder.getSystems({ deployment: 'deploy-001' });
+  const url = builder.getSystems({ deployment: 'deploy-001' });
   parseAndValidateUrl(url, {
     pathname: '/systems',
     query: { deployment: 'deploy-001' }
@@ -845,11 +845,11 @@ it('finds systems in a deployment via query parameter', async () => {
 ```typescript
 it('ensures bidirectional navigation consistency', async () => {
   // Forward: System → Deployments
-  const forwardUrl = await builder.getSystemDeployments('wx-001');
+  const forwardUrl = builder.getSystemDeployments('wx-001');
   expect(forwardUrl).toBe('https://api.example.org/systems/wx-001/deployments');
   
   // Reverse: Deployments → Systems (via query)
-  const reverseUrl = await builder.getSystems({ deployment: 'deploy-001' });
+  const reverseUrl = builder.getSystems({ deployment: 'deploy-001' });
   expect(reverseUrl).toContain('deployment=deploy-001');
 });
 ```
@@ -859,7 +859,7 @@ it('ensures bidirectional navigation consistency', async () => {
 **Test 41: Invalid Parent ID**
 ```typescript
 it('handles invalid parent ID gracefully', async () => {
-  const url = await builder.getSystemSubsystems('invalid-id-999');
+  const url = builder.getSystemSubsystems('invalid-id-999');
   parseAndValidateUrl(url, {
     pathname: '/systems/invalid-id-999/subsystems'
   });
@@ -882,7 +882,7 @@ it('rejects invalid child collection type', async () => {
 **Test 43: Invalid Child ID**
 ```typescript
 it('handles invalid child ID', async () => {
-  const url = await builder.getSystemSubsystem('wx-001', 'invalid-child-999');
+  const url = builder.getSystemSubsystem('wx-001', 'invalid-child-999');
   parseAndValidateUrl(url, {
     pathname: '/systems/wx-001/subsystems/invalid-child-999'
   });
@@ -893,7 +893,7 @@ it('handles invalid child ID', async () => {
 **Test 44: Recursive on Non-Hierarchical Resource**
 ```typescript
 it('rejects recursive parameter on compositional resources', async () => {
-  const url = await builder.getSystemDataStreams('wx-001', {
+  const url = builder.getSystemDataStreams('wx-001', {
     // @ts-expect-error recursive not valid for datastreams
     recursive: true
   });
@@ -938,7 +938,7 @@ it('prevents accessing incompatible nested resources', async () => {
 **Test 48: Invalid Query Parameter on Nested Endpoint**
 ```typescript
 it('filters out invalid query parameters for resource type', async () => {
-  const url = await builder.getDataStreamObservations('ds-123', {
+  const url = builder.getDataStreamObservations('ds-123', {
     phenomenonTime: '2024-01-15T00:00:00Z/..',
     // @ts-expect-error bbox not valid for observations
     bbox: [-180, -90, 180, 90]
@@ -966,7 +966,7 @@ it('validates nested path structure', () => {
 ```typescript
 it('validates cross-part relationships', async () => {
   // Part 1 system can have Part 2 datastreams
-  const validUrl = await builder.getSystemDataStreams('wx-001');
+  const validUrl = builder.getSystemDataStreams('wx-001');
   expect(validUrl).toContain('/systems/wx-001/datastreams');
   
   // But observations can't have systems (invalid cross-part)

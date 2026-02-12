@@ -749,7 +749,8 @@ export function buildQueryString(options?: Record<string, any>): string {
     }
   }
 
-  return params.toString();
+  // Normalize + to %20 for OGC API compatibility (matches upstream setQueryParams pattern)
+  return params.toString().replace(/\+/g, '%20');
 }
 ```
 
@@ -800,7 +801,7 @@ describe('buildQueryString', () => {
   it('encodes special characters', () => {
     const qs = buildQueryString({ name: 'Weather Station #1' });
     
-    expect(qs).toContain('Weather+Station+%231');
+    expect(qs).toContain('Weather%20Station%20%231');
   });
 });
 ```
@@ -1317,7 +1318,7 @@ describe('OgcApiEndpoint - CSAPI Integration', () => {
      * Detects CSAPI support from endpoint conformance.
      */
     it('detects CSAPI support from conformance', async () => {
-      const endpoint = await OgcApiEndpoint.fromUrl(
+      const endpoint = new OgcApiEndpoint(
         'http://example.com/api',
         { conformance: [
           'http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common',
@@ -1334,7 +1335,7 @@ describe('OgcApiEndpoint - CSAPI Integration', () => {
      * Returns collections with CSAPI support.
      */
     it('returns collections with CSAPI support', async () => {
-      const endpoint = await OgcApiEndpoint.fromUrl(
+      const endpoint = new OgcApiEndpoint(
         'http://example.com/api',
         {
           collections: [
@@ -1363,7 +1364,7 @@ describe('OgcApiEndpoint - CSAPI Integration', () => {
      * Returns cached QueryBuilder instance.
      */
     it('returns cached QueryBuilder instance', async () => {
-      const endpoint = await OgcApiEndpoint.fromUrl(
+      const endpoint = new OgcApiEndpoint(
         'http://example.com/api',
         {
           collections: [{
@@ -1383,7 +1384,7 @@ describe('OgcApiEndpoint - CSAPI Integration', () => {
      * Throws error for non-existent collection.
      */
     it('throws error for non-existent collection', async () => {
-      const endpoint = await OgcApiEndpoint.fromUrl('http://example.com/api', {});
+      const endpoint = new OgcApiEndpoint('http://example.com/api', {});
 
       expect(() => endpoint.csapi('nonexistent')).toThrow('Collection "nonexistent" not found');
     });
@@ -1392,7 +1393,7 @@ describe('OgcApiEndpoint - CSAPI Integration', () => {
      * Throws error for non-CSAPI collection.
      */
     it('throws error for non-CSAPI collection', async () => {
-      const endpoint = await OgcApiEndpoint.fromUrl(
+      const endpoint = new OgcApiEndpoint(
         'http://example.com/api',
         {
           collections: [{
@@ -1855,7 +1856,7 @@ describe('CSAPI Integration - Discovery Workflow', () => {
    */
   it('discovers and queries complete system hierarchy', async () => {
     // Step 1: Load endpoint with CSAPI collections
-    const endpoint = await OgcApiEndpoint.fromUrl(
+    const endpoint = new OgcApiEndpoint(
       'https://example.com/api',
       loadFixture('collections/collection-weather-sensors.json')
     );
@@ -1892,7 +1893,7 @@ describe('CSAPI Integration - Discovery Workflow', () => {
    * @specification OGC 23-002 §8.2
    */
   it('queries observations with temporal filters', async () => {
-    const endpoint = await OgcApiEndpoint.fromUrl(
+    const endpoint = new OgcApiEndpoint(
       'https://example.com/api',
       loadFixture('collections/collection-weather-sensors.json')
     );
@@ -2114,7 +2115,7 @@ describe('Integration - [Workflow Name]', () => {
    */
   it('completes [workflow] workflow', async () => {
     // Step 1: Setup - Load endpoint
-    const endpoint = await OgcApiEndpoint.fromUrl(
+    const endpoint = new OgcApiEndpoint(
       'https://example.com/api',
       loadFixture('[collection-fixture]')
     );
@@ -2512,7 +2513,7 @@ describe('CSAPI Integration - Discovery Workflow', () => {
     // STEP 1: Load endpoint with CSAPI collection
     const collectionFixture = loadFixture('collections/collection-weather-sensors.json');
     
-    const endpoint = await OgcApiEndpoint.fromUrl(
+    const endpoint = new OgcApiEndpoint(
       'https://example.com/api',
       {
         conformance: collectionFixture.conformance,
