@@ -23,7 +23,7 @@ This project organizes test fixtures in a `fixtures/` directory at repository ro
 
 ```
 fixtures/
-├── ogc-api/                      # OGC API - Features (JSON, ~15 files + subdirs)
+├── ogc-api/                      # OGC API - Features & EDR (JSON, 74 files incl. subdirs)
 │   ├── sample-data.json
 │   ├── sample-data/              # Sample data with nested resources
 │   │   ├── collections.json
@@ -61,7 +61,7 @@ fixtures/
 │           └── collections/
 │               └── reservoir-api.json
 │
-├── wfs/                          # Web Feature Service (XML/JSON, ~30 files)
+├── wfs/                          # Web Feature Service (XML/JSON, 21 files)
 │   ├── capabilities-pigma-1-1-0.xml
 │   ├── capabilities-pigma-2-0-0.xml
 │   ├── capabilities-geo2france-2-0-0.xml
@@ -77,7 +77,7 @@ fixtures/
 │   ├── exception-report-2-0-0.xml
 │   └── service-exception-report-1-0-0.xml
 │
-├── wms/                          # Web Map Service (XML, ~20 files)
+├── wms/                          # Web Map Service (XML, 9 files)
 │   ├── capabilities-brgm-1-1-1.xml
 │   ├── capabilities-brgm-1-1-1-utf-16.xml
 │   ├── capabilities-brgm-1-1-1-iso-8859-15.xml
@@ -85,21 +85,21 @@ fixtures/
 │   ├── capabilities-states-1-3-0.xml
 │   └── service-exception-report-1-1-1.xml
 │
-├── wmts/                         # Web Map Tile Service (XML, ~10 files)
+├── wmts/                         # Web Map Tile Service (XML, 8 files)
 │   ├── arcgis.xml
 │   └── ...
 │
-├── stac/                         # SpatioTemporal Asset Catalog (JSON, ~5 files)
+├── stac/                         # SpatioTemporal Asset Catalog (JSON, 6 files)
 │   ├── root.json
 │   ├── collections.json
 │   └── conformance.json
 │
-└── tms/                          # Tile Map Service (XML, ~3 files)
+└── tms/                          # Tile Map Service (XML, 2 files)
     ├── tms-resource-geopf.xml
     └── tileMap-resource-geopf.xml
 ```
 
-The project maintains approximately 80 fixtures as of February 2026, distributed across service types according to testing requirements. OGC API - Features fixtures (15 files) cover landing pages, collection metadata, and error responses in JSON format per OGC 17-069r4 [11], with nested subdirectories containing related resources such as collections, conformance declarations, tile matrix sets, and styles. The EDR subdirectory within OGC API contains Environmental Data Retrieval fixtures including sample-data-hub responses with collections, conformance, and reservoir-api endpoints representing EDR-specific query patterns for spatiotemporal environmental data access. WFS fixtures (30 files) span three major specification versions (1.0.0, 1.1.0, 2.0.0) in both XML and JSON encodings per OGC 09-025r2 [12], including GetCapabilities metadata documents, DescribeFeatureType schema definitions, GetFeature response data, and exception reports. WMS fixtures (20 files) provide GetCapabilities responses across versions 1.1.1 and 1.3.0 per OGC 06-042 [13], with deliberate character encoding variations (UTF-8, UTF-16, ISO-8859-15) to test internationalization handling. WMTS, STAC, and TMS fixtures provide coverage of tile service capabilities, Earth observation catalog structures, and legacy tiling protocols respectively.
+The project maintains 120 fixtures as of February 2026, distributed across service types according to testing requirements. OGC API fixtures (74 files including subdirectories) form the largest category, covering landing pages, collection metadata, conformance declarations, tile matrix sets, styles, and error responses in JSON format per OGC 17-069r4 [11]. The OGC API directory uses nested subdirectories to mirror URL path structure, with multiple mock servers (sample-data, gnosis-earth, sample-data-2, etc.) each containing their own resource trees. The EDR subdirectory contains Environmental Data Retrieval fixtures including sample-data-hub responses with collections, conformance, and reservoir-api endpoints. WFS fixtures (21 files) span three major specification versions (1.0.0, 1.1.0, 2.0.0) in both XML and JSON encodings per OGC 09-025r2 [12], including GetCapabilities metadata documents, DescribeFeatureType schema definitions, GetFeature response data, and exception reports. WMS fixtures (9 files) provide GetCapabilities responses across versions 1.1.1 and 1.3.0 per OGC 06-042 [13], with deliberate character encoding variations (UTF-8, UTF-16, ISO-8859-15) to test internationalization handling. WMTS (8 files), STAC (6 files), and TMS (2 files) fixtures provide coverage of tile service capabilities, Earth observation catalog structures, and legacy tiling protocols respectively.
 
 ## Fixture Provenance
 
@@ -224,16 +224,16 @@ Directory names omit protocol versions (e.g., `wfs/` not `wfs-2.0.0/`). Multiple
 
 ### 4.2 Fixture Inventory
 
-As of February 2026, the project maintains approximately 80 test fixtures distributed across service types:
+As of February 2026, the project maintains 120 test fixtures distributed across service types:
 
 | Service Type | Count | Primary Formats | Specification Reference |
 |--------------|-------|-----------------|-------------------------|
-| OGC API - Features | 15 | JSON | OGC 17-069r4, OGC 19-072 [20][21] |
-| WFS | 30 | XML, JSON | OGC 04-094 (1.0.0), OGC 04-094r2 (1.1.0), OGC 09-025r2 (2.0.0) [22] |
-| WMS | 20 | XML | OGC 01-068r3 (1.1.1), OGC 06-042 (1.3.0) [23] |
-| WMTS | 10 | XML | OGC 07-057r7 [24] |
-| STAC | 5 | JSON | STAC 1.0.0 [25] |
-| TMS | 3 | XML | OSGeo TMS 1.0.0 [26] |
+| OGC API - Features & EDR | 74 | JSON | OGC 17-069r4, OGC 19-072 [20][21] |
+| WFS | 21 | XML, JSON | OGC 04-094 (1.0.0), OGC 04-094r2 (1.1.0), OGC 09-025r2 (2.0.0) [22] |
+| WMS | 9 | XML | OGC 01-068r3 (1.1.1), OGC 06-042 (1.3.0) [23] |
+| WMTS | 8 | XML | OGC 07-057r7 [24] |
+| STAC | 6 | JSON | STAC 1.0.0 [25] |
+| TMS | 2 | XML | OSGeo TMS 1.0.0 [26] |
 
 ### 4.3 Fixture Provenance
 
