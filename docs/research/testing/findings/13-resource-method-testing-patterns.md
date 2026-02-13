@@ -157,6 +157,8 @@ This section and Section 12 work together:
 
 ## 3. Universal Test Template
 
+> **⚠️ Design Document Notice:** The method signatures below (e.g., `builder.getSystemSubsystems()`, `builder.checkCommandFeasibility()`) are *proposed designs*, not documentation of existing APIs. `CSAPIQueryBuilder` has not been implemented. Method names, signatures, and parameters are subject to change during implementation. Use these as design intent, not as a specification to code against directly.
+
 ### 3.1 Template Structure
 
 ```typescript

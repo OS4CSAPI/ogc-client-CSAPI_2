@@ -249,7 +249,7 @@ Each note follows the pattern: "If [topic] conflicts, [authoritative doc] takes 
 
 **Severity:** LOW  
 **Document:** [13-resource-method-testing-patterns.md](../findings/13-resource-method-testing-patterns.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** Document 13 specifies tests for 80 methods across 9 resource types with detailed method signatures (e.g., `builder.getSystemSubsystems()`, `builder.checkCommandFeasibility()`, `builder.cancelCommand()`). None of these methods exist — `CSAPIQueryBuilder` has not been implemented. The method names and signatures are speculative.
 
@@ -257,19 +257,23 @@ Each note follows the pattern: "If [topic] conflicts, [authoritative doc] takes 
 
 **Recommendation:** Add a note at the top of Section 3 clarifying these are proposed method signatures subject to change during implementation.
 
+**Resolution:** Added "⚠️ Design Document Notice" blockquote at the top of Section 3 clarifying that all method signatures are proposed designs, not existing APIs, and are subject to change during implementation.
+
 ---
 
 ### L3: Doc 19 — 200 Hours Implementation Estimate
 
 **Severity:** LOW  
 **Document:** [19-test-organization-file-structure.md](../findings/19-test-organization-file-structure.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** Document 19 estimates 200 hours across 5 weeks for test implementation. This appears high for 22 test files totaling 4,100-5,300 lines. At 200 hours, that's ~38 lines/hour, which is unusually slow for test code written with templates.
 
 **Impact:** Planning estimates should be treated as upper bounds, not targets.
 
 **Recommendation:** Adjust estimates or add context that these include research, fixture creation, and iteration time — not just code writing.
+
+**Resolution:** Added context to both occurrences of the 200-hour estimate (Section 10.1 and Document Metadata). Both now clarify that 200 hours is an upper bound including research, fixture creation/validation, code review iteration, and CI integration — not just test code writing.
 
 ---
 

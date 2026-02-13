@@ -1277,6 +1277,8 @@ beforeEach(() => {
 
 **Total Implementation Time:** ~5 weeks (~200 hours)
 
+> **Estimate Context:** The 200-hour estimate is an upper bound that includes research, fixture creation/validation, test utility development, code review iteration, and CI integration — not just test code writing. Actual code writing for ~4,100–5,300 lines of test code with templates and shared utilities would be a subset of this total.
+
 ### 10.2 Development Best Practices
 
 **1. Write Tests Incrementally:**
@@ -1452,7 +1454,7 @@ jobs:
 **Test Files Specified:** 22 files  
 **Fixtures Organized:** ~280 files  
 **Templates Created:** 5 templates  
-**Estimated Implementation Time:** ~5 weeks (200 hours)  
+**Estimated Implementation Time:** ~5 weeks (200 hours upper bound; includes research, fixture creation, review iteration, and CI integration — not just code writing)
 
 **Review Checklist:**
 - [x] All research questions answered (7 core + 8 detailed)
