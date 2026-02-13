@@ -1527,7 +1527,6 @@ import {
   Procedure,
   Datastream,
   Observation,
-  Control,
   ControlStream,
   Command,
   SystemQueryOptions,
@@ -1667,6 +1666,232 @@ describe('CSAPI Type Definitions', () => {
   });
   
   // ... Similar tests for Procedure, Datastream, SamplingFeature, Control, ControlStream, Command
+  //
+  // ⚠️ A1 FINDING C1-M2: The following 5 resource interfaces were previously
+  // represented only by this placeholder comment. Explicit shape examples are
+  // now provided below for fixture design reference. Per the H4 review notice
+  // above, do NOT implement the expect() assertions — they are AP4. The
+  // TypeScript compiler validates shape conformance at compile time.
+  //
+
+  describe('Procedure interface', () => {
+    it('compiles with required properties only', () => {
+      const procedure: Procedure = {
+        id: 'proc-001',
+        type: 'Procedure',
+        properties: {
+          name: 'Temperature Measurement Method',
+        },
+        links: [],
+      };
+
+      expect(procedure.id).toBe('proc-001');
+      expect(procedure.type).toBe('Procedure');
+    });
+
+    it('compiles with all optional properties', () => {
+      const procedure: Procedure = {
+        id: 'proc-001',
+        type: 'Procedure',
+        properties: {
+          name: 'Temperature Measurement Method',
+          description: 'Standard thermometer reading procedure',
+          procedureType: 'urn:ogc:def:procedure:OGC::measurement',
+          identifier: 'urn:example:procedure:temp-measure',
+        },
+        links: [
+          { rel: 'self', href: '/procedures/proc-001', type: 'application/json' },
+        ],
+      };
+
+      expect(procedure.properties.description).toBe('Standard thermometer reading procedure');
+      expect(procedure.properties.procedureType).toBe('urn:ogc:def:procedure:OGC::measurement');
+    });
+  });
+
+  describe('SamplingFeature interface', () => {
+    it('compiles with required properties only', () => {
+      const sf: SamplingFeature = {
+        id: 'sf-001',
+        type: 'SamplingFeature',
+        properties: {
+          name: 'Weather Station Site',
+          sampledFeature: 'urn:example:feature:atmosphere',
+        },
+        geometry: {
+          type: 'Point',
+          coordinates: [-122.4194, 37.7749],
+        },
+        links: [],
+      };
+
+      expect(sf.id).toBe('sf-001');
+      expect(sf.properties.sampledFeature).toBe('urn:example:feature:atmosphere');
+    });
+
+    it('compiles with polygon geometry', () => {
+      const sf: SamplingFeature = {
+        id: 'sf-002',
+        type: 'SamplingFeature',
+        properties: {
+          name: 'Forest Monitoring Plot',
+          sampledFeature: 'urn:example:feature:forest',
+          description: '100m x 100m monitoring plot',
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[
+            [-122.42, 37.77], [-122.41, 37.77],
+            [-122.41, 37.78], [-122.42, 37.78],
+            [-122.42, 37.77],
+          ]],
+        },
+        links: [],
+      };
+
+      expect(sf.geometry.type).toBe('Polygon');
+    });
+  });
+
+  describe('Datastream interface', () => {
+    it('compiles with required properties only', () => {
+      const ds: Datastream = {
+        id: 'ds-001',
+        type: 'DataStream',
+        properties: {
+          name: 'Temperature Readings',
+          observedProperty: 'urn:ogc:def:property:OGC::Temperature',
+        },
+        links: [],
+      };
+
+      expect(ds.id).toBe('ds-001');
+      expect(ds.type).toBe('DataStream');
+    });
+
+    it('compiles with schema and format options', () => {
+      const ds: Datastream = {
+        id: 'ds-001',
+        type: 'DataStream',
+        properties: {
+          name: 'Temperature Readings',
+          observedProperty: 'urn:ogc:def:property:OGC::Temperature',
+          description: 'Ambient temperature from station sensor',
+          observationFormat: 'application/swe+json',
+          resultSchema: {
+            type: 'DataRecord',
+            fields: [
+              { name: 'time', type: 'Time' },
+              { name: 'temperature', type: 'Quantity', uom: { code: 'Cel' } },
+            ],
+          },
+        },
+        links: [
+          { rel: 'observations', href: '/datastreams/ds-001/observations' },
+        ],
+      };
+
+      expect(ds.properties.observationFormat).toBe('application/swe+json');
+      expect(ds.properties.resultSchema?.type).toBe('DataRecord');
+    });
+  });
+
+  describe('ControlStream interface', () => {
+    it('compiles with required properties only', () => {
+      const cs: ControlStream = {
+        id: 'cs-001',
+        type: 'ControlStream',
+        properties: {
+          name: 'Valve Control Channel',
+          controlledProperty: 'urn:ogc:def:property:OGC::ValvePosition',
+        },
+        links: [],
+      };
+
+      expect(cs.id).toBe('cs-001');
+      expect(cs.type).toBe('ControlStream');
+    });
+
+    it('compiles with parameter schema', () => {
+      const cs: ControlStream = {
+        id: 'cs-001',
+        type: 'ControlStream',
+        properties: {
+          name: 'Valve Control Channel',
+          controlledProperty: 'urn:ogc:def:property:OGC::ValvePosition',
+          description: 'Controls main intake valve',
+          commandFormat: 'application/swe+json',
+          parameterSchema: {
+            type: 'DataRecord',
+            fields: [
+              { name: 'position', type: 'Quantity', uom: { code: '%' } },
+            ],
+          },
+        },
+        links: [
+          { rel: 'commands', href: '/controlstreams/cs-001/commands' },
+        ],
+      };
+
+      expect(cs.properties.commandFormat).toBe('application/swe+json');
+      expect(cs.properties.parameterSchema?.type).toBe('DataRecord');
+    });
+  });
+
+  describe('Command interface', () => {
+    it('compiles with required properties only', () => {
+      const cmd: Command = {
+        id: 'cmd-001',
+        type: 'Command',
+        properties: {
+          issueTime: new Date('2024-06-15T10:00:00Z'),
+          parameters: { position: 75 },
+        },
+        links: [],
+      };
+
+      expect(cmd.id).toBe('cmd-001');
+      expect(cmd.type).toBe('Command');
+    });
+
+    it('compiles with status and execution time', () => {
+      const cmd: Command = {
+        id: 'cmd-001',
+        type: 'Command',
+        properties: {
+          issueTime: new Date('2024-06-15T10:00:00Z'),
+          executionTime: new Date('2024-06-15T10:00:05Z'),
+          parameters: { position: 75, speed: 'slow' },
+          status: 'COMPLETED',
+        },
+        links: [
+          { rel: 'status', href: '/commands/cmd-001/status' },
+          { rel: 'result', href: '/commands/cmd-001/result' },
+        ],
+      };
+
+      expect(cmd.properties.status).toBe('COMPLETED');
+      expect(cmd.properties.executionTime).toBeInstanceOf(Date);
+    });
+
+    it('compiles with pending async command', () => {
+      const cmd: Command = {
+        id: 'cmd-002',
+        type: 'Command',
+        properties: {
+          issueTime: new Date('2024-06-15T10:00:00Z'),
+          parameters: { position: 100 },
+          status: 'PENDING',
+        },
+        links: [
+          { rel: 'status', href: '/commands/cmd-002/status' },
+        ],
+      };
+
+      expect(cmd.properties.status).toBe('PENDING');
+      expect(cmd.properties.executionTime).toBeUndefined();
+    });
+  });
   
   //═══════════════════════════════════════════════════════════
   // Query Options
@@ -2033,7 +2258,7 @@ describe('isSystem', () => {
 **Subtasks:**
 1. Set up test file structure (5 minutes)
 2. Write resource interface tests (9 resources × 15 minutes = 135 minutes)
-   - System, Deployment, SamplingFeature, Procedure, Datastream, Observation, Control, ControlStream, Command
+   - System, Deployment, SamplingFeature, Procedure, Datastream, Observation, ControlStream, Command
    - Required properties test
    - Optional properties test
    - Optional undefined test

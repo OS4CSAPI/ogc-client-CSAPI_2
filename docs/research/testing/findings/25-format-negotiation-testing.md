@@ -14,6 +14,24 @@
 >
 > See also: [Phase 2E Review Report](../review/phase-2e-advanced-scenarios-category.md)
 
+> **📋 A1 FINDING C4-M1 — Scope Reduction Audit**
+>
+> **Problem:** ~1,800 LOC / 50 test scenarios for ~13 lines of implementation. 45 of 50 scenarios (90%) test server HTTP response behavior (AP3), not client code.
+>
+> **Actionable client scenarios (5 of 50):** Only §4.4 scenarios 36-40 (URL encoding) and §6.1 (`FormatValidator` pre-validation) test actual client behavior. These should be implemented.
+>
+> **Server-behavior scenarios (45 of 50) — DO NOT IMPLEMENT:**
+> - §4.1 scenarios 1-20: Assert server returns correct `Content-Type` for `f=` values
+> - §4.2 scenarios 21-30: Test Accept header behavior the client doesn't use
+> - §4.3 scenarios 31-35: Test server default format selection
+> - §4.5 scenarios 41-45: Test server error responses (406, 400)
+> - §6.2 `ResponseValidator`: Validates server set correct `Content-Type`
+> - §3 Format precedence rules: Describe server resolution logic
+>
+> **Retained as reference:** The flagged sections document server behavior useful for fixture design and understanding API contracts, but must not become test assertions.
+>
+> See also: [A1 Finding C1-M3](#a1-format-detection-fallback-scenarios) — client-side scenarios that SHOULD be tested (document structure analysis fallback)
+
 **Research Plan:** [Research Plan 25: Format Negotiation Testing Strategy](../research-plans/25-format-negotiation-testing.md)
 
 **Research Questions:** 6 core questions about testing Accept header format negotiation, query parameter format selection (f=geojson), format discovery via links, CSAPI-supported media types, format precedence (Accept vs query param), and handling unsupported formats
@@ -1490,5 +1508,204 @@ export const DEFAULT_FORMATS: Record<string, string> = {
 ---
 
 **Document Status:** ✅ Complete  
-**Last Updated:** February 6, 2026  
+**Last Updated:** February 13, 2026  
 **Next Review:** After peer review and feedback incorporation
+
+---
+
+## A1: Format Detection Fallback Scenarios {#a1-format-detection-fallback-scenarios}
+
+> **📋 Added by A1 Finding C1-M3:** The original document had no test scenarios for client-side format detection when `Content-Type` is ambiguous or missing. This section fills that gap with scenarios that test actual client behavior — the document structure analysis fallback path.
+
+### Background
+
+The format detector (Guide §7) includes a document structure analysis fallback for cases where the server `Content-Type` header is:
+- **Missing** entirely (non-compliant server)
+- **Ambiguous** (e.g., `application/json` for what could be GeoJSON, SensorML JSON, or SWE Common JSON)
+- **Incorrect** (e.g., server returns `application/json` for a GeoJSON FeatureCollection)
+
+The client must determine the correct parser from the response body content. This is the ~13 lines of implementation code that the original 50 scenarios failed to test.
+
+### Fallback Detection Test Scenarios (10 scenarios)
+
+#### Missing Content-Type (3 scenarios)
+
+**F1. Missing Content-Type — GeoJSON body detected**
+```typescript
+it('detects GeoJSON from body when Content-Type is missing', () => {
+  const body = {
+    type: 'Feature',
+    id: 'sys-001',
+    geometry: { type: 'Point', coordinates: [-122.4, 37.8] },
+    properties: { name: 'Sensor', featureType: 'System' },
+  };
+
+  const format = detectFormat(body, /* contentType */ undefined);
+  expect(format).toBe('application/geo+json');
+});
+```
+
+**F2. Missing Content-Type — SensorML body detected**
+```typescript
+it('detects SensorML from body when Content-Type is missing', () => {
+  const body = {
+    type: 'PhysicalSystem',
+    identifier: 'urn:example:sensor:001',
+    components: [],
+  };
+
+  const format = detectFormat(body, /* contentType */ undefined);
+  expect(format).toBe('application/sml+json');
+});
+```
+
+**F3. Missing Content-Type — plain JSON (no distinguishing properties)**
+```typescript
+it('falls back to application/json when body has no format markers', () => {
+  const body = {
+    id: 'prop-001',
+    definition: 'urn:ogc:def:property:OGC::Temperature',
+    label: 'Temperature',
+  };
+
+  const format = detectFormat(body, /* contentType */ undefined);
+  expect(format).toBe('application/json');
+});
+```
+
+#### Ambiguous Content-Type (4 scenarios)
+
+**F4. `application/json` Content-Type but body is GeoJSON FeatureCollection**
+```typescript
+it('detects GeoJSON FeatureCollection despite application/json Content-Type', () => {
+  const body = {
+    type: 'FeatureCollection',
+    features: [
+      { type: 'Feature', id: 'sys-001', properties: { name: 'Sensor' }, geometry: null },
+    ],
+  };
+
+  const format = detectFormat(body, 'application/json');
+  expect(format).toBe('application/geo+json');
+});
+```
+
+**F5. `application/json` Content-Type but body is SensorML**
+```typescript
+it('detects SensorML despite application/json Content-Type', () => {
+  const body = {
+    type: 'PhysicalComponent',
+    identifier: 'urn:example:component:001',
+    inputs: [],
+    outputs: [],
+  };
+
+  const format = detectFormat(body, 'application/json');
+  expect(format).toBe('application/sml+json');
+});
+```
+
+**F6. `application/json` Content-Type — body is SWE Common DataRecord**
+```typescript
+it('detects SWE Common JSON despite application/json Content-Type', () => {
+  const body = {
+    type: 'DataRecord',
+    fields: [
+      { name: 'time', type: 'Time' },
+      { name: 'value', type: 'Quantity' },
+    ],
+  };
+
+  const format = detectFormat(body, 'application/json');
+  expect(format).toBe('application/swe+json');
+});
+```
+
+**F7. `application/json` Content-Type — body is genuinely plain JSON**
+```typescript
+it('keeps application/json when body has no special format markers', () => {
+  const body = {
+    id: 'prop-001',
+    label: 'Temperature',
+    description: 'Ambient air temperature',
+  };
+
+  const format = detectFormat(body, 'application/json');
+  expect(format).toBe('application/json');
+});
+```
+
+#### Detection Logic Tests (3 scenarios)
+
+**F8. GeoJSON detection keys: `type: 'Feature'` or `type: 'FeatureCollection'`**
+```typescript
+it('identifies GeoJSON by type=Feature with geometry property', () => {
+  expect(isGeoJSON({ type: 'Feature', geometry: null, properties: {} })).toBe(true);
+  expect(isGeoJSON({ type: 'FeatureCollection', features: [] })).toBe(true);
+  expect(isGeoJSON({ type: 'DataRecord', fields: [] })).toBe(false);
+});
+```
+
+**F9. SensorML detection keys: `type` in `['PhysicalSystem', 'PhysicalComponent', 'SimpleProcess', 'AggregateProcess']`**
+```typescript
+it('identifies SensorML by process type discriminator', () => {
+  expect(isSensorML({ type: 'PhysicalSystem' })).toBe(true);
+  expect(isSensorML({ type: 'PhysicalComponent' })).toBe(true);
+  expect(isSensorML({ type: 'SimpleProcess' })).toBe(true);
+  expect(isSensorML({ type: 'AggregateProcess' })).toBe(true);
+  expect(isSensorML({ type: 'Feature' })).toBe(false);
+});
+```
+
+**F10. SWE Common detection keys: `type` in `['DataRecord', 'DataArray', 'Vector', 'Matrix']` with `fields` or `elementType`**
+```typescript
+it('identifies SWE Common by data component type with structural properties', () => {
+  expect(isSWECommon({ type: 'DataRecord', fields: [] })).toBe(true);
+  expect(isSWECommon({ type: 'DataArray', elementType: {} })).toBe(true);
+  expect(isSWECommon({ type: 'Vector', coordinates: [] })).toBe(true);
+  expect(isSWECommon({ type: 'DataRecord' })).toBe(true); // type alone is sufficient
+  expect(isSWECommon({ type: 'Feature' })).toBe(false);
+});
+```
+
+### Detection Priority Order
+
+When the body could match multiple formats, the detector uses this priority:
+
+1. **GeoJSON** — `type === 'Feature'` or `type === 'FeatureCollection'` (highest priority, most unambiguous)
+2. **SensorML** — `type` is a SensorML process type (`PhysicalSystem`, `PhysicalComponent`, etc.)
+3. **SWE Common** — `type` is a SWE data component type (`DataRecord`, `DataArray`, etc.)
+4. **Plain JSON** — fallback when no format markers found
+
+### Implementation Reference
+
+The `detectFormat()` function maps to the format detector described in Guide §7 (Format Detector: Extending Existing Content Negotiation). The detection logic examines root JSON properties:
+
+```typescript
+function detectFormat(body: unknown, contentType?: string): string {
+  // If Content-Type is specific (not ambiguous), trust it
+  if (contentType && contentType !== 'application/json') {
+    return contentType.split(';')[0].trim();
+  }
+
+  // Fallback: analyze document structure
+  if (typeof body === 'object' && body !== null) {
+    const obj = body as Record<string, unknown>;
+    if (obj.type === 'Feature' || obj.type === 'FeatureCollection') {
+      return 'application/geo+json';
+    }
+    if (['PhysicalSystem', 'PhysicalComponent', 'SimpleProcess', 'AggregateProcess'].includes(obj.type as string)) {
+      return 'application/sml+json';
+    }
+    if (['DataRecord', 'DataArray', 'Vector', 'Matrix'].includes(obj.type as string)) {
+      return 'application/swe+json';
+    }
+  }
+
+  return contentType || 'application/json';
+}
+```
+
+**Scenario count:** 10 client-side fallback detection tests  
+**Estimated LOC:** ~120 lines of test code  
+**Implementation target:** ~13 lines (the `detectFormat` function above)
