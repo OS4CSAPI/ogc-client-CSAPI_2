@@ -597,249 +597,134 @@
 
 ## 5. Directory Structure Design
 
-### 5.1 Hierarchical Organization
+> **⚠️ REVISED (Phase 2A Review — H3):** The original Section 5 proposed organizing fixtures by test type and data format (`csapi-querybuilder/`, `geojson-csapi/`, `sensorml/`, `swe-common/`, `integration/`, `errors/`). This deviates from the upstream pattern, which organizes by **service protocol** with URL-path-mirroring subdirectories. Since CSAPI extends OGC API and the upstream mock fetch mechanism maps URL paths to file paths, CSAPI fixtures should follow the same convention. The structure below has been revised accordingly.
 
-**Primary Dimension:** Test type (most significant organizational axis)
+### 5.1 Upstream Pattern
 
-**Rationale:**
-- Tests are organized by type (unit, integration, format parsers)
-- Fixtures should mirror test file structure
-- Enables fixture co-location with tests
-- Simplifies fixture discovery during test execution
-
-**Directory Structure:**
+The existing fixture structure organizes by service protocol, matching URL paths:
 
 ```
 fixtures/
-├── csapi-querybuilder/                # Section 12 & 13 fixtures
-│   ├── universal/                     # Universal fixtures (5)
-│   │   ├── conformance-all-resources.json
-│   │   ├── conformance-part1-only.json
-│   │   ├── collection-info-all-resources.json
-│   │   ├── collection-info-part1-only.json
-│   │   └── collection-info-no-csapi.json
-│   └── resources/                     # Resource-specific fixtures (18)
-│       ├── systems/
-│       │   ├── systems-collection-response.json
-│       │   └── systems-item-response.json
-│       ├── deployments/
-│       │   ├── deployments-collection-response.json
-│       │   └── deployments-item-response.json
-│       ├── procedures/
-│       │   ├── procedures-collection-response.json
-│       │   └── procedures-item-response.json
-│       ├── samplingfeatures/
-│       │   ├── samplingfeatures-collection-response.json
-│       │   └── samplingfeatures-item-response.json
-│       ├── properties/
-│       │   ├── properties-collection-response.json
-│       │   └── properties-item-response.json
-│       ├── datastreams/
-│       │   ├── datastreams-collection-response.json
-│       │   └── datastreams-item-response.json
-│       ├── observations/
-│       │   ├── observations-collection-response.json
-│       │   └── observations-item-response.json
-│       ├── controlstreams/
-│       │   ├── controlstreams-collection-response.json
-│       │   └── controlstreams-item-response.json
-│       └── commands/
-│           ├── commands-collection-response.json
-│           └── commands-item-response.json
-├── geojson-csapi/                     # Section 11 fixtures (~20)
-│   ├── systems/
-│   │   ├── system-weather-station-valid.json
-│   │   ├── system-lidar-valid.json
-│   │   ├── system-missing-uid.json
-│   │   └── system-invalid-feature-type.json
-│   ├── deployments/
-│   │   ├── deployment-argo-valid.json
-│   │   ├── deployment-drone-mission-valid.json
-│   │   ├── deployment-missing-valid-time.json
-│   │   └── deployment-invalid-valid-time-format.json
-│   ├── procedures/
-│   │   ├── procedure-temperature-method-valid.json
-│   │   ├── procedure-sampling-protocol-valid.json
-│   │   ├── procedure-has-geometry.json
-│   │   └── procedure-invalid-procedure-type.json
-│   ├── samplingfeatures/
-│   │   ├── samplingfeature-vertical-profile-valid.json
-│   │   ├── samplingfeature-point-sample-valid.json
-│   │   ├── samplingfeature-missing-parent-system.json
-│   │   └── samplingfeature-invalid-geometry-type.json
-│   └── properties/
-│       ├── property-temperature-valid.json
-│       ├── property-wind-speed-valid.json
-│       ├── property-has-geometry.json
-│       └── property-missing-item-type.json
-├── sensorml/                          # Section 9 fixtures (~25)
-│   ├── physicalsystem/
-│   │   ├── physicalsystem-weather-station.json
-│   │   ├── physicalsystem-saildrone.json
-│   │   ├── physicalsystem-lidar.json
-│   │   ├── physicalsystem-missing-identifier.json
-│   │   └── physicalsystem-invalid-type.json
-│   ├── physicalcomponent/
-│   │   ├── physicalcomponent-thermometer.json
-│   │   ├── physicalcomponent-camera.json
-│   │   └── physicalcomponent-invalid-io.json
-│   ├── process/
-│   │   ├── simpleprocess-windchill.json
-│   │   ├── simpleprocess-coordinate-transform.json
-│   │   ├── aggregateprocess-data-fusion.json
-│   │   ├── aggregateprocess-sensor-calibration.json
-│   │   └── aggregateprocess-invalid-components.json
-│   └── composite/
-│       ├── composite-system-mobile-platform.json
-│       ├── composite-system-nested-3-levels.json
-│       ├── composite-system-circular-reference.json
-│       └── composite-system-invalid-component-type.json
-├── swe-common/                        # Section 10 fixtures (~120)
-│   ├── json/                          # JSON encoding (~40)
-│   │   ├── scalars/
-│   │   │   ├── boolean-motion-detected.json
-│   │   │   ├── text-manufacturer.json
-│   │   │   ├── category-geological-period.json
-│   │   │   ├── count-pixel-count.json
-│   │   │   ├── quantity-temperature.json
-│   │   │   ├── quantity-radiance.json
-│   │   │   ├── time-sampling-time-gregorian.json
-│   │   │   └── time-unix-timestamp.json
-│   │   ├── ranges/
-│   │   │   ├── category-range-era-range.json
-│   │   │   ├── count-range-array-index.json
-│   │   │   ├── quantity-range-latitude.json
-│   │   │   └── time-range-survey-period.json
-│   │   ├── records/
-│   │   │   ├── datarecord-weather-data.json
-│   │   │   ├── datarecord-camera-calibration.json
-│   │   │   ├── vector-location-2d.json
-│   │   │   ├── vector-location-3d.json
-│   │   │   └── vector-velocity.json
-│   │   ├── choice/
-│   │   │   └── datachoice-message-types.json
-│   │   ├── arrays/
-│   │   │   ├── dataarray-calibration-curve.json
-│   │   │   ├── dataarray-trajectory.json
-│   │   │   ├── dataarray-image-2d.json
-│   │   │   ├── dataarray-profile-series.json
-│   │   │   ├── matrix-stress-3x3.json
-│   │   │   └── matrix-rotation.json
-│   │   ├── streams/
-│   │   │   ├── datastream-weather.json
-│   │   │   ├── datastream-navigation.json
-│   │   │   ├── datastream-choice-messages.json
-│   │   │   └── datastream-geometry-detections.json
-│   │   ├── geometry/
-│   │   │   ├── geometry-point.json
-│   │   │   ├── geometry-linestring.json
-│   │   │   └── geometry-polygon.json
-│   │   └── errors/
-│   │       ├── invalid-structure.json
-│   │       ├── missing-required-field.json
-│   │       ├── wrong-type.json
-│   │       ├── invalid-component.json
-│   │       └── array-instead-of-object.json
-│   ├── text/                          # Text encoding (~40)
-│   │   ├── arrays/
-│   │   │   ├── dataarray-calibration-curve.csv
-│   │   │   ├── dataarray-trajectory.csv
-│   │   │   ├── dataarray-profile-series.csv
-│   │   │   └── matrix-stress-3x3.csv
-│   │   ├── streams/
-│   │   │   ├── datastream-weather.csv
-│   │   │   ├── datastream-navigation-optional.csv
-│   │   │   ├── datastream-choice-messages.csv
-│   │   │   └── datastream-geometry-detections.csv
-│   │   └── (... 30+ more covering all component types)
-│   └── binary/                        # Binary encoding (~40)
-│       ├── arrays/
-│       │   ├── dataarray-calibration-curve.bin
-│       │   ├── dataarray-trajectory.bin
-│       │   └── dataarray-large-dataset.bin
-│       ├── streams/
-│       │   ├── datastream-weather.bin
-│       │   ├── datastream-navigation.bin
-│       │   └── datastream-large-dataset.bin
-│       └── (... 30+ more covering all data types)
-├── integration/                       # Section 14 fixtures (33)
-│   ├── discovery/
-│   │   ├── discovery-root-landing-page.json
-│   │   ├── discovery-conformance.json
-│   │   ├── discovery-collections.json
-│   │   ├── discovery-systems-collection.json
-│   │   ├── discovery-weather-station.json
-│   │   ├── discovery-thermometer-component.json
-│   │   ├── discovery-datastreams-for-system.json
-│   │   └── discovery-temp-datastream.json
-│   ├── observations/
-│   │   ├── observation-property-temperature.json
-│   │   ├── observation-datastream-temp-series.json
-│   │   ├── observation-observations-collection.json
-│   │   ├── observation-observation-single.json
-│   │   ├── observation-foi-location.json
-│   │   ├── observation-sensorml-procedure.json
-│   │   ├── observation-swe-datarecord.json
-│   │   ├── observation-swe-values-json.json
-│   │   ├── observation-swe-values-text.csv
-│   │   └── observation-swe-values-binary.bin
-│   ├── commands/
-│   │   ├── command-controlstream.json
-│   │   ├── command-commands-collection.json
-│   │   ├── command-command-history.json
-│   │   ├── command-tasking-capability.json
-│   │   ├── command-parameter-schema.json
-│   │   ├── command-post-request.json
-│   │   ├── command-post-response.json
-│   │   └── command-command-status.json
-│   └── navigation/
-│       ├── navigation-system-mobile-platform.json
-│       ├── navigation-deployment-mission.json
-│       ├── navigation-subsystems-collection.json
-│       ├── navigation-subsystem-camera.json
-│       ├── navigation-samplingfeatures-for-system.json
-│       ├── navigation-samplingfeature-vertical-profile.json
-│       └── navigation-circular-reference-error.json
-└── errors/                            # Error and edge case fixtures (~30)
-    ├── empty/
-    │   ├── empty-collection-systems.json
-    │   ├── empty-collection-observations.json
-    │   ├── null-geometry-procedure.json
-    │   ├── null-geometry-system.json
-    │   ├── null-properties-error.json
-    │   ├── empty-links-array.json
-    │   └── empty-datastream-values.json
-    ├── invalid/
-    │   ├── invalid-uri-format-system.json
-    │   ├── invalid-vocabulary-system-type.json
-    │   ├── invalid-temporal-period-deployment.json
-    │   ├── invalid-geojson-feature-structure.json
-    │   └── invalid-sensorml-missing-identifier.json
-    ├── schema-violations/
-    │   ├── schema-violation-missing-required-field.json
-    │   ├── schema-violation-wrong-type.json
-    │   ├── schema-violation-extra-property.json
-    │   ├── schema-violation-swe-invalid-component.json
-    │   └── schema-violation-array-instead-of-object.json
-    ├── http-errors/
-    │   ├── error-404-resource-not-found.json
-    │   ├── error-400-invalid-query-parameter.json
-    │   ├── error-400-invalid-request-body.json
-    │   ├── error-500-internal-server-error.json
-    │   ├── error-503-service-unavailable.json
-    │   ├── error-401-unauthorized.json
-    │   ├── error-403-forbidden.json
-    │   └── error-409-conflict.json
-    └── extreme/
-        ├── large-collection-1000-items.json
-        ├── large-observation-values-10000-points.json
-        └── deep-nested-system-10-levels.json
+├── ogc-api/                   # OGC API Features/Tiles/Styles
+│   ├── sample-data.json       # Landing page for mock server "sample-data"
+│   ├── sample-data/
+│   │   ├── conformance.json   # /sample-data/conformance
+│   │   ├── collections.json   # /sample-data/collections
+│   │   └── collections/
+│   │       └── airports.json  # /sample-data/collections/airports
+│   ├── gnosis-earth.json      # Another mock server
+│   └── gnosis-earth/...
+├── wfs/                       # WFS (XML capabilities + responses)
+├── wms/                       # WMS (XML capabilities + responses)
+├── wmts/                      # WMTS (XML capabilities)
+├── stac/                      # STAC (JSON catalog)
+└── tms/                       # TMS (XML tile maps)
 ```
 
-**Total Directory Count:** ~30 directories
-**Total File Count:** ~280 fixture files
+**Key characteristics:**
+- **URL-path-mirroring:** `fixtures/ogc-api/sample-data/conformance.json` serves requests to `/sample-data/conformance`
+- **Landing page pattern:** Top-level JSON file names the mock server (`sample-data.json`), subdirectory holds its resources (`sample-data/`)
+- **Mock fetch integration:** Test code builds file paths directly from URL paths: `path.join(FIXTURES_ROOT, url.pathname) + '.json'`
+- **Flat for XML protocols:** WFS/WMS/WMTS use flat directories with `{operation}-{source}-{version}.xml` naming
 
-### 5.2 Alternative Organizations Considered
+### 5.2 CSAPI Fixture Structure (Revised)
+
+CSAPI fixtures should go in `fixtures/csapi/` following the same URL-path-mirroring pattern. This enables direct reuse of the OGC API mock fetch mechanism.
+
+```
+fixtures/
+├── csapi/                                # CSAPI service protocol (new)
+│   ├── sample-server.json                # Landing page for mock CSAPI server
+│   ├── sample-server/
+│   │   ├── conformance.json              # /conformance
+│   │   ├── collections.json              # /collections
+│   │   ├── systems.json                  # /systems (collection)
+│   │   ├── systems/
+│   │   │   ├── weather-station-001.json  # /systems/{id}
+│   │   │   ├── weather-station-001/
+│   │   │   │   └── datastreams.json      # /systems/{id}/datastreams
+│   │   │   └── lidar-scanner-001.json
+│   │   ├── deployments.json
+│   │   ├── deployments/
+│   │   │   └── argo-mission-001.json
+│   │   ├── procedures.json
+│   │   ├── properties.json
+│   │   ├── datastreams.json
+│   │   ├── datastreams/
+│   │   │   └── temperature-series-001.json
+│   │   └── observations.json
+│   ├── no-csapi.json                     # Server without CSAPI conformance
+│   ├── empty-server.json                 # Server with empty collections
+│   └── empty-server/
+│       ├── conformance.json
+│       └── systems.json                  # Empty systems collection
+├── sensorml/                             # SensorML parser fixtures (new)
+│   ├── physicalsystem-weather-station.json
+│   ├── physicalcomponent-thermometer.json
+│   ├── simpleprocess-windchill.json
+│   ├── physicalsystem-missing-identifier.json
+│   └── physicalsystem-invalid-type.json
+├── swe-common/                           # SWE Common parser fixtures (new)
+│   ├── json/
+│   │   ├── quantity-temperature.json
+│   │   ├── datarecord-weather-data.json
+│   │   ├── dataarray-trajectory.json
+│   │   └── datastream-weather.json
+│   ├── text/                             # Defer until parser supports text
+│   └── binary/                           # Defer until parser supports binary
+├── ogc-api/                              # (existing — unchanged)
+├── wfs/                                  # (existing — unchanged)
+├── wms/                                  # (existing — unchanged)
+├── wmts/                                 # (existing — unchanged)
+├── stac/                                 # (existing — unchanged)
+└── tms/                                  # (existing — unchanged)
+```
+
+**Design decisions:**
+- **`fixtures/csapi/`**: URL-path-mirroring, same pattern as `fixtures/ogc-api/`. Enables the mock fetch loader with zero changes.
+- **`fixtures/sensorml/`**: Flat directory — these are parser input fixtures (imported directly in tests, not served via mock fetch). Same pattern as `fixtures/wfs/` (flat, descriptive filenames).
+- **`fixtures/swe-common/`**: Subdirectories by encoding type (json/text/binary) — necessary because the same data model has three distinct wire formats that exercise different parsers.
+- **Error fixtures**: Inline with their parent directories (e.g., `physicalsystem-missing-identifier.json` in `sensorml/`, `no-csapi.json` and `empty-server/` in `csapi/`). No separate `errors/` tree — follows upstream convention where invalid fixtures live alongside valid ones.
+- **Integration fixtures**: Not a separate directory — integration tests traverse the CSAPI URL-path structure via mock fetch, so `fixtures/csapi/sample-server/` already serves this purpose.
+
+**Estimated fixture count:** ~80-100 files across ~15 directories
+
+### 5.3 Mock Fetch Integration
+
+CSAPI tests can reuse the OGC API mock fetch pattern unchanged:
+
+```typescript
+const FIXTURES_ROOT = path.join(__dirname, '../../fixtures/csapi');
+
+beforeAll(() => {
+  globalThis.fetch = jest.fn().mockImplementation(async (urlOrInfo) => {
+    const url = new URL(urlOrInfo);
+    const queryPath = url.pathname.replace(/\/$/, '');
+    const filePath = `${path.join(FIXTURES_ROOT, queryPath)}.json`;
+    // ... same logic as ogc-api/endpoint.spec.ts
+  });
+});
+```
+
+SensorML and SWE Common parser tests use direct import instead (no mock fetch needed):
+```typescript
+import weatherStation from '../../fixtures/sensorml/physicalsystem-weather-station.json';
+// ... or readFileSync for non-JSON formats
+```
+
+### 5.4 Alternative Organizations Considered
+
+**By Test Type (Original Section 5 — Rejected):**
+```
+fixtures/
+├── csapi-querybuilder/
+├── geojson-csapi/
+├── sensorml/
+├── swe-common/
+├── integration/
+└── errors/
+```
+**Rejection Reason:** Incompatible with upstream mock fetch mechanism (URL-path-mirroring); creates parallel organization that doesn't match any existing pattern; forces a separate fixture loading mechanism.
 
 **By Resource Type (Rejected):**
 ```
@@ -847,9 +732,8 @@ fixtures/
 ├── systems/
 ├── deployments/
 ├── procedures/
-├── ...
 ```
-**Rejection Reason:** Doesn't align with test organization; mixes unit and integration fixtures
+**Rejection Reason:** Doesn't align with URL-path structure; resource types are nested within servers, not top-level
 
 **By Format (Rejected):**
 ```
@@ -858,16 +742,7 @@ fixtures/
 ├── text/
 ├── binary/
 ```
-**Rejection Reason:** Too flat; doesn't distinguish test types; hard to navigate
-
-**By Section Number (Rejected):**
-```
-fixtures/
-├── section-08/
-├── section-09/
-├── section-10/
-```
-**Rejection Reason:** Obscures purpose; requires knowledge of research section mapping
+**Rejection Reason:** Conflates different parser concerns; separates related fixtures
 
 ---
 

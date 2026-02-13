@@ -22,7 +22,7 @@ The fixtures category contains three documents at different stages of maturity. 
 
 **Severity Summary:**
 - Critical Issues: 1 (~~unresolved hallucination in Part 1 Section 7~~ resolved, see C1 commit `990e60e`)
-- High Issues: 4 (~~inflated counts~~ H1 resolved; ~~anti-pattern violations~~ H2 resolved + cleanup commit `fcdd3e3`; directory mismatch; naming inconsistency)
+- High Issues: 4 (~~inflated counts~~ H1 resolved; ~~anti-pattern violations~~ H2 resolved + cleanup commit `fcdd3e3`; ~~directory mismatch~~ H3 resolved; naming inconsistency)
 - Medium Issues: 3 (~~effort estimate inflation~~ resolved with H1; ~~over-engineered infrastructure~~ resolved with H2 cleanup `fcdd3e3`; inaccurate fixture counts in guide)
 - Low Issues: 2 (academic over-documentation, incomplete action items)
 - Positive Findings: 5
