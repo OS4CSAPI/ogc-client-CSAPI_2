@@ -966,6 +966,19 @@ fixtures/
 
 ## 7. Fixture Metadata and Provenance
 
+> **⚠️ SUPERSEDED — THIS ENTIRE SECTION IS HALLUCINATED CONTENT**
+>
+> The metadata system described below (embedded `$metadata` fields, sidecar `.meta.json` files, `SOURCES.md`, `VALIDATION.md`, validation states, deprecation metadata, quarterly review checklists) was fabricated without researching actual industry practices. **No open-source project uses any of these patterns.**
+>
+> Research conducted in [Part 2](./15-part-2-fixture-documentation-best-practices.md) examined jest-junit, OpenLayers, and React — collectively representing 1000+ fixtures — and found a universal pattern: **descriptive filenames + git history**. Zero projects use embedded metadata, sidecar files, or per-directory READMEs.
+>
+> **Correct approach:** See [fixtures-guide.md v2.0](../../testing/fixtures-guide.md) for the corrected guidance.
+>
+> The content below is preserved for transparency but **must not be implemented**.
+
+<details>
+<summary>Original hallucinated content (click to expand)</summary>
+
 ### 7.1 Metadata Requirements
 
 **Each fixture file should include embedded metadata** (where format allows):
@@ -1117,6 +1130,8 @@ fixtures/
 | datastream-weather.csv | spec-compliant | 2025-02-03 | custom CSV parser | SWE text encoding validated |
 | ... | ... | ... | ... | ... |
 ```
+
+</details>
 
 ---
 

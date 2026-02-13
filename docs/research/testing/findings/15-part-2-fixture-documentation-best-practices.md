@@ -406,7 +406,7 @@ No embedded metadata or README files are used.
 ### 8.1 Immediate
 
 - [x] Document research findings (this document)
-- [ ] Update Section 15 Part 1 to remove hallucinated content
+- [x] Update Section 15 Part 1 to remove hallucinated content *(supersession banner + details collapse added, June 2025)*
 - [ ] Update Section 38 Section 1.3 with correct guidance
 - [ ] Review Sections 9, 10, 37 for fixture metadata references
 
