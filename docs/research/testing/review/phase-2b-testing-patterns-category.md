@@ -164,11 +164,13 @@ expect(areaUrlWithoutParam).toEqual(areaUrlWithouParam);
 
 **Severity:** MEDIUM  
 **Document:** [34-test-utility-helper-design.md](../findings/34-test-utility-helper-design.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** Document 34 proposes test utilities at `src/csapi-querybuilder/test-utils/`. Document 19 (the authoritative organization document) specifies `src/ogc-api/csapi/` as the CSAPI module directory — consistent with upstream's `src/ogc-api/edr/` pattern.
 
 **Fix Required:** Align Document 34's path to `src/ogc-api/csapi/test-utils/` or `src/ogc-api/csapi/` flat structure per Document 19.
+
+**Resolution:** Replaced all 3 directory tree occurrences of `src/csapi-querybuilder/` with `src/ogc-api/csapi/` and fixed 2 import paths from `../test-utils/` to `./test-utils/` (since Doc 19 places tests flat alongside utilities). Added cross-reference note in Section 2 citing Doc 19 alignment.
 
 ---
 

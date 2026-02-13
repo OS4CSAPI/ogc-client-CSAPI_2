@@ -40,12 +40,14 @@ This document specifies reusable test utilities and helper functions to reduce d
 
 ```
 src/
-  csapi-querybuilder/
+  ogc-api/csapi/
     test-utils/                    # CSAPI-specific utilities
       test-utils.ts                # URL, assertion, data utilities (~200-250 lines)
       test-helpers.ts              # Setup, mocking, cleanup (~150-200 lines)
       test-fixtures.ts             # Fixture loading (~100-150 lines)
 ```
+
+> **Note:** Path aligned with Document 19 (`src/ogc-api/csapi/`), consistent with upstream's `src/ogc-api/edr/` module pattern.
 
 **Total Utility Implementation:** ~450-600 lines (3 files)
 
@@ -448,7 +450,7 @@ parseAndValidateUrl(url, {
 
 ```
 src/
-  csapi-querybuilder/
+  ogc-api/csapi/
     test-utils/                    # CSAPI test utilities
       test-utils.ts                # Core utilities
       test-helpers.ts              # Setup/teardown helpers
@@ -1960,7 +1962,7 @@ const links = buildLinks('https://api.example.com/systems', {
 
 ```
 src/
-  csapi-querybuilder/
+  ogc-api/csapi/
     test-utils/
       index.ts                     # Re-export all utilities
       test-utils.ts                # Core utilities (URL, assertions)
@@ -1986,7 +1988,7 @@ import {
   loadFixture,
   createTestQueryBuilder,
   buildSystem
-} from '../test-utils/index.js';
+} from './test-utils/index.js';
 ```
 
 ### 5.2 Naming Conventions
@@ -2336,7 +2338,7 @@ import {
   createTestQueryBuilder,
   setupTestContext,
   cleanupTest
-} from '../test-utils/index.js';
+} from './test-utils/index.js';
 
 beforeAll(() => {
   setupTestContext({ mockFetch: true, useFakeTimers: true, fixtureRoot: 'csapi' });
