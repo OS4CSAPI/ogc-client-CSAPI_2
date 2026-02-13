@@ -60,15 +60,17 @@
 
 ### 1.2 Ratio Comparison Matrix
 
+> **⚠️ Review Notice (M3 fix — Phase 2C):** The module-level line counts originally reported in this document were systematically inflated 5–13% compared to actual measurements from the codebase (commit `1694f09`). Implementation and test line counts have been corrected to actual values. The overall average ratio changed only slightly (1.44:1 → 1.45:1) because inflation was proportional and errors partially cancelled, but individual module counts were consistently wrong.
+
 | Source | Implementation Lines | Test Lines | Ratio | Assessment |
 |--------|---------------------|------------|-------|------------|
-| **Upstream - EDR** | 709 | 375 | 0.53:1 | Lower (fewer resource types) |
-| **Upstream - TMS** | 497 | 513 | 1.03:1 | Match |
-| **Upstream - WMS** | 738 | 876 | 1.19:1 | Comparable |
-| **Upstream - WFS** | 1,124 | 2,003 | 1.78:1 | Higher (mature, comprehensive) |
-| **Upstream - WMTS** | 647 | 1,543 | 2.38:1 | Highest (complex tile logic) |
-| **Upstream - STAC** | 1,296 | 926 | 0.71:1 | Lower (modern, efficient) |
-| **Upstream Average** | - | - | **1.44:1** | Reference |
+| **Upstream - EDR** | 656 | 65 | 0.10:1 | Lowest (most testing in shared endpoint.spec.ts) |
+| **Upstream - TMS** | 448 | 467 | 1.04:1 | Match |
+| **Upstream - WMS** | 698 | 843 | 1.21:1 | Comparable |
+| **Upstream - WFS** | 1,056 | 1,960 | 1.86:1 | Higher (mature, comprehensive) |
+| **Upstream - WMTS** | 611 | 1,511 | 2.47:1 | Highest (complex tile logic) |
+| **Upstream - STAC** | 1,212 | 802 | 0.66:1 | Lower (modern, efficient) |
+| **Upstream Average** | - | - | **1.45:1** | Reference |
 | **Industry Standard** | - | - | **1.0-2.0:1** | Target range |
 | **CSAPI Estimate** | 4,850-6,500 | 4,400-6,300 | **0.9-1.0:1** | ✅ **VALIDATED** |
 
@@ -171,23 +173,23 @@
 
 | Implementation | Year | Impl Lines | Test Lines | Ratio | Maturity |
 |----------------|------|-----------|------------|-------|----------|
-| **WFS** | 2022 | 1,124 | 2,003 | **1.78:1** | Mature, comprehensive |
-| **WMS** | 2024 | 738 | 876 | **1.19:1** | Mid-maturity |
-| **WMTS** | 2024 | 647 | 1,543 | **2.38:1** | Highest ratio, complex tiles |
-| **TMS** | 2025 | 497 | 513 | **1.03:1** | Newer, focused |
-| **STAC** | 2025 | 1,296 | 926 | **0.71:1** | Modern, efficient tests |
-| **EDR** | 2025 | 709 | 375 | **0.53:1** | Integration-focused |
-| **Average** | - | - | - | **1.44:1** | - |
-| **Median** | - | - | - | **1.11:1** | - |
+| **WFS** | 2022 | 1,056 | 1,960 | **1.86:1** | Mature, comprehensive |
+| **WMS** | 2024 | 698 | 843 | **1.21:1** | Mid-maturity |
+| **WMTS** | 2024 | 611 | 1,511 | **2.47:1** | Highest ratio, complex tiles |
+| **TMS** | 2025 | 448 | 467 | **1.04:1** | Newer, focused |
+| **STAC** | 2025 | 1,212 | 802 | **0.66:1** | Modern, efficient tests |
+| **EDR** | 2025 | 656 | 65 | **0.10:1** | Integration-focused (see H5 fix) |
+| **Average** | - | - | - | **1.45:1** | - |
+| **Median** | - | - | - | **1.13:1** | - |
 
 **Observations:**
 
-1. **Wide Range:** 0.53:1 (EDR) to 2.38:1 (WMTS) = 4.5× variation
-2. **Central Tendency:** Average 1.44:1, Median 1.11:1
+1. **Wide Range:** 0.10:1 (EDR) to 2.47:1 (WMTS) = wide variation
+2. **Central Tendency:** Average 1.45:1, Median 1.13:1
 3. **Trend Over Time:**
-   - 2022-2024: Higher ratios (1.19-2.38:1) - thorough testing
-   - 2025: Lower ratios (0.53-1.03:1) - efficient, focused testing
-4. **Modern Pattern:** Newer implementations (STAC, EDR, TMS) have lower ratios (0.53-1.03:1)
+   - 2022-2024: Higher ratios (1.21-2.47:1) - thorough testing
+   - 2025: Lower ratios (0.10-1.04:1) - efficient, focused testing
+4. **Modern Pattern:** Newer implementations (STAC, EDR, TMS) have lower ratios (0.10-1.04:1)
 
 **CSAPI Context:**
 - Implementation year: 2026 (modern)
@@ -201,7 +203,7 @@
 
 | API | URL Builder Lines | Test Lines | Ratio | Notes |
 |-----|------------------|------------|-------|-------|
-| **EDR** | 380 | 0 (tested via integration) | 0:1 | Integration-only |
+| **EDR** | 529 | 0 (tested via integration) | 0:1 | Integration-only |
 | **WFS** | ~400 (est.) | ~800 (est.) | 2.0:1 | Comprehensive URL tests |
 | **WMTS** | ~300 (est.) | ~900 (est.) | 3.0:1 | Tile param complexity |
 | **CSAPI (planned)** | 700-800 | 1,390-1,790 | **1.99-2.24:1** | 9 resource types |
@@ -225,14 +227,14 @@
 ### 2.4 Upstream Ratio Summary
 
 **Key Metrics:**
-- **Upstream Average:** 1.44:1
-- **Upstream Median:** 1.11:1
-- **Modern Trend:** 0.53-1.03:1 (2025 implementations)
-- **Mature Range:** 1.19-2.38:1 (older implementations)
+- **Upstream Average:** 1.45:1
+- **Upstream Median:** 1.13:1
+- **Modern Trend:** 0.10-1.04:1 (2025 implementations)
+- **Mature Range:** 1.21-2.47:1 (older implementations)
 
 **CSAPI Position:**
 - **Overall Ratio:** 0.9-1.0:1
-- **Position:** Between modern (0.53-1.03:1) and traditional (1.19-2.38:1)
+- **Position:** Between modern (0.10-1.04:1) and traditional (1.21-2.47:1)
 - **Assessment:** ✅ **Conservative, realistic, appropriate**
 
 **Validation:** ✅ CSAPI ratio is **within upstream range** and **aligned with modern testing practices**

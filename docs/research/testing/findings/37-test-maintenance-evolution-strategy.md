@@ -328,24 +328,26 @@ it('parses required system properties from response', () => {
 5. Update JSDoc documentation
 6. Review and merge
 
-**Scenario 4: Fixture Structure Change**
+**Scenario 4: Fixture Schema Update**
 
-**Example:** Add metadata fields to all fixtures (createdDate, modifiedDate, sourceURL)
+> **⚠️ Review Notice (M4 fix — Phase 2C):** This scenario originally proposed adding `_metadata` fields (createdDate, modifiedDate, sourceURL) to all ~280+ fixtures at 6-10 hours effort. That has been removed — fixtures are static test data files and should not carry embedded metadata (AP2 risk). This scenario now covers the realistic case of updating fixture schemas when the spec changes.
+
+**Example:** Spec v1.2 adds new required fields to System resources
 
 **Impact:**
-- **Code:** None
-- **Tests:** None (metadata optional)
-- **Fixtures:** Update ~280+ fixtures
-- **Documentation:** Document new metadata fields
+- **Code:** Update type definitions
+- **Tests:** Update assertions for new fields
+- **Fixtures:** Update affected fixtures (resource-type scoped, not all)
+- **Documentation:** Update README spec version
 
-**Effort:** 6-10 hours
+**Effort:** 1-4 hours (depends on scope of schema change)
 
 **Workflow:**
-1. Define metadata schema
-2. Create fixture update script
-3. Run script on all fixtures
-4. Validate fixtures (schema check)
-5. Update fixture documentation
+1. Identify affected resource types from spec changelog
+2. Update fixtures for affected resource types
+3. Update type definitions and tests
+4. Validate fixtures against updated schemas
+5. Update README spec version
 6. Review and merge
 
 ### 1.4 Test Rot Scenarios
@@ -394,7 +396,7 @@ it('parses required system properties from response', () => {
 **Remediation:**
 1. Run fixture validation against current schema
 2. Update fixtures to match current spec
-3. Add version metadata to fixtures
+3. Update README spec version
 4. Re-validate fixtures
 
 **Effort:** 0.5-1 hour per fixture
@@ -421,57 +423,11 @@ it('parses required system properties from response', () => {
 
 ### 2.1 Spec Version Tracking
 
-**Approach:** Track spec version in multiple locations for traceability
+> **⚠️ Review Notice (M4 fix — Phase 2C):** This section originally proposed tracking spec versions in 4 locations: package.json `csapi` key, test file headers, fixture `_metadata` fields, and README. The package.json `csapi` key and fixture `_metadata` system have been removed — they introduced AP2 (Hybrid Fixture/Live) risk by embedding mutable metadata into static fixture files, and adding metadata to ~280+ fixtures would be high-effort with no testing value. Test file headers were already addressed by H4/C2 (no @specification tags). README documentation is the appropriate place for spec version tracking.
 
-**1. Package.json Metadata**
+**Approach:** Track spec version in README documentation for human reference
 
-```json
-{
-  "csapi": {
-    "specVersion": "1.0.0",
-    "specDate": "2024-01-15",
-    "specUrls": {
-      "part1": "https://docs.ogc.org/is/23-001/23-001.html",
-      "part2": "https://docs.ogc.org/is/23-002/23-002.html",
-      "part3": "https://docs.ogc.org/DRAFTS/23-003.html"
-    }
-  }
-}
-```
-
-**2. Test File Headers**
-
-```typescript
-/**
- * @fileoverview Tests for System resource operations
- * @module tests/CSAPIQueryBuilder/systems
- * 
- * Tests validate client behavior for System resource operations.
- * Spec context: OGC 23-001 v1.0.0 Part 1 (Systems)
- * 
- * @coverage Systems CRUD operations, spatial/temporal filtering, pagination
- */
-```
-
-**3. Fixture Metadata**
-
-```json
-{
-  "id": "system-weather-station-001",
-  "type": "Feature",
-  "properties": { ... },
-  "_metadata": {
-    "specVersion": "OGC 23-001 v1.0.0",
-    "sourceURL": "https://docs.ogc.org/is/23-001/23-001.html#example-7-2-1",
-    "createdDate": "2024-01-20",
-    "modifiedDate": "2024-02-01",
-    "validated": true,
-    "notes": "Weather station from spec example 7.2.1"
-  }
-}
-```
-
-**4. README Documentation**
+**README Documentation**
 
 ```markdown
 ## Specification Compliance

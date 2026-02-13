@@ -319,19 +319,9 @@ This frames coverage as spec-requirement coverage (AP3), not as code-path covera
 
 **Severity:** MEDIUM  
 **Document:** [20-test-to-code-ratio-validation.md](../findings/20-test-to-code-ratio-validation.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
-**Problem:** Module-level line counts are systematically 5–13% higher than independently measured values:
-
-| Module | Doc 20 Ratio | Measured Ratio | Discrepancy |
-|--------|-------------|----------------|-------------|
-| WFS | 1.78:1 | 1.86:1 | -4% |
-| WMTS | 2.38:1 | 2.47:1 | -4% |
-| STAC | 0.71:1 | 0.66:1 | +8% |
-
-While the overall average is close (Doc 20: 1.44:1 vs measured: 1.45:1), the per-module counts appear to have been estimated rather than precisely measured. The average is correct because errors partially cancel.
-
-**Fix Required:** Re-measure module-level ratios from current codebase. Add commit reference for reproducibility.
+**Resolution:** All module-level line counts in Doc 20 §1.2, §2.2, §2.3, and §2.4 corrected to actual measured values from the codebase (commit `1694f09`). Added M3 review notice in §1.2 documenting the systematic inflation pattern. Key corrections: WFS 1,124→1,056 impl / 2,003→1,960 test; WMTS 647→611 / 1,543→1,511; STAC 1,296→1,212 / 926→802; TMS 497→448 / 513→467; WMS 738→698 / 876→843. EDR url_builder 380→529. Overall average changed minimally (1.44:1→1.45:1).
 
 ---
 
@@ -339,13 +329,9 @@ While the overall average is close (Doc 20: 1.44:1 vs measured: 1.45:1), the per
 
 **Severity:** MEDIUM  
 **Document:** [37-test-maintenance-evolution-strategy.md](../findings/37-test-maintenance-evolution-strategy.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
-**Problem:** Doc 37 proposes fixture `_metadata` fields including `specVersion`, `sourceURL`, `createdDate`, `modifiedDate`, `validated`, and `notes`. It also proposes tracking `csapi.specVersion` in `package.json`. This infrastructure is designed to adapt tests when spec/server changes occur — which borders on AP2 (Hybrid Fixture/Live) by building systems that expect fixtures to track live server evolution.
-
-Upstream fixtures have no metadata fields. Fixtures are static JSON files versioned with the rest of the code.
-
-**Fix Required:** Remove the `_metadata` fixture system and `package.json` `csapi` key. Fixtures should be static files committed alongside code, updated when client functionality changes — not when specs update.
+**Resolution:** Removed fixture `_metadata` system and `package.json` `csapi` key from Doc 37 §2.1. Section now recommends only README documentation for spec version tracking. Simplified Scenario 4 from "Add metadata fields to all ~280+ fixtures (6-10 hrs)" to "Fixture Schema Update" scoped to affected resource types (1-4 hrs). Removed "Add version metadata to fixtures" from §1.4 Scenario 3 remediation. Added M4 review notices.
 
 ---
 
@@ -498,8 +484,8 @@ Proceed to **Phase 2D: Format Parsers** (Docs 09, 10, 11), which have high AP4 r
 | H5 | HIGH | 20 | EDR file-level line counts demonstrably wrong (model.spec.ts off by 3×) | ✅ Resolved |
 | M1 | MEDIUM | 03 | Fabricated "~80% estimated" coverage for upstream | ✅ Resolved |
 | M2 | MEDIUM | 17 | AP3 in behavior coverage metrics (spec requirements as coverage targets) | ✅ Resolved |
-| M3 | MEDIUM | 20 | Module-level ratios systematically inflated 5–13% | ❌ Open |
-| M4 | MEDIUM | 37 | AP2 risk in fixture `_metadata` versioning system | ❌ Open |
+| M3 | MEDIUM | 20 | Module-level ratios systematically inflated 5–13% | ✅ Resolved |
+| M4 | MEDIUM | 37 | AP2 risk in fixture `_metadata` versioning system | ✅ Resolved |
 | L1 | LOW | 20 | Unverifiable industry library ratio estimates | ❌ Open |
 | L2 | LOW | 17 | Premature Jest configuration for non-existent files | ❌ Open |
 | L3 | LOW | 03 | Minor ratio measurement discrepancies (5–12%) | ❌ Open |
