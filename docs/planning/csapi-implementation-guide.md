@@ -134,6 +134,19 @@ This implementation provides **COMPLETE CSAPI Parts 1 & 2 support** including:
 
 **This is NOT an MVP** - this is a production-ready, specification-complete implementation suitable for enterprise use.
 
+**Client Responsibility Model:**
+The CSAPI client implementation has exactly **5 responsibilities** — everything else is the server's job:
+
+| # | Responsibility | Description | Guide Section |
+|---|---------------|-------------|---------------|
+| 1 | **Parse** | Parse service documents (conformance, collections, capabilities) | §5 Service Discovery |
+| 2 | **Construct** | Build URLs with correct query parameters for all 9 resource types | §6 Query Builder |
+| 3 | **Transform** | Convert responses (GeoJSON, SensorML, SWE Common) to typed TypeScript objects | §7 Format Handlers |
+| 4 | **Handle** | Manage errors, edge cases, content negotiation, and pagination | §11 Error Handling |
+| 5 | **Validate** | Validate inputs before requests (fail-fast with clear error messages) | §6 Resource Validation |
+
+This model defines the boundary between client and server concerns. The client never tests server conformance (AP3), never asserts server data content (AP1), and never makes real HTTP calls in tests (AP2). All testing validates that the client correctly performs these 5 responsibilities using mocked HTTP responses.
+
 **References:**
 - [OGC API - Connected Systems Part 1: Feature Resources](https://docs.ogc.org/is/23-001/23-001.html) - Standard defining Systems, Deployments, Procedures, Sampling Features, Properties
 - [OGC API - Connected Systems Part 2: Dynamic Data](https://docs.ogc.org/is/23-002/23-002.html) - Standard defining DataStreams, Observations, Control Streams, Commands
@@ -605,6 +618,8 @@ try {
 **Pattern: Private helper methods for code reuse (not inheritance).**
 
 Research shows 100% of upstream APIs use helper methods, 0% use inheritance.
+
+> **Testing note:** Helper methods (`buildResourceUrl`, `buildQueryString`, `extractAvailableResources`) are **private** and are tested indirectly through all public API method tests — not via dedicated unit tests. If helpers are ever extracted into standalone exported functions, dedicated unit tests should be added at that time.
 
 **Helper Methods to Implement:**
 
@@ -3201,7 +3216,7 @@ The test coverage component extends the existing Jest test suite to cover all CS
 - **Status/result endpoints**: Command status/result URLs
 - **Error cases**: Invalid parameters, malformed URLs
 
-**Integration Tests (End-to-End Workflows):**
+**Integration Tests (Multi-Component Workflows):**
 - **Discovery workflows**: Connect → check conformance → list collections → filter by type → retrieve resources
 - **Observation workflows**: Discover systems → find datastreams → query observations → paginate → parse results
 - **Command workflows**: Discover systems → find control streams → check feasibility → submit → track status → retrieve results
@@ -3217,6 +3232,29 @@ The test coverage component extends the existing Jest test suite to cover all CS
 - **All format variations**: GeoJSON (all Part 1 types), SensorML 3.0 (all system types), SWE Common 3.0 (all encodings)
 - **Error responses**: All HTTP error codes, validation error types, malformed headers
 - **Schema fixtures**: DataStream schema examples, ControlStream parameter schemas
+
+**Test Scope Exclusions:**
+- **Performance testing** is OUT OF SCOPE for the initial contribution. Performance profiling and benchmarking may be added post-merge as a separate effort. (See Doc 33 — retained as reference only, not actionable.)
+- **Real-world server testing** is OUT OF SCOPE — all tests use mocked HTTP responses per AP2 (no live server dependencies). Real-server compatibility validation is deferred to post-merge integration testing. (See Doc 32 — AP2-bannered, retained as reference only.)
+
+**Test Fixture Directory:**
+All CSAPI test fixtures are organized under `fixtures/csapi/sample-server/` using a **URL-path-mirroring convention** — the fixture directory structure mirrors the API endpoint paths for easy discovery:
+
+```
+fixtures/csapi/sample-server/
+├── api/                              # Root API document
+├── collections/                      # Collection listings
+│   └── weather-stations/             # Per-collection resources
+│       ├── systems/                  # Systems endpoint fixtures
+│       ├── deployments/              # Deployments endpoint fixtures
+│       ├── datastreams/              # DataStreams endpoint fixtures
+│       │   └── {id}/observations/    # Nested observations
+│       └── sampling-features/        # Sampling features fixtures
+├── conformance/                      # Conformance document fixtures
+└── errors/                           # Error response fixtures
+```
+
+This convention ensures fixture paths are predictable from the API endpoint being tested: the mock for `GET /collections/weather-stations/systems` lives at `fixtures/csapi/sample-server/collections/weather-stations/systems/`.
 
 **Test Coverage Targets:**
 - **Code coverage**: >80% statement coverage, >80% branch coverage, 100% public API coverage
@@ -3341,6 +3379,14 @@ const deployment: Deployment = await fetchDeployment(deploymentId);
 const datastream: Datastream = await fetchDatastream(deployment.properties.systemIds[0]);
 console.log(datastream.properties.observedPropertyId); // ✅ Full type safety
 ```
+
+> **⚠️ AP4 Note — Property Access vs Shape Assertions:**
+> The property access patterns above (e.g., `system.properties.name`, `system.geometry?.coordinates`) are **valid implementation code** — they demonstrate how developers use the typed API to access parsed data.
+>
+> However, these patterns must **NOT** be copied into test assertions to verify that fixture data contains specific properties. Testing that `system.properties.name === 'expected-name'` in a unit test is an **AP4 violation** (Asserting Data Shape) — it tests the fixture content, not the client's parsing behavior.
+>
+> **Valid test:** Assert that the parser returns a `System` object with the correct TypeScript type.
+> **AP4 violation:** Assert that `system.properties.name` equals a specific fixture string value.
 
 ---
 
@@ -4361,6 +4407,19 @@ Every component described above aligns with these core project goals:
 - Three-tier type system (shared → ogc-api → csapi)
 - Complete integration code (64 lines exact)
 - Comprehensive test coverage (>80%)
+
+**Anti-Pattern Catalog (AP1-AP5):**
+All test design must avoid these 5 anti-patterns identified in the Phase 0 test-research report. Violations are flagged during code review.
+
+| ID | Anti-Pattern | Description | Risk |
+|----|-------------|-------------|------|
+| AP1 | Testing Response Content | Asserting specific fixture data values instead of parsing behavior | Tests break when fixtures change |
+| AP2 | Live Server Dependencies | Making real HTTP calls in unit/integration tests | Flaky tests, network dependency |
+| AP3 | Server Conformance Testing | Testing whether a server meets the specification (server's job, not client's) | Scope creep, untestable |
+| AP4 | Asserting Data Shape | Testing that data has specific structure rather than testing client behavior | Brittle, tests fixtures not code |
+| AP5 | Over-Engineered Test Infra | Building custom test frameworks instead of using Jest patterns | Maintenance overhead |
+
+See the [Phase 0 Test-Research Report](../research/testing/review/phase-0-lessons-from-failed-attempt.md) for full anti-pattern definitions, examples, and remediation guidance.
 
 ---
 
