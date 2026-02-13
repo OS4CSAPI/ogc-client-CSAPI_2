@@ -90,7 +90,7 @@ Additional: Nested endpoints (15 chains), URL encoding (15 scenarios), resource 
 
 | ID | Severity | Finding |
 |----|----------|---------|
-| C2-L1 | **Low** | `sortBy`/`sortOrder` parameters explicitly not covered (Doc 12 §24.2, LOW priority gap) |
+| C2-L1 | ~~**Low**~~ **Resolved** | `sortBy`/`sortOrder` parameters brought back into scope (MEDIUM priority) — sorting is essential for deterministic pagination. Guide §6 and Doc 12 §4.1/§24.2 updated. |
 | C2-I1 | **Info** | Helper methods tested indirectly only (Doc 12 §24.3) |
 
 ---
@@ -410,7 +410,7 @@ Prioritized action list across all 12 checks. Items grouped by priority tier.
 | 26 | C8-L2 | Add ISO 8601 format catalog (7 instant + 6 interval patterns) | **Guide** — §6 Query Params |
 | 27 | C8-L3 | Note Properties/Part 2 resources use `resources`/`itemType` not `features`/`featureType` | **Guide** — §6 Properties |
 | 28 | C4-M1 | Reduce Doc 25 scope to match actual implementation (~13 lines); flag or remove 45/50 server-behavior scenarios | **Doc 25** |
-| 29 | C2-L1 | Add `sortBy`/`sortOrder` parameter test scenarios (currently explicitly excluded as LOW priority) | **Doc 12** (`12-querybuilder-testing-strategy.md`) |
+| 29 | C2-L1 | ~~Add `sortBy`/`sortOrder` parameter test scenarios~~ **RESOLVED** — brought back into scope (MEDIUM priority). Guide §6 updated, Doc 12 §24.2 aligned. | **Doc 12** (`12-querybuilder-testing-strategy.md`) |
 | 30+ | Various | Remaining Low/Info findings from Checks 1-8 | See interim reports for details |
 
 ---

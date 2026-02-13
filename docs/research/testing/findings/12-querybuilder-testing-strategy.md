@@ -2482,13 +2482,12 @@ fixtures/csapi-querybuilder/
 | **Spatial** | bbox, geometry | ✅ Tested with coordinate formats, WKT | ✅ Aligned |
 | **Filtering** | systemType, observedProperty, controlledProperty, foi, parent, deployment, procedure, system, q | ✅ Tested with vocabulary values, multiple filters | ✅ Aligned |
 | **Format** | f, format | ✅ Tested with valid formats (json, geojson, sml, swe) | ✅ Aligned |
-| **Sorting** | sortBy, sortOrder | ⚠️ Not covered in this strategy | ⚠️ Gap (LOW priority) |
+| **Sorting** | sortBy, sortOrder | ✅ Tested with valid fields, asc/desc, invalid fields | ✅ Aligned |
 | **Hierarchical** | recursive | ✅ Tested for Systems and Deployments | ✅ Aligned |
 | **Arrays** | Multiple id values, multiple property filters | ✅ Tested with comma-separated lists | ✅ Aligned |
 
 **Gaps Identified:**
-- **sortBy/sortOrder parameters** - Not covered in test specifications (LOW priority)
-  - **Recommendation:** Add in Phase 4 (Low Priority Tests) if time permits
+- ~~**sortBy/sortOrder parameters**~~ — **RESOLVED**: Brought back into scope (MEDIUM priority). Sorting is essential for deterministic pagination. Test scenarios defined in §4.1 (valid fields, asc/desc, invalid fields).
 
 ### 24.3 Helper Function Alignment
 

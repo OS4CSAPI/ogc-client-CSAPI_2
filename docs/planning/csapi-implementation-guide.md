@@ -1976,8 +1976,10 @@ This URL builder implements FULL query parameter support for CSAPI Parts 1 and 2
 - HTTP Accept header: `application/json`, `application/geo+json`, `application/sml+json`, `application/swe+json`, `application/swe+text`
 - Format-specific parameters for Part 2: `obsFormat` (observation encoding), `cmdFormat` (command encoding)
 
-**Deferred Parameters (LOW priority):**
-- `sortBy` / `sortOrder`: Sorting parameters are defined in OGC API – Common but are **not required** by the CSAPI specification. Implementation is deferred as LOW priority — the client will not include `sortBy`/`sortOrder` support in the initial contribution. Server-side default ordering (by resource ID or temporal order) is sufficient for all planned use cases.
+**Sorting:**
+- `sortBy`: Field name to sort results by (e.g., `phenomenonTime`, `resultTime`, `id`). Valid sort fields are resource-dependent.
+- `sortOrder`: `asc` (ascending) or `desc` (descending). Defaults to `asc` if omitted.
+- Sorting is defined in OGC API – Common and supported by compliant CSAPI servers. Sorting is essential for deterministic pagination — paginating unsorted results produces unpredictable ordering across pages.
 
 **References:**
 - [Query Parameter Requirements](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-query-parameters.md) - Complete catalog of all CSAPI query parameters

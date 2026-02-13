@@ -275,15 +275,15 @@ The `createTestEndpoint` helper in Section 18.2 throws `'createTestEndpoint not 
 
 ---
 
-### Issue L3: sortBy/sortOrder Parameter Gap
+### Issue L3: sortBy/sortOrder Parameter Gap — **RESOLVED**
 
 **Document:** 12  
 **Quality Layer:** Content Accuracy (minor)  
-**Severity:** LOW
+**Severity:** ~~LOW~~ **RESOLVED**
 
-Section 24.2 identifies `sortBy`/`sortOrder` parameters as a gap ("Not covered in test specifications"). These are not critical for initial implementation but should be tracked.
+~~Section 24.2 identifies `sortBy`/`sortOrder` parameters as a gap ("Not covered in test specifications"). These are not critical for initial implementation but should be tracked.~~
 
-**Recommendation:** Add to Phase 3 or 4 backlog.
+**Resolution:** `sortBy`/`sortOrder` brought back into scope (MEDIUM priority). Sorting is essential for deterministic pagination — paginating unsorted results produces unpredictable ordering across pages. Implementation guide §6 and Doc 12 §4.1/§24.2 updated.
 
 ---
 
@@ -378,7 +378,7 @@ These numbers converge and are grounded in upstream data points.
 | M4 | MEDIUM | 38 (vs 12) | Space encoded as `+` vs `%20` — standardized on `%20`, updated `buildQueryString` and assertions | **Resolved** |
 | L1 | LOW | 01 | Speculative CSAPI application code (noted, not a defect) | Informational |
 | L2 | LOW | 12 | `createTestEndpoint` placeholder | Track as impl work |
-| L3 | LOW | 12 | sortBy/sortOrder gap acknowledged | Track in backlog |
+| L3 | ~~LOW~~ RESOLVED | 12 | sortBy/sortOrder brought back into scope (MEDIUM priority) | **Resolved** |
 | L4 | LOW | 02 | 4.53× ratio outlier not flagged | Open |
 
 ---

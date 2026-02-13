@@ -88,10 +88,10 @@ Pass 1 executes the four forward checks from the A1 research plan, asking: *"Is 
 
 | Severity | Count | Details |
 |----------|-------|---------|
-| **Low** | 1 | `sortBy`/`sortOrder` parameters explicitly not covered — flagged in Doc 12 §24.2 as LOW priority gap |
+| ~~**Low**~~ **Resolved** | 1 | `sortBy`/`sortOrder` parameters brought back into scope (MEDIUM priority) — essential for deterministic pagination. Guide §6 and Doc 12 §24.2 updated. |
 | **Info** | 1 | Helper methods (`buildResourceUrl`, `buildQueryString`, `extractAvailableResources`) tested indirectly only — marked as "✅ Tested indirectly via all methods" in Doc 12 §24.3 |
 
-**Assessment:** Method-level coverage is **excellent**. All ~80 public methods across all 9 resource types have defined test scenarios. The single gap (`sortBy`/`sortOrder`) is explicitly documented and low-priority.
+**Assessment:** Method-level coverage is **excellent**. All ~80 public methods across all 9 resource types have defined test scenarios. The former `sortBy`/`sortOrder` gap has been resolved — sorting is now in scope (MEDIUM priority) as it is essential for deterministic pagination.
 
 ---
 
@@ -195,7 +195,7 @@ These are not orphans (the tested component exists) but represent disproportiona
 | **Critical** | 0 | — |
 | **High** | 0 | — |
 | **Medium** | 5 | (1) Helper methods lack dedicated unit tests; (2) Format detector missing document structure fallback; (3) File count discrepancy (17 vs 22); (4) Type system missing explicit test code for 5/9 interfaces; (5) Doc 25 over-specified for implementation scope |
-| **Low** | 7 | (1) Validator content validation not standalone-specified; (2) SensorML parser output interface undefined; (3) SWE Common parser output interfaces undefined; (4) sortBy/sortOrder not covered; (5) Test line upper bounds slightly exceed authoritative range; (6) Doc 09 parser/validator conflation; (7) Docs 10, 11 parser/validator conflation |
+| **Low** | 6 | (1) Validator content validation not standalone-specified; (2) SensorML parser output interface undefined; (3) SWE Common parser output interfaces undefined; ~~(4) sortBy/sortOrder not covered~~ **(RESOLVED — in scope)**; (5) Test line upper bounds slightly exceed authoritative range; (6) Doc 09 parser/validator conflation; (7) Docs 10, 11 parser/validator conflation |
 | **Info** | 3 | (1) Doc 33 fully orphaned by design; (2) Doc 25 most scenarios test server behavior; (3) Doc 17 inflation already resolved |
 
 ### Action Items for Implementation Guide Update (Pass 3)
