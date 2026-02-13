@@ -1,5 +1,38 @@
 # Section 21: TypeScript Type Testing Strategy
 
+> **⚠️ REVIEW NOTICE — Phase 2D Issues H4, L1 (Resolved)**
+>
+> This document contains excellent upstream analysis (Section 1), a correct
+> tool evaluation recommending TypeScript compiler-only (Section 2), a useful
+> type inventory (Section 3), and a sound compile-time vs runtime analysis
+> that correctly concludes "CSAPI needs minimal runtime validation" (Section 5).
+>
+> **H4 — Shape-Assertion Test Template (AP4):** Section 4 (Type Test Patterns)
+> and Section 6 Template 1 (`model.spec.ts`) consist of tests that construct
+> objects matching TypeScript interfaces and assert the values they just set:
+> `const system: System = { name: 'Sensor' }; expect(system.name).toBe('Sensor');`
+> This tests nothing — the TypeScript compiler already validates the object
+> literal matches the interface at compile time, and the runtime assertion
+> only verifies a variable equals the value assigned on the previous line.
+> See review notices at Sections 4, 6.
+>
+> **L1 — 6-Hour Estimate for Low-Value Tests:** Section 8 allocates ~6 hours
+> to implement the shape-assertion tests that H4 identifies as zero-value.
+> The document's own Section 5 analysis correctly concludes compilation-only
+> testing is sufficient, but the estimate contradicts this finding.
+>
+> **Directly usable content:** Section 1 (upstream EDR `ZParameter` patterns),
+> Section 2 (tool evaluation — TypeScript compiler only), Section 3 (type
+> inventory), Section 5 (runtime vs compile-time strategy), Template 2 (type
+> guard tests — if type guards are implemented), Template 3 (QueryBuilder
+> integration tests — tests real behavior), Section 7 recommendations.
+>
+> **Key takeaway from this document's own analysis:** Types compile = types
+> work. The EDR pattern (Section 1) tests *behavior* (serialization via
+> `zParameterToString`), not structure. CSAPI type tests should similarly
+> test functions that consume/produce these types, not construct and re-read
+> object literals.
+
 **Research Plan:** [Research Plan 21: TypeScript Type Testing Strategy](../research-plans/21-typescript-type-testing.md)
 
 **Research Questions:** 6 core questions about testing TypeScript interfaces compile correctly, type discrimination (union types), generic type constraints, type inference, upstream patterns for type testing, and whether compilation tests are sufficient or runtime tests needed
@@ -16,7 +49,7 @@
 **Supporting Resources:**
 - Section 1: [EDR Test Blueprint](01-edr-test-blueprint.md) (upstream type test patterns)
 - Section 2: [Upstream Test Consistency](02-upstream-test-consistency.md) (type testing approaches)
-- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (type definitions)
+- Section 8: [CSAPI Specification Reference](08-csapi-specification-test-requirements.md) (reclassified — spec property catalog, not test generator)
 - [TypeScript Documentation](https://www.typescriptlang.org/docs/)
 - [tsd Library Documentation](https://github.com/SamVerschueren/tsd)
 
@@ -672,6 +705,22 @@ import { OgcApiDocumentLink } from '../model.js';
 ---
 
 ## 4. Type Test Patterns
+
+> **⚠️ REVIEW NOTICE (H4 — Core Section):** The 6 patterns below are all
+> shape-assertion templates (AP4). Each constructs an object matching a
+> TypeScript interface and asserts the values it just set. For example,
+> Pattern 1 (Interface Compilation Testing) creates `const system: System = 
+> { id: 'sys-001', ... }` then asserts `expect(system.id).toBe('sys-001')`.
+>
+> The TypeScript compiler already validates that the object literal conforms
+> to the interface at compile time — no runtime test is needed. These patterns
+> should be replaced with tests of *functions that operate on these types*:
+> parsers that produce them, serializers that consume them, or type guards
+> that discriminate them.
+>
+> **What to keep as reference:** The patterns document what each type looks
+> like with all properties populated, which is useful for fixture design.
+> **What NOT to implement:** The `expect(obj.prop).toBe(value)` assertions.
 
 ### Pattern 1: Interface Compilation Testing
 
@@ -1449,6 +1498,25 @@ describe('serializeDateTimeParameter', () => {
 
 ### Template 1: Resource Interface Test File
 
+> **⚠️ REVIEW NOTICE (H4 — Core Template):** This ~250-line `model.spec.ts`
+> template consists entirely of shape-assertion tests. Every test constructs
+> an object literal with an explicit type annotation, then asserts each
+> property equals the value assigned on the previous line. For example:
+> ```typescript
+> const system: System = { id: 'sys-001', ... };
+> expect(system.id).toBe('sys-001'); // tests nothing
+> ```
+> The TypeScript compiler already validates that `{ id: 'sys-001', ... }`
+> conforms to the `System` interface. The runtime assertion adds zero value.
+>
+> **Do NOT implement this template.** Instead, test functions that consume
+> or produce these types: parser output verification, QueryBuilder parameter
+> handling, type guard discrimination. The document's own Section 5 correctly
+> concludes "CSAPI needs minimal runtime validation."
+>
+> Templates 2 (type guards) and 3 (QueryBuilder integration) below are
+> directly usable — they test actual runtime behavior.
+
 **File:** `src/ogc-api/csapi/model.spec.ts`
 
 ```typescript
@@ -1944,6 +2012,20 @@ describe('isSystem', () => {
 
 ## 8. Implementation Estimates
 
+> **⚠️ REVIEW NOTICE (L1):** The estimates below allocate ~6 hours to
+> implement the shape-assertion `model.spec.ts` template that H4 identifies
+> as zero-value. The document's own Section 5 correctly concludes that
+> compilation-only testing is sufficient for CSAPI's simple type system.
+>
+> **Revised estimate:** If no `model.spec.ts` shape assertions are written,
+> the real effort is:
+> - **Compile-time validation:** 0 hours (types compile = types work, verified
+>   by existing `tsc` in CI)
+> - **Type guard tests** (if guards are implemented): ~1 hour
+> - **QueryBuilder integration tests** (Template 3): ~2 hours
+> - **Total: ~1-3 hours** depending on whether type guards are needed,
+>   saving 3-5 hours vs the original estimate.
+
 ### Type Test Implementation Breakdown
 
 #### Task 1: Create model.spec.ts
@@ -2078,5 +2160,5 @@ describe('isSystem', () => {
 
 ---
 
-**Research Complete:** 2026-02-08  
+**Research Complete:** 2026-02-08 — Review notices added (Phase 2D issues H4, L1)  
 **Next Steps:** Create model.spec.ts and integrate type tests with QueryBuilder tests.
