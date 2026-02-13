@@ -257,7 +257,7 @@ The document honestly acknowledges the tension: "Don't over-document tests (upst
 
 **Severity:** HIGH  
 **Document:** [20-test-to-code-ratio-validation.md](../findings/20-test-to-code-ratio-validation.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** Doc 20's file-level line counts for EDR module components are significantly wrong when checked against the actual codebase:
 
@@ -272,6 +272,8 @@ The document honestly acknowledges the tension: "Don't over-document tests (upst
 The `model.spec.ts` claim is off by 3×. These are not counting methodology differences — they are factually wrong and may indicate the counts were generated rather than measured.
 
 **Fix Required:** Re-measure EDR file line counts from the actual codebase and correct the table. Add a note about the version/commit the measurements were taken from.
+
+**Resolution:** Corrected all EDR file line counts in §2.1 to actual values measured from commit `a836fbe`. Added H5 review notice explaining the discrepancies. Updated derived metrics: implementation total corrected from 709 to ~833 lines (url_builder.ts was 39% larger than claimed), test total corrected from 375 to ~363 lines (model.spec.ts was 3× inflated), overall EDR ratio corrected from 0.53:1 to ~0.44:1. Marked integration file line counts as estimates (EDR portions of shared files). Updated CSAPI vs EDR comparison table and §5.1/§5.2 component comparisons that referenced incorrect EDR values. Also fixed a ratio notation error in the §4 table ("2.0-1.25:1" → "1.25-2.0:1").
 
 ---
 
@@ -489,7 +491,7 @@ Proceed to **Phase 2D: Format Parsers** (Docs 09, 10, 11), which have high AP4 r
 | H2 | HIGH | 36 | Invented 3-stage enterprise review process with 41-item checklist | ✅ Resolved |
 | H3 | HIGH | 37 | Over-engineered maintenance framework (70–120 hrs/yr, custom tools, RACI) | ✅ Resolved |
 | H4 | HIGH | 35 | Massive JSDoc over-engineering despite acknowledging upstream minimalism | ✅ Resolved |
-| H5 | HIGH | 20 | EDR file-level line counts demonstrably wrong (model.spec.ts off by 3×) | ❌ Open |
+| H5 | HIGH | 20 | EDR file-level line counts demonstrably wrong (model.spec.ts off by 3×) | ✅ Resolved |
 | M1 | MEDIUM | 03 | Fabricated "~80% estimated" coverage for upstream | ❌ Open |
 | M2 | MEDIUM | 17 | AP3 in behavior coverage metrics (spec requirements as coverage targets) | ❌ Open |
 | M3 | MEDIUM | 20 | Module-level ratios systematically inflated 5–13% | ❌ Open |

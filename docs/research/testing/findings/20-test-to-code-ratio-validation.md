@@ -115,24 +115,26 @@
 
 **From Section 1: EDR Test Blueprint Analysis**
 
-**EDR Metrics:**
-- **Implementation Lines:** 709 total
-  - `url_builder.ts`: 380 lines (core QueryBuilder)
-  - `model.ts`: 126 lines (type definitions)
-  - `helpers.ts`: 26 lines (utility functions)
-  - `endpoint.ts` integration: 41 lines
-  - `info.ts` integration: 61 lines
-  - `model.ts` (ogc-api) integration: 46 lines
-  - `link-utils.ts` integration: 9 lines
-  - Other files: 20 lines
+> **⚠️ Review Notice (H5 fix — Phase 2C):** The file-level line counts originally reported in this section were significantly inaccurate when checked against the actual codebase. Corrected values measured from commit `a836fbe` are shown below. The original figures may have been generated rather than measured. Integration file "EDR portions" (endpoint.ts, info.ts, etc.) cannot be independently verified as line counts for EDR-specific code within shared files — these are retained as estimates and marked accordingly. The `endpoint.spec.ts` EDR section count (298 lines) is also unverifiable since EDR tests are interleaved within a 2,783-line file.
 
-- **Test Lines:** 375 total
-  - `helpers.spec.ts`: 45 lines (unit tests)
-  - `model.spec.ts`: 97 lines (unit tests)
-  - `endpoint.spec.ts` (EDR section): 298 lines (integration tests)
+**EDR Metrics (corrected):**
+- **Implementation Lines:** ~833 total (corrected from 709)
+  - `url_builder.ts`: **529 lines** (core QueryBuilder) — *was 380, actual is 39% larger*
+  - `model.ts`: **110 lines** (type definitions) — *was 126*
+  - `helpers.ts`: **17 lines** (utility functions) — *was 26*
+  - `endpoint.ts` integration: ~41 lines *(estimate — EDR portion of 722-line shared file)*
+  - `info.ts` integration: ~61 lines *(estimate — EDR portion of 261-line shared file)*
+  - `model.ts` (ogc-api) integration: ~46 lines *(estimate — EDR portion of 256-line shared file)*
+  - `link-utils.ts` integration: ~9 lines *(estimate — EDR portion of 140-line shared file)*
+  - Other files: ~20 lines *(estimate)*
+
+- **Test Lines:** ~363 total (corrected from 375)
+  - `helpers.spec.ts`: **33 lines** (unit tests) — *was 45*
+  - `model.spec.ts`: **32 lines** (unit tests) — *was 97 (off by 3×)*
+  - `endpoint.spec.ts` (EDR section): ~298 lines (integration tests) — *estimate, not independently verifiable*
   - *(No url_builder.spec.ts - tested via integration)*
 
-- **Test-to-Code Ratio:** 375 / 709 = **0.53:1**
+- **Test-to-Code Ratio:** ~363 / ~833 = **~0.44:1** (corrected from 0.53:1)
 
 **EDR Characteristics:**
 - Single resource type (Collections with EDR data_queries)
@@ -143,21 +145,21 @@
 **Why EDR Ratio is Lower:**
 1. **Fewer resource types** - 1 vs CSAPI's 9 resource types
 2. **Integration testing bias** - No dedicated URL builder unit tests
-3. **Simpler type system** - 126 lines of types vs CSAPI's 350-400 lines
+3. **Simpler type system** - 110 lines of types vs CSAPI's 350-400 lines *(corrected from 126)*
 4. **Fewer query parameters** - EDR has ~10 param types vs CSAPI's ~20+
 
 **CSAPI vs EDR Comparison:**
 
-| Aspect | EDR | CSAPI | Ratio Difference |
-|--------|-----|-------|------------------|
+| Aspect | EDR (corrected) | CSAPI | Ratio Difference |
+|--------|-----|-------|-----------------|
 | Resource types | 1 | 9 | 9× more |
 | Query methods | 8 | 70-80 | 9-10× more |
-| Type definitions | 126 lines | 350-400 lines | 2.8-3.2× more |
-| URL builder | 380 lines | 700-800 lines | 1.8-2.1× more |
+| Type definitions | 110 lines | 350-400 lines | 3.2-3.6× more |
+| URL builder | 529 lines | 700-800 lines | 1.3-1.5× more |
 | Integration points | 5 files | 3 files | Similar |
-| **Expected ratio** | 0.53:1 | **0.9-1.0:1** | **1.7-1.9× higher** |
+| **Expected ratio** | ~0.44:1 | **0.9-1.0:1** | **~2× higher** |
 
-**Conclusion:** CSAPI's higher ratio (0.9-1.0:1 vs EDR's 0.53:1) is **justified** by:
+**Conclusion:** CSAPI's higher ratio (0.9-1.0:1 vs EDR's ~0.44:1) is **justified** by:
 - 9× more resource types requiring dedicated test files
 - 9-10× more methods requiring URL validation
 - More comprehensive unit test coverage (URL builder has dedicated tests)
@@ -359,8 +361,8 @@
 | Component | Impl Lines | Test Lines | Ratio | Files |
 |-----------|-----------|------------|-------|-------|
 | **Core Types** | 350-400 | 200-300 | 0.57-0.75:1 | model.ts, model.spec.ts |
-| **Helper Utilities** | 50-80 | 100-150 | 2.0-1.25:1 | helpers.ts, helpers.spec.ts |
-| **URL Builder** | 700-800 | 1,390-1,790 | 1.99-2.24:1 | url_builder.ts, 10 test files |
+| **Helper Utilities** | 50-80 | 100-150 | 1.25-2.0:1 | helpers.ts, helpers.spec.ts |
+| **URL Builder** | 700-800 | 1,390-1,790 | 1.74-2.24:1 | url_builder.ts, 10 test files |
 | **Format Parsers** | 500-800 | 1,000-1,300 | 2.0-1.63:1 | 3 parser files, 3 test files |
 | **Integration** | N/A | 900-1,200 | N/A | 4 integration test files |
 | **Test Utilities** | N/A | 300-450 | N/A | 3 utility files |
@@ -526,10 +528,10 @@
 - Lower ratio is appropriate for type-heavy code
 
 **Comparison:**
-- EDR model: 126 impl / 97 test = 0.77:1 ✅ Similar
-- CSAPI target: 0.57-0.75:1 ✅ **VALIDATED**
+- EDR model: 110 impl / 32 test = 0.29:1 *(corrected — was 126/97=0.77:1, see H5 fix in §2.1)*
+- CSAPI target: 0.57-0.75:1 — comparison to EDR is no longer validating
 
-**Assessment:** ✅ Ratio is appropriate for type definitions
+**Assessment:** Target ratio is reasonable for type-heavy code, but the EDR comparison originally cited here was based on incorrect line counts
 
 ### 5.2 Helper Utilities
 
@@ -552,11 +554,11 @@
 - Higher ratio expected for utilities
 
 **Comparison:**
-- EDR helpers: 26 impl / 45 test = 1.73:1 ✅ Similar
+- EDR helpers: 17 impl / 33 test = 1.94:1 *(corrected — was 26/45=1.73:1, see H5 fix in §2.1)*
 - Industry standard for utilities: 1.5-2.5:1
-- CSAPI target: 1.25-2.0:1 ✅ **VALIDATED**
+- CSAPI target: 1.25-2.0:1 — corrected EDR ratio still falls within range
 
-**Assessment:** ✅ Ratio is appropriate for utility functions
+**Assessment:** ✅ Ratio is appropriate for utility functions (EDR comparison holds after correction)
 
 ### 5.3 URL Builder (QueryBuilder)
 
