@@ -1,5 +1,18 @@
 # Section 18: Error Condition Testing Strategy
 
+> ⚠️ **REVIEW NOTICE — LOW (L1, L2): Scope Items — Binary Parsing and Worker Errors Beyond Initial Contribution**
+>
+> **Phase 2E Review | Issues: L1, L2 | Severity: LOW**
+>
+> This document is largely well-structured for client-side error testing. Two sections propose tests for functionality beyond the initial contribution scope:
+>
+> - **Section 4.2.3** (SWE Common Binary Encoding Errors, ~23-25 tests): Binary SWE parsing (endianness, buffer truncation, data type codes) is speculative — binary encoding support may be far beyond initial contribution scope.
+> - **Section 4.5** (Worker Extension Errors, ~7 tests): Worker error scenarios (initialization failure, timeout, premature termination) reference infrastructure that doesn't exist yet.
+>
+> **What's usable now:** Sections 4.1 (QueryBuilder errors), 4.2.1 (GeoJSON parser errors), 4.2.2 (SensorML parser errors), 4.3 (Resource method errors), 4.4 (Integration workflow errors), Section 5 (Error test pattern design).
+>
+> See also: [Phase 2E Review Report](../review/phase-2e-advanced-scenarios-category.md)
+
 **Research Plan:** [Research Plan 18: Error Condition Testing Strategy](../research-plans/18-error-condition-testing.md)
 
 **Research Questions:** 7 core questions about error types to test (validation, network, parse, conformance), meaningful error messages, CSAPI spec-defined error conditions, resource validation errors, malformed data errors in parsers, missing/invalid query parameter errors, and consistent error test structure
@@ -407,6 +420,10 @@ The CSAPI specification does NOT define custom error response schemas (e.g., RFC
 
 #### 4.2.3 SWE Common Parser Errors
 
+> ⚠️ **REVIEW NOTICE (L1): Binary Encoding Errors May Be Beyond Initial Scope**
+>
+> The Binary Encoding Errors subsection (~7 tests for buffer truncation, endianness, invalid data type codes) is speculative. Binary SWE Common parsing is complex and may not be part of the initial contribution. JSON and Text encoding error tests are usable now; defer Binary encoding tests until binary support is confirmed in scope.
+
 **From [Section 10: SWE Common Testing Requirements](./10-swe-common-testing-requirements.md):**
 
 | Error Condition | Test Scenario | Expected Error | Test Count | Priority |
@@ -458,6 +475,10 @@ The CSAPI specification does NOT define custom error response schemas (e.g., RFC
 **Total Integration Error Tests:** ~6 tests
 
 ### 4.5 Worker Extension Error Scenarios
+
+> ⚠️ **REVIEW NOTICE (L2): Worker Infrastructure Does Not Exist Yet — Premature**
+>
+> All 7 worker error scenarios (initialization failure, parse error propagation, timeout, premature termination, serialization error) reference worker infrastructure that hasn't been built. These tests are premature for the initial contribution. Defer this entire section until worker support is implemented.
 
 **From [Section 16: Worker Extensions Testing Strategy](./16-worker-extensions-testing-strategy.md):**
 

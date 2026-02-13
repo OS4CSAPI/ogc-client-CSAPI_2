@@ -563,9 +563,9 @@ The aggregate scope creep (~683 tests, ~450h) is the category-level concern that
 | M9 | MEDIUM | 23 | Conditional assertion on fixture content (AP5) | ✅ Resolved |
 | M10 | MEDIUM | 32 | Server ID format and coordinate assertions (AP4) | ✅ Resolved |
 | M11 | MEDIUM | 24 | Mixed client/server invalid parameter tests (AP1) | ✅ Resolved |
-| L1 | LOW | 18 | SWE binary parsing errors beyond initial scope | ❌ Open |
-| L2 | LOW | 18 | Worker extension errors — premature | ❌ Open |
+| L1 | LOW | 18 | SWE binary parsing errors beyond initial scope | ✅ Resolved |
+| L2 | LOW | 18 | Worker extension errors — premature | ✅ Resolved |
 | L3 | LOW | 23 | Metadata validation checks fixture invariants (AP4) | ✅ Resolved |
-| L4 | LOW | 29 | Point bbox test compares result set sizes (AP4) | ❌ Open |
+| L4 | LOW | 29 | Point bbox test compares result set sizes (AP4) | ✅ Resolved |
 
 **Summary:** 2 Critical, 10 High, 11 Medium, 4 Low — **27 total issues**

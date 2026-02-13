@@ -986,6 +986,10 @@ describe('Bbox with Temporal Filters', () => {
 
 ### 4.7 Point Bbox Tests (3 tests)
 
+> ⚠️ **REVIEW NOTICE (L4): Result Set Size Comparison Tests Server Filtering, Not Client Code (AP4)**
+>
+> Test BBOX-PT-003 (`expect(responseWithBbox.features.length).toBeLessThanOrEqual(responseWithoutBbox.features.length)`) compares server filtering results rather than testing client code. The client's job is to encode the bbox correctly in the URL — whether the server returns fewer results is server behavior. Tests BBOX-PT-001 and BBOX-PT-002 have the same `response.ok` pattern flagged in Section 4.1 (M7).
+
 **Priority:** MEDIUM
 
 | Test ID | Scenario | Example Query | Expected Behavior | Lines |
