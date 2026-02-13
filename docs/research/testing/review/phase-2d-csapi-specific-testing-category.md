@@ -448,16 +448,16 @@ Proceed to **Phase 2E** covering remaining document categories, or begin targete
 |----|----------|-------------|-------|--------|
 | C1 | CRITICAL | 08 | Entire document is server compliance test suite with 334 requirement IDs | ✅ Resolved |
 | C2 | CRITICAL | 09 | SensorML testing validates documents, not parser — no output model defined | ✅ Resolved |
-| H1 | HIGH | 10 | SWE Common testing organized by spec sections with 22 error IDs, not parser code | ❌ Open |
-| H2 | HIGH | 09, 10 | Live server fixture sourcing from OpenSensorHub (AP2) | ❌ Open |
+| H1 | HIGH | 10 | SWE Common testing organized by spec sections with 22 error IDs, not parser code | ✅ Resolved |
+| H2 | HIGH | 09, 10 | Live server fixture sourcing from OpenSensorHub (AP2) | ✅ Resolved |
 | H3 | HIGH | 11 | Server data validation functions (validateUID, validateName, etc.) | ❌ Open |
 | H4 | HIGH | 21 | Shape-assertion model.spec.ts template tests nothing TypeScript compiler doesn't validate | ❌ Open |
 | M1 | MEDIUM | 08 | Useful spec reference buried under test framework framing | ❌ Open |
-| M2 | MEDIUM | 10 | Sound binary parsing tests buried alongside spec-oriented content | ❌ Open |
+| M2 | MEDIUM | 10 | Sound binary parsing tests buried alongside spec-oriented content | ✅ Resolved |
 | M3 | MEDIUM | 11 | Property matrix mirrors spec structure (AP3) | ❌ Open |
 | M4 | MEDIUM | 22 | Live server profiles included as reference context | ❌ Open |
 | L1 | LOW | 21 | 6-hour estimate for low-value shape-assertion tests | ❌ Open |
 | L2 | LOW | 11 | Over-specified test organization before code exists | ❌ Open |
-| L3 | LOW | 10 | 98 research questions disproportionate to implementation scope | ❌ Open |
+| L3 | LOW | 10 | 98 research questions disproportionate to implementation scope | ✅ Resolved |
 
 **Summary:** 2 Critical, 4 High, 4 Medium, 3 Low — **13 total issues**

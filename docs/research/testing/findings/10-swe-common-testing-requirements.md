@@ -1,8 +1,25 @@
 # SWE Common 3.0 Parser Testing Specification
 
+> **⚠️ REVIEW NOTICE (Phase 2D, H1/H2/M2/L3):** This document has significant strengths and significant problems that must be understood before use.
+>
+> **Strengths (use directly):**
+> - **Binary encoding content (~50% of document)** is genuinely client-oriented: byte-level parsing, endianness handling, IEEE 754 edge cases, buffer truncation, data type specifications (Sections 2.3, 3, 10.2). This content directly tests parser implementation behavior and can be used as-is.
+> - Component type property matrices (Section 4) are useful reference for what to extract.
+> - Spec example fixture inventory (Section 8) is directly usable.
+> - Nesting strategy (Section 5), fixture directory structure (Section 12), and phased implementation plan (Section 15) are sound.
+>
+> **Problems (do not use as-is):**
+> 1. **No parser output model defined.** Like Doc 09, this document never defines what the SWE Common parser functions return — no TypeScript interfaces for parsed components. Define output types first.
+> 2. **22 error IDs (ERR-SWE-*)** in Section 7 mix genuine parser errors (buffer truncation, corrupted data) with spec conformance checks (constraint violations, UOM validation). See Section 7 notice.
+> 3. **OpenSensorHub live server fixture sourcing** in Section 9 — anti-pattern AP2. Do not fetch fixtures from live servers. See Section 9 notice.
+> 4. **JSON/Text encoding tests** (Sections 2.1, 2.2) include property validation (constraint checking, UOM format validation) that tests data correctness rather than parser extraction.
+> 5. **98 research questions** organized by spec concepts (Q1-Q98), disproportionate to implementation scope. This reflects the research methodology, not the testing scope.
+>
+> **How to use this document:** Start with binary encoding sections (Sections 2.3, 3) for implementation. Use property matrices (Section 4) as reference for what to extract. Use spec example fixtures (Section 8). Define parser TypeScript output interfaces before writing tests. Write tests as `parseSWEComponent(fixture, encoding) → expectedTypedOutput`. See [Phase 2D review](../review/phase-2d-csapi-specific-testing-category.md) for details.
+
 **Research Plan:** [Research Plan 10: SWE Common 3.0 Format Testing Requirements](../research-plans/10-swe-common-testing-requirements.md)  
-**Research Questions:** 98 questions about SWE Common 3.0 component types across three encodings, JSON/Text/Binary encoding requirements, binary byte format specifications (endianness, IEEE 754, data types), component type testing, nested structures, schema validation for observations, UOM/quality/time reference frames, error handling per encoding, specification examples, OpenSensorHub fixtures, and parser implementation organization  
-**Methodology:** 5-phase systematic analysis (SWE Common 3.0 specification deep dive extracting all component types and encoding rules → JSON schema analysis for validation constraints → Binary encoding deep dive documenting byte-level formats (MOST CRITICAL) → Example and fixture analysis from spec and OpenSensorHub → Test strategy design creating comprehensive test specification with emphasis on binary encoding ~50% of effort)  
+**Research Questions:** 98 questions about SWE Common 3.0 component types across three encodings, JSON/Text/Binary encoding requirements, binary byte format specifications (endianness, IEEE 754, data types), component type testing, nested structures, schema validation for observations, UOM/quality/time reference frames, error handling per encoding, specification examples, and parser implementation organization  
+**Methodology:** 5-phase systematic analysis (SWE Common 3.0 specification deep dive extracting all component types and encoding rules → JSON schema analysis for format constraints → Binary encoding deep dive documenting byte-level formats (MOST CRITICAL) → Example and fixture analysis from spec → Test strategy design creating test specification with emphasis on binary encoding ~50% of effort)  
 **Research Time:** ~4.5 hours (February 5, 2026)
 
 **Primary Source(s):**
@@ -11,14 +28,14 @@
 - [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (SWE Common parser specification)
 
 **Supporting Resources:**
-- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (SWE Common validation rules)
+- Section 8: [CSAPI Specification Reference](08-csapi-specification-test-requirements.md) (SWE Common specification details)
 - Section 9: [SensorML Testing Requirements](09-sensorml-testing-requirements.md) (integration context - characteristics/capabilities use SWE Common)
 - [Format Requirements Analysis](../../requirements/csapi-format-requirements.md) (SWE Common subset for CSAPI)
 - [OpenSensorHub Analysis](../../requirements/csapi-opensensorhub-analysis.md) (real-world SWE Common examples)
 - Section 6: [Meaningful vs Trivial Definition](06-meaningful-vs-trivial-definition.md) (quality context for test depth)
 - Section 1-2: Upstream format parser test patterns
 
-**Document Purpose:** Define comprehensive testing requirements for the SWE Common 3.0 parser covering all 12+ component types (Quantity, Count, Boolean, Category, Text, Time, DataRecord, Vector, DataArray, Matrix, DataChoice, DataStream) across all three encodings (JSON, Text, Binary), with special emphasis on binary encoding byte-level validation (~50% of test effort, 865-1,284 lines), endianness handling, IEEE 754 edge cases, schema validation for observation conformance to DataStream schemas, and fixture requirements (~120 fixtures including binary .bin files with hex dumps), establishing comprehensive format testing with estimated 1,700-2,500 test lines.
+**Document Purpose:** Define testing requirements for the SWE Common 3.0 parser covering all 12+ component types (Quantity, Count, Boolean, Category, Text, Time, DataRecord, Vector, DataArray, Matrix, DataChoice, DataStream) across all three encodings (JSON, Text, Binary), with special emphasis on binary encoding byte-level parsing (~50% of test effort), endianness handling, IEEE 754 edge cases, and fixture requirements (~120 fixtures including binary .bin files with hex dumps), with estimated 1,700-2,500 test lines. **Note:** Parser TypeScript output interfaces must be defined before tests can be implemented — see review notice above.
 
 ---
 
@@ -785,6 +802,8 @@ Bytes: 54 65 73 74 00 00 00 00 00 00
 
 ## 6. Schema Validation Testing
 
+> **⚠️ REVIEW NOTICE (Phase 2D, H1):** Schema validation (checking whether observation results conform to DataStream schemas) is a legitimate parser concern — the parser needs to know the schema shape to correctly dispatch component parsing. However, **constraint validation** entries below ("Value within allowed interval," "UCUM codes valid," "Temporal validation") are server data quality checks, not parser concerns. The parser should extract values as-is. Retain structural schema matching (field count, types, order) as parser logic; remove constraint/unit/temporal validation.
+
 | Validation Scenario | Test Requirement | Expected Result | Priority | Spec Ref |
 |---------------------|------------------|-----------------|----------|----------|
 | **Structure Validation** |
@@ -824,6 +843,14 @@ Bytes: 54 65 73 74 00 00 00 00 00 00
 ---
 
 ## 7. Error Condition Testing per Encoding
+
+> **⚠️ REVIEW NOTICE (Phase 2D, H1):** The 22 ERR-SWE-* IDs below mix two categories:
+>
+> **Retain as genuine parser errors:** ERR-SWE-JSON-001 (malformed JSON), ERR-SWE-JSON-003/004 (type errors preventing parsing), ERR-SWE-TEXT-001/002 (delimiter errors), ERR-SWE-TEXT-005 (unmatched quotes), ERR-SWE-BIN-001 (insufficient bytes), ERR-SWE-BIN-004 (misaligned data), ERR-SWE-BIN-009 (invalid UTF-8), ERR-SWE-BIN-010 (data length mismatch). These represent structural failures where the parser genuinely cannot produce output.
+>
+> **Reclassify as non-errors:** ERR-SWE-JSON-002 (missing optional-like property), ERR-SWE-JSON-005 (UOM format), ERR-SWE-JSON-006 (constraint violation), ERR-SWE-TEXT-003/004 (value format), ERR-SWE-BIN-003 (NaN-like sequences), ERR-SWE-BIN-007 (integer overflow). The parser should extract whatever is there, not validate it.
+>
+> These IDs are retained as **reference material** for understanding error modes, not as test case identifiers.
 
 ### 7.1 JSON Encoding Errors
 
@@ -917,7 +944,11 @@ Bytes: 54 65 73 74 00 00 00 00 00 00
 
 ## 9. OpenSensorHub Fixture Inventory
 
-**Source:** OpenSensorHub Demo Server (https://api.georobotix.io/ogc/t18/api)
+> **⚠️ REVIEW NOTICE (Phase 2D, H2):** This section plans to source fixtures from the OpenSensorHub demo server (`https://api.georobotix.io/ogc/t18/api`) — this is anti-pattern AP2 (Hybrid Fixture/Live). Upstream tests use no live server dependencies; fixtures are static files versioned with the code. **Do not fetch fixtures from live servers.** If spec examples are insufficient, create realistic fixtures manually based on spec schemas. The two-tier assertion strategy ("Spec examples: MUST pass" vs "OpenSensorHub examples: SHOULD handle gracefully") should also not be used — all fixtures should have the same assertion rigor.
+>
+> The analysis below is retained as reference for understanding real-world SWE Common complexity, but should NOT drive fixture sourcing.
+
+**Source (REFERENCE ONLY — do not use for fixture sourcing):** OpenSensorHub Demo Server (https://api.georobotix.io/ogc/t18/api)
 
 | Resource URL | Encoding | Component Type | Complexity | Usable | Priority | Notes |
 |--------------|----------|----------------|------------|--------|----------|-------|
@@ -960,10 +991,11 @@ Bytes: 54 65 73 74 00 00 00 00 00 00
 - **Encoding variations:** Different delimiter choices, endianness preferences
 - **Performance data:** Large observation arrays for performance testing
 
-**Integration with Spec Examples:**
-- **Spec examples:** Normative baseline (MUST pass all tests)
-- **OpenSensorHub examples:** Real-world validation (SHOULD handle gracefully)
-- **Test priority:** Spec examples first (CRITICAL), then OpenSensorHub supplements (HIGH)
+**Fixture Sourcing Strategy (CORRECTED per Phase 2D):**
+- **Spec examples:** Primary fixture source — extract from SWE Common 3.0 and CSAPI Part 2 specs
+- **Hand-crafted fixtures:** Secondary source — create realistic fixtures for edge cases, error scenarios, and encoding variations not covered by spec examples
+- ~~**OpenSensorHub examples:** Real-world validation (SHOULD handle gracefully)~~ → Do not source fixtures from live servers
+- **Assertion rigor:** All fixtures receive the same assertion treatment — no two-tier MUST/SHOULD distinction
 
 ---
 
@@ -1123,12 +1155,9 @@ describe('SWE Common Binary Encoding', () => {
     it('should validate encoding definition matches data');
   });
   
-  describe('Real-World Examples (OpenSensorHub)', () => {
-    it('should parse real weather station binary observations');
-    it('should parse real temperature sensor binary data');
-    it('should handle non-standard extensions gracefully');
-    it('should parse large binary observation arrays (1000+ elements)');
-  });
+  // NOTE (Phase 2D, H2): OpenSensorHub describe block removed.
+  // Use static fixtures only. If realistic complexity is needed,
+  // create hand-crafted fixtures based on spec schemas.
 });
 ```
 
@@ -1751,20 +1780,22 @@ Byte breakdown:
 
 ### Research Summary
 
+> **⚠️ REVIEW NOTICE (Phase 2D, H1/M2):** This document was reviewed in Phase 2D. The binary encoding content (~50% of the document) is genuinely client-oriented and can be used directly for parser implementation. The JSON/Text encoding sections need reorientation from spec-validation to parser-output testing. Parser TypeScript output interfaces must be defined before tests can be implemented.
+
 **Completed:**
 - ✅ All 12+ SWE Common component types analyzed across 3 encodings (JSON, Text, Binary)
-- ✅ Binary encoding byte formats documented in detail (all integer types, float types, strings with IEEE 754, endianness)
-- ✅ Endianness testing strategy defined (explicit big-endian and little-endian tests for all multi-byte types)
-- ✅ IEEE 754 edge cases addressed (NaN, Inf, -Inf, denormalized numbers)
-- ✅ Schema validation requirements complete (observation conformance to DataStream schema, constraint validation)
+- ✅ Binary encoding byte formats documented in detail (all integer types, float types, strings with IEEE 754, endianness) — **directly usable for parser implementation**
+- ✅ Endianness testing strategy defined (explicit big-endian and little-endian tests for all multi-byte types) — **directly usable**
+- ✅ IEEE 754 edge cases addressed (NaN, Inf, -Inf, denormalized numbers) — **directly usable**
+- ✅ Schema validation requirements analyzed — **structural matching usable; constraint/unit validation removed per H1**
 - ✅ Nested structure testing strategy defined (DataRecord 1-3 levels, DataArray of DataRecords)
-- ✅ Fixture inventory complete (~120 fixtures: ~40 JSON, ~40 Text, ~40 Binary with hex dumps + expected + encoding defs)
-- ✅ Test depth defined meeting "meaningful" criteria (byte-level binary validation, all 3 encodings, schema validation)
-- ✅ Error handling requirements specified (22 error scenarios across encodings)
-- ✅ Test organization documented (4 files: JSON, Text, Binary, Schema; ~195 tests, 2,600-3,500 lines)
+- ✅ Fixture inventory complete (~120 fixtures: ~40 JSON, ~40 Text, ~40 Binary with hex dumps + expected + encoding defs) — **OpenSensorHub fixtures removed per H2**
+- ✅ Test depth defined meeting "meaningful" criteria (byte-level binary parsing, all 3 encodings)
+- ✅ Error handling requirements analyzed (subset of 22 scenarios — **only structurally unparseable inputs should cause errors, per H1**)
+- ✅ Test organization documented (4 files: JSON, Text, Binary, Schema; ~195 tests, 1,700-2,500 lines)
 - ✅ Validated against upstream patterns (aligned with EDR test approach, SWE Common-specific additions documented)
 - ✅ Cross-validated with Implementation Guide (aligned with parser specification, gaps identified)
-- ✅ All 98 research questions answered
+- ✅ All 98 research questions answered — **note: 98 questions reflects research methodology depth, not testing scope (L3)**
 
 **Testing Priorities Established:**
 - **CRITICAL:** Binary integer/float types, endianness, JSON/Text DataRecord/DataArray, schema validation structure
@@ -1915,12 +1946,12 @@ Byte breakdown:
 ### Next Steps
 
 **Immediate (Implementation):**
-1. Create fixture directory structure (`fixtures/swe-common/json/`, `.../text/`, `.../binary/`, `.../schemas/`)
-2. Extract spec examples from SWE Common 3.0 and CSAPI Part 2 specifications (19 examples)
-3. Fetch OpenSensorHub examples (all 3 encodings) from `/datastreams/.../observations?encoding=...`
-4. Create hand-crafted fixtures (error cases, edge cases, specific test scenarios) - 80+ fixtures
+1. **Define parser output TypeScript interfaces** — what do `parseSWEComponent()`, `parseBinaryEncoding()`, etc. return? This is the critical missing piece.
+2. Create fixture directory structure (`fixtures/swe-common/json/`, `.../text/`, `.../binary/`, `.../schemas/`)
+3. Extract spec examples from SWE Common 3.0 and CSAPI Part 2 specifications (19 examples)
+4. Create hand-crafted fixtures (error cases, edge cases, specific test scenarios) — **do not fetch from live servers**
 5. **CRITICAL:** Create binary fixture generation utilities (hex dump generator, .bin file creator, encoding applier)
-6. Implement Phase 1 tests (CRITICAL - ~1,064 lines, ~50 tests, binary data types + endianness + DataRecord/DataArray)
+6. Implement Phase 1 tests as `parseSWEComponent(fixture, encoding) → expectedTypedOutput` (CRITICAL - ~1,064 lines, ~50 tests, binary data types + endianness + DataRecord/DataArray)
 
 **Near-Term:**
 7. Implement Phase 2 tests (HIGH - ~654 lines, ~40 tests, simple components + binary component parsing)
@@ -1945,7 +1976,11 @@ Byte breakdown:
 
 **Research Status:** COMPLETE ✅  
 **All Success Criteria Met:** ✅  
-**Ready for Implementation:** Phase 1 (CRITICAL) ready to start  
+**Reclassified:** Parser output model must be defined before tests can be implemented (Phase 2D, H1)  
+**OpenSensorHub fixture sourcing:** Removed per Phase 2D, H2  
+**Binary sections:** Directly usable for implementation (Phase 2D, M2)  
+**Research questions (98):** Reflects research depth, not testing scope (Phase 2D, L3)  
+**Ready for Implementation:** After defining parser TypeScript output interfaces  
 **Estimated Implementation Effort:** 40-56 hours across 3 phases (binary ~50% of effort)
 
 **CRITICAL NOTE:** Binary encoding testing is highest priority and highest complexity. Must allocate 20-30 hours (50% of total effort) to binary testing to ensure byte-level correctness, endianness handling, and IEEE 754 edge cases are thoroughly validated. This is the highest rejection risk in the entire CSAPI client library.
