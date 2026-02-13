@@ -1,4 +1,4 @@
-# Research Plan A1: Test Research ↔ Implementation Guide Alignment
+# Research Plan A1: Test Research ↔ Implementation Guide Bidirectional Alignment
 
 **Date:** February 13, 2026  
 **Phase:** Pre-Implementation Alignment  
@@ -9,25 +9,32 @@
 
 ## Objective
 
-Systematically cross-reference the 38-document test research corpus (plus 13 review files) against the CSAPI Implementation Guide (v7.0, 4,207 lines) to verify that every implementation component has complete, consistent, and actionable test coverage — and that the test research does not specify tests for components that don't exist in the implementation guide.
+Perform a **bidirectional** cross-reference between the 38-document test research corpus (plus 13 review files) and the CSAPI Implementation Guide (v7.0, 4,207 lines) to:
 
-**Core Question:** Does the test research corpus accurately and completely cover what the implementation guide specifies, with no gaps, no orphans, and no contradictions?
+1. **Forward (Implementation Guide → Test Research):** Verify every implementation component has complete, consistent, and actionable test coverage — no gaps, no orphans, no contradictions.
+2. **Reverse (Test Research → Implementation Guide):** Identify lessons learned, architectural insights, scope corrections, specification details, and structural decisions discovered during test research that should be propagated back into the implementation guide to make it the best possible version before coding begins.
 
----
-
-## Anchor Document
-
-**CSAPI Implementation Guide** (`docs/planning/csapi-implementation-guide.md`, v7.0)
-
-This is the anchor because it defines *what will be built*. The test research must cover everything the guide specifies, and nothing it doesn't.
+**Core Questions:**
+- Does the test research accurately and completely cover what the implementation guide specifies?
+- Has the test research discovered anything — corrections, clarifications, refined patterns, scope decisions, deeper specification understanding — that the implementation guide should incorporate?
 
 ---
 
-## Cross-Reference Document(s)
+## Documents Under Review
 
-**Test Research Corpus** — 38 findings documents + 13 review files in `docs/research/testing/`
+### Implementation Guide (the "what to build" document)
 
-Key documents by implementation guide section:
+**CSAPI Implementation Guide** (`docs/planning/csapi-implementation-guide.md`, v7.0, 4,207 lines, 68 sections)
+
+Defines all 12 components, method signatures, type system, file structure, development standards, and usage scenarios.
+
+### Test Research Corpus (the "how to verify" documents)
+
+**38 findings documents + 13 review files** in `docs/research/testing/`
+
+The corpus represents ~50,000+ lines of systematic analysis conducted after the implementation guide was written. During this analysis, the research surfaced corrections, refined understanding, scope decisions, and specification details that may not have been fed back into the implementation guide.
+
+### Cross-Reference Map
 
 | Implementation Guide Section | Primary Test Research Docs |
 |------------------------------|---------------------------|
@@ -47,12 +54,15 @@ Key documents by implementation guide section:
 | Cross-cutting: Fixtures | Docs 15, 15P2 |
 | Cross-cutting: Quality | Docs 03, 06, 35, 36 |
 | Cross-cutting: Playbook | Doc 38 |
+| Cross-cutting: Anti-patterns | Phase 0 report |
 
 ---
 
-## Research Methodology
+## Part I: Forward Checks (Implementation Guide → Test Research)
 
-### Check 1: Component Coverage (Implementation Guide → Test Research)
+*"Is every component in the guide adequately covered by test research?"*
+
+### Check 1: Component Coverage
 
 **Question:** Does every component in the implementation guide have corresponding test specifications in the research?
 
@@ -164,11 +174,88 @@ Note: Doc 17's inflated estimates were already flagged (H1 review fix with discr
 
 ---
 
-### Check 5: Convention Alignment
+## Part II: Reverse Checks (Test Research → Implementation Guide)
 
-**Question:** Do the test research's recommended patterns align with the implementation guide's development standards?
+*"Has the test research discovered anything the implementation guide should incorporate?"*
+
+### Check 5: Scope Decisions Not Yet Reflected
+
+**Question:** Did the test research make scope decisions that the implementation guide should formally incorporate?
 
 **Procedure:**
+1. Scan all review reports (Phase 0-4) for scope-altering findings
+2. Verify each scope decision is reflected in the implementation guide's §3 (Purpose and Scope) and §9 (Testing)
+3. Flag any scope decisions that exist only in test research documents
+
+**Known scope decisions to verify propagation:**
+
+| Scope Decision | Source | Expected in Impl Guide? |
+|----------------|--------|------------------------|
+| Performance testing OUT OF SCOPE | Doc 33, Phase 2E | §9 or §3 |
+| Real-world server testing rejected (AP2) | Doc 32, Phase 2E | §16 |
+| Binary SWE parsing deferred | Doc 16, Phase 2E L1 | §7 SWE Common section |
+| Worker extensions = Phase 4 only | Doc 16, Phase 2F H1 | §8 |
+| `_metadata` fixture pattern = hallucinated | Doc 15P2 | §9 fixture guidance |
+| Enterprise review process simplified | Doc 36, Phase 2C H2 | §16 or §9 |
+| Incremental testing cadence (max 2-3 hrs) | Doc 05, ROADMAP v3 | §16 |
+
+**Deliverable:** List of scope decisions with propagation status (Already reflected / Needs update / Not applicable).
+
+---
+
+### Check 6: Client Responsibility Model
+
+**Question:** Does the implementation guide clearly articulate the 5 client responsibilities identified during test research, and do its examples consistently demonstrate them?
+
+**Procedure:**
+1. Extract the 5 client responsibilities from Phase 0 (Parse, Construct, Transform, Handle, Validate)
+2. Check whether the implementation guide's §3 or §4 explicitly states these responsibilities
+3. Scan implementation guide code examples (§6 QueryBuilder, §7 Format Handlers, §11 Developer Experience, §12 Usage Scenarios) for violations — examples that test server behavior rather than client behavior
+4. Cross-reference against AP1-AP5 anti-pattern definitions
+
+**Deliverable:** Client responsibility audit with examples flagged if non-compliant.
+
+---
+
+### Check 7: Architectural Patterns Refined by Test Research
+
+**Question:** Did the test research refine or correct any architectural patterns that the implementation guide should update?
+
+**Procedure:**
+1. Check `parseAndValidateUrl()` signature — does the implementation guide use `hostname` (correct, per Doc 34) or `host` (incorrect, fixed in Phase 4)?
+2. Check fixture directory structure — does the implementation guide reference `fixtures/ogc-api/csapi/` (old) or `fixtures/csapi/` with URL-path-mirroring (revised per Doc 15)?
+3. Check test file inventory — does the implementation guide say 17 files (original) or 22 files (Doc 19 authoritative)?
+4. Check test utility structure — does the implementation guide's §9 reference the test-utils design from Doc 34?
+5. Check resource type naming — scan for any SensorThings API terminology (`ObservedProperties`, `Sensors`, `FeaturesOfInterest`) vs correct CSAPI names (Phase 1 H1 fix)
+6. Check whether the QueryBuilder-not-standalone-clients pattern warning exists (Phase 0 lesson)
+
+**Deliverable:** Architectural consistency checklist with specific line references for any needed updates.
+
+---
+
+### Check 8: Specification Details Discovered During Test Research
+
+**Question:** Did the test research uncover specification details (from OGC 23-001, 23-002, 23-003) that would improve the implementation guide's accuracy or completeness?
+
+**Procedure:**
+1. Scan Doc 08 (CSAPI Specification Test Requirements) for specification details not in the implementation guide
+2. Scan Docs 09, 10 (SensorML, SWE Common) for parser requirements that should inform §7 Format Handlers
+3. Check Doc 26 (Sub-Resource Navigation) for relationship details (16 parent-child patterns, 3 relationship types) vs implementation guide's navigation section
+4. Check Doc 28 (Temporal Query Testing) for ISO 8601 interval patterns vs implementation guide's temporal parameter specs
+5. Check Doc 29 (Spatial Query Testing) for bbox/geometry patterns vs implementation guide's spatial parameter specs
+6. Check Doc 31 (Command Lifecycle) for state machine details vs implementation guide's Command methods section
+
+**Deliverable:** Specification enrichment opportunities table — details the implementation guide could absorb from test research to be more precise.
+
+---
+
+### Check 9: Convention and Standards Alignment (Bidirectional)
+
+**Question:** Do the test research's recommended patterns align with the implementation guide's development standards, AND has the test research established conventions that the implementation guide should adopt?
+
+**Procedure:**
+
+**Forward (Implementation Guide → Test Research):**
 1. Extract implementation guide §16 (Development Standards) conventions
 2. Cross-reference against test research patterns:
    - Mocking convention: `globalThis.fetch` (Docs 01, 02, 03, Phase 0 AP2)
@@ -178,65 +265,124 @@ Note: Doc 17's inflated estimates were already flagged (H1 review fix with discr
    - Error handling patterns: (Implementation guide §11, Doc 18)
 3. Identify any cases where test research recommends a pattern that contradicts the implementation guide
 
-**Deliverable:** Convention alignment checklist (Aligned/Misaligned per convention).
+**Reverse (Test Research → Implementation Guide):**
+4. Check whether the implementation guide's §16 includes the anti-pattern catalog (AP1-AP5) or references it
+5. Check whether the implementation guide references the "meaningful vs trivial" testing standard (Doc 06) as a development standard
+6. Check whether the implementation guide's code examples inadvertently demonstrate any anti-patterns
+7. Check whether the implementation guide's §9 Testing section incorporates the incremental testing cadence (31 checkpoints, max 2-3 hrs between tests, never >800 lines without tests)
+8. Verify the implementation guide's coverage targets match the reconciled numbers (>80% mandatory floor, 85-95% aspirational)
+
+**Deliverable:** Bidirectional convention alignment checklist (Aligned/Misaligned/Missing per convention, with direction of needed update).
 
 ---
 
-### Check 6: Anti-Pattern Compliance Verification
+### Check 10: Anti-Pattern Compliance (Bidirectional)
 
-**Question:** Are all flagged anti-pattern violations (AP1-AP5 from Phase 0) properly accounted for in both the test research AND the implementation guide?
+**Question:** Are all flagged anti-pattern violations (AP1-AP5 from Phase 0) properly accounted for in both the test research AND the implementation guide? Does the implementation guide itself avoid demonstrating anti-patterns?
 
 **Procedure:**
-1. Extract the 5 anti-patterns from Phase 0 report
+1. Extract the 5 anti-patterns from Phase 0 report:
+   - AP1: Testing Response Content (asserting fixture data values)
+   - AP2: Live Server Dependencies (real HTTP in tests)
+   - AP3: Server Conformance Testing (testing spec compliance vs client behavior)
+   - AP4: Asserting Data Shape (testing structure rather than behavior)
+   - AP5: Over-Engineered Test Infrastructure (custom frameworks)
 2. Verify the implementation guide's development standards address each
-3. Verify the test research's review notices cover all at-risk documents (16/16 confirmed in Phase 4, but verify against implementation guide expectations)
-4. Check that the implementation guide doesn't inadvertently encourage any anti-patterns in its examples
+3. Scan implementation guide code examples (§6, §7, §11, §12) for any examples that would produce AP1/AP3/AP4 tests if followed literally
+4. Verify the test research's review notices cover all at-risk documents (16/16 confirmed in Phase 4)
+5. Check whether the anti-pattern catalog should be referenced/summarized in the implementation guide's §16
 
-**Deliverable:** Anti-pattern cross-reference matrix.
+**Deliverable:** Anti-pattern cross-reference matrix with implementation guide example audit.
 
 ---
 
-### Check 7: Fixture Alignment
+### Check 11: Fixture Strategy Alignment (Bidirectional)
 
-**Question:** Does the test research's fixture specification match the implementation guide's fixture expectations?
+**Question:** Does the fixture strategy align between both documents, and should the implementation guide incorporate the refined fixture guidance from the test research?
 
 **Procedure:**
-1. Extract implementation guide's fixture references (§9)
-2. Cross-reference against Doc 15 §5.2 (revised fixture structure)
-3. Cross-reference against Doc 15 Part 2 (fixture documentation best practices)
-4. Verify Doc 38's fixture structure matches both (already fixed in Phase 4, but verify completeness)
-5. Count fixtures specified in test research vs fixtures expected by implementation guide
 
-**Deliverable:** Fixture alignment summary.
+**Forward:**
+1. Extract implementation guide's fixture references (§9)
+2. Cross-reference against Doc 15 §5.2 (revised fixture structure under `fixtures/csapi/`)
+3. Verify the implementation guide doesn't reference the old `fixtures/ogc-api/csapi/` structure
+
+**Reverse:**
+4. Check whether the implementation guide should incorporate Doc 15 Part 2's key finding: embedded fixture metadata is hallucinated content — use descriptive filenames + git history instead
+5. Check whether the fixture count (~280 fixtures) should be noted in §9
+6. Check whether the fixture sourcing strategy (OGC spec examples, real server responses from gnosis-earth/OpenSensorHub) should be documented in the implementation guide
+7. Verify the URL-path-mirroring convention is explained or cross-referenced
+
+**Deliverable:** Fixture alignment summary with update recommendations.
+
+---
+
+### Check 12: Terminology Consistency
+
+**Question:** Does the implementation guide use terms consistently with how the test research has defined them?
+
+**Procedure:**
+1. Check 10 key terms identified in Phase 4 Check 1:
+   - meaningful test, trivial test, fixture, unit test, integration test, end-to-end test, edge case, deep testing, client-oriented, server-oriented
+2. Verify the implementation guide's usage of "integration test" vs "end-to-end test" aligns with the working definition established in Phase 4 H6 (integration = multi-component with mocked HTTP; end-to-end = real servers, out of scope)
+3. Check for any SensorThings API terminology in the implementation guide (Phase 1 H1 catch)
+4. Verify the 9 resource type names are consistently CSAPI-correct throughout
+
+**Deliverable:** Terminology consistency checklist.
 
 ---
 
 ## Execution Strategy
 
 **Read order:**
+
+*Forward pass (Implementation Guide → Test Research):*
 1. Implementation guide §5-§8 (the components) — extract what needs testing
 2. Implementation guide §9 (testing section) — extract stated test expectations
 3. Implementation guide §13-§16 (estimates, standards) — extract constraints
 4. Test research docs in component order (Docs 22, 12, 08-11, 16, etc.) — verify coverage
 5. Doc 19 (file inventory) — verify structure alignment
 6. Doc 34 (test utilities) — verify helper alignment
-7. Phase 4 report — verify all prior findings still hold
 
-**Estimated effort:** 3-4 hours
+*Reverse pass (Test Research → Implementation Guide):*
+7. Phase 0 report — extract anti-patterns, client responsibilities, architectural lessons
+8. Phase 1-4 reports — extract all corrections and scope decisions
+9. Docs 15/15P2 — extract fixture structure refinements
+10. Doc 06 — extract meaningful/trivial definitions
+11. Docs 08, 26, 28, 29, 31 — extract specification details
+12. Re-read implementation guide §3, §9, §11, §16 — identify where reverse findings should land
 
-**Output:** Alignment report with severity-rated findings (Critical/High/Medium/Low), following the Phase 0-4 review framework format.
+**Estimated effort:** 4-5 hours (increased from 3-4 to accommodate reverse checks)
+
+**Output:** Alignment report with severity-rated findings (Critical/High/Medium/Low), organized into two sections:
+- **Part I findings:** Test research gaps/issues relative to implementation guide
+- **Part II findings:** Implementation guide improvements informed by test research
 
 ---
 
 ## Acceptance Criteria
 
 The cross-reference is complete when:
+
+**Forward (Implementation Guide → Test Research):**
 - [ ] All 12 implementation components have verified test coverage (Check 1)
 - [ ] All ~70-80 QueryBuilder methods have verified test scenarios (Check 2)
 - [ ] Test estimates are reconciled to one authoritative number (Check 3)
 - [ ] All orphan test specs are accounted for (Check 4)
-- [ ] All conventions are aligned (Check 5)
-- [ ] All anti-patterns are accounted for (Check 6)
-- [ ] Fixture structure is aligned (Check 7)
+
+**Reverse (Test Research → Implementation Guide):**
+- [ ] All scope decisions verified as propagated or flagged (Check 5)
+- [ ] Client responsibility model verified in implementation guide (Check 6)
+- [ ] Architectural patterns verified as current (Check 7)
+- [ ] Specification enrichment opportunities documented (Check 8)
+
+**Bidirectional:**
+- [ ] All conventions aligned in both directions (Check 9)
+- [ ] All anti-patterns accounted for in both documents (Check 10)
+- [ ] Fixture strategy aligned in both documents (Check 11)
+- [ ] Terminology consistent across both documents (Check 12)
+
+**Final:**
 - [ ] Report generated with severity-rated findings
 - [ ] All Critical and High findings resolved
+- [ ] Implementation guide updated where warranted
