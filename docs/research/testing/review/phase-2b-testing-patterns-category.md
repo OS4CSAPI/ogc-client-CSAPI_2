@@ -118,7 +118,7 @@ However, **significant quality issues exist**:
 
 **Severity:** HIGH  
 **Document:** [14-integration-test-workflow-design.md](../findings/14-integration-test-workflow-design.md), [06-meaningful-vs-trivial-definition.md](../findings/06-meaningful-vs-trivial-definition.md)  
-**Status:** ❌ Open
+**Status:** ~~❌ Open~~ ✅ Resolved
 
 **Problem:** Document 06 defines "meaningful" testing as requiring `new URL()` parsing and complete URL structure validation. Document 14's integration test examples then frequently violate this standard with shallow `toContain` assertions:
 
@@ -142,7 +142,7 @@ expect(areaUrlWithoutParam).toEqual(areaUrlWithouParam);
 
 **Impact:** Integration test examples model the wrong assertion pattern, contradicting the quality standard defined in Document 06.
 
-**Fix Required:** Update Document 14's test examples to use either `parseAndValidateUrl()` utility (as defined in Documents 06/13) or exact string matching (as done in upstream EDR). Remove all `toContain` URL assertions.
+**Resolution:** Converted all 28 URL `toContain` assertions across Sections 4.2, 5.2, and 6.2 to `new URL()` parsing — using `expect(new URL(url).pathname).toBe(...)` for path validation and `expect(parsed.searchParams.get(...)).toBe(...)` for query parameters. Retained 8 legitimate `toContain` uses: 2 "❌ DON'T" examples (intentionally bad), 3 error message validations, 2 response content validations, and 1 response header validation.
 
 ---
 

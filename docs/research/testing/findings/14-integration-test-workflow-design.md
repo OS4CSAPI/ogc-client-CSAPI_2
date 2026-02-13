@@ -447,8 +447,9 @@ describe('CSAPI Observation Retrieval', () => {
       bbox: { minLon: -122.5, minLat: 37.5, maxLon: -122.0, maxLat: 38.0 }
     });
     
-    expect(url).toContain('/systems');
-    expect(url).toContain('bbox=-122.5,37.5,-122.0,38.0');
+    const parsed = new URL(url);
+    expect(parsed.pathname).toBe('/systems');
+    expect(parsed.searchParams.get('bbox')).toBe('-122.5,37.5,-122.0,38.0');
   });
 });
 ```
@@ -471,7 +472,7 @@ it('navigates from system to datastreams', async () => {
   const systemId = 'sensor-sf-001';
   const url = builder.getSystemDataStreams(systemId);
   
-  expect(url).toContain(`/systems/${systemId}/datastreams`);
+  expect(new URL(url).pathname).toBe(`/systems/${systemId}/datastreams`);
 });
 ```
 
@@ -494,8 +495,9 @@ it('queries observations with phenomenonTime filter', async () => {
     phenomenonTime: '2024-01-01T00:00:00Z/2024-01-31T23:59:59Z'
   });
   
-  expect(url).toContain('/datastreams/ds-temp-001/observations');
-  expect(url).toContain('phenomenonTime=2024-01-01T00%3A00%3A00Z%2F2024-01-31T23%3A59%3A59Z');
+  const parsed = new URL(url);
+  expect(parsed.pathname).toBe('/datastreams/ds-temp-001/observations');
+  expect(parsed.searchParams.get('phenomenonTime')).toBe('2024-01-01T00:00:00Z/2024-01-31T23:59:59Z');
 });
 ```
 
@@ -520,8 +522,9 @@ it('paginates observation results', async () => {
     offset: 0
   });
   
-  expect(url1).toContain('limit=100');
-  expect(url1).toContain('offset=0');
+  const parsed1 = new URL(url1);
+  expect(parsed1.searchParams.get('limit')).toBe('100');
+  expect(parsed1.searchParams.get('offset')).toBe('0');
   
   // Second page
   const url2 = builder.getDataStreamObservations('ds-temp-001', {
@@ -530,8 +533,9 @@ it('paginates observation results', async () => {
     offset: 100
   });
   
-  expect(url2).toContain('limit=100');
-  expect(url2).toContain('offset=100');
+  const parsed2 = new URL(url2);
+  expect(parsed2.searchParams.get('limit')).toBe('100');
+  expect(parsed2.searchParams.get('offset')).toBe('100');
 });
 ```
 
@@ -591,11 +595,12 @@ it('queries observations with phenomenonTime, resultTime, and limit', async () =
     limit: 50
   });
   
-  expect(url).toContain('/observations');
-  expect(url).toContain('phenomenonTime=2024-01-01');
-  expect(url).toContain('resultTime=2024-01-01');
-  expect(url).toContain('datastream=ds-temp-001');
-  expect(url).toContain('limit=50');
+  const parsed = new URL(url);
+  expect(parsed.pathname).toBe('/observations');
+  expect(parsed.searchParams.get('phenomenonTime')).toBe('2024-01-01T00:00:00Z/2024-01-31T23:59:59Z');
+  expect(parsed.searchParams.get('resultTime')).toBe('2024-01-01T00:00:00Z/..');
+  expect(parsed.searchParams.get('datastream')).toBe('ds-temp-001');
+  expect(parsed.searchParams.get('limit')).toBe('50');
 });
 ```
 
@@ -657,11 +662,11 @@ it('navigates from observation back to system', async () => {
   
   // Navigate to datastream
   const datastreamUrl = builder.getObservationDataStream(observationId);
-  expect(datastreamUrl).toContain(`/observations/${observationId}/datastream`);
+  expect(new URL(datastreamUrl).pathname).toBe(`/observations/${observationId}/datastream`);
   
   // Navigate to system
   const systemUrl = builder.getObservationSystem(observationId);
-  expect(systemUrl).toContain(`/observations/${observationId}/system`);
+  expect(new URL(systemUrl).pathname).toBe(`/observations/${observationId}/system`);
 });
 ```
 
@@ -725,7 +730,7 @@ describe('CSAPI Command Submission', () => {
     const systemId = 'camera-ptz-001';
     const url = builder.getSystemControlStreams(systemId);
     
-    expect(url).toContain(`/systems/${systemId}/controlstreams`);
+    expect(new URL(url).pathname).toBe(`/systems/${systemId}/controlstreams`);
   });
 });
 ```
@@ -748,7 +753,7 @@ it('checks command feasibility before submission', async () => {
     parameters: { pan: 45, tilt: 0, zoom: 2 }
   });
   
-  expect(url).toContain('/controlstreams/cs-pan-001/feasibility');
+  expect(new URL(url).pathname).toBe('/controlstreams/cs-pan-001/feasibility');
 });
 ```
 
@@ -772,7 +777,7 @@ it('submits command with parameters', async () => {
     parameters: { pan: 45, tilt: 0, zoom: 2 }
   });
   
-  expect(url).toContain('/controlstreams/cs-pan-001/commands');
+  expect(new URL(url).pathname).toBe('/controlstreams/cs-pan-001/commands');
   
   // Mock fetch to return 201 Created with Location header
   globalThis.fetch = jest.fn().mockResolvedValue({
@@ -832,7 +837,7 @@ it('polls command status until completion', async () => {
   
   // Poll 1
   const url1 = builder.getCommandStatus(commandId);
-  expect(url1).toContain(`/commands/${commandId}/status`);
+  expect(new URL(url1).pathname).toBe(`/commands/${commandId}/status`);
   const status1 = await (await fetch(url1)).json();
   expect(status1.status).toBe('PENDING');
   
@@ -869,7 +874,7 @@ it('retrieves command result after completion', async () => {
   const commandId = 'cmd-001';
   const url = builder.getCommandResult(commandId);
   
-  expect(url).toContain(`/commands/${commandId}/result`);
+  expect(new URL(url).pathname).toBe(`/commands/${commandId}/result`);
   
   // Mock fetch to return result
   globalThis.fetch = jest.fn().mockResolvedValue({
@@ -941,7 +946,7 @@ it('cancels running command', async () => {
   const commandId = 'cmd-003';
   const url = builder.cancelCommand(commandId);
   
-  expect(url).toContain(`/commands/${commandId}/cancel`);
+  expect(new URL(url).pathname).toBe(`/commands/${commandId}/cancel`);
   
   // Mock fetch to return cancellation confirmation
   globalThis.fetch = jest.fn().mockResolvedValue({
@@ -1017,7 +1022,7 @@ describe('CSAPI Cross-Resource Navigation', () => {
     const systemId = 'weather-station-001';
     const url = builder.getSystemDeployments(systemId);
     
-    expect(url).toContain(`/systems/${systemId}/deployments`);
+    expect(new URL(url).pathname).toBe(`/systems/${systemId}/deployments`);
   });
 });
 ```
@@ -1038,7 +1043,7 @@ it('navigates from system to procedures', async () => {
   const systemId = 'weather-station-001';
   const url = builder.getSystemProcedures(systemId);
   
-  expect(url).toContain(`/systems/${systemId}/procedures`);
+  expect(new URL(url).pathname).toBe(`/systems/${systemId}/procedures`);
 });
 ```
 
@@ -1058,7 +1063,7 @@ it('navigates from system to sampling features', async () => {
   const systemId = 'weather-station-001';
   const url = builder.getSystemSamplingFeatures(systemId);
   
-  expect(url).toContain(`/systems/${systemId}/samplingFeatures`);
+  expect(new URL(url).pathname).toBe(`/systems/${systemId}/samplingFeatures`);
 });
 ```
 
@@ -1079,14 +1084,14 @@ it('navigates from system through datastreams to observations', async () => {
   
   // System → DataStreams
   const datastreamsUrl = builder.getSystemDataStreams(systemId);
-  expect(datastreamsUrl).toContain(`/systems/${systemId}/datastreams`);
+  expect(new URL(datastreamsUrl).pathname).toBe(`/systems/${systemId}/datastreams`);
   
   // Assume first datastream ID from mocked response
   const datastreamId = 'ds-temperature-001';
   
   // DataStream → Observations
   const observationsUrl = builder.getDataStreamObservations(datastreamId);
-  expect(observationsUrl).toContain(`/datastreams/${datastreamId}/observations`);
+  expect(new URL(observationsUrl).pathname).toBe(`/datastreams/${datastreamId}/observations`);
 });
 ```
 
@@ -1109,11 +1114,11 @@ it('navigates backward from observation to system', async () => {
   
   // Observation → SamplingFeature
   const samplingFeatureUrl = builder.getObservationSamplingFeature(observationId);
-  expect(samplingFeatureUrl).toContain(`/observations/${observationId}/samplingFeature`);
+  expect(new URL(samplingFeatureUrl).pathname).toBe(`/observations/${observationId}/samplingFeature`);
   
   // Observation → System
   const systemUrl = builder.getObservationSystem(observationId);
-  expect(systemUrl).toContain(`/observations/${observationId}/system`);
+  expect(new URL(systemUrl).pathname).toBe(`/observations/${observationId}/system`);
 });
 ```
 
