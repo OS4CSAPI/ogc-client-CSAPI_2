@@ -1,5 +1,19 @@
 # Section 25: Format Negotiation Testing Strategy - FINDINGS
 
+> ⚠️ **REVIEW NOTICE — HIGH (H2): 45 Test Scenarios Test Server HTTP Response Behavior, Not Client Code**
+>
+> **Phase 2E Review | Issues: H2, H9, M2, M3 | Anti-Patterns: AP1**
+>
+> This document is ~60% client-oriented. Section 4 (scenarios 1-45) is structured as HTTP request → expected HTTP response assertions (`GET /systems/sys123?f=json → Expected: 200 OK, Content-Type: application/json`). These test what the SERVER returns, not what the CLIENT constructs or parses. The document itself notes the client implements format selection in "~13 lines of code" — 50 test scenarios for 13 lines is extreme over-engineering.
+>
+> **What's usable:** URL construction with `f=` parameter (Section 4.4 URL encoding), format constant mapping, `FormatValidator` client-side pre-validation (Section 6.1), fixture design patterns (Section 7), format advertisement discovery (Section 5).
+>
+> **What must be trimmed:** Server HTTP response scenarios (Sections 4.1-4.3), Accept header tests for unused feature (Section 4.2), `ResponseValidator` that checks server Content-Type correctness (Section 6.2), format precedence rules that describe server behavior (Section 3).
+>
+> **Target:** ~10-15 client-oriented tests: URL construction with `f=` parameter, URL encoding of `+` as `%2B`, format constant mapping, client-side format validation.
+>
+> See also: [Phase 2E Review Report](../review/phase-2e-advanced-scenarios-category.md)
+
 **Research Plan:** [Research Plan 25: Format Negotiation Testing Strategy](../research-plans/25-format-negotiation-testing.md)
 
 **Research Questions:** 6 core questions about testing Accept header format negotiation, query parameter format selection (f=geojson), format discovery via links, CSAPI-supported media types, format precedence (Accept vs query param), and handling unsupported formats
@@ -250,6 +264,10 @@ Content-Type: application/geo+json; charset=utf-8
 
 ## 3. Format Precedence Rules
 
+> ⚠️ **REVIEW NOTICE (M2): Format Precedence Rules Describe Server Behavior, Not Client Logic**
+>
+> Sections 3.1-3.5 describe how the SERVER resolves format precedence ("Query parameter overrides Accept header", "Server returns default format", "406 Not Acceptable"). The client doesn't implement precedence — it sends `f=` and accepts whatever comes back. These rules are useful as reference context for understanding server behavior, but should not be the basis for client test assertions. Client tests should verify: the `f=` parameter is correctly appended to URLs, and the client handles whatever Content-Type the server returns.
+
 ### 3.1 Precedence Order
 
 ```
@@ -335,6 +353,10 @@ Content-Type: application/json
 ## 4. Test Scenario Design
 
 ### 4.1 Query Parameter Test Scenarios (20 scenarios)
+
+> ⚠️ **REVIEW NOTICE (H2): Server HTTP Response Assertions**
+>
+> These 20 scenarios test what the SERVER returns (`Expected: 200 OK, Content-Type: application/json`) — not what the client constructs. Client tests should verify: `builder.getSystems({ format: 'json' })` produces a URL with `?f=json`. Whether the server returns 200 with the correct Content-Type is server compliance testing. The "Invalid Format" scenarios (16-20) testing server 400/406 responses are also server behavior — only client-side pre-validation (e.g., `FormatValidator` rejecting unknown formats before sending) belongs in client tests.
 
 #### Valid Format Names (Part 1) - 10 scenarios
 
@@ -464,6 +486,10 @@ Content-Type: application/json
 
 ### 4.2 Accept Header Test Scenarios (10 scenarios)
 
+> ⚠️ **REVIEW NOTICE (H9): Accept Header Tests for Feature Client Doesn't Use**
+>
+> The document itself notes (Section 2.2) that the CSAPI client does NOT use Accept headers — it uses the `f=` query parameter exclusively. These 10 scenarios test server response to Accept headers, testing a feature the client doesn't implement. All 10 scenarios should be removed entirely. If Accept header support is added in the future, tests should verify the client correctly sets the header, not what the server returns.
+
 #### Accept Header Without Query Parameter - 5 scenarios
 
 21. **Accept: application/geo+json (Systems)**
@@ -571,6 +597,10 @@ Content-Type: application/json
     ```
 
 ### 4.4 URL Encoding Test Scenarios (5 scenarios)
+
+> ✅ **REVIEW NOTICE: Strongest Section — Correctly Client-Oriented**
+>
+> These URL encoding scenarios (36-40) test actual client behavior: how the client encodes `+` as `%2B` in format parameters, handles `/` encoding, and manages edge cases. This is the core client-testable surface for format negotiation. These scenarios plus the `FormatValidator` (Section 6.1) represent the ~10-15 tests that belong in the final implementation.
 
 36. **URL encoding of + in media type**
     ```
@@ -801,6 +831,10 @@ class FormatValidationError extends Error {
 ```
 
 ### 6.2 Server Response Validation
+
+> ⚠️ **REVIEW NOTICE (M3): `ResponseValidator` Tests Server Content-Type Correctness**
+>
+> This `ResponseValidator` class verifies that the SERVER correctly set `Content-Type` headers matching the requested format. This validates server behavior, not client transformation. In a mocked-fetch test, the fixture's Content-Type is whatever you set it to — asserting it matches the request tests the fixture, not the client. If the client needs to PARSE responses differently based on Content-Type (e.g., JSON vs SML+JSON), test the parser dispatch logic, not whether the server set the header correctly.
 
 **Validate Content-Type Header:**
 ```typescript

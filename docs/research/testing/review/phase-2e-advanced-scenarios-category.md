@@ -543,18 +543,18 @@ The aggregate scope creep (~683 tests, ~450h) is the category-level concern that
 | C1 | CRITICAL | 32 | Hybrid fixture/live execution model (AP2) | ✅ Resolved |
 | C2 | CRITICAL | 23 | Test templates assert fixture content via `fetchJson()` (AP1) | ✅ Resolved |
 | H1 | HIGH | 32 | Response content assertions throughout (AP1, AP4) | ✅ Resolved |
-| H2 | HIGH | 25 | 45 scenarios test server HTTP response behavior (AP1) | ❌ Open |
+| H2 | HIGH | 25 | 45 scenarios test server HTTP response behavior (AP1) | ✅ Resolved |
 | H3 | HIGH | 24 | Server validation/precedence testing (AP1) | ❌ Open |
 | H4 | HIGH | 30 | Tests assert fixture response data directly (AP1) | ❌ Open |
 | H5 | HIGH | 30 | No tests for actual client logic — chunking, fallback (AP4) | ❌ Open |
 | H6 | HIGH | 28 | Identifies client utilities but doesn't test them (AP4) | ❌ Open |
 | H7 | HIGH | 23 | Cursor pagination tests assert server behavior (AP1) | ✅ Resolved |
 | H8 | HIGH | 32 | Graceful skipping on server availability — 5+ instances (AP5) | ✅ Resolved |
-| H9 | HIGH | 25 | Accept header tests for unused feature (AP1) | ❌ Open |
+| H9 | HIGH | 25 | Accept header tests for unused feature (AP1) | ✅ Resolved |
 | H10 | HIGH | 27 | Schema evolution tests require server integration (AP1) | ❌ Open |
 | M1 | MEDIUM | 24 | `ParameterValidationError` contradicts Doc 18 (cross-doc) | ❌ Open |
-| M2 | MEDIUM | 25 | Format precedence rules describe server behavior (AP1) | ❌ Open |
-| M3 | MEDIUM | 25 | `ResponseValidator` tests server Content-Type (AP1) | ❌ Open |
+| M2 | MEDIUM | 25 | Format precedence rules describe server behavior (AP1) | ✅ Resolved |
+| M3 | MEDIUM | 25 | `ResponseValidator` tests server Content-Type (AP1) | ✅ Resolved |
 | M4 | MEDIUM | 23 | Server invalid parameter rejection tests (AP1) | ✅ Resolved |
 | M5 | MEDIUM | 27 | "Server-Side Validation" section documents server compliance | ❌ Open |
 | M6 | MEDIUM | 28 | `response.ok` assertions meaningless against fixtures (AP1) | ❌ Open |
