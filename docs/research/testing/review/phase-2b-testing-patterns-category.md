@@ -178,7 +178,7 @@ expect(areaUrlWithoutParam).toEqual(areaUrlWithouParam);
 
 **Severity:** MEDIUM  
 **Document:** [14-integration-test-workflow-design.md](../findings/14-integration-test-workflow-design.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** Several integration test examples test response data shape without testing client transformation logic. This borders on AP4 (Asserting Data Shape Instead of Testing Transformation):
 
@@ -195,6 +195,8 @@ This tests whether the mocked fixture contains the right shape — the mock is s
 **Important distinction:** This is acceptable IF the client has parsing/transformation logic that processes the raw response. But if the client just passes through the GeoJSON, these assertions test the fixture, not client code.
 
 **Fix Required:** Clarify in Document 14 that response structure assertions are only meaningful when the client transforms, filters, or parses the response. Add comments distinguishing "testing client parsing logic" from "testing fixture shape."
+
+**Resolution:** Added AP4 warning blockquote to Test 5 (Section 4.2) explaining that response shape assertions are only valid when testing client parsing output, not raw passthrough. Added inline comments showing the correct pattern (`parseObservationCollection(await response.json())` instead of raw `response.json()`). Rewrote Section 8.2 best practices to distinguish "Validate Client Parsing Output" (DO) from "Assert Raw Passthrough Shape" (DON'T/AP4).
 
 ---
 

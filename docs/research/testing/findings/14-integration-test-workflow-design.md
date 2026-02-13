@@ -552,6 +552,8 @@ it('paginates observation results', async () => {
 
 **Test 5: Parse GeoJSON Observation Collection**
 
+> **⚠️ AP4 Note (Asserting Data Shape vs. Testing Transformation):** The assertions below validate response structure. These are only meaningful if the client has parsing/transformation logic (e.g., a GeoJSON parser that restructures, filters, or enriches the raw API response). If the client passes through the JSON unchanged, these assertions merely validate the fixture's own shape — the mock returns this exact data, so the test would be tautological. When implementing, ensure these assertions verify the *output of client parsing logic*, not the raw fixture content.
+
 ```typescript
 it('parses GeoJSON observation collection', async () => {
   // Mock fetch to return observation fixture
@@ -562,9 +564,14 @@ it('parses GeoJSON observation collection', async () => {
   
   const url = builder.getDataStreamObservations('ds-temp-001');
   const response = await fetch(url);
+  // IMPORTANT: In implementation, 'geojson' should be the output of a
+  // client parsing/transformation function, NOT raw response.json().
+  // e.g.: const geojson = parseObservationCollection(await response.json());
   const geojson = await response.json();
   
   // Integration: Response parsing → GeoJSON validation
+  // These assertions test that client parsing logic produces correct output.
+  // They would be an AP4 anti-pattern if testing raw passthrough responses.
   expect(geojson.type).toBe('FeatureCollection');
   expect(geojson.features).toHaveLength(100);
   expect(geojson.features[0].type).toBe('Feature');
@@ -574,7 +581,7 @@ it('parses GeoJSON observation collection', async () => {
 ```
 
 **Assertions:**
-- ✅ Response is valid GeoJSON FeatureCollection
+- ✅ Response is valid GeoJSON FeatureCollection *(only meaningful if client transforms the response)*
 - ✅ Features have correct structure (type, properties, geometry)
 - ✅ Observation properties present (phenomenonTime, result, resultTime)
 
@@ -1356,20 +1363,32 @@ expect(url).toContain('limit=10');
 
 ### 8.2 Response Structure Validation
 
-**✅ DO: Type-Safe Object Validation**
+> **⚠️ AP4 Clarification:** Response structure assertions are only meaningful when the client *transforms, parses, or enriches* the raw API response. If the client is a passthrough (returns the JSON as-is), these assertions test the fixture shape, not client behavior. Always assert against the *output of client logic*, not the raw response.
+
+**✅ DO: Validate Client Parsing Output**
 
 ```typescript
-// Validate response structure
+// Validate structure AFTER client parsing/transformation
+// e.g., response = await client.parseObservations(rawJson)
 expect(response.type).toBe('FeatureCollection');
 expect(response.features).toBeInstanceOf(Array);
 expect(response.features).toHaveLength(10);
 
-// Validate feature properties
+// Validate feature properties produced by parser
 const feature = response.features[0];
 expect(feature.type).toBe('Feature');
 expect(feature.properties).toHaveProperty('phenomenonTime');
 expect(feature.properties).toHaveProperty('result');
 expect(typeof feature.properties.result).toBe('number');
+```
+
+**❌ DON'T: Assert Raw Passthrough Shape (AP4)**
+
+```typescript
+// If client just does: return await response.json()
+// then these assertions test the fixture, not client code
+expect(response.type).toBe('FeatureCollection');  // Tautological
+expect(response.features).toHaveLength(10);  // Tests fixture setup
 ```
 
 **❌ DON'T: Just Check Truthiness**
