@@ -611,8 +611,6 @@
 
 ```
 fixtures/
-├── README.md                          # Fixture library overview
-├── SOURCES.md                         # Provenance documentation
 ├── csapi-querybuilder/                # Section 12 & 13 fixtures
 │   ├── universal/                     # Universal fixtures (5)
 │   │   ├── conformance-all-resources.json
@@ -1151,11 +1149,10 @@ import conformanceAll from '../../fixtures/csapi-querybuilder/universal/conforma
 - Create master descriptor in JSON
 - Generate text and binary variants programmatically (if tooling available)
 - OR hand-craft all three with careful cross-validation
-- Document equivalence in metadata `relatedFixtures` field
+- Use naming convention to indicate equivalence (same base name, different extensions)
 
 **Validation:**
-- Parse all three encodings
-- Assert decoded values are identical
+- Tests parse all three encodings and assert decoded values are identical
 - Ensures consistency across encoding formats
 
 ### 8.3 Integration Workflow Fixtures vs Unit Test Fixtures
@@ -1196,6 +1193,8 @@ import conformanceAll from '../../fixtures/csapi-querybuilder/universal/conforma
 
 ## 9. Maintenance and Update Procedures
 
+> **⚠️ REVISED (Phase 2A Review):** References to hallucinated metadata system (`$metadata`, `SOURCES.md`, `CHANGELOG.md`, `REVIEW.md`, `VALIDATION.md`, fixture validation scripts) have been removed. Maintenance follows the upstream pattern: git history for provenance, tests for validation, PR review for quality.
+
 ### 9.1 Specification Updates
 
 **Trigger:** New version of CSAPI, SensorML, or SWE Common specification released
@@ -1204,10 +1203,8 @@ import conformanceAll from '../../fixtures/csapi-querybuilder/universal/conforma
 1. **Identify changed examples** in new specification version
 2. **Extract new examples** from updated spec
 3. **Update affected fixtures** to match new schema/requirements
-4. **Run validation suite** to ensure backward compatibility
-5. **Update metadata** (sourceURL, modified date, notes)
-6. **Re-run tests** to verify fixtures still support test requirements
-7. **Document breaking changes** in `fixtures/CHANGELOG.md`
+4. **Re-run tests** to verify fixtures still support test requirements
+5. **Commit with descriptive message** documenting spec version change and impact
 
 **Estimated Frequency:** Annually (OGC specifications typically stable)
 
@@ -1216,21 +1213,10 @@ import conformanceAll from '../../fixtures/csapi-querybuilder/universal/conforma
 **Trigger:** JSON schemas updated (CSAPI, SensorML, SWE Common)
 
 **Procedure:**
-1. **Update schema references** in fixture `$schema` fields
-2. **Re-validate all fixtures** against new schemas
-3. **Fix validation errors** (update fixtures to match new schema)
-4. **Update validation status** in metadata
-5. **Document schema version** in `SOURCES.md`
-
-**Automated Validation:**
-```bash
-# Validate all JSON fixtures against schemas
-npm run validate:fixtures
-
-# Output:
-# ✓ fixtures/csapi-querybuilder/universal/conformance-all-resources.json (schema-valid)
-# ✗ fixtures/geojson-csapi/systems/system-weather-station-valid.json (schema-invalid: missing required property 'uid')
-```
+1. **Update affected fixtures** to match new schema requirements
+2. **Re-run tests** — failing tests reveal which fixtures need updates
+3. **Fix fixture content** where tests expose incompatibilities
+4. **Commit with descriptive message** noting schema version change
 
 ### 9.3 Test Requirement Changes
 
@@ -1240,53 +1226,28 @@ npm run validate:fixtures
 1. **Identify new fixture requirements** from test design
 2. **Source or create new fixtures** following sourcing strategy
 3. **Add to appropriate directory** following organization structure
-4. **Update fixture inventory** in this document (Section 2)
-5. **Update test imports** to reference new fixtures
-
-**Example:**
-- Test identifies need for "system with 100 datastreams" (performance test)
-- Create `large-system-100-datastreams.json` in `fixtures/errors/extreme/`
-- Update inventory: Add to "Extreme Value Edge Cases" category
-- Import in performance test suite
+4. **Write tests** that use the new fixtures
+5. **Commit fixture + test together** so provenance is clear in git history
 
 ### 9.4 Fixture Deprecation
 
 **Trigger:** Fixture no longer needed (test removed, requirement changed)
 
 **Procedure:**
-1. **Mark fixture as deprecated** (add `"deprecated": true` to metadata)
-2. **Document deprecation reason** (metadata `notes` field)
-3. **Move to `fixtures/deprecated/` directory** (or delete if truly obsolete)
-4. **Remove test imports** (ensure no tests reference deprecated fixture)
-5. **Update fixture inventory** (this document)
+1. **Verify no tests reference fixture** (`grep -r "fixture-name" src/`)
+2. **Delete fixture file** (git history preserves it if ever needed again)
+3. **Commit with message** explaining why fixture was removed
 
-**Deprecation Example:**
-```json
-{
-  "$metadata": {
-    "deprecated": true,
-    "deprecationDate": "2025-03-15",
-    "deprecationReason": "Replaced by system-weather-station-valid-v2.json with updated property schema",
-    "replacedBy": "system-weather-station-valid-v2.json"
-  },
-  ...
-}
-```
+No embedded deprecation metadata, sidecar files, or staging directories needed — git history serves as the permanent record.
 
 ### 9.5 Periodic Review
 
-**Frequency:** Quarterly
+**Frequency:** As needed (during major refactors or specification updates)
 
 **Review Checklist:**
-- [ ] **Fixture count** matches inventory (Section 2)
-- [ ] **Validation status** up-to-date for all fixtures
-- [ ] **No broken links** in integration workflow fixtures (href values resolve)
 - [ ] **No orphaned fixtures** (fixtures not referenced by any test)
-- [ ] **Schema versions** documented and current
-- [ ] **Source URLs** still accessible (specs haven't moved)
-- [ ] **Metadata completeness** (all fixtures have proper metadata)
-
-**Review Output:** Update `fixtures/REVIEW.md` with findings and actions
+- [ ] **All tests pass** with current fixture set
+- [ ] **No sensitive data** in fixtures (credentials, internal URLs)
 
 ---
 
@@ -1349,133 +1310,59 @@ No automated CI/CD pipeline for fixture validation is needed — the existing te
 
 ## 11. Sourcing Execution Plan
 
-### 11.1 Phase 1: Specification Extraction (Weeks 1-2)
+### 11.1 Phase 1: Critical Path Fixtures (Week 1)
 
-**Week 1: CSAPI and SensorML**
+> **⚠️ REVISED (Phase 2A Review):** Execution plan revised to align with ~80-100 fixture target (down from ~280). References to hallucinated metadata, sidecar files, `SOURCES.md`, `VALIDATION.md`, and `CHANGELOG.md` removed. Adopt test-driven fixture creation: create fixtures alongside the tests that need them.
 
-**Day 1-2: CSAPI Specification**
+**Day 1-2: CSAPI & QueryBuilder Core**
 - [ ] Download/access CSAPI Part 1 & 2 specifications
-- [ ] Identify example sections (Annex B, inline examples)
-- [ ] Extract 25+ JSON examples
-- [ ] Create fixture files in `fixtures/csapi-spec/` (or integrate into existing structure)
-- [ ] Validate against schemas
-- [ ] Update metadata with source URLs
+- [ ] Extract 10-15 key JSON examples from spec
+- [ ] Create 5 universal QueryBuilder fixtures (conformance, collection-info)
+- [ ] Create 8-10 resource-specific fixtures (key resource types)
+- [ ] Commit each fixture with descriptive message noting source spec section
 
-**Day 3-5: SensorML 3.0**
+**Day 3-4: Discovery Workflow + GeoJSON Features**
+- [ ] Create 6-8 discovery workflow fixtures (root → collections → system → datastream)
+- [ ] Create 5-10 GeoJSON CSAPI feature fixtures (1-2 per key resource type)
+- [ ] Create 2-3 basic error fixtures (404, 400, empty collection)
+
+**Day 5: Write Tests Using Fixtures**
+- [ ] Write tests for QueryBuilder using new fixtures
+- [ ] Write discovery workflow integration test
+- [ ] Verify all tests pass — this validates the fixtures
+
+**Deliverable (End of Week 1):** ~30 critical-path fixtures with passing tests
+
+### 11.2 Phase 2: Parser Coverage (Week 2)
+
+**Day 1-2: SensorML Fixtures**
 - [ ] Access SensorML 3.0 spec at https://docs.ogc.org/is/23-000/23-000.html
 - [ ] Check JSON example repository: https://schemas.opengis.net/sensorML/3.0/json/examples/
-- [ ] Download or extract examples from spec document
-- [ ] Create ~20 fixtures in `fixtures/sensorml/`
-- [ ] Validate against SensorML JSON schemas
-- [ ] Update metadata with source URLs
+- [ ] Create 8-12 fixtures (PhysicalSystem, PhysicalComponent, Process types + error cases)
+- [ ] Write SensorML parser tests using fixtures
 
-**Week 2: SWE Common 3.0**
-
-**Day 1-3: SWE Common JSON Encoding**
+**Day 3-5: SWE Common JSON Fixtures**
 - [ ] Access SWE Common 3.0 spec at https://docs.ogc.org/is/24-014/24-014.html
-- [ ] Extract JSON examples from Annex B.2 (B.2.1 through B.2.8)
-- [ ] Create ~35 JSON fixtures in `fixtures/swe-common/json/`
-- [ ] Validate against SWE Common JSON schemas
+- [ ] Extract key JSON examples from Annex B.2
+- [ ] Create 10-15 JSON fixtures covering component types our parser handles
+- [ ] Write SWE parser tests using fixtures
+- [ ] Defer text/binary fixtures until parser supports those encodings
 
-**Day 4-5: SWE Common Text and Binary**
-- [ ] Extract text encoding examples from Annex B.1 (B.1.1 through B.1.7)
-- [ ] Create ~35 CSV fixtures in `fixtures/swe-common/text/`
-- [ ] Document binary encoding requirements from Clause 10.4
-- [ ] Plan binary fixture creation (defer to hand-crafting phase)
+**Deliverable (End of Week 2):** ~25 additional fixtures with passing parser tests
 
-**Deliverable (End of Week 2):**
-- ~170 fixtures extracted from specifications
-- All validated against schemas
-- Metadata complete with source URLs
-- Documented in `SOURCES.md`
+### 11.3 Phase 3: Incremental Expansion (Ongoing)
 
-### 11.2 Phase 2: Hand-Crafted Fixtures (Weeks 3-4)
+Create fixtures as tests demand them — no artificial front-loading:
 
-**Week 3: GeoJSON CSAPI and QueryBuilder**
+- [ ] Observation workflow fixtures (when integration tests reach this scope)
+- [ ] SWE text encoding fixtures (when parser supports text decoding)
+- [ ] SWE binary encoding fixtures (when parser supports binary decoding)
+- [ ] Error/edge case fixtures (as error-handling tests are written)
+- [ ] Advanced workflow fixtures (command, navigation) as needed
 
-**Day 1-2: GeoJSON CSAPI Features**
-- [ ] Create valid System features (4)
-- [ ] Create valid Deployment features (4)
-- [ ] Create valid Procedure features (4)
-- [ ] Create valid SamplingFeature features (4)
-- [ ] Create valid Property features (4)
-- [ ] Total: 20 fixtures in `fixtures/geojson-csapi/`
+**Deliverable:** ~25-45 additional fixtures, created incrementally alongside tests
 
-**Day 3: QueryBuilder and Resource Methods**
-- [ ] Create 5 universal fixtures in `fixtures/csapi-querybuilder/universal/`
-- [ ] Create 18 resource-specific fixtures in `fixtures/csapi-querybuilder/resources/`
-- [ ] Total: 23 fixtures
-
-**Day 4-5: Error and Edge Cases**
-- [ ] Create 9 empty/null fixtures
-- [ ] Create 5 invalid data fixtures
-- [ ] Create 5 schema violation fixtures
-- [ ] Create 8 HTTP error fixtures
-- [ ] Create 3 extreme value fixtures
-- [ ] Total: 30 fixtures in `fixtures/errors/`
-
-**Week 4: Integration Workflows and SWE Binary**
-
-**Day 1: Discovery and Observation Workflows**
-- [ ] Create 8 discovery fixtures in `fixtures/integration/discovery/`
-- [ ] Create 10 observation fixtures in `fixtures/integration/observations/`
-
-**Day 2: Command and Navigation Workflows**
-- [ ] Create 8 command fixtures in `fixtures/integration/commands/`
-- [ ] Create 7 navigation fixtures in `fixtures/integration/navigation/`
-
-**Day 3-5: SWE Common Binary Encoding**
-- [ ] Create ~35 binary fixtures based on JSON equivalents
-- [ ] Base64-encode binary data
-- [ ] Create sidecar metadata files
-- [ ] Validate against descriptors
-- [ ] Total: ~35 fixtures in `fixtures/swe-common/binary/`
-
-**Deliverable (End of Week 4):**
-- ~110 hand-crafted fixtures
-- All validated (valid fixtures) or documented as invalid-by-design (error fixtures)
-- Metadata complete
-- Cross-references established (relatedFixtures)
-
-### 11.3 Phase 3: Validation and Integration (Week 5)
-
-**Day 1: Automated Validation**
-- [ ] Set up Ajv schema validator
-- [ ] Create validation scripts (schema, semantic, integration)
-- [ ] Run validation on all ~280 fixtures
-- [ ] Document validation results in `VALIDATION.md`
-- [ ] Fix validation errors (iterate as needed)
-
-**Day 2: Metadata Completion**
-- [ ] Verify all fixtures have complete metadata
-- [ ] Update `SOURCES.md` with all sources and provenance
-- [ ] Create `CHANGELOG.md` for fixture library
-- [ ] Document validation status for all fixtures
-
-**Day 3: Integration Testing**
-- [ ] Import fixtures into test files
-- [ ] Run unit tests with fixture library
-- [ ] Run integration tests with workflow fixtures
-- [ ] Verify fixtures support all test requirements
-
-**Day 4: Documentation**
-- [ ] Update this document (Section 15) with final fixture counts
-- [ ] Create `fixtures/README.md` with library overview
-- [ ] Document reusability patterns and maintenance procedures
-- [ ] Create fixture usage examples for developers
-
-**Day 5: Final Review and Commit**
-- [ ] Peer review fixture library
-- [ ] Validate directory structure
-- [ ] Verify naming conventions
-- [ ] Commit all fixtures to repository
-- [ ] Update research plan (Section 15 complete)
-
-**Deliverable (End of Week 5):**
-- Complete validated fixture library (~280 fixtures)
-- Comprehensive documentation (README, SOURCES, VALIDATION, CHANGELOG)
-- Integration with test suites verified
-- Ready for use in test implementation (ROADMAP Phase 4)
+**Total:** ~80-100 fixtures over ~2 weeks of focused work + ongoing incremental additions
 
 ---
 
@@ -1572,25 +1459,24 @@ No automated CI/CD pipeline for fixture validation is needed — the existing te
 - **Mitigation:**
   - ✅ Already mitigated: Primary source is specifications, not live servers
   - Hand-craft realistic fixtures based on spec examples
-  - Document unavailability in SOURCES.md
+  - Document unavailability in git commit messages
 
 **Risk 3: Specification URLs Change**
 - **Likelihood:** Low
-- **Impact:** Medium (broken source links in metadata)
+- **Impact:** Low (source links in git history only)
 - **Mitigation:**
   - Use persistent OGC URLs (https://docs.ogc.org/is/...)
-  - Document spec version numbers in metadata
-  - Periodically verify source URLs (quarterly review)
+  - Document spec version numbers in git commit messages
+  - Periodically verify source URLs as needed
 
 ### 13.2 Maintenance Risks
 
 **Risk 4: Schema Updates Break Fixtures**
 - **Likelihood:** Medium (schemas evolve with spec versions)
-- **Impact:** High (fixture library becomes invalid)
+- **Impact:** High (tests fail with outdated fixtures)
 - **Mitigation:**
-  - Automated validation pipeline (CI/CD)
-  - Pin schema versions in fixture metadata
-  - Maintain fixture changelog for breaking changes
+  - Tests immediately surface schema incompatibilities (failing tests = invalid fixtures)
+  - Update fixtures when tests break, commit with descriptive message
   - Budget time for fixture updates (annually)
 
 **Risk 5: Fixture Drift from Tests**
@@ -1646,7 +1532,7 @@ No automated CI/CD pipeline for fixture validation is needed — the existing te
   - Start with simple fixtures (scalars, basic records)
   - Progress to complex fixtures (binary encoding, composite systems)
   - Seek community examples for complex encodings
-  - Document complexity in metadata for future reference
+  - Document complexity in git commit messages for future reference
 
 ---
 
