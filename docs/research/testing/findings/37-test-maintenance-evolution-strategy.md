@@ -25,9 +25,11 @@
 
 ## Executive Summary
 
-This document defines a comprehensive strategy for maintaining and evolving CSAPI tests as the specification updates, upstream library changes, and implementation refactors. Based on lessons learned from the previous iteration (where test maintenance was identified as a problem), this strategy ensures tests remain valuable, current, and maintainable long-term.
+This document defines a strategy for maintaining and evolving CSAPI tests as the specification updates, upstream library changes, and implementation refactors. Based on lessons learned from the previous iteration (where test maintenance was identified as a problem), this strategy ensures tests remain valuable, current, and maintainable long-term.
 
 > **⚠️ Review Notice (C2 fix):** The `@specification` JSDoc tag traceability system and associated tooling (`scripts/test-traceability.js`, `test:update-spec-version`) originally proposed in this document have been identified as AP3 (OGC Requirement Traceability) during Phase 2C review and removed. Structural spec-traceability infrastructure organizes tests around spec sections rather than client code behavior. The upstream codebase has zero spec-traceability infrastructure. **Sections referencing `@specification` tags have been updated to use plain `// Spec context:` comments.** Remaining instances in embedded code examples should be read as plain comments.
+
+> **⚠️ Review Notice (H3 fix):** The original document proposed enterprise-level maintenance infrastructure disproportionate to an open-source library contribution: a RACI matrix with 5 invented roles (Test Owner, Component Maintainer, Release Manager, Tech Lead, Documentation Maintainer), monthly health checks (2–4 hours/month), 70–120 hours/year maintenance burden, custom tooling (detect-test-rot.js, validate-fixtures.js, health-report generator, fixture migration tool), GitHub Actions workflows for monthly automated health checks, Dependabot/Renovate configuration, a 9-step spec update workflow with 2–4 week timeline, and elaborate markdown templates. The contributor does not control upstream CI configuration, does not set dependency management policies, and should not propose organizational roles or 70–120 hours/year of overhead for a contribution to someone else's repository. Upstream `camptocamp/ogc-client` maintains its tests with zero documented maintenance process. These sections have been simplified to brief, practical guidelines.
 
 ### Key Maintenance Challenges
 
@@ -40,20 +42,15 @@ This document defines a comprehensive strategy for maintaining and evolving CSAP
 3. **Implementation Refactoring** - Code changes that invalidate test assumptions
 4. **Test Rot** - Tests become outdated, trivial, or meaningless over time
 
-### Maintenance Strategy Overview
+### Maintenance Guidelines
 
-**Proactive Maintenance:**
-- Regular test health checks (monthly)
-- Automated change detection
-- Spec-aware test context (plain comments noting which spec sections informed test design)
-- Fixture versioning and validation
-- Test rot indicators and prevention
+**Three core practices for CSAPI test maintenance:**
 
-**Reactive Maintenance:**
-- Clear update workflows for each scenario
-- Responsibility assignment (RACI matrix)
-- Change impact analysis
-- Prioritized update scheduling
+1. **Update fixtures when upstream API changes** — When upstream `camptocamp/ogc-client` releases breaking changes, update test fixtures and assertions to match the new API.
+
+2. **Keep test patterns aligned with upstream conventions** — Follow upstream's testing style. If upstream changes how it structures tests, align contributed tests accordingly.
+
+3. **Fix broken tests promptly** — When tests fail (due to spec changes, dependency updates, or refactoring), fix them immediately rather than skipping or disabling.
 
 ### Spec-Informed Test Maintenance
 
@@ -79,25 +76,7 @@ it('parses required system properties from response', () => {
 | **Spec Update** | Per spec release (~yearly) | Within 2 weeks | HIGH |
 | **Dependency Update** | Per upstream release (~quarterly) | Within 1 week | MEDIUM |
 | **Implementation Change** | Per refactoring (ad-hoc) | Immediate | HIGH |
-| **Bug Discovery** | When bugs found (ad-hoc) | Immediate | CRITICAL |
-| **Coverage Gap** | During review (ad-hoc) | Within sprint | MEDIUM |
 | **Test Failure** | When detected (continuous) | Immediate | CRITICAL |
-
-### Maintenance Effort Estimates
-
-**Regular Maintenance:**
-- **Monthly health checks:** 2-4 hours/month
-- **Quarterly dependency updates:** 4-8 hours/quarter
-- **Annual spec updates:** 16-32 hours/year
-- **Total regular:** ~50-80 hours/year
-
-**Reactive Maintenance:**
-- **Bug fixes:** 1-2 hours per bug (variable)
-- **Refactoring impact:** 2-8 hours per refactoring (variable)
-- **Coverage gaps:** 1-4 hours per gap (variable)
-- **Total reactive:** ~20-40 hours/year (estimated)
-
-**Overall Maintenance:** ~70-120 hours/year (~5-10% of test development time)
 
 ---
 
@@ -659,583 +638,60 @@ npm run fixtures:update-metadata
 
 ### 2.5 Manual Review Triggers
 
-**Monthly Review Checklist:**
+> **⚠️ H3 fix:** The original monthly review checklist template (30+ checkbox items covering spec compliance, dependency health, test quality, fixture health, documentation, and technical debt) has been replaced with a brief checklist appropriate for an open-source contribution. Monthly formal reviews with named reviewers and dated reports are not appropriate — simply review tests when they break or when upstream changes.
 
-```markdown
-## Monthly Test Health Review
-
-**Date:** [YYYY-MM-DD]
-**Reviewer:** [Name]
-
-### Spec Compliance
-- [ ] Check for new CSAPI spec releases
-- [ ] Review spec changelog if updated
-- [ ] Update spec version references if needed
-
-### Dependency Health
-- [ ] Review open Dependabot PRs
-- [ ] Check for upstream breaking changes
-- [ ] Plan dependency updates
-
-### Test Quality
-- [ ] Run test suite (should be green)
-- [ ] Check coverage report (85%+ statement, 80%+ branch)
-- [ ] Review flaky test report
-- [ ] Identify trivial tests (manual spot check)
-
-### Fixture Health
-- [ ] Run fixture validation (all should pass)
-- [ ] Check fixture metadata completeness
-- [ ] Identify outdated fixtures
-
-### Documentation
-- [ ] Review README for accuracy
-- [ ] Check test documentation freshness
-- [ ] Update traceability matrix
-
-### Technical Debt
-- [ ] Review open test-related issues
-- [ ] Identify test rot candidates
-- [ ] Plan test refactoring if needed
-
-**Findings:** [Summary of issues found]
-**Action Items:** [List of tasks to address issues]
-**Next Review:** [YYYY-MM-DD]
-```
+**When to review tests:**
+- A dependency update breaks something
+- A new spec version is published
+- Tests start failing after an upstream merge
+- You notice a test that doesn't actually validate anything
 
 ---
 
 ## 3. Test Update Workflows
 
-### 3.1 Spec Update Workflow
+> **⚠️ H3 fix:** The original 9-step spec update workflow (with ASCII art flowchart, 2–4 week timeline, 16–32 hours estimate, and named roles at each stage) and separate dependency/refactoring/retirement workflows with 5–7 steps each have been replaced with brief practical guidance. Upstream `camptocamp/ogc-client` has no documented update workflow.
 
-**Trigger:** New CSAPI specification version published
+### 3.1 When Specs Update
 
-**Workflow:**
+1. Read the spec changelog to identify changes that affect client behavior
+2. Update implementation code for any changed behavior
+3. Update test fixtures if response schemas changed
+4. Update test assertions to match new expected behavior
+5. Update spec context comments in affected tests
+6. Submit PR with all changes together
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ Step 1: Spec Released                                       │
-├─────────────────────────────────────────────────────────────┤
-│ - OGC publishes new spec version (e.g., v1.0.0 → v1.1.0)  │
-│ - Spec maintainer creates GitHub issue: "Update to v1.1.0" │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 2: Review Spec Changes                                 │
-├─────────────────────────────────────────────────────────────┤
-│ - Read spec changelog                                       │
-│ - Identify breaking changes                                 │
-│ - Identify new features                                     │
-│ - Identify deprecations                                     │
-│ - Estimate update effort                                    │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 3: Impact Analysis                                     │
-├─────────────────────────────────────────────────────────────┤
-│ - Run traceability tool for changed sections               │
-│ - Identify affected tests                                  │
-│ - Identify affected fixtures                               │
-│ - Identify affected code                                   │
-│ - Create update plan with priorities                       │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 4: Update Implementation                               │
-├─────────────────────────────────────────────────────────────┤
-│ - Update code for spec changes                             │
-│ - Add new features if applicable                           │
-│ - Mark deprecated features                                 │
-│ - Update type definitions                                  │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 5: Update Tests                                        │
-├─────────────────────────────────────────────────────────────┤
-│ - Update test scenarios for changed requirements           │
-│ - Add tests for new features                               │
-│ - Add deprecation tests                                    │
-│ - Update assertions to match new spec                      │
-│ - Update spec context comments                             │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 6: Update Fixtures                                     │
-├─────────────────────────────────────────────────────────────┤
-│ - Extract new examples from spec                           │
-│ - Update existing fixtures to match new schema             │
-│ - Validate all fixtures against new spec                   │
-│ - Update fixture metadata (spec version)                   │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 7: Update Documentation                                │
-├─────────────────────────────────────────────────────────────┤
-│ - Update README spec version references                    │
-│ - Update examples in docs                                  │
-│ - Update migration guide if breaking changes              │
-│ - Update package.json metadata                             │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 8: Validate                                            │
-├─────────────────────────────────────────────────────────────┤
-│ - Run full test suite (should pass)                        │
-│ - Run coverage report (should meet targets)                │
-│ - Run fixture validation (all should pass)                 │
-│ - Manual review of changes                                 │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 9: Review & Merge                                      │
-├─────────────────────────────────────────────────────────────┤
-│ - Create PR: "Update to CSAPI v1.1.0"                      │
-│ - Peer review                                              │
-│ - Final sign-off                                           │
-│ - Merge to main                                            │
-│ - Close spec update issue                                  │
-└─────────────────────────────────────────────────────────────┘
-```
+### 3.2 When Dependencies Update
 
-**Timeline:** 2-4 weeks for major spec update
+1. Run tests after updating the dependency
+2. If tests pass, merge the update
+3. If tests fail, fix the test or implementation code to match the new API
+4. For breaking changes, update fixtures and assertions as needed
 
-**Effort:** 16-32 hours (depending on scope of changes)
+### 3.3 When Refactoring Implementation
 
-### 3.2 Dependency Update Workflow
+- **Internal refactoring (private methods):** Tests should still pass — if they don't, the tests are too tightly coupled to implementation details
+- **Public API changes:** Update tests to use the new API. If the old API is deprecated, add tests for the new API and mark old tests for removal.
 
-**Trigger:** Dependabot creates PR for dependency update
+### 3.4 When Retiring Tests
 
-**Workflow:**
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ Step 1: Dependabot PR Created                               │
-├─────────────────────────────────────────────────────────────┤
-│ - Automated PR created: "Bump @camptocamp/ogc-client"      │
-│ - CI runs test suite automatically                         │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 2: Review CI Results                                   │
-├─────────────────────────────────────────────────────────────┤
-│ - Check if tests pass                                       │
-│ - If PASS → go to Step 6 (non-breaking change)            │
-│ - If FAIL → go to Step 3 (breaking change)                 │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 3: Review Breaking Changes (if tests fail)             │
-├─────────────────────────────────────────────────────────────┤
-│ - Review upstream release notes                            │
-│ - Identify breaking API changes                            │
-│ - Identify deprecated APIs used in code                    │
-│ - Estimate update effort                                   │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 4: Update Code & Tests                                 │
-├─────────────────────────────────────────────────────────────┤
-│ - Update code to use new APIs                              │
-│ - Update tests to match new behavior                       │
-│ - Update mocks if needed                                   │
-│ - Update type definitions                                  │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 5: Validate                                            │
-├─────────────────────────────────────────────────────────────┤
-│ - Run test suite (should pass)                             │
-│ - Run coverage report (should maintain targets)            │
-│ - Manual testing of key workflows                          │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 6: Review & Merge                                      │
-├─────────────────────────────────────────────────────────────┤
-│ - Review changes (if any)                                  │
-│ - Approve PR                                               │
-│ - Merge to main                                            │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**Timeline:**
-- Non-breaking: 1-2 hours
-- Breaking changes: 4-8 hours
-
-**Priority:**
-- Security updates: CRITICAL (within 24 hours)
-- Major version updates: HIGH (within 1 week)
-- Minor/patch updates: MEDIUM (within 2 weeks)
-
-### 3.3 Test Refactoring Workflow
-
-**Trigger:** Code refactoring or test quality issues identified
-
-**Workflow:**
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ Step 1: Identify Need for Refactoring                       │
-├─────────────────────────────────────────────────────────────┤
-│ Triggers:                                                   │
-│ - Test quality review identifies trivial tests             │
-│ - Test rot detected (tests don't catch bugs)              │
-│ - Code refactoring invalidates test assumptions            │
-│ - Test duplication identified                              │
-│ - Test performance issues                                  │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 2: Analyze Impact                                      │
-├─────────────────────────────────────────────────────────────┤
-│ - Identify affected test files                             │
-│ - Estimate refactoring effort                              │
-│ - Assess risk (will refactoring break tests?)             │
-│ - Plan refactoring approach                                │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 3: Refactor Tests                                      │
-├─────────────────────────────────────────────────────────────┤
-│ - Update test structure                                     │
-│ - Enhance trivial tests (add proper validation)           │
-│ - Remove duplicate tests                                   │
-│ - Improve test clarity                                     │
-│ - Update test documentation                                │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 4: Validate Refactoring                                │
-├─────────────────────────────────────────────────────────────┤
-│ - Run test suite (should pass)                             │
-│ - Validate bug detection (intentionally break code)        │
-│ - Check coverage (should maintain or improve)              │
-│ - Run quality checklist                                    │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 5: Review & Merge                                      │
-├─────────────────────────────────────────────────────────────┤
-│ - Create PR: "Refactor [component] tests"                  │
-│ - Peer review                                              │
-│ - Final sign-off                                           │
-│ - Merge to main                                            │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**Timeline:** 2-8 hours per component (depending on complexity)
-
-**Priority:** MEDIUM (plan during sprints, don't block other work)
-
-### 3.4 Fixture Update Workflow
-
-**Trigger:** Spec update or fixture validation failure
-
-**Workflow:**
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ Step 1: Identify Fixture Updates Needed                     │
-├─────────────────────────────────────────────────────────────┤
-│ - Spec updated (new schema)                                │
-│ - Fixture validation fails                                 │
-│ - New test scenarios need fixtures                         │
-│ - Existing fixtures outdated                               │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 2: Update Fixtures                                     │
-├─────────────────────────────────────────────────────────────┤
-│ - Extract new examples from spec (if available)            │
-│ - Update existing fixtures to match new schema             │
-│ - Add new required fields                                  │
-│ - Remove deprecated fields (if spec removes them)          │
-│ - Update fixture metadata (spec version, modified date)    │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 3: Validate Fixtures                                   │
-├─────────────────────────────────────────────────────────────┤
-│ - Run fixture validation script                            │
-│ - Check schema compliance                                  │
-│ - Verify metadata completeness                             │
-│ - Manual spot-check critical fixtures                      │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 4: Update Tests                                        │
-├─────────────────────────────────────────────────────────────┤
-│ - Update test assertions if fixture structure changed      │
-│ - Update @fixture references if fixture names changed      │
-│ - Run test suite (should pass)                             │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 5: Update Documentation                                │
-├─────────────────────────────────────────────────────────────┤
-│ - Update fixture inventory (Section 15 deliverable)        │
-│ - Update fixture metadata documentation                    │
-│ - Update test documentation if needed                      │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 6: Review & Merge                                      │
-├─────────────────────────────────────────────────────────────┤
-│ - Create PR: "Update fixtures to spec v1.1.0"              │
-│ - Peer review                                              │
-│ - Merge to main                                            │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**Timeline:** 4-10 hours (depending on number of fixtures)
-
-**Priority:** HIGH (fixtures critical for tests)
-
-### 3.5 Test Retirement Workflow
-
-**Trigger:** Feature removed or test obsolete
-
-**Workflow:**
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ Step 1: Identify Obsolete Tests                             │
-├─────────────────────────────────────────────────────────────┤
-│ - Feature removed from spec                                │
-│ - Feature removed from implementation                       │
-│ - Test duplicates another test                             │
-│ - Test no longer meaningful (behavior changed)             │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 2: Validate Retirement Decision                        │
-├─────────────────────────────────────────────────────────────┤
-│ - Confirm feature is removed (not just deprecated)         │
-│ - Check if test provides unique coverage                   │
-│ - Verify no other tests depend on this test                │
-│ - Document reason for retirement                           │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 3: Remove Test & Related Artifacts                     │
-├─────────────────────────────────────────────────────────────┤
-│ - Remove test code                                         │
-│ - Remove fixtures used only by this test                   │
-│ - Remove test utilities used only by this test             │
-│ - Update test documentation                                │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 4: Validate Removal                                    │
-├─────────────────────────────────────────────────────────────┤
-│ - Run test suite (should still pass)                       │
-│ - Check coverage (should not drop significantly)           │
-│ - Verify no broken references                              │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 5: Document Retirement                                 │
-├─────────────────────────────────────────────────────────────┤
-│ - Add entry to CHANGELOG: "Removed test X (reason)"        │
-│ - Update test inventory documentation                      │
-│ - Document in commit message                               │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ Step 6: Review & Merge                                      │
-├─────────────────────────────────────────────────────────────┤
-│ - Create PR: "Remove obsolete tests for [feature]"         │
-│ - Peer review                                              │
-│ - Merge to main                                            │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**Timeline:** 1-3 hours
-
-**Priority:** LOW (doesn't block other work, but reduces technical debt)
+Remove tests when:
+- The feature they test has been removed from the codebase
+- They duplicate other tests without adding value
+- They test implementation details that no longer exist
 
 ---
 
 ## 4. Maintenance Responsibilities
 
-### 4.1 RACI Matrix
+> **⚠️ H3 fix:** The original RACI matrix with 5 invented roles (Test Owner, Component Maintainer, Release Manager, Tech Lead, Documentation Maintainer), role assignment tables, 6-month ownership timelines, and detailed per-role responsibility lists have been removed. These roles do not exist in upstream `camptocamp/ogc-client`. This is a contribution to someone else's repository — the upstream maintainer decides who reviews and merges PRs.
 
-**Roles:**
-- **R** = Responsible (does the work)
-- **A** = Accountable (final authority, one per activity)
-- **C** = Consulted (provides input)
-- **I** = Informed (kept up-to-date)
+**Ownership model:** The developer who writes tests is responsible for keeping them working. When submitting a PR to upstream, the contributor is responsible for:
 
-| Activity | Test Owner | Component Maintainer | Release Manager | Tech Lead | Documentation Maintainer |
-|----------|------------|---------------------|-----------------|-----------|-------------------------|
-| **Write initial tests** | R, A | C | I | I | I |
-| **Fix test failures** | R | A | I | C | I |
-| **Update tests for spec changes** | R | A | C | I | I |
-| **Update tests for dependency changes** | R | A | C | I | I |
-| **Refactor tests** | R | C | A | C | I |
-| **Monthly health checks** | I | R | A | C | I |
-| **Quarterly dependency review** | I | C | R, A | C | I |
-| **Annual spec review** | I | R | A | C | I |
-| **Fixture maintenance** | R | A | I | I | C |
-| **Test documentation updates** | R | C | I | I | A |
-| **Quality checklist reviews** | R | C | A | C | I |
-| **Test retirement decisions** | C | R | C | A | I |
-| **Test utility maintenance** | R | A | C | C | I |
-| **CI/CD maintenance** | I | C | R, A | C | I |
-| **Traceability tool maintenance** | I | C | R | A | I |
-
-### 4.2 Test Owner Responsibilities
-
-**Who:** Developer who wrote the test initially
-
-**Responsibilities:**
-
-1. **Initial Development**
-   - Write tests following quality checklist
-   - Document tests per Section 35 standards
-   - Create/update fixtures as needed
-   - Complete self-review checklist
-
-2. **Immediate Maintenance (First 6 months)**
-   - Fix test failures caused by their changes
-   - Update tests when refactoring related code
-   - Respond to PR feedback on their tests
-   - Update test documentation when behavior changes
-
-3. **Ongoing Support**
-   - Available for questions about test intent
-   - Consulted for major refactoring decisions
-   - Review PRs that modify their tests
-
-**Timeline:** Active ownership for 6 months after test creation, then consult-only
-
-### 4.3 Component Maintainer Responsibilities
-
-**Who:** Developer assigned to maintain a component area (e.g., QueryBuilder, SensorML Parser)
-
-**Responsibilities:**
-
-1. **Test Quality**
-   - Ensure all tests in component meet quality standards
-   - Review and approve test PRs for component
-   - Identify and fix trivial/rot tests
-   - Maintain component-specific test utilities
-
-2. **Spec Awareness**
-   - Monitor spec changes affecting component
-   - Update tests when expected client behavior changes
-   - Keep spec context comments current
-   - Verify client behavior matches updated spec expectations
-
-3. **Dependency Management**
-   - Review dependency updates affecting component
-   - Fix breaking changes in dependencies
-   - Update tests for new dependency features
-
-4. **Health Monitoring**
-   - Participate in monthly health checks
-   - Monitor component test coverage
-   - Track and address flaky tests
-   - Maintain fixture quality
-
-5. **Documentation**
-   - Keep component test documentation current
-   - Update README examples
-   - Maintain test patterns documentation
-
-**Assignment:**
-
-| Component | Maintainer | Backup |
-|-----------|-----------|--------|
-| CSAPIQueryBuilder | [Primary Developer] | [Backup Developer] |
-| SensorML Parser | [Primary Developer] | [Backup Developer] |
-| SWE Common Parser | [Primary Developer] | [Backup Developer] |
-| Integration Tests | [Primary Developer] | [Backup Developer] |
-| Test Utilities | [Primary Developer] | [Backup Developer] |
-| Fixtures | [Primary Developer] | [Backup Developer] |
-| CI/CD | [DevOps Lead] | [Backup DevOps] |
-
-### 4.4 Release Manager Responsibilities
-
-**Who:** Developer coordinating releases
-
-**Responsibilities:**
-
-1. **Pre-Release**
-   - Run monthly health checks before releases
-   - Ensure all tests pass
-   - Verify coverage meets targets
-   - Review open test issues
-
-2. **Release Coordination**
-   - Coordinate spec update timing with releases
-   - Manage dependency update schedule
-   - Ensure test documentation is current
-
-3. **Quarterly Reviews**
-   - Conduct quarterly dependency reviews
-   - Plan upcoming maintenance work
-   - Identify technical debt in tests
-   - Schedule test refactoring work
-
-4. **Communication**
-   - Communicate test changes in release notes
-   - Alert team to spec updates
-   - Escalate maintenance issues
-
-**Timeline:** Monthly health checks + quarterly dependency reviews
-
-### 4.5 Tech Lead Responsibilities
-
-**Who:** Technical lead for the project
-
-**Responsibilities:**
-
-1. **Strategic Oversight**
-   - Final authority on test quality standards
-   - Approve major test refactoring
-   - Decide on test retirement
-   - Approve spec update plans
-
-2. **Review & Sign-Off**
-   - Final sign-off on quality checklist
-   - Review monthly health check reports
-   - Approve major architectural changes affecting tests
-
-3. **Resource Allocation**
-   - Allocate time for test maintenance
-   - Prioritize maintenance work
-   - Approve maintenance schedules
-
-4. **Escalation**
-   - Resolve disputes about test quality
-   - Make trade-off decisions (speed vs quality)
-   - Handle complex maintenance scenarios
-
-### 4.6 Documentation Maintainer Responsibilities
-
-**Who:** Developer responsible for documentation
-
-**Responsibilities:**
-
-1. **Test Documentation**
-   - Keep test README current
-   - Maintain test patterns documentation
-   - Update fixture inventory documentation
-   - Keep traceability matrix updated
-
-2. **Examples & Guides**
-   - Maintain test examples in docs
-   - Update test writing guides
-   - Keep quality checklist current
-
-3. **Metadata**
-   - Ensure fixture metadata is complete
-   - Keep spec version references current
-   - Maintain dependency version docs
-
-**Timeline:** Updates coincide with releases + spec updates
+1. All tests pass before PR submission
+2. Tests are updated when implementation changes
+3. Fixtures are updated when upstream API changes
+4. Responding to maintainer feedback on test quality
 
 ---
 
@@ -1260,1023 +716,116 @@ npm run fixtures:update-metadata
 | **Slow Tests** | Test execution time increases | Performance monitoring | LOW |
 | **Documentation Drift** | Test docs don't match behavior | Manual review | LOW |
 
-**Automated Detection:**
-
-**Script: `scripts/detect-test-rot.js`**
-
-```javascript
-// Detect tests with no assertions
-function detectNoAssertions() {
-  // Find test files with no expect() calls
-}
-
-// Detect trivial tests
-function detectTrivialTests() {
-  // Find tests with only toBeTruthy() or toBeDefined()
-}
-
-// Detect outdated fixtures
-function detectOutdatedFixtures() {
-  // Check fixture metadata for old spec versions
-}
-
-// Detect outdated spec context
-function detectOutdatedSpecContext() {
-  // Check spec context comments for old spec versions
-}
-
-// Generate rot report
-function generateRotReport() {
-  // Combine all findings into report
-}
-```
-
-**Usage:**
-```bash
-# Run rot detection
-npm run test:detect-rot
-
-# Output:
-# ========================================
-# Test Rot Detection Report
-# ========================================
-# 
-# ❌ CRITICAL: 2 tests with no assertions
-#   - querybuilder.spec.ts:125
-#   - parsers.spec.ts:456
-# 
-# ⚠️  HIGH: 8 tests with trivial checks only
-#   - integration.spec.ts:234
-#   - ... (7 more)
-# 
-# 🟡 MEDIUM: 12 fixtures outdated (spec v1.0, current v1.1)
-#   - fixtures/systems/system-001.json
-#   - ... (11 more)
-# 
-# Total Issues: 22
-# Recommended Action: Review and fix HIGH/CRITICAL issues
-```
-
-### 5.2 Regular Test Health Checks
-
-**Monthly Health Check Procedure:**
-
-**1. Automated Checks (30 minutes)**
-
-```bash
-# Run full test suite
-npm test
-
-# Run coverage report
-npm run test:coverage
-
-# Run rot detection
-npm run test:detect-rot
-
-# Validate fixtures
-npm run fixtures:validate
-
-# Check flaky tests (run suite 5 times)
-for i in {1..5}; do npm test; done
-
-# Generate health report
-npm run test:health-report
-```
-
-**2. Manual Review (1-2 hours)**
-
-**Checklist:**
-
-```markdown
-## Monthly Test Health Check
-
-**Date:** [YYYY-MM-DD]
-**Reviewer:** [Component Maintainer Name]
-
-### Test Suite Status
-- [ ] All tests pass ✅
-- [ ] Coverage: Statement [  %], Branch [  %], Function [  %]
-- [ ] No flaky tests detected (5 consecutive runs)
-
-### Code Quality
-- [ ] No critical rot indicators found
-- [ ] High/medium issues reviewed and tracked
-- [ ] Test performance acceptable (< 30s full suite)
-
-### Spec Awareness
-- [ ] Spec context comments reference current spec version
-- [ ] No outdated spec references
-- [ ] Current spec version: [  ]
-
-### Fixture Health
-- [ ] All fixtures pass validation
-- [ ] Fixture metadata complete
-- [ ] No outdated fixtures found
-
-### Documentation
-- [ ] README accurate
-- [ ] Test patterns docs current
-- [ ] Traceability: spec context comments current
-
-### Action Items
-1. [Action item with owner and due date]
-2. [Action item with owner and due date]
-
-**Next Check Date:** [YYYY-MM-DD]
-```
-
-**3. Report & Track (30 minutes)**
-
-- Create GitHub issue if problems found
-- Assign action items to owners
-- Track in project board
-- Update maintenance log
-
-**Schedule:** First week of each month
-
-### 5.3 Test Quality Monitoring
-
-**Continuous Monitoring:**
-
-**1. Coverage Tracking**
-
-**Tool:** Jest coverage + GitHub Actions
-
-```yaml
-# .github/workflows/test.yml
-- name: Track coverage over time
-  run: |
-    # Store coverage report
-    # Compare to baseline
-    # Alert if drops > 2%
-```
-
-**2. Flaky Test Detection**
-
-**Tool:** Jest with repeated runs
-
-```bash
-# Run tests 10 times, detect flakes
-npm test -- --repeat=10 --detectFlakes
-```
-
-**3. Performance Monitoring**
-
-**Tool:** Jest with timing output
-
-```bash
-# Track slow tests
-npm test -- --verbose | grep "ms)" | sort -rn
-```
-
-**4. Quality Metrics Dashboard**
-
-**Location:** `docs/test-health-dashboard.md`
-
-**Auto-Generated by CI:**
-
-```markdown
-# Test Health Dashboard
-
-**Last Updated:** 2026-02-06 10:00:00 UTC
-
-## Current Status
-- **Overall Health:** ✅ HEALTHY
-- **Test Suite:** 324 passing, 0 failing
-- **Coverage:** 91.2% statement, 87.6% branch
-- **Performance:** 27.8s (target < 30s)
-
-## Trends (Last 30 Days)
-- **Coverage:** +0.5% (stable)
-- **Flakiness:** 0 flaky tests detected
-- **Performance:** +1.2s (slight increase, acceptable)
-
-## Issues
-- **Critical:** 0
-- **High:** 2 (trivial tests need enhancement)
-- **Medium:** 5 (fixture metadata incomplete)
-- **Low:** 3 (documentation minor updates)
-
-## Action Items
-1. [GH-456] Enhance trivial QueryBuilder tests (Owner: @dev1, Due: 2026-02-15)
-2. [GH-457] Complete fixture metadata (Owner: @dev2, Due: 2026-02-20)
-
-**Next Monthly Check:** 2026-03-01
-```
-
-### 5.4 Deprecation Warning System
-
-**Purpose:** Provide advance notice before removing tests or features
-
-**Process:**
-
-**1. Deprecation Notice (Version N)**
-
-```typescript
-/**
- * @deprecated Since v1.5.0. Use newMethod() instead. Will be removed in v2.0.0.
- */
-it('validates using old API', () => {
-  // Keep test for backward compatibility
-  // Add warning comment
-});
-```
-
-**2. Deprecation Period (3-6 months)**
-
-- Keep deprecated tests passing
-- Document migration path
-- Update examples to use new API
-- Alert users in release notes
-
-**3. Removal (Version N+1)**
-
-```markdown
-## BREAKING CHANGES in v2.0.0
-
-### Removed Deprecated Tests
-- Removed tests for `OldAPI.oldMethod()` (deprecated in v1.5.0)
-- Migration: Use `NewAPI.newMethod()` instead
-- See [migration guide](docs/migration-v2.md)
-```
-
-### 5.5 Technical Debt Tracking
-
-**Purpose:** Track and prioritize test maintenance work
-
-**GitHub Issue Labels:**
-
-- `test-debt` - General test technical debt
-- `test-rot` - Test rot issues
-- `test-refactor` - Tests need refactoring
-- `test-enhancement` - Tests need enhancement (trivial → meaningful)
-- `test-docs` - Test documentation needs update
-- `fixture-update` - Fixtures need update
-
-**Issue Template:**
-
-```markdown
-## Test Technical Debt
-
-**Component:** [e.g., QueryBuilder]
-**Type:** [rot/refactor/enhancement/docs/fixture]
-
-**Problem:**
-[Describe the issue - e.g., "10 tests only use toBeTruthy()"]
-
-**Impact:**
-- **Severity:** [Critical/High/Medium/Low]
-- **Affected Tests:** [Number of tests]
-- **Bug Risk:** [Tests don't catch bugs]
-
-**Proposed Solution:**
-[e.g., "Enhance tests to use parseAndValidateUrl()"]
-
-**Effort Estimate:** [hours]
-
-**Priority:** [P0/P1/P2/P3]
-
-**Related:**
-- Spec: [OGC 23-001 §7.2]
-- Tests: [querybuilder.spec.ts:100-200]
-- Issue: [#123]
-```
-
-**Prioritization:**
-
-| Priority | Description | Response Time |
-|----------|-------------|---------------|
-| **P0** | Critical - tests don't catch bugs | Within 1 week |
-| **P1** | High - significant rot or quality issues | Within 1 month |
-| **P2** | Medium - minor issues, technical debt | Within 1 quarter |
-| **P3** | Low - nice-to-have improvements | Backlog, opportunistic |
-
-### 5.6 Prevention Checklist
-
-**Pre-Commit Checklist (Developer):**
-
-```markdown
-Before committing tests:
-- [ ] Tests follow quality checklist (Section 36)
-- [ ] Tests use meaningful assertions (not just toBeTruthy)
-- [ ] Tests validate behavior (not mocks)
-- [ ] Tests note spec context (plain comments, not @specification tags)
-- [ ] Fixtures have complete metadata
-- [ ] Tests documented (JSDoc per Section 35)
-- [ ] Bug detection validated (intentional breakage)
-```
-
-**PR Review Checklist (Reviewer):**
-
-```markdown
-Before approving test PR:
-- [ ] Tests meet quality standards
-- [ ] No trivial tests introduced
-- [ ] Fixtures validated and versioned
-- [ ] Documentation current
-- [ ] Coverage maintained or improved
-- [ ] No flaky tests introduced
-```
-
-**Post-Merge Monitoring (CI):**
-
-```markdown
-After merge:
-- [ ] Tests pass in CI
-- [ ] Coverage meets targets
-- [ ] No performance regression
-- [ ] Health dashboard updated
-```
+**How to detect test rot (no custom tooling required):**
+- Search for tests with no `expect()` calls
+- Search for tests that only use `toBeTruthy()` or `toBeDefined()`
+- Intentionally break code and verify tests fail
+- Review coverage reports for declining trends
+
+### 5.2 Prevention
+
+> **⚠️ H3 fix:** The original §5.2–5.6 included a monthly health check procedure (automated + manual, 1.5–2.5 hours/month), a custom `scripts/detect-test-rot.js` tool, a quality metrics dashboard auto-generated by CI, a deprecation warning system with 3-6 month timelines, a technical debt tracking system with GitHub issue labels/templates/prioritization tiers, and separate Pre-Commit/PR Review/Post-Merge checklists. This infrastructure is disproportionate for a contribution to an upstream library. Simplified to a brief prevention checklist.
+
+**Keep tests valuable by:**
+1. Writing meaningful assertions from the start (not `toBeTruthy()`)
+2. Testing behavior, not implementation details
+3. Using real fixtures, not invented data
+4. Fixing broken tests immediately rather than skipping them
+5. Removing tests when the feature they test no longer exists
 
 ---
 
 ## 6. Test Evolution Documentation
 
-### 6.1 Changelog for Tests
+> **⚠️ H3 fix:** The original §6 included a detailed test changelog template (`tests/CHANGELOG.md`), a spec version history document (`tests/SPEC-VERSIONS.md`), migration guides with per-field before/after examples and effort estimates, and an auto-generated test inventory by component and spec section. This level of documentation infrastructure is not practical for a contribution to an upstream library that has no test changelog or migration guides.
 
-**Purpose:** Track test changes over time
-
-**Location:** `tests/CHANGELOG.md`
-
-**Format:**
-
-```markdown
-# Test Suite Changelog
-
-## [Unreleased]
-
-### Added
-- New tests for Procedures resource (45 tests, 600 lines)
-- Fixture validation script
-
-### Changed
-- Enhanced QueryBuilder tests to use parseAndValidateUrl()
-- Updated all fixtures to CSAPI v1.1.0 spec
-
-### Deprecated
-- Tests for old conformance detection API (use new endpoint.validateConformance())
-
-### Removed
-- Obsolete tests for removed SamplingFeature.sampledFeature field
-
-### Fixed
-- Fixed flaky integration test for async observations
-
-## [1.0.0] - 2024-02-01
-
-### Added
-- Initial test suite (324 tests, 6,800 lines)
-- Complete fixture library (280+ fixtures)
-- Test utilities and helpers
-
-## [0.9.0] - 2024-01-15
-
-### Added
-- Beta test suite (200 tests, 4,200 lines)
-```
-
-**Update Triggers:**
-- Major test additions/changes
-- Spec updates
-- Dependency updates
-- Test refactoring
-
-### 6.2 Test Version History
-
-**Purpose:** Track which tests validate which spec versions
-
-**Location:** `tests/SPEC-VERSIONS.md`
-
-**Format:**
-
-```markdown
-# Test Spec Version History
-
-## Current Version
-
-**Spec:** CSAPI v1.1.0  
-**Date:** 2024-02-01  
-**Tests:** 324 tests  
-**Coverage:** Systems, DataStreams, Observations, Deployments, SamplingFeatures, ControlStreams, Commands, Procedures (new), Properties  
-
-### Changes from v1.0.0
-- Added Procedures resource tests (45 tests)
-- Updated System schema validation (new "status" field)
-- Updated 280+ fixtures to v1.1.0 schema
-
-## Previous Versions
-
-### CSAPI v1.0.0
-**Date:** 2024-01-15  
-**Tests:** 279 tests  
-**Coverage:** Systems, DataStreams, Observations, Deployments, SamplingFeatures, ControlStreams, Commands, Properties  
-
-### CSAPI v0.9.0 (Beta)
-**Date:** 2023-12-01  
-**Tests:** 200 tests  
-**Coverage:** Systems, DataStreams, Observations (partial)  
-```
-
-### 6.3 Migration Guides
-
-**Purpose:** Help developers migrate tests during breaking changes
-
-**Location:** `docs/test-migration-guides/`
-
-**Example: `v1-to-v2-migration.md`**
-
-```markdown
-# Test Migration Guide: CSAPI v1.0 → v2.0
-
-**Date:** 2025-01-15  
-**Breaking Changes:** 8 breaking changes in spec
-
-## Overview
-
-CSAPI v2.0 introduces several breaking changes that require test updates:
-1. SamplingFeature.sampledFeature field removed
-2. System.status field now required
-3. Observation result schema changed
-4. ... (5 more)
-
-## Migration Steps
-
-### 1. Update Fixtures (3-5 hours)
-
-**Systems:**
-```json
-// BEFORE (v1.0)
-{
-  "id": "sys-001",
-  "properties": {
-    "name": "Weather Station"
-    // status optional
-  }
-}
-
-// AFTER (v2.0)
-{
-  "id": "sys-001",
-  "properties": {
-    "name": "Weather Station",
-    "status": "active"  // NOW REQUIRED
-  }
-}
-```
-
-**Action:** Run `npm run fixtures:migrate-v2` to auto-update fixtures
-
-### 2. Update Test Assertions (2-4 hours)
-
-**System Tests:**
-```typescript
-// BEFORE (v1.0)
-it('validates system properties', () => {
-  expect(system.properties.name).toBeDefined();
-  // status was optional
-});
-
-// AFTER (v2.0)
-it('validates system properties', () => {
-  expect(system.properties.name).toBeDefined();
-  expect(system.properties.status).toBeDefined();  // NOW REQUIRED
-});
-```
-
-### 3. Remove Obsolete Tests (1-2 hours)
-
-**SamplingFeature Tests:**
-```typescript
-// REMOVE (field removed in v2.0)
-it('validates sampledFeature field', () => {
-  expect(samplingFeature.sampledFeature).toBeDefined();
-});
-```
-
-**Action:** Remove tests in `samplingfeatures.spec.ts` lines 234-267
-
-### 4. Update Spec Context Comments (0.5 hours)
-
-```typescript
-// Update spec context comments to reference new version
-// BEFORE: Spec context: OGC 23-001 v1.0.0 §7.2
-// AFTER:  Spec context: OGC 23-001 v2.0.0 §7.2
-```
-
-**Action:** Search for spec context comments and update version references
-
-## Checklist
-
-- [ ] All fixtures updated to v2.0 schema
-- [ ] All fixtures pass validation
-- [ ] All test assertions updated
-- [ ] Obsolete tests removed
-- [ ] Spec context comments updated to v2.0.0
-- [ ] Full test suite passes
-- [ ] Coverage maintained (>85% statement)
-- [ ] Documentation updated
-
-## Estimated Total Effort: 7-11 hours
-```
-
-### 6.4 Test Inventory Documentation
-
-**Purpose:** Maintain comprehensive inventory of all tests
-
-**Location:** `docs/test-inventory.md`
-
-**Auto-Generated by Script:**
-
-```markdown
-# Test Inventory
-
-**Last Updated:** 2026-02-06  
-**Test Files:** 80  
-**Total Tests:** 324  
-**Total Lines:** 6,800  
-
-## By Component
-
-### QueryBuilder (20 files, 85 tests, 1,200 lines)
-- `querybuilder.spec.ts` - Core QueryBuilder tests (40 tests)
-- `systems.spec.ts` - Systems resource (15 tests)
-- `datastreams.spec.ts` - DataStreams resource (12 tests)
-- ... (17 more files)
-
-### Parsers (15 files, 46 tests, 800 lines)
-- `sensorml-parser.spec.ts` - SensorML parsing (20 tests)
-- `swe-common-parser.spec.ts` - SWE Common parsing (15 tests)
-- ... (13 more files)
-
-### Integration (20 files, 8 tests, 350 lines)
-- `system-to-observations.spec.ts` - End-to-end workflow (3 tests)
-- ... (19 more files)
-
-### Utilities (15 files, 185 tests, 850 lines)
-- ... (utilities)
-
-## By Spec Section
-
-### OGC 23-001 (Part 1: Feature Resources)
-- §7.2 Systems: 15 tests
-- §7.3 Deployments: 12 tests
-- ... (more sections)
-
-### OGC 23-002 (Part 2: Observation Data)
-- §8.1 DataStreams: 12 tests
-- §8.2 Observations: 18 tests
-- ... (more sections)
-
-### OGC 23-003 (Part 3: Command & Control)
-- §9.1 ControlStreams: 8 tests
-- §9.2 Commands: 10 tests
-- ... (more sections)
-
-## Maintenance Status
-
-- **Healthy Tests:** 310 (95.7%)
-- **Needs Enhancement:** 8 (2.5%) - trivial tests
-- **Needs Refactoring:** 4 (1.2%) - over-mocked
-- **Deprecated:** 2 (0.6%) - scheduled for removal v2.0.0
-```
+**When making significant test changes, document them in commit messages and PR descriptions.** This is standard open-source practice and provides adequate traceability through git history.
 
 ---
 
-## 7. Maintenance Tooling Requirements
+## 7. Maintenance Tooling
 
-### 7.1 Essential Tools
+> **⚠️ H3 fix:** The original §7 proposed 7+ custom tools (rot detection tool, fixture validation tool, health report generator, spec version updater, fixture migration tool, test metrics web dashboard) with 33.5–46.5 hours of development effort, plus GitHub Actions workflows (monthly health check cron job, Dependabot/Renovate configuration). The contributor does not control upstream CI/CD configuration. These tools have been removed. Use standard tooling that already exists in the project.
 
-> **⚠️ AP3 Warning:** The "Traceability Tool" (`scripts/test-traceability.js`) originally proposed here has been removed. It constitutes anti-pattern AP3 — organizing tests around spec sections rather than client code behavior. Use standard search (`grep`) to find tests referencing specific spec sections when needed.
-
-**1. Rot Detection Tool**
-
-**Purpose:** Identify test rot indicators automatically
-
-**Requirements:**
-- Detect tests with no assertions
-- Detect trivial tests (only toBeTruthy)
-- Detect outdated fixtures (old spec versions)
-- Detect outdated spec context comments
-- Generate rot report
-
-**Implementation:**
-```bash
-npm run test:detect-rot
-npm run test:detect-rot -- --critical-only
-```
-
-**3. Fixture Validation Tool**
-
-**Purpose:** Validate fixtures against schemas
-
-**Requirements:**
-- Validate JSON fixtures against JSON schemas
-- Validate XML fixtures against XSD schemas
-- Check fixture metadata completeness
-- Report validation errors with clear messages
-
-**Implementation:**
-```bash
-npm run fixtures:validate
-npm run fixtures:validate -- --resource systems
-npm run fixtures:validate -- --fix  # Auto-fix metadata
-```
-
-**4. Health Report Generator**
-
-**Purpose:** Generate test health dashboard
-
-**Requirements:**
-- Aggregate test suite metrics
-- Track coverage trends
-- Identify flaky tests
-- Generate markdown report
-- Update dashboard automatically
-
-**Implementation:**
-```bash
-npm run test:health-report
-npm run test:health-report -- --format html
-```
-
-### 7.2 Nice-to-Have Tools
-
-**5. Fixture Migration Tool**
-
-**Purpose:** Migrate fixtures to new schema versions
-
-**Implementation:**
-```bash
-npm run fixtures:migrate -- --from v1.0 --to v1.1
-```
-
-**7. Test Metrics Dashboard (Web UI)**
-
-**Purpose:** Interactive dashboard for test health
-
-**Features:**
-- Coverage trends over time
-- Flaky test tracking
-- Test performance graphs
-- Component health scores
-
-**Implementation:** Optional web app using Jest coverage data
-
-### 7.3 CI/CD Integration
-
-**GitHub Actions Workflows:**
-
-**1. Test Suite Workflow (`.github/workflows/test.yml`)**
-
-```yaml
-name: Test Suite
-on: [push, pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: npm ci
-      - run: npm test
-      - run: npm run test:coverage
-      - name: Check coverage thresholds
-        run: |
-          # Fail if coverage below 85% statement, 80% branch
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-```
-
-**2. Monthly Health Check Workflow (`.github/workflows/health-check.yml`)**
-
-```yaml
-name: Monthly Test Health Check
-on:
-  schedule:
-    - cron: '0 0 1 * *'  # 1st of month
-jobs:
-  health-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: npm ci
-      - run: npm test
-      - run: npm run test:detect-rot
-      - run: npm run fixtures:validate
-      - run: npm run test:health-report
-      - name: Create issue if problems
-        if: failure()
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: 'Monthly Test Health Check Failed',
-              body: 'Health check found issues. Review logs.',
-              labels: ['test-health', 'maintenance']
-            })
-```
-
-**3. Dependency Update Workflow (Dependabot)**
-
-```yaml
-# .github/dependabot.yml
-version: 2
-updates:
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    reviewers:
-      - "component-maintainer"
-```
+**Available tooling (no custom scripts needed):**
+- `npm test` — run the test suite
+- `npm run test:coverage` — generate coverage report
+- `grep` — find tests referencing specific spec sections or patterns
+- Git history — track when and why tests changed
 
 ---
 
-## 8. Implementation Estimates
+## 8. Key Recommendations
 
-### 8.1 Tooling Development Effort
+> **⚠️ H3 fix:** The original §8 (Implementation Estimates) with 33.5–46.5 hours of tooling development and 84–184 hours/year annual maintenance burden has been removed. The original §9 (Key Recommendations) recommended implementing a traceability tool, monthly health checks, component maintainer assignments, Dependabot configuration, and tracking 8 success metrics with monthly/quarterly/annual reviews. These have been simplified to practical guidance.
 
-| Tool | Development | Testing | Documentation | Total |
-|------|------------|---------|---------------|-------|
-| **Traceability Tool** | 4-6 hours | 2 hours | 1 hour | 7-9 hours |
-| **Rot Detection Tool** | 3-5 hours | 1 hour | 1 hour | 5-7 hours |
-| **Fixture Validation Tool** | 2-4 hours | 1 hour | 1 hour | 4-6 hours |
-| **Health Report Generator** | 3-5 hours | 1 hour | 1 hour | 5-7 hours |
-| **Spec Version Updater** | 2-3 hours | 1 hour | 0.5 hour | 3.5-4.5 hours |
-| **Fixture Migration Tool** | 3-5 hours | 1 hour | 1 hour | 5-7 hours |
-| **CI/CD Workflows** | 2-4 hours | 1 hour | 1 hour | 4-6 hours |
-| **TOTAL** | **19-32 hours** | **8 hours** | **6.5 hours** | **33.5-46.5 hours** |
+**Essential practices:**
+1. Keep tests passing — fix failures immediately
+2. Update fixtures when spec or API changes
+3. Follow upstream conventions — match their testing style
+4. Write meaningful assertions — not just `toBeTruthy()`
+5. Remove obsolete tests — don't maintain dead code
 
-**Recommendation:** Build essential tools first (traceability, rot detection, fixture validation), defer nice-to-have tools
-
-### 8.2 Annual Maintenance Effort
-
-| Activity | Frequency | Time per Instance | Annual Total |
-|----------|-----------|------------------|--------------|
-| **Monthly Health Checks** | 12/year | 2-4 hours | 24-48 hours |
-| **Spec Updates** | 1/year (major) | 16-32 hours | 16-32 hours |
-| **Dependency Updates** | 4/year (quarterly) | 4-8 hours | 16-32 hours |
-| **Bug Fixes** | ~10/year | 1-2 hours | 10-20 hours |
-| **Refactoring** | 2-3/year | 4-8 hours | 8-24 hours |
-| **Fixture Updates** | 1-2/year | 6-10 hours | 6-20 hours |
-| **Documentation Updates** | 4/year | 1-2 hours | 4-8 hours |
-| **TOTAL** | - | - | **84-184 hours** |
-
-**Average:** ~120 hours/year (~2.3 hours/week)
-
-**Percentage of Development Time:** ~8-10% of initial test development (1,200 hours)
-
-### 8.3 Scenario-Specific Estimates
-
-| Scenario | Frequency | Effort | Priority |
-|----------|-----------|--------|----------|
-| **Minor spec update** (new fields) | Yearly | 8-16 hours | HIGH |
-| **Major spec update** (new resources) | Every 2-3 years | 16-32 hours | HIGH |
-| **Non-breaking dependency update** | Quarterly | 1-2 hours | MEDIUM |
-| **Breaking dependency update** | Yearly | 4-8 hours | HIGH |
-| **Internal refactoring** | As needed | 0-8 hours | MEDIUM |
-| **Public API refactoring** | Rarely | 8-12 hours | HIGH |
-| **Test utility refactoring** | As needed | 4-6 hours | MEDIUM |
-| **Fixture structure change** | Rarely | 6-10 hours | MEDIUM |
-| **Test rot remediation** | Quarterly | 4-8 hours | HIGH |
-| **Test retirement** | As needed | 1-3 hours | LOW |
-
----
-
-## 9. Key Recommendations
-
-### 9.1 Priorities
-
-**MUST (Essential for Sustainability):**
-1. ✅ Implement traceability tool (essential for spec updates)
+**Avoid over-engineering:**
+- No custom maintenance tools for a library contribution
+- No monthly formal health checks — just fix issues when you see them
+- No RACI matrices or invented roles — standard PR review is sufficient
+- No multi-week update workflows — just update, test, and submit a PR
 2. ✅ Set up monthly health checks (prevent rot)
 3. ✅ Assign component maintainers (clear ownership)
 4. ✅ Track spec version in tests and fixtures (enable updates)
 5. ✅ Configure Dependabot (automate dependency PRs)
 
 **SHOULD (Highly Recommended):**
-1. 🟡 Build rot detection tool (identify issues early)
-2. 🟡 Build fixture validation tool (maintain quality)
-3. 🟡 Set up health report dashboard (visibility)
-4. 🟡 Document migration guides (ease spec transitions)
-5. 🟡 Create test changelog (track evolution)
+---
 
-**MAY (Nice-to-Have):**
-1. 🟢 Build spec version updater (convenience)
-2. 🟢 Build fixture migration tool (automation)
-3. 🟢 Create web-based dashboard (enhanced visibility)
-4. 🟢 Implement advanced flaky test detection
-5. 🟢 Add performance regression tracking
+## 9. Summary
 
-### 9.2 Balancing Maintenance vs Development
+> **⚠️ H3 fix:** The original summary (§10) repeated the enterprise infrastructure: "Four Maintenance Pillars" (RACI matrix, monthly health checks, automated rot detection, traceability tool), 5 invented roles, 120–184 hours/year effort, and multi-week workflows. Simplified below.
 
-**Guidelines:**
+**Test maintenance for CSAPI contribution to `camptocamp/ogc-client`:**
 
-**1. Allocate Time for Maintenance**
-- Reserve ~10% of development time for test maintenance
-- Plan maintenance work in sprints (not just reactive)
-- Don't let technical debt accumulate
+1. **Fix broken tests immediately** — don't let failures accumulate
+2. **Update fixtures when APIs change** — keep test data current
+3. **Follow upstream conventions** — match their testing style
+4. **Remove obsolete tests** — don't maintain dead code
+5. **Use spec as input** — spec informs what correct client behavior looks like
 
-**2. Prioritize Maintenance Work**
-- **P0 (Critical):** Tests don't catch bugs → fix immediately
-- **P1 (High):** Significant rot/quality issues → fix within 1 month
-- **P2 (Medium):** Technical debt → fix within 1 quarter
-- **P3 (Low):** Nice-to-have improvements → backlog
-
-**3. Prevent Over-Maintenance**
-- Don't refactor tests just for perfection
-- Focus on tests that provide most value
-- Accept some technical debt (not all tests must be perfect)
-
-**4. Leverage Automation**
-- Use tools to reduce manual maintenance
-- Automate repetitive tasks (fixture validation, spec version updates)
-- CI/CD catches issues early
-
-### 9.3 Common Pitfalls to Avoid
-
-**Pitfall 1: Ignoring Test Maintenance**
-- ❌ "Tests are done, move on to next feature"
-- ✅ Plan ongoing maintenance, allocate time
-
-**Pitfall 2: No Clear Ownership**
-- ❌ "Someone should fix this test"
-- ✅ Assign component maintainers, clear RACI
-
-**Pitfall 3: Reactive-Only Maintenance**
-- ❌ Only fix tests when they break
-- ✅ Proactive health checks, prevent issues
-
-**Pitfall 4: Treating All Tests Equally**
-- ❌ Maintain every test to same standard
-- ✅ Prioritize high-value tests, accept some debt
-
-**Pitfall 5: Over-Engineering Tooling**
-- ❌ Build perfect tools before starting
-- ✅ Start with essentials, iterate
-
-**Pitfall 6: Neglecting Documentation**
-- ❌ Don't document test changes
-- ✅ Maintain changelog, migration guides
-
-**Pitfall 7: Fear of Test Retirement**
-- ❌ Keep all tests forever
-- ✅ Retire obsolete tests, reduce maintenance burden
-
-### 9.4 Success Metrics
-
-**Track these metrics to measure maintenance effectiveness:**
-
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| **Test Health Score** | >90% | % of tests passing quality checklist |
-| **Coverage Stability** | ±2% | Coverage variance month-over-month |
-| **Flaky Test Rate** | <1% | % of tests that fail intermittently |
-| **Spec Awareness** | Current | Spec context comments reference latest spec version |
-| **Fixture Health** | 100% | % of fixtures passing validation |
-| **Update Latency** | <2 weeks | Time from spec update to test update |
-| **Rot Detection** | 0 critical | # of critical rot indicators |
-| **Maintenance Time** | ~10% | % of time spent on maintenance vs development |
-
-**Review Metrics:**
-- Monthly (health checks)
-- Quarterly (trends)
-- Annually (strategic review)
+**What this unblocks:**
+- Tests remain valuable as the project evolves
+- Clear path to update tests when spec or upstream changes
+- Low maintenance overhead appropriate for a library contribution
 
 ---
 
-## 10. Summary
+## 10. References
 
-### 10.1 Maintenance Strategy Overview
-
-**Four Maintenance Pillars:**
-
-1. **Proactive Prevention**
-   - Monthly health checks
-   - Automated rot detection
-   - Regular fixture validation
-   - Quality monitoring
-
-2. **Reactive Response**
-   - Clear update workflows
-   - Prioritized issue tracking
-   - Fast turnaround on critical issues
-
-3. **Clear Ownership**
-   - RACI matrix
-   - Component maintainers
-   - Test owners
-   - Release manager
-
-4. **Tool Support**
-   - Traceability tool
-   - Rot detection
-   - Fixture validation
-   - Health reporting
-
-### 10.2 Maintenance Scenarios Summary
-
-**Spec Evolution:**
-- Minor updates: 8-16 hours (yearly)
-- Major updates: 16-32 hours (every 2-3 years)
-- Process: Impact analysis → Update code → Update tests → Update fixtures → Validate
-
-**Dependency Changes:**
-- Non-breaking: 1-2 hours (quarterly)
-- Breaking: 4-8 hours (yearly)
-- Process: Review release notes → Update code → Run tests → Fix breaks → Merge
-
-**Implementation Refactoring:**
-- Internal: 0 hours (tests should still pass)
-- Public API: 8-12 hours (migrate tests)
-- Process: Deprecate old → Implement new → Migrate tests → Remove old
-
-**Test Rot:**
-- Detection: Automated + monthly review
-- Remediation: 4-8 hours per quarter
-- Process: Identify → Fix → Validate → Document
-
-### 10.3 Key Workflows Summary
-
-| Workflow | Trigger | Duration | Priority |
-|----------|---------|----------|----------|
-| **Spec Update** | New spec version | 2-4 weeks | HIGH |
-| **Dependency Update** | Dependabot PR | 1-2 hours (non-breaking), 4-8 hours (breaking) | MEDIUM-HIGH |
-| **Test Refactoring** | Quality issues | 2-8 hours | MEDIUM |
-| **Fixture Update** | Spec change or validation failure | 4-10 hours | HIGH |
-| **Test Retirement** | Feature removed | 1-3 hours | LOW |
-
-### 10.4 Responsibilities Summary
-
-| Role | Primary Responsibilities |
-|------|------------------------|
-| **Test Owner** | Initial tests, immediate fixes, consult on changes |
-| **Component Maintainer** | Quality, spec compliance, health monitoring |
-| **Release Manager** | Health checks, quarterly reviews, coordination |
-| **Tech Lead** | Strategic oversight, sign-offs, escalation |
-| **Documentation Maintainer** | Test docs, examples, guides |
-
-### 10.5 Annual Effort Summary
-
-**Regular Maintenance:** ~84 hours/year
-- Monthly health checks: 24-48 hours
-- Spec updates: 16-32 hours
-- Dependency updates: 16-32 hours
-- Documentation: 4-8 hours
-
-**Reactive Maintenance:** ~36-100 hours/year
-- Bug fixes: 10-20 hours
-- Refactoring: 8-24 hours
-- Fixture updates: 6-20 hours
-- Rot remediation: 12-36 hours
-
-**Total:** ~120-184 hours/year (~8-10% of initial development)
-
-### 10.6 What This Unblocks
-
-✅ **Long-Term Sustainability** - Tests remain valuable as project evolves  
-✅ **Spec Compliance** - Clear path to update tests when spec changes  
-✅ **Dependency Management** - Process for handling upstream library changes  
-✅ **Quality Maintenance** - Prevent test rot, keep tests meaningful  
-✅ **Clear Ownership** - Everyone knows their maintenance responsibilities  
-✅ **Risk Mitigation** - Proactive health checks catch issues early
-
----
-
-## 11. References
-
-### 11.1 Related Research Sections
+### 10.1 Related Research Sections
 
 - **Section 15:** Fixture Sourcing and Organization (fixture maintenance procedures)
 - **Section 35:** JSDoc Testing Documentation Standards (spec context comments, test documentation)
 - **Section 36:** Test Quality Checklist and Review Process (quality standards, rot indicators)
 
-### 11.2 External References
+### 10.2 External References
 
 - **Lessons Learned Analysis:** [docs/research/requirements/lessons-learned-analysis.md](../../requirements/lessons-learned-analysis.md)
 - **CSAPI Implementation Guide:** [docs/planning/csapi-implementation-guide.md](../../../planning/csapi-implementation-guide.md)
 - **ROADMAP:** [docs/planning/ROADMAP.md](../../../planning/ROADMAP.md)
 
-### 11.3 Specifications
+### 10.3 Specifications
 
 - **OGC 23-001:** Connected Systems API - Part 1: Feature Resources
 - **OGC 23-002:** Connected Systems API - Part 2: Observation Data
 - **OGC 23-003:** Connected Systems API - Part 3: Command & Control
 
-### 11.4 Tools and Frameworks
+### 10.4 Tools and Frameworks
 
-- **Jest:** Testing framework (coverage, repeated runs)
-- **Dependabot:** Automated dependency updates
-- **GitHub Actions:** CI/CD workflows
-- **Codecov:** Coverage tracking (optional)
+- **Jest:** Testing framework (coverage)
+- **GitHub Actions:** CI/CD workflows (upstream-controlled)
 
 ---
 
 **Document Status:** ✅ COMPLETE  
-**Review Status:** Ready for peer review  
-**Next Steps:** Implement essential tooling, assign component maintainers, set up health checks
+**Review Status:** H3 fix applied — enterprise infrastructure simplified  
+**Next Steps:** Follow the three core maintenance guidelines when contributing tests
 

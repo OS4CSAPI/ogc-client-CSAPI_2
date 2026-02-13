@@ -217,7 +217,7 @@ Upstream `camptocamp/ogc-client` is a small open-source library where contributi
 
 **Severity:** HIGH  
 **Document:** [37-test-maintenance-evolution-strategy.md](../findings/37-test-maintenance-evolution-strategy.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** Doc 37 proposes enterprise-level maintenance infrastructure for a library contribution:
 - Monthly health checks (2–4 hours/month)
@@ -232,6 +232,8 @@ Upstream `camptocamp/ogc-client` is a small open-source library where contributi
 All of this is for a contribution to someone else's repository. The contributor doesn't control CI configuration, doesn't set Dependabot policies, and shouldn't propose 70–120 hours/year of ongoing maintenance overhead. Upstream maintains its tests with zero documented maintenance process.
 
 **Fix Required:** Reduce to a brief "test maintenance guidelines" section covering: (1) update fixtures when upstream API changes, (2) keep test patterns aligned with upstream conventions, (3) fix broken tests promptly. Remove all invented tools, workflows, and organizational infrastructure.
+
+**Resolution:** Replaced enterprise maintenance infrastructure throughout Doc 37. Removed: RACI matrix with 5 invented roles (Test Owner, Component Maintainer, Release Manager, Tech Lead, Documentation Maintainer), 9-step spec update workflow with ASCII art flowcharts, monthly health check procedures and templates, custom tooling (rot detection, fixture validation, health report generator, fixture migration, spec version updater, test metrics dashboard), GitHub Actions workflows (monthly cron job, Dependabot config), implementation estimates (33.5–46.5 hours tooling, 84–184 hours/year maintenance), elaborate issue templates, changelogs, migration guides, and test inventory documentation. Replaced with three core maintenance practices, simplified update workflows, and practical guidance. Added H3 review notices throughout.
 
 ---
 
@@ -483,7 +485,7 @@ Proceed to **Phase 2D: Format Parsers** (Docs 09, 10, 11), which have high AP4 r
 | C2 | CRITICAL | 35, 36, 37 | Systemic AP3 through `@specification` tag traceability system | ✅ Resolved |
 | H1 | HIGH | 17 | Test line estimate 13,090–17,016 is 3× higher than all other estimates | ✅ Resolved |
 | H2 | HIGH | 36 | Invented 3-stage enterprise review process with 41-item checklist | ✅ Resolved |
-| H3 | HIGH | 37 | Over-engineered maintenance framework (70–120 hrs/yr, custom tools, RACI) | ❌ Open |
+| H3 | HIGH | 37 | Over-engineered maintenance framework (70–120 hrs/yr, custom tools, RACI) | ✅ Resolved |
 | H4 | HIGH | 35 | Massive JSDoc over-engineering despite acknowledging upstream minimalism | ❌ Open |
 | H5 | HIGH | 20 | EDR file-level line counts demonstrably wrong (model.spec.ts off by 3×) | ❌ Open |
 | M1 | MEDIUM | 03 | Fabricated "~80% estimated" coverage for upstream | ❌ Open |
