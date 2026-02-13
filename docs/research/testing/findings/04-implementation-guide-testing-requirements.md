@@ -460,6 +460,10 @@ From Section 3 test type standards:
 
 ### Test Pyramid Distribution
 
+> **📝 Phase 2F L2 Resolution:** Explicit test pyramid percentages added per review recommendation.
+
+**Recommended CSAPI Test Pyramid: 60-65% unit / 35-40% integration / 0% E2E (in library)**
+
 **From Section 3 Industry Standard:**
 - Unit: 60-70%
 - Integration: 30-40%

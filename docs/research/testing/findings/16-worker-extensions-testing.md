@@ -5,7 +5,7 @@
 > This document was reviewed in [Phase 2F: Integration & Workflow Category Deep Dive](../review/phase-2f-integration-workflow-category.md). Three high-priority issues were identified:
 >
 > - **H1 — Scope Gating Required:** This testing strategy is **Phase 4 material**. Worker message handlers (`csapi-worker.ts`) must be implemented before these tests can be written. Do not implement before Phases 1-3 are complete. See ROADMAP.md Phase 4, Task 1.
-> - **H2 — Performance Tests Non-Deterministic:** Performance threshold assertions (Section 7: `expect(duration).toBeLessThan(200)`) test the environment, not client code logic. Move to a separate, optional test suite not run in CI. Keep timing metadata collection (logging) but remove hard assertions from the standard test suite.
+> - **H2 — Performance Testing Out of Scope:** Performance threshold assertions (Section 7: `expect(duration).toBeLessThan(200)`) are **out of scope** for this contribution project, consistent with the project-wide scope decision (see Doc 33: "⚠️ PERFORMANCE TESTING IS NOT IN SCOPE ⚠️"). Upstream `ogc-client` has zero performance tests. Section 7 is retained as reference material only — do not implement any performance test assertions.
 > - **H3 — Binary SWE Parsing Deferred:** PARSE_SWE_BINARY message type (15 scenarios, 180-200 lines) is beyond initial contribution scope per Phase 2E L1 finding. Mark as deferred; exclude from initial effort estimates.
 >
 > Additional medium-priority notes: M3 (TRAVERSE_HIERARCHY needs explicit fetch mocking strategy), M4 (differentiate minimum viable ~200-300 lines from comprehensive ~2,310-2,860 lines), M5 (scope dependency on non-existent message handlers). See Phase 2F report for details.
@@ -419,6 +419,8 @@ const useWorker = typeof WorkerGlobalScope !== 'undefined';
 #### 2.3.2 TRAVERSE_HIERARCHY
 
 **Purpose:** Recursively traverse system/deployment hierarchies to build complete trees.
+
+> **📝 Phase 2F M3 Note:** TRAVERSE_HIERARCHY is unique among the 9 message types because it initiates HTTP fetches via `fetchFunc` during traversal. Tests MUST inject a mock fetch function (e.g., `jest.fn()` returning fixture data) rather than relying on `globalThis.fetch`. See test scenario 10 (Fetch Integration) for the pattern. Without explicit mocking, these tests would require live or fixture-served HTTP — approaching AP2 territory.
 
 **Input Parameters:**
 ```typescript
@@ -1275,6 +1277,8 @@ describe('CSAPI Worker Fallback', () => {
 
 ### 6.3 Concurrent Request Handling
 
+> **📝 Phase 2F L1 Note:** Concurrent request handling is inherent to the upstream worker infrastructure (`sendTaskRequest`/`addTaskHandler`), not CSAPI-specific. Before implementing these tests, verify whether `src/worker/worker.spec.ts` already covers concurrent message handling. If upstream tests exist, CSAPI inherits that behavior and these tests add limited additional value.
+
 **Purpose:** Verify worker handles multiple simultaneous requests correctly.
 
 **Test File:** `src/worker/concurrent-requests.spec.ts` (~100-150 lines)
@@ -1315,6 +1319,9 @@ it('handles 10 concurrent parse requests', async () => {
 ---
 
 ## 7. Performance Testing
+
+> **⚠️ OUT OF SCOPE — Performance testing is NOT in scope for this contribution project.**
+> Upstream `ogc-client` has zero performance tests. This section is retained as **reference material only** for potential future use. Do not implement any performance test assertions. See [Doc 33](33-performance-efficiency-testing.md) for the full scope exclusion rationale. (Phase 2F H2 resolution)
 
 ### 7.1 Performance Thresholds
 

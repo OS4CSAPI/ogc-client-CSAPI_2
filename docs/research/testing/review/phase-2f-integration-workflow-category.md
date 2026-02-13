@@ -422,19 +422,19 @@ Despite the scope concerns (H1), Doc 16's technical analysis of the upstream wor
 
 | ID | Document | Severity | Description | Status |
 |----|----------|----------|-------------|--------|
-| H1 | Doc 16 | High | Worker testing strategy premature — Phase 4 scope gating needed | 🔴 Open |
-| H2 | Doc 16 | High | Performance thresholds non-deterministic — separate to optional suite | 🔴 Open |
-| H3 | Doc 16 | High | Binary SWE tests beyond scope — defer per Phase 2E L1 | 🔴 Open |
-| M1 | Doc 07 | Medium | E2E effort estimates aggressive — add min viable vs comprehensive labels | 🔴 Open |
-| M2 | Doc 07 | Medium | Command feasibility "validate result" wording ambiguous | 🔴 Open |
-| M3 | Doc 16 | Medium | TRAVERSE_HIERARCHY fetch mocking strategy missing | 🔴 Open |
-| M4 | Doc 16 | Medium | Total effort (47-61h) disproportionate — differentiate min vs comprehensive | 🔴 Open |
-| M5 | Doc 16 | Medium | 9 new message types but no message handlers exist yet — scope dependency | 🔴 Open |
-| L1 | Doc 16 | Low | Concurrent request tests may duplicate upstream coverage | 🔴 Open |
-| L2 | Doc 04 | Low | Test pyramid percentages not explicitly stated | 🔴 Open |
-| L3 | Doc 05 | Low | Test naming convention not consistently applied in examples | 🔴 Open |
+| H1 | Doc 16 | High | Worker testing strategy premature — Phase 4 scope gating needed | ✅ Resolved |
+| H2 | Doc 16 | High | Performance thresholds out of scope — aligned with Doc 33 project-wide exclusion | ✅ Resolved |
+| H3 | Doc 16 | High | Binary SWE tests beyond scope — defer per Phase 2E L1 | ✅ Resolved |
+| M1 | Doc 07 | Medium | E2E effort estimates — added "Initial Contribution Target" vs "Stretch Goal" labels | ✅ Resolved |
+| M2 | Doc 07 | Medium | Command feasibility "validate result" — clarified to assert URL + parsed structure, not server verdict | ✅ Resolved |
+| M3 | Doc 16 | Medium | TRAVERSE_HIERARCHY fetch mocking — added explicit mock injection note at Section 2.3.2 | ✅ Resolved |
+| M4 | Doc 16 | Medium | Total effort (47-61h) disproportionate — differentiated min vs comprehensive in top-level notice | ✅ Resolved |
+| M5 | Doc 16 | Medium | 9 new message types but no message handlers exist yet — covered by H1 scope gating notice | ✅ Resolved |
+| L1 | Doc 16 | Low | Concurrent request tests — added note to verify upstream coverage first (Section 6.3) | ✅ Resolved |
+| L2 | Doc 04 | Low | Test pyramid percentages — added explicit "60-65% unit / 35-40% integration / 0% E2E" recommendation | ✅ Resolved |
+| L3 | Doc 05 | Low | Test naming convention — advisory only; `should` pattern recommended in existing review notice | ✅ Resolved |
 
-**Total: 11 issues (0 critical, 3 high, 5 medium, 3 low)**
+**Total: 11 issues — 11/11 resolved (0 critical, 3 high, 5 medium, 3 low)**
 
 ---
 

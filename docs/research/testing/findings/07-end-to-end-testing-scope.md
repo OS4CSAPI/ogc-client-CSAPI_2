@@ -651,7 +651,7 @@ describe('CSAPI Observation Query Workflow E2E', () => {
 1. Connect to endpoint (discovery workflow steps 1-5)
 2. Query systems that support commands (HTTP: systems with command capability)
 3. Navigate to system's control streams (HTTP: control streams for system)
-4. Check command feasibility (HTTP: feasibility check endpoint)
+4. Check command feasibility (HTTP: feasibility check endpoint) — **test asserts the client constructs the correct feasibility URL, NOT the server's feasibility verdict**
 5. Submit command (HTTP: POST to commands collection)
 6. Track command status (HTTP: command status endpoint)
 7. Retrieve command results when complete (HTTP: command result endpoint)
@@ -669,7 +669,7 @@ describe('CSAPI Observation Query Workflow E2E', () => {
 **Assertions:**
 - Systems query filters for command capability
 - Control streams query URL correct
-- Feasibility check URL correct
+- Feasibility check URL correct (assert URL construction and parsed response structure — NOT the server's feasibility determination)
 - Command submission URL correct (POST with payload)
 - Status tracking URL correct
 - Result retrieval URL correct
@@ -1143,9 +1143,9 @@ export function mockFetchWithErrors(urlToError: Record<string, { status: number;
 
 ## 7. E2E Coverage Requirements
 
-### Minimum Viable E2E Coverage
+### Minimum Viable E2E Coverage (Initial Contribution Target)
 
-**4 workflow tests (400-500 lines):**
+**4 workflow tests (400-500 lines) — recommended starting point:**
 1. Discovery workflow (happy path only)
 2. Observation query workflow (happy path only)
 3. Command submission workflow (happy path only)
@@ -1163,9 +1163,9 @@ export function mockFetchWithErrors(urlToError: Record<string, { status: number;
 - Comprehensive error handling validation
 - Edge case coverage
 
-### Comprehensive E2E Coverage (Target)
+### Comprehensive E2E Coverage (Stretch Goal — Post-Acceptance)
 
-**4 core workflows + variations (600-800 lines):**
+**4 core workflows + variations (600-800 lines) — expand after initial PR acceptance:**
 1. **Discovery workflow** (150-200 lines):
    - Happy path
    - Missing conformance classes
