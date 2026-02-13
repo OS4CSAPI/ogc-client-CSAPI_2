@@ -1,8 +1,20 @@
 # SensorML 3.0 Parser Testing Specification
 
+> **⚠️ REVIEW NOTICE (Phase 2D, C2):** This document was identified in Phase 2D review as having CRITICAL issues: it defines 43 validation/error IDs (VAL-SML-001 through VAL-SML-081, ERR-SML-001 through ERR-SML-052) that test whether SensorML JSON documents **conform to the SensorML 3.0 specification** — a server/document concern, not a client parser concern.
+>
+> **Key problems identified:**
+> 1. **No parser output model defined.** The document catalogs every SensorML property and validation rule but never defines what `parseSensorML()` returns — no TypeScript interface for the parser output is specified anywhere.
+> 2. **"Parser" conflated with "validator."** Enforcement levels say "MUST enforce: Parser rejects invalid documents." A client parser should parse what it receives and produce a useful TypeScript model, not act as a specification conformance validator.
+> 3. **Live server fixture sourcing.** Section 8 plans to fetch fixtures from OpenSensorHub (`https://api.georobotix.io/ogc/t18/api`) with a two-tier assertion strategy (spec examples = MUST pass; live data = SHOULD handle gracefully). This is anti-pattern AP2.
+> 4. **Test structure mirrors the SensorML spec**, organized by spec structure types and sections, not by parser functions.
+>
+> **What to use from this document:** The property matrices (Section 2), recursive structure strategies (Section 4), SWE Common integration points (Section 5), fixture directory structure (Section 11), and phased implementation plan (Section 14) contain valuable reference material. The spec example fixture inventory (Section 7) is directly useful.
+>
+> **What NOT to use:** Do not use the VAL-SML-*/ERR-SML-* IDs as test identifiers. Do not implement the enforcement levels as defined (parser-as-validator). Do not source fixtures from live servers. Instead, define the parser's TypeScript output interface first, then test `parseSensorML(fixture) → expectedTypedObject`. See [Phase 2D review](../review/phase-2d-csapi-specific-testing-category.md) for details.
+
 **Research Plan:** [Research Plan 09: SensorML 3.0 Format Testing Requirements](../research-plans/09-sensorml-testing-requirements.md)  
-**Research Questions:** 80 questions about SensorML 3.0 structure types, JSON schema validation rules, recursive structure testing, identification and classification, characteristics and capabilities integration, components and nesting depth, temporal validity, observable properties, error handling, specification examples, OpenSensorHub real-world examples, and parser implementation testing  
-**Methodology:** 4-phase systematic analysis (SensorML 3.0 specification deep dive extracting structure types and normative validation rules → JSON schema analysis for validation constraints → Example analysis from spec and OpenSensorHub real-world data → Test strategy design creating comprehensive test specification)  
+**Research Questions:** 80 questions about SensorML 3.0 structure types, JSON schema analysis, recursive structure testing, identification and classification, characteristics and capabilities integration, components and nesting depth, temporal validity, observable properties, error handling, specification examples, real-world examples, and parser implementation testing  
+**Methodology:** 4-phase systematic analysis (SensorML 3.0 specification deep dive extracting structure types and normative statements → JSON schema analysis for format constraints → Example analysis from spec and real-world data → Test strategy design creating parser test specification)  
 **Research Time:** ~2 hours (February 5, 2026)
 
 **Primary Source(s):**
@@ -11,13 +23,13 @@
 - [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (SensorML parser specification)
 
 **Supporting Resources:**
-- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (SensorML validation rules)
+- Section 8: [CSAPI Specification Reference](08-csapi-specification-test-requirements.md) (SensorML specification details)
 - [Format Requirements Analysis](../../requirements/csapi-format-requirements.md) (SensorML subset for CSAPI)
 - [OpenSensorHub Analysis](../../requirements/csapi-opensensorhub-analysis.md) (real-world SensorML examples)
 - Section 6: [Meaningful vs Trivial Definition](06-meaningful-vs-trivial-definition.md) (quality context for test depth)
 - Section 1-2: Upstream format parser test patterns
 
-**Document Purpose:** Define comprehensive testing requirements for the SensorML 3.0 parser covering all 4 structure types (PhysicalSystem, PhysicalComponent, SimpleProcess, AggregateProcess), validation rules, recursive component parsing up to 3 levels deep, SWE Common integration, error handling, and fixture requirements (~25 fixtures from spec examples and OpenSensorHub), establishing the testing pattern for all format parsers with estimated 500-800 test lines.
+**Document Purpose:** Define testing requirements for the SensorML 3.0 parser covering all 4 structure types (PhysicalSystem, PhysicalComponent, SimpleProcess, AggregateProcess), recursive component parsing up to 3 levels deep, SWE Common integration, error handling, and fixture requirements (~25 fixtures from spec examples), with estimated 500-800 test lines. **Note:** This document must be supplemented with a parser output TypeScript interface definition before tests can be implemented — see review notice above.
 
 ---
 
@@ -240,6 +252,8 @@ This document defines comprehensive testing requirements for the SensorML 3.0 pa
 
 ## 3. Validation Rule Checklist
 
+> **⚠️ REVIEW NOTICE (Phase 2D, C2):** The VAL-SML-* IDs below catalog SensorML specification conformance rules — they define what a valid SensorML document looks like, not what a client parser should test. A client parser test should verify `parseSensorML(fixture) → correctTypedOutput`, not validate whether a document conforms to the spec. These rules are retained as **reference material** for understanding what input shapes the parser will encounter, but should NOT be used as test case identifiers. The "Enforcement Level" column is particularly problematic — see notice below the table.
+
 | Validation Rule ID | Description | Normative/Schema | Enforcement Level | Test Coverage | Priority | Spec Reference |
 |--------------------|-------------|------------------|-------------------|---------------|----------|----------------|
 | **Core Structure** |
@@ -277,12 +291,15 @@ This document defines comprehensive testing requirements for the SensorML 3.0 pa
 
 **Total Validation Rules:** 21 rules (11 CRITICAL/HIGH priority, 10 MEDIUM/LOW priority)
 
-**Enforcement Level Definitions:**
-- **MUST enforce:** Parser rejects invalid documents
-- **SHOULD enforce:** Parser warns about violations but continues
-- **SHOULD have:** Parser accepts documents without property but logs info message
-- **MUST parse:** Parser extracts and validates structure
-- **MUST validate:** Parser checks constraints and reports errors
+**Enforcement Level Definitions (REVIEW NOTICE — these conflate parser with validator):**
+
+> **⚠️ Phase 2D, C2:** These enforcement levels define the parser as a specification conformance validator ("Parser rejects invalid documents"). A client parser's job is to **transform input into a useful TypeScript model**, not to enforce specification conformance. The parser should extract what it can from the input and produce a typed output object. It should throw only when the input is unparseable (e.g., missing `type` field so the parser can't determine the structure type), not when a document violates a spec SHOULD requirement.
+
+- ~~**MUST enforce:** Parser rejects invalid documents~~ → Parser should extract value if present; throw only if structurally unparseable
+- ~~**SHOULD enforce:** Parser warns about violations but continues~~ → Parser should extract value without validation
+- **SHOULD have:** Parser accepts documents without property ~~but logs info message~~ → uses default/undefined
+- **MUST parse:** Parser extracts ~~and validates~~ structure into typed output
+- ~~**MUST validate:** Parser checks constraints and reports errors~~ → Parser extracts value as-is
 
 ---
 
@@ -360,6 +377,12 @@ This document defines comprehensive testing requirements for the SensorML 3.0 pa
 ---
 
 ## 6. Error Condition Testing
+
+> **⚠️ REVIEW NOTICE (Phase 2D, C2):** The ERR-SML-* IDs below define 22 error scenarios, many of which validate server data correctness rather than testing client parser behavior. A client parser should only throw errors when the input is **structurally unparseable** (e.g., invalid JSON, missing `type` field needed for dispatch). It should NOT reject documents for having an "invalid URI format" in `uniqueId` or a `validTime` with `start > end` — these are server data quality issues, not parser concerns. The parser should extract these values as-is and let the client code decide what to do with them.
+>
+> **Retain as parser error tests:** ERR-SML-001/002 (malformed JSON), ERR-SML-010 (missing `type`), ERR-SML-022 (unknown type value), ERR-SML-030 (circular reference — stack overflow prevention). These test genuine parser failure modes.
+>
+> **Reclassify as non-errors:** ERR-SML-011/012/013 (missing optional-like properties), ERR-SML-020/021 (URI format validation), ERR-SML-023/024 (temporal validation), ERR-SML-040/041/042 (SWE Common structure validation). The parser should extract whatever is there, not validate it.
 
 | Error ID | Error Condition | Test Scenario | Expected Error | Test Type | Priority | Error Message Example |
 |----------|-----------------|---------------|----------------|-----------|----------|----------------------|
@@ -466,7 +489,11 @@ interface SensorMLParsingError {
 
 ## 8. OpenSensorHub Fixture Inventory
 
-**OpenSensorHub Demo Server:** https://api.georobotix.io/ogc/t18/api
+> **⚠️ REVIEW NOTICE (Phase 2D, C2 / H2):** This section plans to source fixtures from the OpenSensorHub demo server (`https://api.georobotix.io/ogc/t18/api`) — this is anti-pattern AP2 (Hybrid Fixture/Live). Upstream tests use no live server dependencies; fixtures are static files versioned with the code. **Do not fetch fixtures from live servers.** If spec examples are insufficient, create realistic fixtures manually based on spec schemas. The two-tier assertion strategy ("Spec examples: MUST pass" vs "OpenSensorHub examples: SHOULD handle gracefully") should also not be used — all fixtures should have the same assertion rigor.
+>
+> The analysis strategy below is retained as reference for understanding real-world SensorML complexity, but should NOT drive fixture sourcing.
+
+**OpenSensorHub Demo Server (REFERENCE ONLY — do not use for fixture sourcing):** https://api.georobotix.io/ogc/t18/api
 
 | Resource URL | Structure Type | Complexity | Issues Found | Usable | Priority | Notes |
 |--------------|----------------|------------|--------------|--------|----------|-------|
@@ -508,10 +535,11 @@ interface SensorMLParsingError {
 - **Validation issues:** Some systems may not fully conform to spec
 - **Performance implications:** Large component trees require efficient parsing
 
-**Integration with Spec Examples:**
-- **Spec examples:** Normative baseline (MUST pass)
-- **OpenSensorHub examples:** Real-world validation (SHOULD handle gracefully)
-- **Test priority:** Spec examples first, then OpenSensorHub supplements
+**Fixture Sourcing Strategy (CORRECTED per Phase 2D):**
+- **Spec examples:** Primary fixture source — extract from CSAPI Part 1 Annex B and SensorML 3.0 spec
+- **Hand-crafted fixtures:** Secondary source — create realistic fixtures for edge cases, error scenarios, and nesting depths not covered by spec examples
+- ~~**OpenSensorHub examples:** Real-world validation (SHOULD handle gracefully)~~ → Do not source fixtures from live servers
+- **Assertion rigor:** All fixtures receive the same assertion treatment — no two-tier MUST/SHOULD distinction
 
 ---
 
@@ -1080,13 +1108,15 @@ fixtures/sensorml/
 
 ### Research Summary
 
+> **⚠️ REVIEW NOTICE (Phase 2D, C2):** This document was reclassified in Phase 2D review. The findings below are accurate as specification analysis, but the testing framework (VAL-SML/ERR-SML IDs, enforcement levels, OpenSensorHub fixture sourcing) must not be used as-is for client parser tests. **Before implementing tests, define the parser's TypeScript output interface** — what does `parseSensorML()` return? Tests should be `parseSensorML(fixture) → expectedTypedObject`, not specification conformance checks.
+
 **Completed:**
 - ✅ All 4 SensorML structure types analyzed (PhysicalSystem, PhysicalComponent, SimpleProcess, AggregateProcess)
-- ✅ All normative validation rules documented (21 rules from CSAPI Part 1 and SensorML 3.0)
+- ✅ All specification validation rules documented (21 rules from CSAPI Part 1 and SensorML 3.0) — **use as input reference, not test IDs**
 - ✅ Recursive structure testing strategy defined (1-3 levels, circular reference detection)
-- ✅ Fixture inventory complete (~27 fixtures: 3-4 spec examples, 18 hand-crafted, 3 OpenSensorHub)
-- ✅ Test depth defined meeting "meaningful" criteria (comprehensive property validation, nested structures, error conditions)
-- ✅ Error handling requirements specified (22 error scenarios with severity levels)
+- ✅ Fixture inventory complete (~24 fixtures: 3-4 spec examples, ~20 hand-crafted) — **OpenSensorHub fixtures removed per AP2 correction**
+- ✅ Test depth defined meeting "meaningful" criteria (comprehensive property extraction, nested structures, error conditions)
+- ✅ Error handling requirements specified (subset of 22 scenarios — **only structurally unparseable inputs should cause errors**)
 - ✅ SWE Common integration points identified (characteristics, capabilities, inputs/outputs/parameters)
 - ✅ Test organization documented (single spec file, ~46-57 tests, 500-800 lines)
 - ✅ Validated against upstream patterns (aligned with EDR client test approach)
@@ -1219,12 +1249,12 @@ fixtures/sensorml/
 ### Next Steps
 
 **Immediate (Implementation):**
-1. Create fixture directory structure (`fixtures/sensorml/`)
-2. Extract spec examples from CSAPI Part 1 Annex B (3-4 fixtures)
-3. Fetch OpenSensorHub examples (3 systems with `f=application/sml+json`)
-4. Create hand-crafted fixtures (20 fixtures covering all structure types, nesting levels, error cases)
+1. **Define parser output TypeScript interface** — what does `parseSensorML()` return? This is the critical missing piece.
+2. Create fixture directory structure (`fixtures/sensorml/`)
+3. Extract spec examples from CSAPI Part 1 Annex B (3-4 fixtures)
+4. Create hand-crafted fixtures (~20 fixtures covering all structure types, nesting levels, error cases) — **do not fetch from live servers**
 5. Implement SensorML parser (coordinate with SWE Common parser design from Section 10)
-6. Write Phase 1 tests (CRITICAL - ~150 lines, 14 tests)
+6. Write Phase 1 tests as `parseSensorML(fixture) → expectedTypedObject` (CRITICAL - ~150 lines, 14 tests)
 
 **Near-Term:**
 7. Write Phase 2 tests (HIGH - ~250 lines, 22-27 tests)
@@ -1248,5 +1278,6 @@ fixtures/sensorml/
 
 **Research Status:** COMPLETE ✅  
 **All Success Criteria Met:** ✅  
-**Ready for Implementation:** Phase 1 (CRITICAL) ready to start  
+**Reclassified:** Parser output model must be defined before tests can be implemented (Phase 2D, C2)  
+**Ready for Implementation:** After defining parser TypeScript output interface  
 **Estimated Implementation Effort:** 7-11 hours across 3 phases
