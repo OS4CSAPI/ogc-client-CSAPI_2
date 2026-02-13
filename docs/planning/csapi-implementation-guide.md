@@ -1469,10 +1469,22 @@ The CSAPIQueryBuilder includes DataStreams resource methods to manage CSAPI Data
 - Features of interest (optional association)
 
 **Schema Operations:**
-- Parse SWE Common result schema
+- Get result schema: `GET /datastreams/{id}/schema?obsFormat={format}` — `obsFormat` is **required** (Part 2, Req 11)
+- Parse SWE Common result schema (DataComponent definition)
 - Validate observation results against schema
 - Provide schema introspection for clients
 - Support schema evolution (versioning)
+
+**`obsFormat` valid values for schema endpoint:**
+
+| Format | Media Type | Priority |
+|--------|-----------|----------|
+| SWE Common JSON | `application/swe+json` | **Critical** |
+| O&M JSON | `application/om+json` | High |
+| SWE Common Text (CSV) | `text/csv` | Medium |
+| SWE Common Binary | `application/octet-stream` | Low |
+
+Omitting `obsFormat` on the schema endpoint returns **400 Bad Request** ("Missing required parameter").
 
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). DataStreams support: `system`, `observedProperty`, `foi`, `samplingFeature`, `procedure`, `datetime`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
 
@@ -1611,10 +1623,19 @@ The CSAPIQueryBuilder includes Control Streams resource methods to manage CSAPI 
 - Valid parameter ranges and constraints
 
 **Schema Operations:**
-- Parse SWE Common parameter schema
+- Get parameter schema: `GET /controlstreams/{id}/schema?cmdFormat={format}` — `cmdFormat` is **required** (Part 2, Req 25)
+- Parse SWE Common parameter schema (DataComponent definition)
 - Validate command parameters against schema
 - Provide schema introspection for clients
 - Support schema evolution
+
+**`cmdFormat` valid values for schema endpoint:**
+
+| Format | Media Type | Priority |
+|--------|-----------|----------|
+| SWE Common JSON | `application/swe+json` | **Critical** |
+
+Omitting `cmdFormat` on the schema endpoint returns **400 Bad Request** ("Missing required parameter").
 
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Control Streams support: `system`, `controlledProperty`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
 
@@ -1664,7 +1685,7 @@ The CSAPIQueryBuilder includes Commands resource methods to manage CSAPI Command
 - `receiver`: Target system/component
 
 **Command Status Properties:**
-- `status`: Current state (pending, accepted, executing, completed, failed, cancelled)
+- `status`: Current state (`PENDING`, `ACCEPTED`, `EXECUTING`, `COMPLETED`, `FAILED`, `CANCELED` — see [Command Status Lifecycle](#command-status-lifecycle-state-machine) below)
 - `percentCompletion`: Progress indicator (0-100)
 - `statusMessage`: Human-readable status
 - `updateTime`: Last status update timestamp
@@ -1681,7 +1702,7 @@ The CSAPIQueryBuilder includes Commands resource methods to manage CSAPI Command
   - Open start: `issueTime=../2024-01-31`
   - Open end: `issueTime=2024-01-01/..`
 - **executionTime filtering**: When command should be/was executed (ISO 8601 intervals)
-- **Status filtering**: `status` parameter with multiple values (pending, accepted, executing, completed, failed, cancelled)
+- **Status filtering**: `status` parameter with comma-separated values (`pending`, `accepted`, `executing`, `completed`, `failed`, `canceled`)
 - **Relationship filtering**: `controlstream` parameter (commands for specific control stream)
 
 **Pagination Support:**
@@ -1691,16 +1712,41 @@ The CSAPIQueryBuilder includes Commands resource methods to manage CSAPI Command
 - **Next/prev links**: Link headers for navigation
 - **Stable sorting**: By issueTime ascending, then by ID
 
-**Command Lifecycle Management:**
-- Submit command (validate parameters)
-- Track status (poll for updates)
-- Retrieve result (when completed)
-- Cancel command (if supported)
-- Check feasibility (before submission)
+**Command Status Lifecycle (State Machine):**
+
+Commands progress through a defined state machine with 6 states and strictly forward transitions:
+
+| State | Description | Terminal? | Cancellable? |
+|-------|-------------|-----------|-------------|
+| `PENDING` | Command accepted, waiting for processing | No | Yes |
+| `ACCEPTED` | Command validated and queued for execution | No | Yes |
+| `EXECUTING` | Command currently running | No | Yes |
+| `COMPLETED` | Command successfully finished | Yes | No |
+| `FAILED` | Command execution failed | Yes | No |
+| `CANCELED` | Command canceled before completion | Yes | No |
+
+**Valid State Transitions:**
+```
+PENDING  → ACCEPTED     (validated and queued)
+PENDING  → CANCELED     (canceled before processing)
+ACCEPTED → EXECUTING    (execution started)
+ACCEPTED → CANCELED     (canceled before execution)
+EXECUTING → COMPLETED   (successful completion)
+EXECUTING → FAILED      (execution error)
+EXECUTING → CANCELED    (canceled during execution)
+```
+
+**Invalid transitions:** Terminal states cannot transition. `PENDING` cannot skip to `EXECUTING` (must go through `ACCEPTED`). States cannot move backward.
+
+**Lifecycle Endpoints:**
+- Submit command: `POST /controlstreams/{id}/commands`
+- Get command with status: `GET /commands/{id}` (status field reflects current state)
+- Get command result: `GET /commands/{id}/result` (available when `COMPLETED`)
+- Cancel command: `DELETE /commands/{id}` (only non-terminal states)
 
 **Synchronous vs Asynchronous Execution:**
-- Synchronous: POST returns 200 with immediate result
-- Asynchronous: POST returns 201 with status URL, client polls for completion
+- **Synchronous** (rare): POST returns `200 OK` with `COMPLETED` status and inline result
+- **Asynchronous** (typical): POST returns `201 Created` with `Location` header; status starts at `PENDING`; client polls `GET /commands/{id}` until terminal state
 
 **Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Commands support: `issueTime`, `executionTime`, `status`, `controlstream`, `id`, `limit`, `offset`, `cursor`, `f`, `cmdFormat`.
 
@@ -3084,7 +3130,7 @@ This section demonstrates the complete developer experience when using the CSAPI
 import { OgcApiEndpoint, CSAPIQueryBuilder } from '@camptocamp/ogc-client';
 
 // 1. Connect to endpoint
-const endpoint = await OgcApiEndpoint.fromUrl('https://api.example.com/csapi');
+const endpoint = new OgcApiEndpoint('https://api.example.com/csapi');
 
 // 2. Check conformance
 const hasCSAPI = await endpoint.hasConnectedSystems;  // true/false
@@ -3261,7 +3307,7 @@ observations.features.forEach((obs) => {
 ```typescript
 import { OgcApiEndpoint, EndpointError } from '@camptocamp/ogc-client';
 
-const endpoint = await OgcApiEndpoint.fromUrl('https://api.example.com');
+const endpoint = new OgcApiEndpoint('https://api.example.com');
 const builder = await endpoint.csapi('weather-stations');
 
 // Automatic resource validation before URL building
@@ -3334,6 +3380,10 @@ try {
 
 **Research-validated scenarios showing how CSAPI will actually be used in production applications.**
 
+> **⚠️ APPLICATION USAGE EXAMPLES — NOT TEST PATTERNS**
+>
+> The code examples below demonstrate how end-user applications will consume the CSAPI client library. They use `fetch()` against named URLs to illustrate real-world workflows. **These are NOT test patterns.** For test implementations, use mocked `globalThis.fetch` per §9 testing conventions and the AP2 anti-pattern (no live server dependencies). See the test research documents for proper test examples.
+
 This section demonstrates complete workflows that developers will implement using the CSAPI client library. These scenarios are derived from Research Plan 14 (Usage Scenarios) which analyzed 15 real-world use cases and found that **100% require multi-resource workflows**. The scenarios validate the single-class architecture by showing that every practical use case requires seamless navigation across multiple resource types.
 
 ### Scenario 1: Real-Time Temperature Monitoring
@@ -3355,7 +3405,7 @@ async function monitorTemperatures(
   bbox: [number, number, number, number]
 ): Promise<void> {
   // 1. Connect to CSAPI endpoint
-  const endpoint = await OgcApiEndpoint.fromUrl(endpointUrl);
+  const endpoint = new OgcApiEndpoint(endpointUrl);
   if (!await endpoint.hasConnectedSystems) {
     throw new Error('Endpoint does not support Connected Systems API');
   }
@@ -3447,7 +3497,7 @@ async function taskUAV(
   uavId: string,
   missionParams: { altitude: number; speed: number; waypoints: [number, number][] }
 ): Promise<void> {
-  const endpoint = await OgcApiEndpoint.fromUrl(endpointUrl);
+  const endpoint = new OgcApiEndpoint(endpointUrl);
   const client = await endpoint.csapi('uav-fleet');
   
   // 1. Verify UAV system exists and supports commands
@@ -3575,7 +3625,7 @@ async function analyzeHistoricalTemperatures(
   startDate: string,
   endDate: string
 ): Promise<void> {
-  const endpoint = await OgcApiEndpoint.fromUrl(endpointUrl);
+  const endpoint = new OgcApiEndpoint(endpointUrl);
   const client = await endpoint.csapi('climate-stations');
   
   // 1. Find all temperature sensors in region
@@ -3691,7 +3741,7 @@ async function trackDeploymentNetwork(
   endpointUrl: string,
   deploymentId: string
 ): Promise<void> {
-  const endpoint = await OgcApiEndpoint.fromUrl(endpointUrl);
+  const endpoint = new OgcApiEndpoint(endpointUrl);
   const client = await endpoint.csapi('ocean-sensors');
   
   // 1. Get deployment information
@@ -3806,7 +3856,7 @@ async function buildCityDashboard(
   endpointUrl: string,
   cityBounds: [number, number, number, number]
 ): Promise<DashboardData> {
-  const endpoint = await OgcApiEndpoint.fromUrl(endpointUrl);
+  const endpoint = new OgcApiEndpoint(endpointUrl);
   const client = await endpoint.csapi('smart-city-sensors');
   
   const dashboard: DashboardData = {
@@ -3991,14 +4041,16 @@ buildCityDashboard('https://api.smartcity.gov/csapi', [-122.5, 37.7, -122.3, 37.
 | Category | Files | Lines | Complexity | Status |
 |----------|-------|-------|------------|--------|
 | Core tests | 2 | 1,000-1,300 | Medium | Patterns complete |
-| Format tests | 15 | 3,500-4,700 | High | Patterns complete |
-| **TOTAL TESTS** | **17** | **4,500-6,000** | **High** | **Ready** |
+| Format tests | 15 | 2,540-3,340 | High | Patterns complete |
+| Test utilities | 3 | 200-300 | Low | Helper infrastructure |
+| Integration tests | 2 | 300-400 | Medium | Multi-component workflows |
+| **TOTAL TESTS** | **22** | **4,040-5,340** | **High** | **Ready** |
 
 ### Grand Total
 
 **Implementation:** 24 files, ~4,614-6,094 lines  
-**Tests:** 17 files, ~4,500-6,000 lines  
-**TOTAL:** 41 files, ~9,114-12,094 lines
+**Tests:** 22 files, ~4,040-5,340 lines  
+**TOTAL:** 46 files, ~8,654-11,434 lines
 
 **Comparison to Original Estimates:**
 
@@ -4006,7 +4058,7 @@ buildCityDashboard('https://api.smartcity.gov/csapi', [-122.5, 37.7, -122.3, 37.
 |----------|----------------|---------------------------|------------|
 | QueryBuilder | ~10,000-14,000 lines | ~700-800 lines | -93% |
 | Total Implementation | ~15,000-20,000 lines | ~4,614-6,094 lines | -69% |
-| Total with Tests | ~21,000-27,900 lines | ~9,114-12,094 lines | -56% |
+| Total with Tests | ~21,000-27,900 lines | ~8,654-11,434 lines | -59% |
 
 **Why More Accurate:**
 
