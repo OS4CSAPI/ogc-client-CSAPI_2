@@ -88,7 +88,7 @@ However, **significant quality issues exist**:
 
 **Severity:** HIGH  
 **Document:** [34-test-utility-helper-design.md](../findings/34-test-utility-helper-design.md)  
-**Status:** ❌ Open
+**Status:** ~~❌ Open~~ ✅ Resolved
 
 **Problem:** Document 34 claims utilities will "save ~10,000-15,000 lines of duplicated test code across ~100-150 test files." However, Document 19 (the authoritative test organization document) specifies 22 test files totaling 4,100-5,300 lines. Saving 10,000-15,000 lines from a ~5,000-line suite is mathematically impossible.
 
@@ -96,7 +96,7 @@ However, **significant quality issues exist**:
 
 **Impact:** These inflated numbers undermine the document's credibility and could lead to over-investment in utility development.
 
-**Fix Required:** Revise savings claims to be consistent with Document 19's actual estimates. Realistic savings from a 5,000-line test suite with 50 utilities would be ~1,000-2,000 lines (20-40%), not 10,000-15,000.
+**Resolution:** Revised all inflated claims in Doc 34 to align with Doc 19 actuals: "~100-150 test files" → "~22 CSAPI test files (per Section 19 inventory)"; "~10,000-15,000 lines" → "~2,500-3,700 lines (60-70% of ~4,100-5,300 total test lines)"; "not 50 times" → "not across multiple test files". Fixed in Sections 6.4 and 9.3.
 
 ---
 

@@ -67,7 +67,7 @@ src/
 - ✅ **Improved readability** - descriptive utility names vs inline logic
 - ✅ **Consistent validation** - same checks across all tests
 - ✅ **Better error messages** - utilities provide context-aware failures
-- ✅ **Easier maintenance** - fix bugs once in utility, not across 50 test files
+- ✅ **Easier maintenance** - fix bugs once in utility, not across multiple test files
 
 ### Upstream Utility Patterns
 
@@ -2231,9 +2231,9 @@ Don't create utility when:
 - Assertion boilerplate: ~1-2 lines per assertion (80% reduction)
 
 **Overall Impact:**
-- **60-70% reduction** in test code across ~100-150 test files
-- **Saves ~10,000-15,000 lines** of duplicated test code
-- **Improves maintainability** - fix bugs once in utility, not 50 times
+- **60-70% reduction** in test code duplication across ~22 CSAPI test files (per Section 19 inventory)
+- **Saves ~2,500-3,700 lines** of duplicated test code (60-70% of ~4,100-5,300 total test lines)
+- **Improves maintainability** - fix bugs once in utility, not across multiple test files
 
 ---
 
@@ -2580,10 +2580,10 @@ const system = buildSystem({
 
 ### 9.3 Key Takeaways
 
-1. **Utilities reduce duplication by 60-70%** across 100-150 test files
+1. **Utilities reduce duplication by 60-70%** across ~22 CSAPI test files (per Section 19 inventory)
 2. **50 utility functions** organized in 6 categories
 3. **~1,000-1,650 lines** of utility implementation
-4. **Saves ~10,000-15,000 lines** of duplicated test code
+4. **Saves ~2,500-3,700 lines** of duplicated test code (60-70% of ~4,100-5,300 total test lines)
 5. **1-1.5 weeks** implementation effort
 6. **CSAPI-specific utilities** not found in upstream (temporal, spatial, SWE Common)
 7. **Phased migration** approach - additive, not breaking
