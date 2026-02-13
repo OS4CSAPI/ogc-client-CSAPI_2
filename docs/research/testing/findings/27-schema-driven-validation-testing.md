@@ -1,5 +1,18 @@
 # Section 27: Schema-Driven Validation Testing Strategy
 
+> ⚠️ **REVIEW NOTICE — HIGH (H10): Schema Evolution Tests Require Server Integration**
+>
+> **Phase 2E Review | Issues: H10, M5 | Anti-Patterns: AP1**
+>
+> This document is ~70% client-oriented. The observation/command validation test patterns (Sections 4-5) are well-designed IF schema validation is implemented as client-side pre-validation (`validateObservation()` with `options.validate = true`). However:
+>
+> - **Section 6.1** (Schema Evolution, 4 tests): Uses `client.createDataStream()`, `client.createObservation()`, `client.updateDataStream()` expecting 409 Conflict. The 409 response requires server state — this is inherently integration testing, not client unit testing.
+> - **Section 10.2**: Explicitly describes server-side validation workflow ("Receive observation", "Fetch DataStream schema", "Return 400 Bad Request"). This is server compliance documentation.
+>
+> **What's usable:** Sections 4-5 (validation scenarios), Section 10.1 (client-side validation flow), SWE Common type analysis (Section 3), fixture design (Section 8).
+>
+> See also: [Phase 2E Review Report](../review/phase-2e-advanced-scenarios-category.md)
+
 **Research Plan:** [Research Plan 27: Schema-Driven Validation Testing](../research-plans/27-schema-driven-validation-testing.md)
 
 **Research Questions:** 6 core questions about testing observation result validation against DataStream schema, command parameter validation against ControlStream schema, schema mismatch scenarios, schema parsing (SWE Common schemas), fixtures needed for schema validation scenarios, and error messages for schema violations
@@ -779,6 +792,10 @@ describe('Observation Validation - DataArray Element Count', () => {
 
 ## 6. Schema Evolution Test Scenarios
 
+> ⚠️ **REVIEW NOTICE (H10): Schema Evolution Tests Require Server State — Integration Testing**
+>
+> These 8 tests (Sections 6.1-6.2) use `client.createDataStream()`, `client.createObservation()`, then `client.updateDataStream()` expecting 409 Conflict. The 409 response depends on server state (whether the datastream has existing observations). This is inherently integration testing against a server, not client unit testing with mocked fetch. If schema evolution behavior needs client-side handling (e.g., catching 409 and presenting a user-friendly message), test the error handling path with a mocked 409 response — don't test whether the server produces 409.
+
 ### 6.1 Schema Change with Existing Data (4 tests)
 
 **Priority:** **CRITICAL**
@@ -1505,6 +1522,10 @@ class CSAPIClient {
 ```
 
 ### 10.2 Server-Side Validation (API Behavior)
+
+> ⚠️ **REVIEW NOTICE (M5): Server-Side Validation Documentation — Not Client Behavior**
+>
+> This section explicitly describes server behavior: "Receive observation", "Fetch DataStream schema", "Validate result against resultSchema", "Return 400 Bad Request if validation fails." This is server compliance documentation, not client behavior testing. Useful as reference context for understanding the API contract, but should not be the basis for client test assertions. Client tests should verify: the client's `validateObservation()` function catches schema mismatches BEFORE sending the request.
 
 **POST /datastreams/{id}/observations:**
 

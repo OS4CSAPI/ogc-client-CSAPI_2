@@ -547,18 +547,18 @@ The aggregate scope creep (~683 tests, ~450h) is the category-level concern that
 | H3 | HIGH | 24 | Server validation/precedence testing (AP1) | ✅ Resolved |
 | H4 | HIGH | 30 | Tests assert fixture response data directly (AP1) | ✅ Resolved |
 | H5 | HIGH | 30 | No tests for actual client logic — chunking, fallback (AP4) | ✅ Resolved |
-| H6 | HIGH | 28 | Identifies client utilities but doesn't test them (AP4) | ❌ Open |
+| H6 | HIGH | 28 | Identifies client utilities but doesn't test them (AP4) | ✅ Resolved |
 | H7 | HIGH | 23 | Cursor pagination tests assert server behavior (AP1) | ✅ Resolved |
 | H8 | HIGH | 32 | Graceful skipping on server availability — 5+ instances (AP5) | ✅ Resolved |
 | H9 | HIGH | 25 | Accept header tests for unused feature (AP1) | ✅ Resolved |
-| H10 | HIGH | 27 | Schema evolution tests require server integration (AP1) | ❌ Open |
+| H10 | HIGH | 27 | Schema evolution tests require server integration (AP1) | ✅ Resolved |
 | M1 | MEDIUM | 24 | `ParameterValidationError` contradicts Doc 18 (cross-doc) | ✅ Resolved |
 | M2 | MEDIUM | 25 | Format precedence rules describe server behavior (AP1) | ✅ Resolved |
 | M3 | MEDIUM | 25 | `ResponseValidator` tests server Content-Type (AP1) | ✅ Resolved |
 | M4 | MEDIUM | 23 | Server invalid parameter rejection tests (AP1) | ✅ Resolved |
-| M5 | MEDIUM | 27 | "Server-Side Validation" section documents server compliance | ❌ Open |
-| M6 | MEDIUM | 28 | `response.ok` assertions meaningless against fixtures (AP1) | ❌ Open |
-| M7 | MEDIUM | 29 | Same `response.ok` pattern as Doc 28 (AP1) | ❌ Open |
+| M5 | MEDIUM | 27 | "Server-Side Validation" section documents server compliance | ✅ Resolved |
+| M6 | MEDIUM | 28 | `response.ok` assertions meaningless against fixtures (AP1) | ✅ Resolved |
+| M7 | MEDIUM | 29 | Same `response.ok` pattern as Doc 28 (AP1) | ✅ Resolved |
 | M8 | MEDIUM | 30 | Performance tests measure server response timing (AP1) | ✅ Resolved |
 | M9 | MEDIUM | 23 | Conditional assertion on fixture content (AP5) | ✅ Resolved |
 | M10 | MEDIUM | 32 | Server ID format and coordinate assertions (AP4) | ✅ Resolved |

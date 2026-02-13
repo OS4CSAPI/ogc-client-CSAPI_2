@@ -1,5 +1,17 @@
 # Section 29: Spatial Query Testing Strategy
 
+> ⚠️ **REVIEW NOTICE — MEDIUM (M7): Same `response.ok` Pattern as Doc 28**
+>
+> **Phase 2E Review | Issues: M7 | Anti-Pattern: AP1**
+>
+> This document is ~65% client-oriented — milder than Docs 27-28. The URL construction tests (`response.requestUrl.toContain('bbox=...')`) are correctly client-oriented, and the bbox validation/encoding logic (Sections 7.3-7.4) is genuinely testable client code. However, the same `expect(response.ok).toBe(true)` pattern from Doc 28 appears throughout Section 4, and table descriptions like "Returns resources in North America" describe server filtering behavior.
+>
+> **What's usable:** Bbox URL construction, coordinate validation (Section 7.3), bbox encoding (Section 7.4), antimeridian handling (Section 8), edge case analysis (Section 3).
+>
+> **What to fix:** Remove `response.ok` assertions; retain `requestUrl` assertions; add tests for `validateBbox()` and `encodeBbox()` utility functions.
+>
+> See also: [Phase 2E Review Report](../review/phase-2e-advanced-scenarios-category.md)
+
 **Research Plan:** [Research Plan 29: Spatial Query Testing Strategy](../research-plans/29-spatial-query-testing.md)
 
 **Research Questions:** 6 core questions about bbox format, geometry intersection, CRS handling, spatial edge cases, validation errors, and fixtures.
@@ -405,6 +417,14 @@ bbox=0,-90,0,90
 ## 4. Spatial Query Test Scenarios
 
 ### 4.1 Basic Bbox Tests (10 tests)
+
+> ⚠️ **REVIEW NOTICE (M7): `expect(response.ok).toBe(true)` Meaningless Against Fixtures**
+>
+> Same pattern as Doc 28: `response.ok` assertions only confirm the mock returns `ok: true`. The `expect(response.requestUrl).toContain('bbox=...')` assertions ARE client-oriented and should be retained. Table descriptions like "Returns resources in North America" describe server filtering behavior.
+>
+> **Retain:** `requestUrl` assertions verifying bbox URL encoding.
+> **Remove:** `response.ok` assertions and server filtering descriptions.
+> **Add:** Tests for `validateBbox()` and `encodeBbox()` from Section 7.
 
 **Priority:** **CRITICAL**
 

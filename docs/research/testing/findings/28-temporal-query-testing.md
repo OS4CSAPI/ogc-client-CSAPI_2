@@ -1,5 +1,17 @@
 # Section 28: Temporal Query Testing Strategy
 
+> ⚠️ **REVIEW NOTICE — HIGH (H6): Identifies Client Utilities But Doesn't Test Them**
+>
+> **Phase 2E Review | Issues: H6, M6 | Anti-Patterns: AP1, AP4**
+>
+> This document is ~55% client-oriented. Section 7 defines 5 client utility functions (`parseInstant()`, `parseInterval()`, `parseDuration()`, `toUTC()`, `validateISO8601()`) that are genuinely useful testable client code. However, the test scenarios in Section 4 only test URL query parameter construction and `response.ok` assertions — no test exercises the temporal parsing/transformation functions.
+>
+> **What's usable:** ISO 8601 format analysis (Section 2), timezone handling (Section 3), client utility functions (Section 7), URL construction patterns (`response.requestUrl` assertions).
+>
+> **What must be rewritten:** The `expect(response.ok).toBe(true)` assertions throughout Section 4 are meaningless against mocked responses — they only confirm the mock returns `ok: true`. Tests should instead exercise: `parseInstant('2024-01-15T12:00:00+05:30')` → `Date(UTC 06:30)`, `parseInterval('2024-01-01/..')` → `{start, end: null}`, `toUTC(localDate)` → expected ISO string.
+>
+> See also: [Phase 2E Review Report](../review/phase-2e-advanced-scenarios-category.md)
+
 **Research Plan:** [Research Plan 28: Temporal Query Testing Strategy](../research-plans/28-temporal-query-testing.md)
 
 **Research Questions:** 6 core questions about testing all ISO 8601 interval formats, open-ended intervals (`../..`, `2024-01-01/..`, `../2024-12-31`), instant vs interval queries, temporal parameter combinations, temporal edge cases, and temporal validation errors
@@ -258,6 +270,14 @@ client.observations.list({
 ## 4. Temporal Query Test Scenarios
 
 ### 4.1 Instant Format Tests (12 tests)
+
+> ⚠️ **REVIEW NOTICE (M6): `expect(response.ok).toBe(true)` Meaningless Against Fixtures**
+>
+> Tests throughout Section 4 assert `expect(response.ok).toBe(true)` against mocked responses. This only confirms the mock returns `ok: true` — it tests nothing about the client. The `expect(response.requestUrl).toContain(...)` assertions in the same tests ARE client-oriented and should be retained. The table descriptions like "Returns resources on that date" describe server filtering behavior, not client behavior.
+>
+> **Retain:** `requestUrl` assertions that verify URL construction.
+> **Remove:** `response.ok` assertions and server filtering descriptions.
+> **Add:** Tests for Section 7 utility functions (`parseInstant`, `parseInterval`, `toUTC`).
 
 **Priority:** **CRITICAL**
 
@@ -1191,6 +1211,10 @@ fixtures/temporal/
 ---
 
 ## 7. ISO 8601 Parsing Utilities
+
+> ✅ **REVIEW NOTICE: Strongest Section — Genuine Client Code to Test**
+>
+> Section 7 defines the actual client code that Section 4 should be testing: `parseInstant()`, `parseInterval()`, `parseDuration()`, `toUTC()`, `validateISO8601()`. These are pure functions that take string input and produce typed output — ideal for unit testing with deterministic assertions. The Section 4 tests should be rewritten to exercise these functions directly rather than asserting `response.ok` against mocks.
 
 ### 7.1 Required Parsing Functions
 
