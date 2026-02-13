@@ -341,13 +341,9 @@ This frames coverage as spec-requirement coverage (AP3), not as code-path covera
 
 **Severity:** LOW  
 **Document:** [20-test-to-code-ratio-validation.md](../findings/20-test-to-code-ratio-validation.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
-**Problem:** Doc 20 cites very specific line counts for popular libraries ("@octokit ~15,000 impl, ~22,500 test, ratio ~1.5×", "axios ~2.0×") that are presented as established facts but are unverifiable estimates. These are used to benchmark the CSAPI ratio.
-
-**Impact:** Low — the CSAPI ratio positioning is reasonable regardless of whether these specific numbers are accurate.
-
-**Recommendation:** Mark these as estimated values or remove specific line counts, keeping only the general observation that TypeScript client libraries typically have ratios of 0.9–2.0:1.
+**Resolution:** Added L1 review notice in §3.1 clarifying that library line counts are rough estimates, not independently verified. Marked all ratio values in the Popular Library Ratios table as estimates (~). Changed "Industry Average" notes to "Estimated". The general observation that TypeScript client libraries fall in the 1.0–2.0:1 range remains valid.
 
 ---
 
@@ -355,13 +351,9 @@ This frames coverage as spec-requirement coverage (AP3), not as code-path covera
 
 **Severity:** LOW  
 **Document:** [17-coverage-targets-and-metrics.md](../findings/17-coverage-targets-and-metrics.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
-**Problem:** Doc 17 provides ready-to-use Jest coverage configuration with per-component glob thresholds for files that don't exist yet (e.g., `./src/ogc-api/csapi/url_builder.ts`, `./src/ogc-api/csapi/parsers/*.ts`). This is useful as a reference but should be clearly marked as speculative configuration to be created during implementation.
-
-**Impact:** Low — the configuration is technically sound and useful as a template.
-
-**Recommendation:** Add a note clarifying this is a template to be adapted as implementation progresses, not a configuration to be committed immediately.
+**Resolution:** Added L2 review notice at the top of §4 (Jest Configuration Specification) clarifying that the configuration is a template for future use. CSAPI files referenced in `coverageThreshold` (e.g., `url_builder.ts`, `parsers/*.ts`) do not exist yet. Configuration should be adapted incrementally as implementation progresses.
 
 ---
 
@@ -369,13 +361,9 @@ This frames coverage as spec-requirement coverage (AP3), not as code-path covera
 
 **Severity:** LOW  
 **Document:** [03-typescript-testing-standards.md](../findings/03-typescript-testing-standards.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
-**Problem:** Individual module ratios differ by 5–12% from independent measurements (e.g., WFS claimed 1.78, measured 1.86; STAC claimed 0.71, measured 0.66). Likely methodology differences (blank lines, comments) rather than fabrication. The average ratio is accurate.
-
-**Impact:** Minimal — the general patterns and conclusions remain valid.
-
-**Recommendation:** Note that ratios are approximate and methodology-dependent. The relative ordering and general magnitude are correct.
+**Resolution:** Added L3 review notice in Doc 03’s ogc-client ratio listing noting that values are approximate and methodology-dependent. Added measured values (commit `1694f09`) alongside each module ratio for comparison. Updated average from 1.44× to ~1.45×. Corrected WFS reference from 1,124 to ~1,056 impl lines and updated derived ratio accordingly.
 
 ---
 
@@ -486,8 +474,8 @@ Proceed to **Phase 2D: Format Parsers** (Docs 09, 10, 11), which have high AP4 r
 | M2 | MEDIUM | 17 | AP3 in behavior coverage metrics (spec requirements as coverage targets) | ✅ Resolved |
 | M3 | MEDIUM | 20 | Module-level ratios systematically inflated 5–13% | ✅ Resolved |
 | M4 | MEDIUM | 37 | AP2 risk in fixture `_metadata` versioning system | ✅ Resolved |
-| L1 | LOW | 20 | Unverifiable industry library ratio estimates | ❌ Open |
-| L2 | LOW | 17 | Premature Jest configuration for non-existent files | ❌ Open |
-| L3 | LOW | 03 | Minor ratio measurement discrepancies (5–12%) | ❌ Open |
+| L1 | LOW | 20 | Unverifiable industry library ratio estimates | ✅ Resolved |
+| L2 | LOW | 17 | Premature Jest configuration for non-existent files | ✅ Resolved |
+| L3 | LOW | 03 | Minor ratio measurement discrepancies (5–12%) | ✅ Resolved |
 
 **Summary:** 2 Critical, 5 High, 4 Medium, 3 Low — **14 total issues**

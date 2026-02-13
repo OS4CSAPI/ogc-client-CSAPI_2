@@ -570,9 +570,11 @@ Use this checklist to evaluate test quality beyond raw percentages:
 
 ## 4. Jest Configuration Specification
 
+> **⚠️ Review Notice (L2 fix — Phase 2C):** The configuration below is a **template for future use** — the CSAPI files it references (e.g., `./src/ogc-api/csapi/url_builder.ts`, `./src/ogc-api/csapi/parsers/*.ts`) do not exist yet. This configuration should be adapted and committed incrementally as implementation progresses through ROADMAP phases, not committed as-is before any CSAPI code exists.
+
 ### 4.1 Coverage Configuration
 
-Add the following to `jest.config.cjs`:
+Add the following to `jest.config.cjs` (adapt paths as implementation progresses):
 
 ```javascript
 module.exports = {

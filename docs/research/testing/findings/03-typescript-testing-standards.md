@@ -863,7 +863,7 @@ const systems: System[] = await systemsBuilder.list();
 
 ### Recommended Distribution
 
-**For CSAPI (1,124 impl lines, ~1,600 test lines):**
+**For CSAPI (~1,056 impl lines, ~1,600 test lines):**
 
 | Test Type | Line Count | % of Tests | Count | Purpose |
 |-----------|------------|------------|-------|---------|
@@ -1631,13 +1631,16 @@ FIXTURE_SETS.forEach((fixtureSet) => {
 - Estimated ~2.0× ratio (one of most tested HTTP clients)
 
 **ogc-client:**
-- WFS: 1.78× (most mature implementation)
-- WMTS: 2.38× (exceptionally high, comprehensive tile testing)
-- WMS: 1.19× (good coverage)
-- TMS: 1.03× (baseline coverage)
-- STAC: 0.71× (new, still growing)
-- EDR: 0.53× (newest, tests still being added)
-- **Average: 1.44×** ✅ Within industry range
+
+> **⚠️ Review Notice (L3 fix — Phase 2C):** The ratios below are approximate and methodology-dependent (e.g., whether blank lines and comments are counted). Independently measured values (commit `1694f09`) differ by 5–12% at the module level (e.g., WFS measured at 1.86×, STAC at 0.66×). The relative ordering and general magnitude are correct. See Doc 20 for corrected values.
+
+- WFS: ~1.78× (most mature implementation; measured 1.86×)
+- WMTS: ~2.38× (exceptionally high, comprehensive tile testing; measured 2.47×)
+- WMS: ~1.19× (good coverage; measured 1.21×)
+- TMS: ~1.03× (baseline coverage; measured 1.04×)
+- STAC: ~0.71× (new, still growing; measured 0.66×)
+- EDR: ~0.10× (most testing in shared endpoint.spec.ts; measured 0.10×)
+- **Average: ~1.45×** ✅ Within industry range
 
 ### Factors Affecting Ratio
 
@@ -1672,11 +1675,11 @@ FIXTURE_SETS.forEach((fixtureSet) => {
 
 ### Recommended Ratio for CSAPI
 
-**Target: 1.2-1.6× (1,350-1,800 test lines for 1,124 impl lines)**
+**Target: ~1.2-1.6× (1,350-1,800 test lines for ~1,056 impl lines)**
 
 **Rationale:**
 - ✅ Within industry range (1.0-2.0×)
-- ✅ Above upstream average (1.44×) for newer implementation
+- ✅ Near upstream average (~1.45×) for newer implementation
 - ✅ Matches complexity level (9 resource types, CRUD operations)
 - ✅ Achievable in initial implementation
 - ✅ Allows for growth as edge cases discovered
@@ -1690,12 +1693,12 @@ FIXTURE_SETS.forEach((fixtureSet) => {
 | Model/Types | 34 | 0.5× | 17 | Type serialization |
 | Validators | 50 | 1.5× | 75 | Resource relationships |
 | **Integration tests** | N/A | N/A | 400 | Full workflows |
-| **Total** | **1,124** | **1.43×** | **1,602** | **Within target** |
+| **Total** | **~1,056** | **~1.52×** | **~1,602** | **Within target** |
 
 **This aligns with:**
 - ✅ Industry standards (1.0-2.0×)
-- ✅ Upstream ogc-client (1.44× avg)
-- ✅ Newer implementations (STAC 0.71×, growing)
+- ✅ Upstream ogc-client (~1.45× avg)
+- ✅ Newer implementations (STAC ~0.66×, growing)
 
 ---
 

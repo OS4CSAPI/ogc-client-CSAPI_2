@@ -255,18 +255,20 @@
 
 **Popular Library Ratios:**
 
-| Library | Type | Impl Lines (est) | Test Lines (est) | Ratio | Notes |
-|---------|------|-----------------|------------------|-------|-------|
-| **@octokit/rest** | API client | ~15,000 | ~22,500 | **1.5:1** | GitHub API, comprehensive |
-| **axios** | HTTP client | ~3,000 | ~6,000 | **2.0:1** | Mature (10+ years), thorough |
-| **node-fetch** | HTTP client | ~1,500 | ~1,800 | **1.2:1** | Focused, efficient |
-| **superagent** | HTTP client | ~2,500 | ~3,500 | **1.4:1** | Mature, well-tested |
-| **Industry Average** | - | - | - | **1.5:1** | - |
+> **⚠️ Review Notice (L1 fix — Phase 2C):** The specific line counts below are rough estimates and have not been independently verified against each library's repository. They are included only to illustrate that TypeScript/JavaScript client libraries generally fall in the 1.0–2.0:1 range. The exact numbers should not be cited as established facts.
+
+| Library | Type | Impl Lines (est) | Test Lines (est) | Ratio (est) | Notes |
+|---------|------|-----------------|------------------|-------------|-------|
+| **@octokit/rest** | API client | ~15,000 | ~22,500 | **~1.5:1** | GitHub API, comprehensive |
+| **axios** | HTTP client | ~3,000 | ~6,000 | **~2.0:1** | Mature (10+ years), thorough |
+| **node-fetch** | HTTP client | ~1,500 | ~1,800 | **~1.2:1** | Focused, efficient |
+| **superagent** | HTTP client | ~2,500 | ~3,500 | **~1.4:1** | Mature, well-tested |
+| **Industry Average** | - | - | - | **~1.5:1** | Estimated |
 
 **CSAPI Context:**
 - Type: API client (like @octokit/rest)
 - Ratio: 0.9-1.0:1
-- Position: **Below industry average (1.5:1) but within acceptable range (0.8-2.0:1)**
+- Position: **Below estimated industry average (~1.5:1) but within acceptable range (0.8-2.0:1)**
 
 **Assessment:** ✅ CSAPI ratio is **acceptable** but **conservative** compared to industry average
 
@@ -1148,7 +1150,7 @@ All checks passed! 🎉
   - ✅ Industry standard: 1.0-2.0:1
   - ✅ TypeScript clients: 0.9-1.5:1
   - ✅ API clients: ~1.5:1 average
-  - ✅ Popular libraries analyzed (@octokit/rest, axios)
+  - ✅ Popular libraries referenced (@octokit/rest, axios) — line counts are estimates
 
 - [x] **Implementation Guide estimates are validated or adjusted**
   - ✅ Original: 4,400-6,300 test lines (0.91-0.97:1)
