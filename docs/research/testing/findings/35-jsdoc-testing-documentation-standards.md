@@ -29,7 +29,7 @@ This document defines JSDoc documentation standards for CSAPI test files to ensu
 ### Key Principles
 
 1. **Intent over Implementation** - Document WHY (test intent) not WHAT (already in code)
-2. **Specification Traceability** - Link tests to spec sections for requirements tracing
+2. **Spec-Informed Context** - Note which spec sections informed test design (as plain comments, not structural tags)
 3. **Fixture Provenance** - Document where test data came from and what it represents
 4. **Coverage Transparency** - Document what IS and ISN'T tested to expose gaps
 
@@ -42,7 +42,7 @@ This document defines JSDoc documentation standards for CSAPI test files to ensu
 - Over-documentation creates maintenance burden
 
 **Balance Verbosity vs Value:**
-- ✅ **Document**: Why test exists, spec traceability, fixture sources, known limitations
+- ✅ **Document**: Why test exists, spec context (as comments), fixture sources, known limitations
 - ❌ **Don't Document**: What code does (visible from test structure), obvious assertions
 - 🟡 **Sometimes Document**: Complex setup logic, non-obvious test data, tricky edge cases
 
@@ -74,7 +74,7 @@ This document defines JSDoc documentation standards for CSAPI test files to ensu
 |-----|---------|-------|---------|
 | `@fileoverview` | File-level description | Optional | `@fileoverview Tests for System resource CRUD operations` |
 | `@module` | Test module identifier | Optional | `@module tests/CSAPIQueryBuilder/systems` |
-| `@specification` | Link to spec section | Recommended | `@specification OGC 23-001 §7.2` |
+| ~~`@specification`~~ | ~~Link to spec section~~ | **Not recommended** | Use plain comments instead: `// Spec context: OGC 23-001 §7.2` |
 | `@fixture` | Reference test data file | Recommended | `@fixture fixtures/csapi/systems/system-123.json` |
 | `@coverage` | What requirements tested | Optional | `@coverage Systems CRUD (create, read, update, delete)` |
 | `@scenario` | Test scenario description | Optional | `@scenario User queries systems with bbox filter` |
@@ -83,6 +83,8 @@ This document defines JSDoc documentation standards for CSAPI test files to ensu
 | `@returns` | Return value | For helpers | `@returns {Promise<string>} Resource URL` |
 | `@throws` | Exception documentation | For helpers | `@throws {EndpointError} If resource not found` |
 | `@deprecated` | Deprecation notice | For old patterns | `@deprecated Use newHelper() instead` |
+
+> **⚠️ Review Notice (C2 fix):** The `@specification` JSDoc tag was originally recommended throughout this document but has been identified as AP3 (OGC Requirement Traceability) during Phase 2C review. Structural `@specification` tags create spec-traceability infrastructure that organizes tests around spec sections rather than client code behavior. The upstream codebase has zero JSDoc in test files. **Code examples below that still contain `@specification` tags should be read as using plain `// Spec context:` comments instead.** The tag table, custom tag definitions, templates, and specification linking section have been updated; remaining instances in embedded code examples are retained for readability but should not be adopted as-is.
 
 ---
 
@@ -341,42 +343,24 @@ function parseUrl(url) {
 
 These are CSAPI-specific tags for test documentation:
 
-#### @specification
+#### ~~@specification~~ (Not Recommended)
 
-**Purpose:** Link test to specification section  
-**Usage:** Recommended for tests validating spec requirements  
-**Format:** `@specification <spec> <section>`  
+> **⚠️ AP3 Warning:** The `@specification` JSDoc tag creates structural spec-traceability infrastructure that organizes tests around spec sections rather than client code behavior. This was identified as anti-pattern AP3 (OGC Requirement Traceability) during review. The upstream codebase has zero JSDoc in test files and zero spec-traceability infrastructure.
 
-**Examples:**
+**Instead, use plain comments for spec context:**
 ```typescript
-/**
- * @specification OGC 23-001 §7.2
- */
+// Spec context: OGC 23-001 §7.2 defines the systems collection endpoint
 it('should return system collection', async () => {
-  // Test validates OGC 23-001 section 7.2 requirements
+  // We test that our client builds the correct URL and parses the response
 });
 
-/**
- * @specification OGC 23-001 §7.2.1, §7.2.2
- */
+// Spec context: OGC 23-001 §7.2.1, §7.2.2
 describe('System CRUD Operations', () => {
-  // Test suite validates multiple spec sections
-});
-
-/**
- * @specification OGC 23-001 Table 5 (System Properties)
- */
-it('should include all required system properties', async () => {
-  // Test validates table 5 requirements
+  // Tests verify our client handles create, read, update, delete correctly
 });
 ```
 
-**Spec Abbreviations:**
-- `OGC 23-001` - Part 1: Feature Resources
-- `OGC 23-002` - Part 2: Observation Data
-- `OGC 23-003` - Part 3: Command & Control
-- `RFC 8288` - Web Linking
-- `RFC 3339` - Date/Time Format
+Spec knowledge is legitimate INPUT to test design — it tells us what correct client behavior looks like. But `@specification` tags as structural JSDoc create maintenance burden (tracking spec version changes) and risk organizing tests around spec coverage rather than client behavior.
 
 #### @fixture
 
@@ -531,8 +515,8 @@ it('should retrieve observations for deployed system', async () => {
  * @module tests/<component>/<feature>
  * 
  * [2-3 sentence overview of what this file tests]
+ * Spec context: <which spec sections informed test design>
  * 
- * @specification <primary spec reference>
  * @coverage <high-level coverage description>
  * @fixture <commonly used fixtures>
  */
@@ -548,7 +532,7 @@ it('should retrieve observations for deployed system', async () => {
  * collection listing, individual retrieval, history queries, subsystem navigation,
  * and member system queries according to OGC 23-001 Part 1.
  * 
- * @specification OGC 23-001 §7.2 (Systems)
+ * Spec context: OGC 23-001 §7.2 (Systems)
  * @coverage System CRUD, filtering, pagination, relationships
  * @fixture fixtures/csapi/systems/system-123.json (Standard system)
  * @fixture fixtures/csapi/systems/weather-station.json (System with subsystems)
@@ -787,8 +771,8 @@ function parseAndValidateUrl(url: string, expected: {
  * @module tests/<ComponentName>/<feature>
  * 
  * <2-3 sentence description of what this file tests>
+ * Spec context: <which spec sections informed test design>
  * 
- * @specification <primary spec reference>
  * @coverage <high-level coverage summary>
  */
 ```
@@ -801,8 +785,8 @@ function parseAndValidateUrl(url: string, expected: {
  * 
  * Validates URL construction for system CRUD operations including collection
  * listing, individual retrieval, history queries, and subsystem navigation.
+ * Spec context: OGC 23-001 §7.2 (Systems)
  * 
- * @specification OGC 23-001 §7.2 (Systems)
  * @coverage System CRUD, filtering, pagination, relationships
  */
 ```
@@ -815,8 +799,8 @@ function parseAndValidateUrl(url: string, expected: {
  * @module tests/parsers/<format>
  * 
  * <2-3 sentence description of format parsing capabilities>
+ * Spec context: <format specification reference>
  * 
- * @specification <format specification reference>
  * @fixture <commonly used format fixtures>
  */
 ```
@@ -829,8 +813,8 @@ function parseAndValidateUrl(url: string, expected: {
  * 
  * Validates parsing of SensorML 3.0 documents for system descriptions,
  * including physical systems, components, and process chains.
+ * Spec context: OGC 23-000 (SensorML 3.0)
  * 
- * @specification OGC 23-000 (SensorML 3.0)
  * @fixture fixtures/csapi/sensorml/weather-station.xml
  * @fixture fixtures/csapi/sensorml/sensor-array.xml
  */
@@ -867,13 +851,13 @@ it('should <action> <expected result>', async () => {
 });
 ```
 
-#### Template 2: Spec-Validated Test
+#### Template 2: Spec-Informed Test
 
 ```typescript
 /**
- * <What is being validated in user terms>
+ * <What client behavior is being validated>
+ * Spec context: <which spec section informed the expected behavior>
  * 
- * @specification <spec reference>
  * @fixture <fixture file> [optional description]
  */
 it('should <action> <expected result>', async () => {
@@ -884,9 +868,9 @@ it('should <action> <expected result>', async () => {
 **Usage:**
 ```typescript
 /**
- * Validates system collection response structure matches spec requirements
+ * Validates system collection response is correctly parsed by client.
+ * Spec context: OGC 23-001 §7.2.1, Table 4 defines required properties
  * 
- * @specification OGC 23-001 §7.2.1, Table 4
  * @fixture fixtures/csapi/systems/systems-collection.json
  */
 it('should return valid system collection', async () => {
@@ -900,7 +884,8 @@ it('should return valid system collection', async () => {
 ```typescript
 /**
  * @scenario <User-facing scenario description>
- * @specification <spec reference>
+ * Spec context: <spec reference informing expected behavior>
+ * 
  * @fixture <fixture file> [optional description]
  */
 it('should <action> <expected result>', async () => {
@@ -912,7 +897,8 @@ it('should <action> <expected result>', async () => {
 ```typescript
 /**
  * @scenario User queries observations from weather station during storm event
- * @specification OGC 23-002 §8.4
+ * Spec context: OGC 23-002 §8.4 defines temporal filtering for observations
+ * 
  * @fixture fixtures/csapi/observations/storm-event.json (500 observations, 2-hour window)
  */
 it('should retrieve observations within datetime range', async () => {
@@ -1163,16 +1149,32 @@ it('should encode bbox parameter correctly', async () => {
  */
 ```
 
-### 5.3 Specification Linking Standards
+### 5.3 Spec Context Comments
 
-#### Format: @specification Tag
+> **⚠️ AP3 Warning:** The `@specification` JSDoc tag format originally defined in this section has been superseded. Use plain comments for spec context instead.
+
+#### Format: Plain Comments
 
 **Pattern:**
 ```typescript
-@specification <spec-abbrev> <section> [optional: title]
+// Spec context: <spec-abbrev> <section> - <what it tells us about expected client behavior>
 ```
 
-**Spec Abbreviations:**
+**Examples:**
+```typescript
+// Spec context: OGC 23-001 §7.2 - systems endpoint should be at /systems
+it('builds correct systems collection URL', () => { ... });
+
+// Spec context: OGC 23-001 §7.2.1, Table 4 - required properties in system response
+it('parses all required system properties from response', () => { ... });
+
+// Spec context: RFC 8288 §3.3 - link relations for pagination
+it('extracts next page URL from link headers', () => { ... });
+```
+
+**Key distinction:** These comments explain what spec knowledge informed the test design. The test itself validates *client behavior* (URL building, parsing, error handling), not spec conformance.
+
+**Spec Abbreviations** (for reference in comments):
 - `OGC 23-001` - Part 1: Feature Resources
 - `OGC 23-002` - Part 2: Observation Data
 - `OGC 23-003` - Part 3: Command & Control
@@ -1180,34 +1182,6 @@ it('should encode bbox parameter correctly', async () => {
 - `RFC 8288` - Web Linking
 - `RFC 3339` - Date/Time Format
 - `RFC 9110` - HTTP Semantics
-
-**Section Formats:**
-- `§7.2` - Section number
-- `§7.2.1` - Subsection
-- `Table 4` - Table reference
-- `Figure 3` - Figure reference
-- `Req 15` - Requirement reference
-
-**Examples:**
-```typescript
-// Single section
-@specification OGC 23-001 §7.2
-
-// Multiple sections
-@specification OGC 23-001 §7.2.1, §7.2.2
-
-// Section with title (optional)
-@specification OGC 23-001 §7.2 (Systems)
-
-// Table reference
-@specification OGC 23-001 Table 4 (System Properties)
-
-// Requirement reference
-@specification OGC 23-001 Req 15 (System Collection Response)
-
-// Multiple specs
-@specification OGC 23-001 §7.2, RFC 8288 §3.3
-```
 
 ### 5.4 Fixture Reference Standards
 
@@ -1700,7 +1674,7 @@ it('should handle open interval (unbounded start)', async () => {
 ### 7.3 Documentation Value vs Cost Analysis
 
 **Benefits of Documentation:**
-- ✅ **Specification Traceability**: Can trace tests to spec requirements (value: HIGH)
+- ✅ **Spec Context**: Plain comments note which spec sections informed test design (value: MEDIUM)
 - ✅ **Maintenance Aid**: Future developers understand test intent (value: HIGH)
 - ✅ **Fixture Understanding**: Know what test data represents (value: MEDIUM)
 - ✅ **Coverage Visibility**: Identify gaps in test coverage (value: MEDIUM)
@@ -2063,7 +2037,7 @@ describe('SensorML Parser', () => {
 
 **HIGH Value Documentation** (prioritize):
 - ✅ Test utility function signatures and examples
-- ✅ Specification traceability links
+- ✅ Spec context as plain comments (which spec section informed the test)
 - ✅ Fixture provenance for real data
 - ✅ Non-obvious test intent
 - ✅ Complex scenario explanations
@@ -2121,7 +2095,7 @@ If adding documentation to existing tests:
 ### 10.1 Key Principles
 
 1. **Intent over Implementation** - Document WHY not WHAT
-2. **Specification Traceability** - Link tests to spec sections
+2. **Spec-Informed Context** - Note spec sections as plain comments (not structural tags)
 3. **Fixture Provenance** - Document test data sources
 4. **Coverage Transparency** - Expose gaps in testing
 5. **Lightweight by Default** - Only document where it adds value
@@ -2140,7 +2114,7 @@ If adding documentation to existing tests:
 **Most Useful Tags:**
 - `@fileoverview` - File description
 - `@module` - Module identifier
-- `@specification` - Spec traceability
+- ~~`@specification`~~ - Not recommended (use plain `// Spec context:` comments)
 - `@fixture` - Test data reference
 - `@param` - Parameter docs (helpers)
 - `@returns` - Return value (helpers)
@@ -2165,7 +2139,7 @@ If adding documentation to existing tests:
 ✅ **Test Implementation** - Documentation standards guide test writing  
 ✅ **Test Maintenance** - Documentation aids understanding for future maintainers  
 ✅ **Code Review** - Standards provide review checklist  
-✅ **Specification Traceability** - Tests linked to requirements  
+✅ **Spec Context** - Tests note which spec sections informed their design  
 ✅ **Coverage Analysis** - Documentation reveals gaps  
 
 ---

@@ -120,7 +120,7 @@ The document further reinforces this with checklist item M-6: "Tests validate ag
 
 **Severity:** CRITICAL  
 **Documents:** [35-jsdoc-testing-documentation-standards.md](../findings/35-jsdoc-testing-documentation-standards.md), [36-test-quality-checklist-review-process.md](../findings/36-test-quality-checklist-review-process.md), [37-test-maintenance-evolution-strategy.md](../findings/37-test-maintenance-evolution-strategy.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** Three documents form an interconnected spec-traceability system:
 
@@ -135,6 +135,35 @@ This entire system is AP3 (OGC Requirement Traceability) — organizing tests ar
 - Add ~2,000 lines of JSDoc overhead to a ~5,000 line test suite
 
 **Fix Required:** Remove the `@specification` tag from Doc 35's recommended tags. Remove the traceability system from Doc 37. Reframe Doc 36's checklist around client behavior validation, not spec compliance. Spec references can exist as *comments* for context but should never be structural/machine-readable tags that drive test organization.
+
+**Resolution:** Dismantled the interconnected `@specification` tag traceability system across all three documents. Key principle preserved: spec knowledge is legitimate INPUT to test design as plain comments; the structural JSDoc tag infrastructure is the problem. Changes applied:
+
+**Doc 35 (JSDoc Standards):**
+- `@specification` tag: changed from "Recommended" to "Not recommended" in tag table (with strikethrough)
+- `#### @specification` subsection: replaced with AP3 warning and plain `// Spec context:` comment guidance
+- Key Principle #2: "Specification Traceability" → "Spec-Informed Context"
+- §5.3 "Specification Linking Standards": replaced with "Spec Context Comments" section
+- All 4 JSDoc templates: `@specification` tag → `Spec context:` comment in description
+- Summary sections (7.3, 9.2, 10.1, 10.3, 10.6): reframed from traceability to context
+- Added top-level AP3 review notice warning that remaining `@specification` instances in code examples should be read as plain comments
+
+**Doc 37 (Maintenance Strategy):**
+- Executive summary: "Test-to-Spec Traceability System" → "Spec-Informed Test Maintenance" with AP3 warning
+- §2.3: Removed entire traceability system (tag format, `scripts/test-traceability.js`, npm commands, spec change impact analysis) → replaced with lightweight grep-based approach
+- Proactive maintenance: "Spec-to-test traceability (via @specification tags)" → "Spec-aware test context (plain comments)"
+- Scenario 4: Removed `@specification` tag references from documentation drift detection
+- Test file header example: Removed `@specification` tag, added spec context comment
+- Spec update workflow: "Update @specification version tags" → "Update spec context comments"
+- Component owner: "Spec Compliance" → "Spec Awareness", removed tag maintenance
+- Rot indicators: "Broken @specification" → "Outdated Spec Context"
+- Monthly health check: "@specification tags validated" → "Spec context comments reference current spec version"
+- Pre-commit checklist: "Tests link to spec (@specification tags)" → "Tests note spec context (plain comments)"
+- §7.1: Removed Traceability Tool entirely with AP3 warning
+- §7.2: Removed Spec Version Updater tool
+- Success metrics: "% of @specification tags valid" → "Spec context comments reference latest spec version"
+- Added top-level AP3 review notice
+
+**Doc 36 (Quality Checklist):** Already fixed in C1 — M-6 reframed from spec compliance to client behavior validation.
 
 ---
 
@@ -447,7 +476,7 @@ Proceed to **Phase 2D: Format Parsers** (Docs 09, 10, 11), which have high AP4 r
 | ID | Severity | Document(s) | Issue | Status |
 |----|----------|-------------|-------|--------|
 | C1 | CRITICAL | 36 | "Spec Compliance Over Implementation" philosophy (AP3) | ✅ Resolved |
-| C2 | CRITICAL | 35, 36, 37 | Systemic AP3 through `@specification` tag traceability system | ❌ Open |
+| C2 | CRITICAL | 35, 36, 37 | Systemic AP3 through `@specification` tag traceability system | ✅ Resolved |
 | H1 | HIGH | 17 | Test line estimate 13,090–17,016 is 3× higher than all other estimates | ❌ Open |
 | H2 | HIGH | 36 | Invented 3-stage enterprise review process with 41-item checklist | ❌ Open |
 | H3 | HIGH | 37 | Over-engineered maintenance framework (70–120 hrs/yr, custom tools, RACI) | ❌ Open |

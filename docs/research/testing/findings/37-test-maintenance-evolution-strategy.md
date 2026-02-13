@@ -27,6 +27,8 @@
 
 This document defines a comprehensive strategy for maintaining and evolving CSAPI tests as the specification updates, upstream library changes, and implementation refactors. Based on lessons learned from the previous iteration (where test maintenance was identified as a problem), this strategy ensures tests remain valuable, current, and maintainable long-term.
 
+> **⚠️ Review Notice (C2 fix):** The `@specification` JSDoc tag traceability system and associated tooling (`scripts/test-traceability.js`, `test:update-spec-version`) originally proposed in this document have been identified as AP3 (OGC Requirement Traceability) during Phase 2C review and removed. Structural spec-traceability infrastructure organizes tests around spec sections rather than client code behavior. The upstream codebase has zero spec-traceability infrastructure. **Sections referencing `@specification` tags have been updated to use plain `// Spec context:` comments.** Remaining instances in embedded code examples should be read as plain comments.
+
 ### Key Maintenance Challenges
 
 **From Lessons Learned:**
@@ -43,7 +45,7 @@ This document defines a comprehensive strategy for maintaining and evolving CSAP
 **Proactive Maintenance:**
 - Regular test health checks (monthly)
 - Automated change detection
-- Spec-to-test traceability (via @specification tags)
+- Spec-aware test context (plain comments noting which spec sections informed test design)
 - Fixture versioning and validation
 - Test rot indicators and prevention
 
@@ -53,26 +55,22 @@ This document defines a comprehensive strategy for maintaining and evolving CSAP
 - Change impact analysis
 - Prioritized update scheduling
 
-### Test-to-Spec Traceability System
+### Spec-Informed Test Maintenance
 
-**Approach:** JSDoc @specification tags link tests to spec sections
+> **⚠️ AP3 Warning:** The `@specification` JSDoc tag traceability system originally proposed here has been identified as anti-pattern AP3 (OGC Requirement Traceability). Structural spec-traceability infrastructure organizes tests around spec sections rather than client code behavior. The upstream codebase has zero spec-traceability infrastructure.
+
+**Approach:** Use plain comments to note which spec sections informed test design
 
 ```typescript
-/**
- * Validates system response includes all required properties per spec.
- * 
- * @specification OGC 23-001 §7.2.1, Table 4 (v1.0.0)
- */
-it('includes required system properties', () => {
-  // Test implementation...
+// Spec context: OGC 23-001 §7.2.1, Table 4 defines required system properties
+it('parses required system properties from response', () => {
+  const result = parseSystem(fixture);
+  expect(result.id).toBeDefined();
+  expect(result.name).toBeDefined();
 });
 ```
 
-**Benefits:**
-- ✅ Find all tests for a spec section
-- ✅ Identify tests affected by spec changes
-- ✅ Track spec coverage systematically
-- ✅ Automate change impact analysis
+**When specs update:** Review tests whose comments reference changed sections. The spec is INPUT — it tells us what correct client behavior looks like. We test that our client code handles responses correctly, not that responses are spec-compliant.
 
 ### Maintenance Triggers
 
@@ -424,17 +422,17 @@ it('includes required system properties', () => {
 
 **Scenario 4: Test Documentation Drifts**
 
-**Example:** @specification tag references old spec version, test actually validates v1.2
+**Example:** Spec context comment references old spec version, test actually validates v1.2 behavior
 
 **Detection:**
-- Documentation review finds version mismatch
+- Code review finds version mismatch in comments
 - Spec section reference is outdated
 
 **Remediation:**
-1. Review all @specification tags
-2. Update to current spec version
-3. Verify spec section still exists
-4. Update test implementation if spec changed
+1. Review spec context comments in affected test files
+2. Update comments to reference current spec version
+3. Verify test still validates correct client behavior
+4. Update test implementation if expected behavior changed
 
 **Effort:** 0.25-0.5 hour per test
 
@@ -469,9 +467,9 @@ it('includes required system properties', () => {
  * @fileoverview Tests for System resource operations
  * @module tests/CSAPIQueryBuilder/systems
  * 
- * Tests validate CSAPI Part 1 specification compliance for System resources.
+ * Tests validate client behavior for System resource operations.
+ * Spec context: OGC 23-001 v1.0.0 Part 1 (Systems)
  * 
- * @specification OGC 23-001 v1.0.0 (2024-01-15)
  * @coverage Systems CRUD operations, spatial/temporal filtering, pagination
  */
 ```
@@ -558,75 +556,22 @@ updates:
 6. Re-run tests
 7. Merge when passing
 
-### 2.3 Test-to-Spec Traceability System
+### 2.3 Spec-Aware Test Maintenance
 
-**Approach:** Use @specification JSDoc tags + automated tooling
+> **⚠️ AP3 Warning:** The `@specification` JSDoc tag traceability system and automated tooling (`scripts/test-traceability.js`) originally proposed in this section have been removed. They constitute anti-pattern AP3 — organizing tests around spec sections rather than client code behavior. The upstream codebase has zero spec-traceability infrastructure.
 
-**1. JSDoc @specification Tag Format**
+**Approach:** Use spec awareness as context for maintenance decisions, not as structural infrastructure.
 
-```typescript
-/**
- * Test description
- * 
- * @specification <spec-abbrev> <section> [<title>] (v<version>)
- */
-```
-
-**Examples:**
-```typescript
-@specification OGC 23-001 §7.2 (v1.0.0)
-@specification OGC 23-001 §7.2.1, Table 4 (v1.0.0)
-@specification OGC 23-002 Req 15 (v1.0.0)
-```
-
-**2. Automated Traceability Tool**
-
-**Script: `scripts/test-traceability.js`**
-
-```javascript
-// Find all tests for a spec section
-function findTestsBySpec(specRef) {
-  // Grep for @specification tags matching specRef
-  // Return list of test files and line numbers
-}
-
-// Find all spec sections without tests
-function findUncoveredSpecs() {
-  // Compare spec sections to @specification tags
-  // Return list of uncovered sections
-}
-
-// Generate traceability matrix
-function generateTraceabilityMatrix() {
-  // Create markdown table: Spec Section | Tests | Coverage %
-}
-```
-
-**Usage:**
-```bash
-# Find tests for spec section
-npm run test:traceability -- --spec "OGC 23-001 §7.2"
-
-# Find uncovered spec sections
-npm run test:traceability -- --uncovered
-
-# Generate full traceability matrix
-npm run test:traceability -- --matrix > docs/test-coverage-matrix.md
-```
-
-**3. Spec Change Impact Analysis**
-
-**Process:**
-1. New spec version released (e.g., v1.0.0 → v1.1.0)
-2. Review spec changelog
-3. For each changed section:
-   - Run traceability tool: `npm run test:traceability -- --spec "OGC 23-001 §7.2"`
-   - Get list of affected test files
-   - Review and update each test
-4. Update spec version in all affected tests
-5. Run test suite
-6. Update fixture versions
+**When a spec updates:**
+1. Review spec changelog for changed sections
+2. Identify which client behaviors the changes affect (URL patterns, response structures, error conditions)
+3. Search test files for comments referencing those spec sections: `grep -r "Spec context:.*§7.2" src/`
+4. Review and update affected tests to match new expected client behavior
+5. Update fixtures if response structures changed
+6. Run test suite
 7. Review and merge
+
+**Key principle:** Spec changes trigger test updates because they change what *correct client behavior* looks like — not because we need to maintain spec-coverage metrics.
 
 ### 2.4 Automated Change Detection
 
@@ -812,7 +757,7 @@ npm run fixtures:update-metadata
 │ - Add tests for new features                               │
 │ - Add deprecation tests                                    │
 │ - Update assertions to match new spec                      │
-│ - Update @specification version tags                       │
+│ - Update spec context comments                             │
 └─────────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -1177,11 +1122,11 @@ npm run fixtures:update-metadata
    - Identify and fix trivial/rot tests
    - Maintain component-specific test utilities
 
-2. **Spec Compliance**
+2. **Spec Awareness**
    - Monitor spec changes affecting component
-   - Update tests when spec evolves
-   - Ensure @specification tags are current
-   - Track spec coverage for component
+   - Update tests when expected client behavior changes
+   - Keep spec context comments current
+   - Verify client behavior matches updated spec expectations
 
 3. **Dependency Management**
    - Review dependency updates affecting component
@@ -1227,7 +1172,6 @@ npm run fixtures:update-metadata
    - Coordinate spec update timing with releases
    - Manage dependency update schedule
    - Ensure test documentation is current
-   - Validate traceability matrix
 
 3. **Quarterly Reviews**
    - Conduct quarterly dependency reviews
@@ -1310,7 +1254,7 @@ npm run fixtures:update-metadata
 | **No Assertions** | Test has setup but minimal/no validation | Grep for tests with no `expect()` | CRITICAL |
 | **Trivial Checks** | Only checks `.toBeTruthy()` without depth | Grep for shallow assertions | HIGH |
 | **Outdated Fixtures** | Fixtures from old spec version | Fixture metadata check | MEDIUM |
-| **Broken @specification** | Spec reference doesn't exist | Traceability tool validation | MEDIUM |
+| **Outdated Spec Context** | Spec context comments reference old version | Manual review | LOW |
 | **Coverage Drop** | Coverage decreases over time | Coverage trend monitoring | MEDIUM |
 | **Flaky Tests** | Tests fail intermittently | CI failure tracking | HIGH |
 | **Slow Tests** | Test execution time increases | Performance monitoring | LOW |
@@ -1336,9 +1280,9 @@ function detectOutdatedFixtures() {
   // Check fixture metadata for old spec versions
 }
 
-// Detect broken spec references
-function detectBrokenSpecRefs() {
-  // Validate @specification tags against spec
+// Detect outdated spec context
+function detectOutdatedSpecContext() {
+  // Check spec context comments for old spec versions
 }
 
 // Generate rot report
@@ -1419,9 +1363,9 @@ npm run test:health-report
 - [ ] High/medium issues reviewed and tracked
 - [ ] Test performance acceptable (< 30s full suite)
 
-### Spec Compliance
-- [ ] @specification tags validated
-- [ ] No broken spec references
+### Spec Awareness
+- [ ] Spec context comments reference current spec version
+- [ ] No outdated spec references
 - [ ] Current spec version: [  ]
 
 ### Fixture Health
@@ -1432,7 +1376,7 @@ npm run test:health-report
 ### Documentation
 - [ ] README accurate
 - [ ] Test patterns docs current
-- [ ] Traceability matrix updated
+- [ ] Traceability: spec context comments current
 
 ### Action Items
 1. [Action item with owner and due date]
@@ -1616,7 +1560,7 @@ Before committing tests:
 - [ ] Tests follow quality checklist (Section 36)
 - [ ] Tests use meaningful assertions (not just toBeTruthy)
 - [ ] Tests validate behavior (not mocks)
-- [ ] Tests link to spec (@specification tags)
+- [ ] Tests note spec context (plain comments, not @specification tags)
 - [ ] Fixtures have complete metadata
 - [ ] Tests documented (JSDoc per Section 35)
 - [ ] Bug detection validated (intentional breakage)
@@ -1811,15 +1755,15 @@ it('validates sampledFeature field', () => {
 
 **Action:** Remove tests in `samplingfeatures.spec.ts` lines 234-267
 
-### 4. Update @specification Tags (1 hour)
+### 4. Update Spec Context Comments (0.5 hours)
 
 ```typescript
-// Update all @specification tags to v2.0.0
-@specification OGC 23-001 §7.2 (v1.0.0)  // BEFORE
-@specification OGC 23-001 §7.2 (v2.0.0)  // AFTER
+// Update spec context comments to reference new version
+// BEFORE: Spec context: OGC 23-001 v1.0.0 §7.2
+// AFTER:  Spec context: OGC 23-001 v2.0.0 §7.2
 ```
 
-**Action:** Run `npm run test:update-spec-version -- --version 2.0.0`
+**Action:** Search for spec context comments and update version references
 
 ## Checklist
 
@@ -1827,12 +1771,12 @@ it('validates sampledFeature field', () => {
 - [ ] All fixtures pass validation
 - [ ] All test assertions updated
 - [ ] Obsolete tests removed
-- [ ] @specification tags updated to v2.0.0
+- [ ] Spec context comments updated to v2.0.0
 - [ ] Full test suite passes
 - [ ] Coverage maintained (>85% statement)
 - [ ] Documentation updated
 
-## Estimated Total Effort: 8-12 hours
+## Estimated Total Effort: 7-11 hours
 ```
 
 ### 6.4 Test Inventory Documentation
@@ -1902,25 +1846,9 @@ it('validates sampledFeature field', () => {
 
 ### 7.1 Essential Tools
 
-**1. Traceability Tool**
+> **⚠️ AP3 Warning:** The "Traceability Tool" (`scripts/test-traceability.js`) originally proposed here has been removed. It constitutes anti-pattern AP3 — organizing tests around spec sections rather than client code behavior. Use standard search (`grep`) to find tests referencing specific spec sections when needed.
 
-**Purpose:** Link tests to spec sections for impact analysis
-
-**Requirements:**
-- Parse @specification JSDoc tags from test files
-- Find all tests for a given spec section
-- Generate traceability matrix (spec section → tests)
-- Identify spec sections without tests (coverage gaps)
-
-**Implementation:**
-```bash
-# Command-line tool
-npm run test:traceability -- --spec "OGC 23-001 §7.2"
-npm run test:traceability -- --matrix
-npm run test:traceability -- --uncovered
-```
-
-**2. Rot Detection Tool**
+**1. Rot Detection Tool**
 
 **Purpose:** Identify test rot indicators automatically
 
@@ -1928,7 +1856,7 @@ npm run test:traceability -- --uncovered
 - Detect tests with no assertions
 - Detect trivial tests (only toBeTruthy)
 - Detect outdated fixtures (old spec versions)
-- Detect broken @specification references
+- Detect outdated spec context comments
 - Generate rot report
 
 **Implementation:**
@@ -1973,16 +1901,7 @@ npm run test:health-report -- --format html
 
 ### 7.2 Nice-to-Have Tools
 
-**5. Spec Version Updater**
-
-**Purpose:** Bulk update @specification version tags
-
-**Implementation:**
-```bash
-npm run test:update-spec-version -- --from 1.0.0 --to 1.1.0
-```
-
-**6. Fixture Migration Tool**
+**5. Fixture Migration Tool**
 
 **Purpose:** Migrate fixtures to new schema versions
 
@@ -2217,7 +2136,7 @@ updates:
 | **Test Health Score** | >90% | % of tests passing quality checklist |
 | **Coverage Stability** | ±2% | Coverage variance month-over-month |
 | **Flaky Test Rate** | <1% | % of tests that fail intermittently |
-| **Spec Compliance** | 100% | % of @specification tags valid |
+| **Spec Awareness** | Current | Spec context comments reference latest spec version |
 | **Fixture Health** | 100% | % of fixtures passing validation |
 | **Update Latency** | <2 weeks | Time from spec update to test update |
 | **Rot Detection** | 0 critical | # of critical rot indicators |
@@ -2333,7 +2252,7 @@ updates:
 ### 11.1 Related Research Sections
 
 - **Section 15:** Fixture Sourcing and Organization (fixture maintenance procedures)
-- **Section 35:** JSDoc Testing Documentation Standards (@specification tags, test documentation)
+- **Section 35:** JSDoc Testing Documentation Standards (spec context comments, test documentation)
 - **Section 36:** Test Quality Checklist and Review Process (quality standards, rot indicators)
 
 ### 11.2 External References
