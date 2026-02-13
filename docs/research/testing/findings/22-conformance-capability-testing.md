@@ -149,6 +149,8 @@ Part 2 (Dynamic Data)
 
 ## 2. Real Server Conformance Profiles
 
+> **⚠️ REVIEW NOTICE (Phase 2D — M4):** This section documents real server profiles (OpenSensorHub, 52°North) with live URLs, pagination limits, and backend details. These profiles are **reference context only** — they inform fixture design and explain *why* certain test scenarios exist. All test code in this document correctly uses `mockFetchForProfile()` with static fixture data; no tests should ever make live HTTP requests. When implementing tests, derive fixtures from these profiles but never import live URLs or server-specific behaviors into test assertions.
+
 ### 2.1 OpenSensorHub (Full Conformance)
 
 **Implementation:** Java/Spring, production-ready  

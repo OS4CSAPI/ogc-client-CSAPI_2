@@ -455,7 +455,7 @@ Proceed to **Phase 2E** covering remaining document categories, or begin targete
 | M1 | MEDIUM | 08 | Useful spec reference buried under test framework framing | ✅ Resolved |
 | M2 | MEDIUM | 10 | Sound binary parsing tests buried alongside spec-oriented content | ✅ Resolved |
 | M3 | MEDIUM | 11 | Property matrix mirrors spec structure (AP3) | ✅ Resolved |
-| M4 | MEDIUM | 22 | Live server profiles included as reference context | ❌ Open |
+| M4 | MEDIUM | 22 | Live server profiles included as reference context | ✅ Resolved |
 | L1 | LOW | 21 | 6-hour estimate for low-value shape-assertion tests | ✅ Resolved |
 | L2 | LOW | 11 | Over-specified test organization before code exists | ✅ Resolved |
 | L3 | LOW | 10 | 98 research questions disproportionate to implementation scope | ✅ Resolved |
