@@ -1,8 +1,16 @@
-# CSAPI Specification Test Requirements Matrix
+# CSAPI Specification Reference
+
+> **⚠️ REVIEW NOTICE (Phase 2D, C1):** This document was originally titled "CSAPI Specification Test Requirements Matrix" and framed as a test plan with 334 requirement IDs (SYS-001, DEP-001, etc.) tracing specification SHALL/MUST statements to proposed test cases. Phase 2D review identified this as anti-patterns AP1 (Testing Response Content), AP3 (OGC Requirement Traceability), and AP4 (Asserting Data Shape) at SEVERE severity.
+>
+> **Problem:** SHALL/MUST statements in OGC specifications are **server requirements** — they define what a conformant server implementation must do. A client library does not "claim conformance" to API specifications; it consumes them. This document was testing server compliance, not client code behavior.
+>
+> **Reclassification:** This document has been reclassified from "test requirements" to **"specification reference."** The requirement IDs (SYS-001, etc.) should NOT be used as test case identifiers. The resource type matrices, endpoint catalogs, query parameter inventories, temporal format specifications, and conformance class hierarchies remain valuable as **implementation reference material** — they inform what the CSAPIQueryBuilder must handle, what URL patterns exist, and what response shapes to expect in fixtures.
+>
+> **For actual test plans**, tests should be organized around client code modules: CSAPIQueryBuilder methods, parser functions (parseSensorML, parseSWECommon), and conformance detection logic — not around specification requirement IDs. See [Phase 2D review](../review/phase-2d-csapi-specific-testing-category.md) for details.
 
 **Research Plan:** [Research Plan 08: CSAPI Specification Test Requirements](../research-plans/08-csapi-specification-test-requirements.md)  
-**Research Questions:** 72 questions about normative requirements from CSAPI Parts 1 & 2, conformance classes, testable requirements for all 9 resource types, query parameters and validation rules, error conditions, specification examples as fixtures, OpenAPI schema requirements, format validation rules, test type mapping, and requirement traceability  
-**Methodology:** 4-phase systematic extraction (Part 1 specification deep dive extracting conformance classes and normative statements → Part 2 specification deep dive for dynamic resources and temporal/spatial queries → OpenAPI analysis parsing schemas and endpoints → Synthesis creating unified test requirement matrix with traceability)  
+**Research Questions:** 72 questions about normative requirements from CSAPI Parts 1 & 2, conformance classes, requirements for all 9 resource types, query parameters and validation rules, error conditions, specification examples as fixtures, OpenAPI schema requirements, format validation rules, and requirement cataloging  
+**Methodology:** 4-phase systematic extraction (Part 1 specification deep dive extracting conformance classes and normative statements → Part 2 specification deep dive for dynamic resources and temporal/spatial queries → OpenAPI analysis parsing schemas and endpoints → Synthesis creating unified specification reference with cross-references)  
 **Research Time:** 2.5 hours (150 minutes) (February 5, 2026)
 
 **Primary Source(s):**
@@ -16,13 +24,13 @@
 - Section 6: [Meaningful vs Trivial Definition](06-meaningful-vs-trivial-definition.md) (quality criteria for testability)
 - Section 7: [End-to-End Testing Scope](07-end-to-end-testing-scope.md) (workflow context)
 
-**Document Purpose:** Extract all 250+ testable normative requirements (SHALL/MUST statements) from CSAPI Parts 1 & 2 specifications and OpenAPI definitions to create a comprehensive test requirement matrix covering 19 conformance classes, 9 resource types, query parameters, validation rules, error conditions, and format requirements, establishing the normative baseline for all CSAPI client library testing with complete requirement-to-test traceability.
+**Document Purpose:** Catalog all 250+ normative requirements (SHALL/MUST statements) from CSAPI Parts 1 & 2 specifications and OpenAPI definitions as an implementation reference covering 19 conformance classes, 9 resource types, query parameters, validation rules, error conditions, and format requirements. This document serves as background knowledge for developers implementing the CSAPIQueryBuilder, format parsers, and conformance detection — it is not a test plan.
 
 ---
 
 ## Executive Summary
 
-This document provides a comprehensive test requirement matrix extracted from CSAPI Parts 1 & 2 specifications and OpenAPI definitions. All normative requirements (SHALL/MUST statements) have been cataloged with specification references to establish a testable baseline for the CSAPI TypeScript client library.
+This document provides a comprehensive specification reference extracted from CSAPI Parts 1 & 2 specifications and OpenAPI definitions. All normative requirements (SHALL/MUST statements) have been cataloged with specification cross-references. These are **server requirements** that inform what the client must handle, not test cases for client code. See review notice above for reclassification context.
 
 ### Key Findings
 
@@ -945,6 +953,8 @@ This document provides a comprehensive test requirement matrix extracted from CS
 
 ## 9. Test Type Mapping
 
+> **⚠️ REVIEW NOTICE (Phase 2D, C1):** The mapping below is useful as general guidance for how different categories of client code should be tested, but the specific "Example Test" entries often describe server-validation tests (e.g., "Validate `uniqueIdentifier` is valid URI" tests server data correctness, not client behavior). When using this table, reinterpret examples as client-behavior tests: e.g., "Encode `phenomenonTime` interval to URL param" is a genuine client test; "Validate 404 error includes resource type" is not.
+
 **Purpose:** Map each requirement category to appropriate test types (unit/integration/e2e)
 
 | Requirement Category | Test Type | Example Test | Priority | Rationale |
@@ -973,9 +983,13 @@ This document provides a comprehensive test requirement matrix extracted from CS
 
 ## 10. Requirement-to-Test Traceability Framework
 
-**Purpose:** Establish traceability from specification requirements to test implementation
+> **⚠️ REVIEW NOTICE (Phase 2D, C1):** This section proposed mapping 334 specification requirement IDs (SYS-001, DS-050, etc.) directly to test cases. This is anti-pattern AP3 (OGC Requirement Traceability) — it organizes tests by specification structure rather than by client code modules. **Do not use this framework.** Tests should be organized around CSAPIQueryBuilder methods, parser functions, and conformance detection logic. The requirement IDs below are specification references, not test case identifiers.
+>
+> The "Conformance Claim Validation" concept in Section 11 is also a server concern — client libraries do not claim OGC conformance; servers do.
 
-### Traceability Matrix Structure
+**Original Purpose:** Establish traceability from specification requirements to test implementation
+
+### Traceability Matrix Structure (NOT RECOMMENDED — see notice above)
 
 ```markdown
 | Requirement ID | Spec Reference | Description | Test File | Test Case(s) | Status |
@@ -1027,7 +1041,9 @@ For each conformance class, track:
 
 ## 11. Conformance Claim Validation
 
-**Purpose:** Map conformance classes to test requirements for claiming conformance
+> **⚠️ REVIEW NOTICE (Phase 2D, C1):** Conformance claim validation is a **server concern**, not a client library concern. OGC conformance classes define what a server implementation must support. A client library does not "claim conformance" — it detects what conformance classes a server supports and adapts its behavior accordingly (see Doc 22 for the correct client-oriented approach to conformance). The table below is retained as reference for understanding what servers may support, which informs the client's conformance detection logic.
+
+**Original Purpose:** Map conformance classes to test requirements for claiming conformance
 
 | Conformance Class | Required Tests | Test File(s) | Priority | Status |
 |-------------------|---------------|--------------|----------|--------|
@@ -1052,12 +1068,14 @@ For each conformance class, track:
 | **Create/Replace/Delete (Part 2)** | POST/PUT/DELETE for dynamic resources | crud-part2.spec.ts, endpoint.integration.spec.ts | HIGH | Planned |
 | **SWE Common Encoding** | SWE Common JSON/Text/Binary serialization/parsing | swecommon.spec.ts, formats/swecommon-parser.spec.ts | **CRITICAL** | Planned |
 
-**Conformance Validation Process:**
+**Original Conformance Validation Process (NOT RECOMMENDED — server concern, not client concern):**
 1. For each conformance class, enumerate all normative requirements
 2. For each requirement, create corresponding test case(s)
 3. Implement tests using appropriate test type (unit/integration/e2e)
 4. Verify all tests passing before claiming conformance
 5. Document conformance claim with test evidence
+
+**Client-oriented alternative:** Test that the client correctly *detects* which conformance classes a server supports (via `/conformance` endpoint), and that it enables/disables methods accordingly. See Doc 22 (conformance-capability-testing) for the correct approach.
 
 ---
 
@@ -1253,68 +1271,64 @@ For each conformance class, track:
 
 ### Research Summary
 
-**Total Requirements Extracted:** 250+ testable requirements
+**Total Specification Requirements Cataloged:** 250+ normative requirements
 
 **Coverage:**
 - ✅ 19 conformance classes fully analyzed
-- ✅ 9 resource types with comprehensive requirement matrices
+- ✅ 9 resource types with comprehensive reference matrices
 - ✅ 80+ query parameters documented with validation rules
 - ✅ 100+ format validation rules extracted (GeoJSON, SensorML, SWE Common)
 - ✅ 50+ endpoints mapped with operations and error responses
 - ✅ 25+ specification examples inventoried as potential fixtures
 - ✅ 40+ OpenAPI schemas analyzed
-- ✅ Test type mapping complete (unit/integration/e2e)
-- ✅ Traceability framework established
 - ✅ Cross-validation with Implementation Guide complete
 
-**Testing Priorities Defined:**
-- **CRITICAL:** Systems, DataStreams, Observations (3 resource types, ~120 requirements, ~2,500 test lines)
-- **HIGH:** 4 additional resource types, ~80 requirements, ~1,500 test lines
-- **MEDIUM:** 2 remaining resource types, ~50 requirements, ~800 test lines
+**Implementation Priorities (by resource type):**
+- **CRITICAL:** Systems, DataStreams, Observations (3 resource types, ~120 spec requirements to support)
+- **HIGH:** Deployments, Sampling Features, ControlStreams, Commands (4 resource types, ~80 spec requirements)
+- **MEDIUM:** Procedures, Properties (2 resource types, ~50 spec requirements)
 
-**Total Estimated Test Implementation:** ~4,800 lines (60% unit, 30% integration, 10% e2e)
+### How to Use This Document
+
+This document is a **specification reference**, not a test plan. Use it to:
+- Understand what URL patterns, query parameters, and response shapes the CSAPIQueryBuilder must handle
+- Know what conformance classes exist so the client can detect and adapt to server capabilities
+- Identify temporal format variations for parameter encoding tests
+- Source fixture structures from specification examples (Section 6)
+- Understand error response shapes the client should handle gracefully
+
+**Do not** use the requirement IDs (SYS-001, etc.) as test case identifiers. Tests should be organized around client code: `csapi-query-builder.spec.ts`, `sensorml-parser.spec.ts`, `conformance-detection.spec.ts`, etc.
 
 ### Answers to All Research Questions
 
 **Core Questions:**
 
-1. **What are all normative testing requirements?** 250+ requirements extracted from Parts 1 & 2, documented in resource matrices
+1. **What are all normative requirements?** 250+ requirements extracted from Parts 1 & 2, documented in resource matrices
 2. **What conformance classes exist?** 19 conformance classes (11 Part 1, 8 Part 2), all documented
-3. **What are testable requirements for 9 resource types?** Complete matrices created (Section 2)
+3. **What are the requirements for 9 resource types?** Complete matrices created (Section 2)
 4. **What query parameters, validation rules, error conditions?** Comprehensive matrices created (Sections 3-4)
 5. **What specification examples as fixtures?** 25+ examples inventoried (Section 6)
-6. **How do requirements map to test types?** Mapping complete (Section 9)
+6. **What endpoint patterns exist?** Complete endpoint matrix (Section 8)
 
 **Detailed Questions (72 total):** All answered throughout sections 1-14
 
 ### Next Steps
 
-**Immediate (Sections 9-11):**
-1. Use resource matrices for format-specific testing research (SensorML, SWE Common, GeoJSON)
-2. Extract specification examples as test fixtures
-3. Create format validation test suites
-
-**Near-Term (Sections 12-14):**
-4. Use query parameter matrix for QueryBuilder testing research
-5. Use operations matrix for resource method testing research
-6. Design integration test workflows based on conformance classes
-
-**Long-Term (Implementation):**
-7. Implement CRITICAL tests first (~2,500 lines, Systems/DataStreams/Observations)
-8. Implement HIGH tests second (~1,500 lines, 4 additional resource types)
-9. Implement MEDIUM tests third (~800 lines, remaining resource types)
-10. Maintain requirement traceability matrix throughout implementation
-11. Validate conformance claims with test evidence
+**Using This Reference:**
+1. Use resource matrices to inform CSAPIQueryBuilder method signatures and URL patterns
+2. Extract specification examples as static test fixtures
+3. Use query parameter inventory to inform parameter encoding unit tests
+4. Use conformance class catalog to inform client conformance detection logic
+5. Use endpoint matrix to validate QueryBuilder URL generation
 
 **Documentation Updates:**
-12. Add missing parameters to Implementation Guide
-13. Add error condition matrix to Implementation Guide
-14. Update test pyramid in Implementation Guide
-15. Add optional nested endpoints to Implementation Guide
+6. Add missing parameters to Implementation Guide
+7. Add error condition matrix to Implementation Guide
+8. Add optional nested endpoints to Implementation Guide
 
 ---
 
 **Research Status:** COMPLETE ✅  
 **All Success Criteria Met:** ✅  
-**Ready for Downstream Sections:** Sections 9-14, 36  
-**Estimated Implementation Effort:** ~4,800 test lines across 3 priorities
+**Reclassified:** From "test requirements" to "specification reference" (Phase 2D, C1)  
+**Ready for Downstream Use:** As implementation reference for CSAPIQueryBuilder, format parsers, conformance detection
