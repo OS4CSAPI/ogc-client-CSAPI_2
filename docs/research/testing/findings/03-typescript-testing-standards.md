@@ -59,7 +59,7 @@ Analysis of TypeScript client library testing standards reveals **strong alignme
 | File naming | `.spec.ts` or `.test.ts` | `.spec.ts` | ✅ Match | Both common |
 | Colocated tests | Yes (standard) | Yes | ✅ Match | Industry standard |
 | HTTP mocking | jest.mock, nock, MSW | jest.mock | ✅ Match | Simpler, effective |
-| Coverage target | 80-90% | ~80% (est) | ✅ Match | Industry standard |
+| Coverage target | 80-90% | Not measured | ⚠️ Unknown | No coverage tooling configured |
 | Test-to-code ratio | 1.0-2.0× | 1.44× avg | ✅ Match | Within range |
 | Type testing | Compilation + dtslint/tsd | Compilation only | ⚠️ Gap | Enhancement opportunity |
 | URL validation | String + URL parsing | String matching | ⚠️ Gap | Consider URL parsing |
@@ -120,7 +120,7 @@ Analysis of TypeScript client library testing standards reveals **strong alignme
 | Documentation | Comments needed | Self-documenting test names |
 
 **ogc-client Assessment:**
-- Coverage: ~80% estimated ✅ Mature
+- Coverage: Not measured (no coverage thresholds, scripts, or reporting configured) ⚠️ Unknown
 - Test count: 1.44× avg ✅ Mature
 - Error handling: Comprehensive ✅ Mature
 - Edge cases: Good (null, CORS, malformed) ✅ Mature
@@ -1918,7 +1918,7 @@ export default defineConfig({
 - ✅ Fixture-based responses (realistic data)
 
 **Coverage:**
-- ✅ ~80% estimated coverage (industry target 80-90%)
+- ⚠️ Coverage not measured — upstream has no coverage thresholds, scripts, or reporting configured
 - ✅ Test-to-code ratio 1.44× avg (industry range 1.0-2.0×)
 
 **Test Organization:**

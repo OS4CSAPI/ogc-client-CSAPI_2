@@ -283,11 +283,13 @@ The `model.spec.ts` claim is off by 3×. These are not counting methodology diff
 
 **Severity:** MEDIUM  
 **Document:** [03-typescript-testing-standards.md](../findings/03-typescript-testing-standards.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** Doc 03 claims "ogc-client Assessment: Coverage: ~80% estimated ✅ Mature." Upstream has **no coverage reporting**, no coverage thresholds in `jest.config.cjs`, and no coverage scripts in `package.json`. The ~80% figure is a guess presented as a validated finding.
 
 **Fix Required:** Change to "Coverage: Not measured (no coverage thresholds or scripts configured)" and remove the "✅ Mature" assessment for coverage specifically.
+
+**Resolution:** Corrected all 3 occurrences of the fabricated ~80% coverage claim in Doc 03. Changed: (1) comparison table entry from "✅ Match" to "⚠️ Unknown" with "No coverage tooling configured", (2) ogc-client assessment from "✅ Mature" to "⚠️ Unknown" with explanation that no coverage thresholds, scripts, or reporting are configured, (3) summary section from "✅ ~80% estimated coverage" to "⚠️ Coverage not measured."
 
 ---
 
@@ -295,7 +297,7 @@ The `model.spec.ts` claim is off by 3×. These are not counting methodology diff
 
 **Severity:** MEDIUM  
 **Document:** [17-coverage-targets-and-metrics.md](../findings/17-coverage-targets-and-metrics.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** Doc 17 Section 3 defines "Behavior Coverage" as:
 
@@ -308,6 +310,8 @@ And lists "Required Behavior Tests" that are spec requirements:
 This frames coverage as spec-requirement coverage (AP3), not as code-path coverage. Testing should be organized around client code paths (URL builder methods, parser functions, error handlers), not around OGC spec requirements.
 
 **Fix Required:** Reframe behavior coverage around client code functions and methods, not spec requirements. E.g., "URL builder methods covered: 9/9 resource types" instead of "Spec requirements covered: 27/30."
+
+**Resolution:** Rewrote §3.2.4 from "Behavior-Driven Coverage" (spec-requirement framing) to "Client Code Coverage" (client code path framing). Replaced: 12 spec-requirement-style test descriptions ("Systems list endpoint supports pagination", etc.) with coverage organized by client code area (QueryBuilder methods, Parser functions, Endpoint methods). Changed metric from "Behavior Tests / Total Requirements" to "Tested functions & branches / Total functions & branches" using Jest's built-in `--coverage`. Added M2 review notice. Updated 3 checklist items that referenced "behavior coverage" and "business requirements" to reference public methods and code paths instead.
 
 ---
 
@@ -492,8 +496,8 @@ Proceed to **Phase 2D: Format Parsers** (Docs 09, 10, 11), which have high AP4 r
 | H3 | HIGH | 37 | Over-engineered maintenance framework (70–120 hrs/yr, custom tools, RACI) | ✅ Resolved |
 | H4 | HIGH | 35 | Massive JSDoc over-engineering despite acknowledging upstream minimalism | ✅ Resolved |
 | H5 | HIGH | 20 | EDR file-level line counts demonstrably wrong (model.spec.ts off by 3×) | ✅ Resolved |
-| M1 | MEDIUM | 03 | Fabricated "~80% estimated" coverage for upstream | ❌ Open |
-| M2 | MEDIUM | 17 | AP3 in behavior coverage metrics (spec requirements as coverage targets) | ❌ Open |
+| M1 | MEDIUM | 03 | Fabricated "~80% estimated" coverage for upstream | ✅ Resolved |
+| M2 | MEDIUM | 17 | AP3 in behavior coverage metrics (spec requirements as coverage targets) | ✅ Resolved |
 | M3 | MEDIUM | 20 | Module-level ratios systematically inflated 5–13% | ❌ Open |
 | M4 | MEDIUM | 37 | AP2 risk in fixture `_metadata` versioning system | ❌ Open |
 | L1 | LOW | 20 | Unverifiable industry library ratio estimates | ❌ Open |

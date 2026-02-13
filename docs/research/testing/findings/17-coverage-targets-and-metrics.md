@@ -509,38 +509,35 @@ Assertion Quality = (Specific Assertions / Total Assertions) × 100%
 
 **Target:** 80-90% specific assertions (avoid `.toBeDefined()`, `.toBeTruthy()`)
 
-#### 3.2.4 Behavior-Driven Coverage
+#### 3.2.4 Client Code Coverage
 
-**Definition:** Tests verify business requirements, not just code execution
+> **⚠️ Review Notice (M2 fix — Phase 2C):** This section originally framed coverage as "Behavior Tests / Total Requirements" — measuring test coverage against OGC spec requirements rather than client code paths. This is AP3 (OGC Requirement Traceability): it organizes testing around spec sections instead of the code being contributed. Coverage should measure what client code functions and methods are exercised by tests, not what spec requirements have corresponding tests.
 
-**Required Behavior Tests:**
+**Definition:** Tests cover the client code paths being contributed — URL builder methods, parser functions, error handlers, type converters.
 
-**QueryBuilders:**
-- ✅ "Systems list endpoint supports pagination"
-- ✅ "DataStreams can be filtered by phenomenonTime"
-- ✅ "Observations support spatial filtering with bbox"
+**Coverage by client code area:**
 
-**Parsers:**
-- ✅ "SensorML PhysicalSystem parses identifiers correctly"
-- ✅ "SWE Common DataRecord handles nested structures"
-- ✅ "Binary encoding respects endianness (little-endian vs big-endian)"
+**QueryBuilder methods:**
+- ✅ All resource type methods covered (getSystems, getDeployments, etc.)
+- ✅ Parameter encoding paths (pagination, bbox, datetime, filtering)
+- ✅ Edge cases per method (empty params, boundary values, special characters)
 
-**Endpoint:**
-- ✅ "CSAPI client retrieves system by ID"
-- ✅ "CSAPI client creates observation with SWE Common values"
-- ✅ "CSAPI client filters datastreams by temporal range"
+**Parser functions:**
+- ✅ Each parser's happy path (valid input → correct output)
+- ✅ Each parser's error path (malformed input → appropriate error)
+- ✅ Optional field handling (present vs absent)
 
-**Workers:**
-- ✅ "Worker parses large datasets without blocking main thread"
-- ✅ "Worker propagates errors from background parsing"
-- ✅ "Worker can be cancelled mid-operation"
+**Endpoint methods:**
+- ✅ Each public method exercised
+- ✅ Error handling paths (network errors, 404, malformed responses)
+- ✅ Conformance-dependent behavior (feature available vs not)
 
-**Behavior Coverage Metric:**
+**Practical coverage metric:**
 ```
-Behavior Coverage = (Behavior Tests / Total Requirements) × 100%
+Client Code Coverage = (Tested functions & branches / Total functions & branches) × 100%
 ```
 
-**Target:** 100% behavior coverage (all requirements have tests)
+**Target:** Use Jest's built-in `--coverage` reporting (statement, branch, function coverage) rather than manually tracking spec requirements.
 
 ### 3.3 Coverage Quality Checklist
 
@@ -550,7 +547,7 @@ Use this checklist to evaluate test quality beyond raw percentages:
 - [ ] All edge cases documented and tested
 - [ ] All error paths documented and tested
 - [ ] All assertions are specific (not just `.toBeDefined()`)
-- [ ] All business requirements have behavior tests
+- [ ] All public client methods have corresponding tests
 - [ ] All tests have descriptive names (`it('should...')`)
 - [ ] All tests are isolated (no shared state)
 - [ ] All tests are deterministic (no flaky tests)
@@ -561,7 +558,7 @@ Use this checklist to evaluate test quality beyond raw percentages:
 - [ ] Edge case coverage ≥90%
 - [ ] Error path coverage ≥90%
 - [ ] Assertion quality ≥80%
-- [ ] Behavior coverage =100%
+- [ ] All public methods have tests
 
 **Overall Project:**
 - [ ] Overall coverage targets met (88-92% statement, 83-88% branch)
@@ -897,7 +894,7 @@ echo "✅ Coverage maintained: $CURRENT% >= $BASELINE%"
 - [ ] Edge case coverage ≥90%
 - [ ] Error path coverage ≥90%
 - [ ] Assertion quality ≥80%
-- [ ] Behavior coverage =100%
+- [ ] All public methods have tests
 
 ### 6.4 Phase 7 (Optional Features)
 
@@ -931,7 +928,7 @@ echo "✅ Coverage maintained: $CURRENT% >= $BASELINE%"
 - [ ] Review coverage quality checklist (Section 3.3)
 
 **During Test Implementation:**
-- [ ] Write behavior tests first (business requirements)
+- [ ] Write tests for each public method and code path
 - [ ] Add edge case tests (boundary conditions)
 - [ ] Add error path tests (all error types)
 - [ ] Use specific assertions (avoid `.toBeDefined()`)
