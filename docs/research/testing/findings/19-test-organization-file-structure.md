@@ -52,9 +52,9 @@
 ### 1.1 Overview
 
 This document defines the complete test organization strategy for CSAPI implementation, specifying:
-- **37 test files** organized in flat colocated structure
+- **22 test files** (plus 5-6 implementation files) organized in flat colocated structure
 - **Upstream-aligned patterns** matching EDR/STAC/WFS/WMS organization
-- **~4,000-5,000 lines** of test code across all files
+- **~4,000-5,300 lines** of test code across all test files
 - **~280 fixtures** organized by test type and format
 - **Clear naming conventions** for discoverability and maintainability
 
@@ -85,7 +85,8 @@ This document defines the complete test organization strategy for CSAPI implemen
 | **Format Parser Tests** | 3 files | ~1,000-1,300 | SensorML, SWE Common, GeoJSON parsers |
 | **Test Utilities** | 3 files | ~300-400 | Shared helpers, fixtures, mocks |
 | **Fixtures** | ~280 files | N/A (data) | JSON, CSV, binary test data |
-| **TOTAL** | **37 test files** | **~4,100-5,300** | Complete test suite |
+| **Test files subtotal** | **22 files** | **~4,100-5,300** | Unit + integration + parser + utility tests |
+| **All files total** | **~308 files** | - | Including implementation (5-6) + fixtures (~280) |
 
 ---
 
