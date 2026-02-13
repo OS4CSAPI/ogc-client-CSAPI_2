@@ -1,5 +1,17 @@
 # Section 30: Bulk Operations Testing Strategy
 
+> ⚠️ **REVIEW NOTICE — HIGH (H4, H5): Tests Assert Fixture Response Data, Not Client Logic**
+>
+> **Phase 2E Review | Issues: H4, H5, M8 | Anti-Patterns: AP1, AP4**
+>
+> This document is ~40% client-oriented. It defines substantial client-side code in Section 6 (auto-chunking, fallback-to-sequential, `BulkCreateResult<T>` construction, progress callbacks) but the test scenarios in Section 4 don't test any of it. Instead, Section 4 asserts fixture response data: `response.data.items`, `obs.id`, `obs.result`, `cmd.parameters.action`. These would pass even if the client did no transformation.
+>
+> **What's usable:** Client library design (Section 6) — auto-chunking, fallback-to-sequential, `BulkCreateResult<T>`, progress callbacks. Error handling strategy (Section 2.3, 3, 9). Specification analysis (Sections 1-2).
+>
+> **What must be rewritten:** Section 4 test scenarios must be reframed to test the client code from Section 6: feed fixture through mocked `globalThis.fetch` → call `createObservationsBulk()` → assert client outputs (`BulkCreateResult.created`, `.failed`, `.partial`, `onProgress` callback invocations, auto-chunking splits).
+>
+> See also: [Phase 2E Review Report](../review/phase-2e-advanced-scenarios-category.md)
+
 **Research Plan:** [Research Plan 30: Bulk Operations Testing Strategy](../research-plans/30-bulk-operations-testing.md)
 
 **Research Questions:** 6 core questions about bulk observation creation, bulk command creation, request size limits, partial success/failure, error handling, and fixtures.
@@ -442,6 +454,12 @@ Content-Type: application/json
 
 ### 4.1 All-Valid Bulk Observations Tests (8 tests)
 
+> ⚠️ **REVIEW NOTICE (H4): Tests Assert Fixture Response Data Directly**
+>
+> These tests assert fixture content: `response.data.items.forEach((obs, i) => { expect(obs.id).toMatch(/^obs-/); expect(obs.result).toBe(20 + i * 0.5); })`. This validates the fixture returns expected data — not that the client transformed it correctly. Tests should instead verify `BulkCreateResult<T>` construction from raw responses, that `created[]` contains correctly typed objects, and that `totalItems` reflects the input count.
+>
+> The `response.ok` / `response.status` assertions also test the mock, not the client. See Section 6 for the actual client code these tests should exercise.
+
 **Priority:** **CRITICAL**
 
 | Test ID | Scenario | Batch Size | Expected Behavior | Lines |
@@ -592,6 +610,10 @@ describe('Bulk Observation Creation - All Valid', () => {
 ```
 
 ### 4.2 All-Valid Bulk Commands Tests (6 tests)
+
+> ⚠️ **REVIEW NOTICE (H4): Same Fixture Content Assertion Pattern**
+>
+> Same issue as Section 4.1: tests assert `response.data.items`, `cmd.parameters.action`, `cmd.parameters.resolution` — all fixture content. Client tests should verify: `BulkCreateResult<Command>` construction, `.created[]` contains correctly typed command objects, `.totalItems` matches input.
 
 **Priority:** HIGH
 
@@ -896,6 +918,10 @@ describe('Bulk Operations - Size Limits', () => {
 
 ### 4.5 Performance Tests (4 tests)
 
+> ⚠️ **REVIEW NOTICE (M8): Performance Tests Measure Server Response Timing**
+>
+> `expect(elapsed).toBeLessThan(500)` and `expect(memUsed).toBeLessThan(100 * 1024 * 1024)` are integration performance tests against server responses, not client unit tests. In a mocked-fetch test, timing measures the mock's latency (near-zero), not real performance. If client-side performance matters (e.g., auto-chunking overhead, memory allocation for 5000-item arrays), those should be tested separately with benchmarks, not as unit test assertions.
+
 **Priority:** MEDIUM
 
 | Test ID | Scenario | Batch Size | Expected Performance | Lines |
@@ -1050,6 +1076,10 @@ describe('Bulk Operations - Performance', () => {
 ---
 
 ## 6. Client Library Design
+
+> ✅ **REVIEW NOTICE: Strongest Section — This Is What Tests Should Exercise**
+>
+> Section 6 defines the actual client code: `BulkCreateResult<T>` type construction, `BulkCreateOptions` with `chunkSize`/`delayBetweenChunks`/`continueOnError`/`onProgress`, auto-chunking strategy (Section 6.3), and fallback-to-sequential (Section 6.4). These are genuine client behaviors that can be tested with mocked fetch: feed bulk response fixture → call `createObservationsBulk()` → assert `BulkCreateResult` fields, verify `onProgress` was called N times, verify requests were chunked into expected sizes. Section 4's tests should be rewritten to target this code.
 
 ### 6.1 Bulk Operation Methods
 

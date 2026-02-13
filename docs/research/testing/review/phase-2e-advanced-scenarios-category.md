@@ -545,8 +545,8 @@ The aggregate scope creep (~683 tests, ~450h) is the category-level concern that
 | H1 | HIGH | 32 | Response content assertions throughout (AP1, AP4) | ✅ Resolved |
 | H2 | HIGH | 25 | 45 scenarios test server HTTP response behavior (AP1) | ✅ Resolved |
 | H3 | HIGH | 24 | Server validation/precedence testing (AP1) | ❌ Open |
-| H4 | HIGH | 30 | Tests assert fixture response data directly (AP1) | ❌ Open |
-| H5 | HIGH | 30 | No tests for actual client logic — chunking, fallback (AP4) | ❌ Open |
+| H4 | HIGH | 30 | Tests assert fixture response data directly (AP1) | ✅ Resolved |
+| H5 | HIGH | 30 | No tests for actual client logic — chunking, fallback (AP4) | ✅ Resolved |
 | H6 | HIGH | 28 | Identifies client utilities but doesn't test them (AP4) | ❌ Open |
 | H7 | HIGH | 23 | Cursor pagination tests assert server behavior (AP1) | ✅ Resolved |
 | H8 | HIGH | 32 | Graceful skipping on server availability — 5+ instances (AP5) | ✅ Resolved |
@@ -559,7 +559,7 @@ The aggregate scope creep (~683 tests, ~450h) is the category-level concern that
 | M5 | MEDIUM | 27 | "Server-Side Validation" section documents server compliance | ❌ Open |
 | M6 | MEDIUM | 28 | `response.ok` assertions meaningless against fixtures (AP1) | ❌ Open |
 | M7 | MEDIUM | 29 | Same `response.ok` pattern as Doc 28 (AP1) | ❌ Open |
-| M8 | MEDIUM | 30 | Performance tests measure server response timing (AP1) | ❌ Open |
+| M8 | MEDIUM | 30 | Performance tests measure server response timing (AP1) | ✅ Resolved |
 | M9 | MEDIUM | 23 | Conditional assertion on fixture content (AP5) | ✅ Resolved |
 | M10 | MEDIUM | 32 | Server ID format and coordinate assertions (AP4) | ✅ Resolved |
 | M11 | MEDIUM | 24 | Mixed client/server invalid parameter tests (AP1) | ❌ Open |
