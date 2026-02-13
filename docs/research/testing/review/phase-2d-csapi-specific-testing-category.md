@@ -452,7 +452,7 @@ Proceed to **Phase 2E** covering remaining document categories, or begin targete
 | H2 | HIGH | 09, 10 | Live server fixture sourcing from OpenSensorHub (AP2) | ✅ Resolved |
 | H3 | HIGH | 11 | Server data validation functions (validateUID, validateName, etc.) | ✅ Resolved |
 | H4 | HIGH | 21 | Shape-assertion model.spec.ts template tests nothing TypeScript compiler doesn't validate | ✅ Resolved |
-| M1 | MEDIUM | 08 | Useful spec reference buried under test framework framing | ❌ Open |
+| M1 | MEDIUM | 08 | Useful spec reference buried under test framework framing | ✅ Resolved |
 | M2 | MEDIUM | 10 | Sound binary parsing tests buried alongside spec-oriented content | ✅ Resolved |
 | M3 | MEDIUM | 11 | Property matrix mirrors spec structure (AP3) | ✅ Resolved |
 | M4 | MEDIUM | 22 | Live server profiles included as reference context | ❌ Open |

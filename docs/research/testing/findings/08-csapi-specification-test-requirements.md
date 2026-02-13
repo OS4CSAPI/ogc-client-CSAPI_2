@@ -111,6 +111,19 @@ This document provides a comprehensive specification reference extracted from CS
 
 ## 2. Resource Type Requirements Matrix
 
+> **⚠️ REVIEW NOTICE (M1):** The requirement matrices below (Sections 2.1-2.9)
+> contain 250+ entries with "Requirement ID", "Test Type", and "Priority"
+> columns that frame spec properties as individual test cases. **Do not use
+> these as a test checklist.** The useful content here is:
+> - **Endpoint patterns:** What URL shapes the CSAPIQueryBuilder must produce
+> - **Query parameters:** What parameters each resource type accepts
+> - **Associations:** What link relationships exist between resource types
+> - **Required vs optional properties:** What the parser must handle
+>
+> The "Test Type" and "Priority" columns reflect spec validation priorities,
+> not client test priorities. For client tests, the priority is: does the
+> parser/QueryBuilder produce correct output for each resource type?
+
 ### 2.1 Systems Resource Requirements
 
 **Conformance Class:** System Features (`/conf/system`)  
@@ -647,6 +660,12 @@ This document provides a comprehensive specification reference extracted from CS
 
 ## 4. Error Condition Requirements Matrix
 
+> **⚠️ REVIEW NOTICE (M1):** Error response shapes are useful reference for
+> what the client should handle gracefully (404 → return null, 400 → throw
+> with message, etc.), but testing that a server returns the exact error
+> message pattern is a server concern. Client tests should verify: does the
+> client code handle each HTTP status correctly?
+
 | Error Condition | HTTP Status | Error Detail Required | Applies To | Test Type | Spec Reference |
 |-----------------|-------------|----------------------|------------|-----------|----------------|
 | **Client Errors (4xx)** |
@@ -706,6 +725,14 @@ This document provides a comprehensive specification reference extracted from CS
 ---
 
 ## 5. Format Validation Requirements
+
+> **⚠️ REVIEW NOTICE (M1):** The validation rules below (VAL-GJ-*, VAL-SML-*,
+> VAL-SWE-*) define what constitutes valid server output. These are useful as
+> reference for what properties and structures the parser should expect, but
+> should not become individual validation test cases. Parser tests should
+> verify: `parse(fixture) → typed output with correct properties extracted`.
+> The rules inform fixture design (what variations to include), not test
+> case design (what assertions to write).
 
 ### 5.1 GeoJSON Validation (RFC 7946 + CSAPI Extensions)
 
@@ -1081,6 +1108,13 @@ For each conformance class, track:
 
 ## 12. Testing Priorities
 
+> **⚠️ REVIEW NOTICE (M1):** The priority tiers below and their test line
+> estimates (~4,800 lines total) reflect a spec-coverage testing approach.
+> Client test volume should be driven by actual parser/QueryBuilder code
+> complexity, not by counting spec requirements. The resource type grouping
+> and phase sequencing are useful for implementation planning; the line
+> estimates are not.
+
 ### CRITICAL (Must Have) - Implementation Phase 3-4
 
 **Conformance Classes:**
@@ -1331,4 +1365,5 @@ This document is a **specification reference**, not a test plan. Use it to:
 **Research Status:** COMPLETE ✅  
 **All Success Criteria Met:** ✅  
 **Reclassified:** From "test requirements" to "specification reference" (Phase 2D, C1)  
+**Review notices added:** Phase 2D, M1 — sections 2, 4, 5, 9, 10, 11, 12 annotated to distinguish useful reference content from test-framing  
 **Ready for Downstream Use:** As implementation reference for CSAPIQueryBuilder, format parsers, conformance detection
