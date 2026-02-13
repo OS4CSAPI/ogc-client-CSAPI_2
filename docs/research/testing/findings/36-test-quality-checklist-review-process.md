@@ -48,9 +48,11 @@ This document provides a comprehensive quality checklist and review process for 
 - ❌ Test that mocks return expected data
 - ✅ Test that code correctly processes real spec examples
 
-**Spec Compliance Over Implementation:**
+**Spec-Informed Client Behavior:**
 - ❌ Test implementation details (private methods, internals)
-- ✅ Test spec requirements (public API, conformance classes)
+- ❌ Test spec conformance (whether a server is spec-compliant)
+- ✅ Test that client code behaves correctly (URLs, parsing, error handling)
+- ✅ Use spec knowledge as input to understand what correct behavior looks like
 
 ### Checklist Overview
 
@@ -95,7 +97,7 @@ This document provides a comprehensive quality checklist and review process for 
 | Validates complete URL structure | Checks `.toContain('/systems')` |
 | Parses query parameters as objects | Uses regex or string matching |
 | Tests with realistic data volumes | Tests with minimal data |
-| Validates against spec requirements | Checks method exists |
+| Validates correct client behavior | Checks method exists |
 | Asserts on behavior | Asserts on structure only |
 
 **Example - URL Testing:**
@@ -128,7 +130,7 @@ it('constructs systems URL with pagination', () => {
 - ✅ Tests realistic scenarios (not contrived edge cases)
 - ✅ Asserts on important behavior (not implementation details)
 - ✅ Uses real fixtures from real servers (gnosis-earth, OpenSensorHub)
-- ✅ Validates against spec requirements explicitly
+- ✅ Validates correct client behavior (informed by spec expectations)
 - ✅ Tests integration points (how components work together)
 - ✅ Validates error messages are clear and actionable
 
@@ -339,7 +341,7 @@ it('completes observation query workflow end-to-end', async () => {
 | M-3 | Tests use realistic scenarios (not contrived) | ❌ NO | Review test names - should match real-world usage |
 | M-4 | Tests assert on behavior (not implementation details) | ✅ YES | Tests should not access private methods/properties |
 | M-5 | Tests use real fixtures from real servers | ❌ NO | Check fixture sources (gnosis-earth, OpenSensorHub) |
-| M-6 | Tests validate against spec requirements explicitly | ✅ YES | Search for `@specification` tags linking to spec |
+| M-6 | Tests validate correct client behavior (informed by spec) | ✅ YES | Verify tests assert on client outputs (URLs, parsed objects, errors) not spec conformance |
 | M-7 | Tests validate integration points | ❌ NO | Integration tests exist for cross-component scenarios |
 | M-8 | Error messages are clear and actionable | ❌ NO | Error tests validate message content |
 
@@ -700,7 +702,7 @@ npm test -- --testNamePattern="specific test name"
 - [x] M-3: Realistic scenarios
 - [x] M-4: Behavior (not implementation)
 - [ ] M-5: Real server fixtures (N/A - URL building only)
-- [x] M-6: Spec requirement links
+- [x] M-6: Client behavior validation
 - [ ] M-7: Integration points (N/A - unit tests)
 - [x] M-8: Clear error messages
 
@@ -1636,22 +1638,20 @@ function parseAndValidateUrl(url, expected) {
 }
 ```
 
-**Issue 2: Missing Specification Links**
+**Issue 2: Testing Spec Compliance Instead of Client Behavior**
 
 ```typescript
-// ❌ PROBLEM - No spec reference
-it('includes required system properties', () => {
-  // Test validates spec requirements but doesn't link to spec
+// ❌ PROBLEM - Tests spec conformance, not client behavior
+it('validates system response conforms to OGC 23-001 §7.2.1', () => {
+  // Tests whether the response is spec-compliant (server concern)
 });
 
-// ✅ SOLUTION - Add @specification tag
-/**
- * Validates system response includes all required properties per spec.
- * 
- * @specification OGC 23-001 §7.2.1, Table 4
- */
-it('includes required system properties', () => {
-  // Test validates spec requirements
+// ✅ SOLUTION - Test client behavior, use spec as context
+it('parses system properties from response', () => {
+  // Spec tells us what properties to expect; we test that our parser extracts them
+  const result = parseSystem(fixture);
+  expect(result.id).toBe('weather-station-001');
+  expect(result.name).toBe('Weather Station Alpha');
 });
 ```
 
@@ -1808,8 +1808,8 @@ describe('parsing', () => {
 - [ ] M-5: Real server fixtures
   - Status: N/A - URL building doesn't retrieve data
   
-- [x] M-6: Spec requirement links
-  - Validation: 52/85 tests have @specification tags (61%)
+- [x] M-6: Client behavior validation
+  - Validation: 85/85 tests assert on client outputs (URLs, parsed params, error messages)
   
 - [ ] M-7: Integration points
   - Status: N/A - Unit-level tests
@@ -1944,8 +1944,8 @@ describe('parsing', () => {
 - [x] M-5: Real server fixtures
   - Validation: 46/46 tests use OpenSensorHub fixtures
   
-- [x] M-6: Spec requirement links
-  - Validation: 28/46 tests have @specification tags (61%)
+- [x] M-6: Client behavior validation
+  - Validation: 46/46 tests assert on parser outputs (parsed objects, property values)
   
 - [ ] M-7: Integration points
   - Status: N/A - Parser-focused unit tests
@@ -2064,8 +2064,8 @@ describe('parsing', () => {
 - [x] M-5: Real server fixtures
   - Validation: 8/8 tests use spec example fixtures
   
-- [x] M-6: Spec requirement links
-  - Validation: 8/8 tests have @specification tags (100%)
+- [x] M-6: Client behavior validation
+  - Validation: 8/8 tests assert on end-to-end client workflow outputs
   
 - [x] M-7: Integration points
   - Validation: Tests integrate Endpoint + QueryBuilder + Parsers
@@ -2281,7 +2281,7 @@ describe('parsing', () => {
    - Happy path + boundary values + edge cases + errors
    - 85-95% statement, 80-95% branch coverage
    - All code paths executed
-   - All spec requirements validated
+   - All client behaviors verified (informed by spec expectations)
 
 4. **End-to-End** - Complete workflows, cross-component integration
    - 3+ operations per workflow

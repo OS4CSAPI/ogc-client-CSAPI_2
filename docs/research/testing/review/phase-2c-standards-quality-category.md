@@ -93,7 +93,7 @@ This category's estimates were validated against previously reviewed documents:
 
 **Severity:** CRITICAL  
 **Document:** [36-test-quality-checklist-review-process.md](../findings/36-test-quality-checklist-review-process.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** Document 36 explicitly states as a quality philosophy:
 
@@ -106,6 +106,13 @@ This directly prescribes AP3 (OGC Requirement Traceability). Testing "spec requi
 The document further reinforces this with checklist item M-6: "Tests validate against spec requirements explicitly."
 
 **Fix Required:** Replace "Spec Compliance Over Implementation" with "Client Behavior Over Spec Compliance." The quality philosophy should be: test that our code produces correct URLs, parses responses correctly, and handles errors — not that our code validates OGC conformance.
+
+**Resolution:** Replaced philosophy heading with "Spec-Informed Client Behavior" — spec knowledge is legitimate INPUT to test design (it tells us what correct behavior looks like), but spec compliance is not the GOAL of testing. Changes applied:
+- Philosophy section: Added explicit distinction between spec-conformance testing (❌) and spec-informed client behavior testing (✅)
+- M-6 checklist item: Reframed from "validate against spec requirements" to "validate correct client behavior (informed by spec)"
+- "Missing Specification Links" example: Replaced with "Testing Spec Compliance Instead of Client Behavior" showing parser output assertions
+- All four sample checklists: M-6 now validates client outputs (URLs, parsed objects, errors) not `@specification` tag counts
+- Conclusion: "All spec requirements validated" → "All client behaviors verified (informed by spec expectations)"
 
 ---
 
@@ -439,7 +446,7 @@ Proceed to **Phase 2D: Format Parsers** (Docs 09, 10, 11), which have high AP4 r
 
 | ID | Severity | Document(s) | Issue | Status |
 |----|----------|-------------|-------|--------|
-| C1 | CRITICAL | 36 | "Spec Compliance Over Implementation" philosophy (AP3) | ❌ Open |
+| C1 | CRITICAL | 36 | "Spec Compliance Over Implementation" philosophy (AP3) | ✅ Resolved |
 | C2 | CRITICAL | 35, 36, 37 | Systemic AP3 through `@specification` tag traceability system | ❌ Open |
 | H1 | HIGH | 17 | Test line estimate 13,090–17,016 is 3× higher than all other estimates | ❌ Open |
 | H2 | HIGH | 36 | Invented 3-stage enterprise review process with 41-item checklist | ❌ Open |
