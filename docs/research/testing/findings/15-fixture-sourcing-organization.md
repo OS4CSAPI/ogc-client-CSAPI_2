@@ -748,70 +748,94 @@ fixtures/
 
 ## 6. File Naming Conventions
 
-### 6.1 Naming Pattern
+> **⚠️ REVISED (Phase 2A Review — H4):** The original Section 6 proposed a `<category>-<subcategory>-<variant>` naming pattern that doesn't match either upstream convention. The upstream repo uses two distinct naming patterns depending on how fixtures are loaded. This section has been revised to document both and clarify which applies to CSAPI fixtures.
 
-**General Pattern:**
+### 6.1 Upstream Naming Patterns
+
+The existing fixture library uses two naming conventions, each tied to a specific loading mechanism:
+
+**Pattern A: URL-Path-Mirroring (OGC API, STAC, CSAPI)**
+
+Filenames match the API endpoint name. Directories mirror URL path segments.
+
 ```
-<category>-<subcategory>-<variant>.<extension>
+fixtures/ogc-api/sample-data/conformance.json    → serves /sample-data/conformance
+fixtures/ogc-api/sample-data/collections.json     → serves /sample-data/collections
+fixtures/csapi/sample-server/systems.json          → serves /sample-server/systems
 ```
 
-**Components:**
-- **category**: Primary classifier (system, deployment, datastream, etc.)
-- **subcategory**: Secondary classifier (type, workflow step, component type)
-- **variant**: Differentiator (valid, invalid, error, edge case indicator)
-- **extension**: File format (.json, .csv, .bin)
+- Used by: `fixtures/ogc-api/`, `fixtures/stac/`, `fixtures/csapi/` (new)
+- Loading: mock `fetch()` builds file path from URL path
+- Consequence: **filenames are dictated by the API** — no choice involved
 
-**Examples:**
-- `system-weather-station-valid.json` (valid GeoJSON feature)
-- `deployment-argo-missing-valid-time.json` (error case)
-- `datastream-weather.csv` (SWE text encoding)
-- `observation-swe-values-binary.bin` (SWE binary encoding)
+**Pattern B: Operation-Source-Version (WFS, WMS, WMTS)**
 
-### 6.2 Naming Rules
+Filenames describe the operation, data source, and protocol version.
+
+```
+capabilities-pigma-2-0-0.xml
+getfeature-props-cities-1-1-0.xml
+service-exception-report-1-3-0.xml
+```
+
+- Used by: `fixtures/wfs/`, `fixtures/wms/`, `fixtures/wmts/`
+- Loading: imported directly via ES import + Jest transformer (`fetchResponseFactory`)
+- Pattern: `{operation}-{source}-{version}.{extension}`
+
+### 6.2 Naming Convention for New CSAPI Fixtures
+
+**CSAPI endpoint fixtures (`fixtures/csapi/`):** Use Pattern A — filenames are determined by the API path structure. No naming decision needed.
+
+**SensorML parser fixtures (`fixtures/sensorml/`):** Use Pattern B adapted for parser inputs:
+```
+{type}-{description}.json
+```
+Examples:
+- `physicalsystem-weather-station.json`
+- `physicalcomponent-thermometer.json`
+- `physicalsystem-missing-identifier.json` (error case)
+
+**SWE Common parser fixtures (`fixtures/swe-common/json/`):** Use Pattern B:
+```
+{component-type}-{description}.json
+```
+Examples:
+- `quantity-temperature.json`
+- `datarecord-weather-data.json`
+- `dataarray-trajectory.json`
+
+### 6.3 General Naming Rules
 
 **MUST:**
 - Use lowercase letters only
 - Use hyphens for word separation (kebab-case)
-- Include variant indicator for error/edge cases (valid/invalid/missing-X/error-XXX)
-- Match extension to content format (.json, .csv, .bin)
+- Match extension to content format (`.json`, `.csv`, `.bin`, `.xml`)
 - Use descriptive, self-documenting names
 
 **MUST NOT:**
-- Use underscores (prefer hyphens)
-- Use spaces (use hyphens instead)
-- Use abbreviations unless standardized (temp OK, tmprtr NOT OK)
-- Use generic names (data.json, test.json, fixture1.json)
+- Use underscores (upstream uses hyphens throughout)
+- Use spaces
+- Use generic names (`data.json`, `test.json`, `fixture1.json`)
 
-**MAY:**
-- Include resource type prefix for clarity (system-, deployment-)
-- Include workflow step indicator (discovery-, observation-, command-)
-- Include encoding type for SWE fixtures (json, text, binary subdirectories sufficient)
+### 6.4 Error/Edge Case Suffixes
 
-### 6.3 Variant Indicators
+For parser fixtures (SensorML, SWE Common) where filenames are not dictated by URL paths, use descriptive suffixes:
 
-**Valid Fixtures:**
-- `-valid` suffix (explicit variant indicator)
-- OR no suffix if context is unambiguous (e.g., `datastream-weather.json`)
+- `-missing-{field}` — required field omitted (e.g., `physicalsystem-missing-identifier.json`)
+- `-invalid-{aspect}` — malformed content (e.g., `quantity-invalid-uom.json`)
 
-**Invalid Fixtures (Error Cases):**
-- `-missing-<field>` (e.g., `system-missing-uid.json`)
-- `-invalid-<aspect>` (e.g., `deployment-invalid-valid-time-format.json`)
-- `-error-<code>` (e.g., `error-404-resource-not-found.json`)
+For endpoint fixtures (CSAPI), error scenarios are represented as separate mock servers:
+- `fixtures/csapi/no-csapi.json` — server that lacks CSAPI conformance
+- `fixtures/csapi/empty-server/systems.json` — empty systems collection
 
-**Edge Case Fixtures:**
-- `-empty` (e.g., `empty-collection-systems.json`)
-- `-null-<aspect>` (e.g., `null-geometry-procedure.json`)
-- `-large` (e.g., `large-collection-1000-items.json`)
-- `-deep` (e.g., `deep-nested-system-10-levels.json`)
-
-### 6.4 Extension Mapping
+### 6.5 Extension Mapping
 
 | Extension | Content Type | Description |
 |-----------|--------------|-------------|
-| `.json` | JSON | Standard JSON files (CSAPI, GeoJSON, SensorML, SWE JSON) |
-| `.csv` | Text (CSV) | SWE Common text encoding (comma/newline separated) |
-| `.bin` | Binary (base64) | SWE Common binary encoding (base64-encoded) |
-| `.txt` | Plain Text | Non-CSV text files (if needed) |
+| `.json` | JSON | CSAPI responses, GeoJSON, SensorML, SWE JSON |
+| `.xml` | XML | WFS/WMS/WMTS capabilities (existing only) |
+| `.csv` | Text (CSV) | SWE Common text encoding |
+| `.bin` | Binary | SWE Common binary encoding |
 
 ---
 
