@@ -75,13 +75,13 @@
 - ✅ **DO:** Parse URL into components (protocol, host, pathname), validate query parameters as objects with type checking
 - ❌ **DON'T:** Trivial string checks like `expect(url).toContain('/systems')`
 
-**parseAndValidateUrl Utility:**
+**parseAndValidateUrl Utility** (see [Section 34: Test Utility & Helper Design](34-test-utility-helper-design.md) for the authoritative specification):
 ```typescript
 function parseAndValidateUrl(
   url: string,
   expected: {
     protocol?: string;    // 'https:'
-    host?: string;        // 'api.example.com'
+    hostname?: string;    // 'api.example.com'
     pathname?: string;    // '/systems'
     query?: Record<string, any>;  // { limit: '10', bbox: '...' }
   }
@@ -165,6 +165,8 @@ src/ogc-api/csapi/url_builder-commands.spec.ts    (~150-220 lines, 20 tests)
 ---
 
 ## 3. "Meaningful" URL Testing Definition
+
+> **Cross-reference:** For the foundational definition of meaningful vs trivial tests with the complete taxonomy, see [Section 06: Meaningful vs Trivial Definition](06-meaningful-vs-trivial-definition.md). The examples below apply those principles specifically to URL testing.
 
 ### 3.1 Trivial vs Meaningful Testing
 

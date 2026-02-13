@@ -1791,8 +1791,8 @@ src/
 
 ### 14.1 Implementation Documents
 
-- [CSAPI Implementation Guide](../../planning/csapi-implementation-guide.md) - Worker Extensions section (lines 2929-3050)
-- [ROADMAP](../../planning/ROADMAP.md) - Phase 4: Worker Extensions and Tests (lines 535-600)
+- [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) - Worker Extensions section (lines 2929-3050)
+- [ROADMAP](../../../planning/ROADMAP.md) - Phase 4: Worker Extensions and Tests (lines 535-600)
 
 ### 14.2 Testing Research
 

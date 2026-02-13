@@ -128,6 +128,12 @@ import { URL } from 'url';
 /**
  * Parse and validate URL structure.
  * USE THIS IN EVERY URL TEST - validates both URL correctness and structure.
+ *
+ * NOTE: This is a simplified parse-only version. The authoritative specification
+ * with full validation support (accepting an `expected` parameter) is defined in
+ * Section 34: Test Utility & Helper Design. During implementation, use the
+ * Section 34 specification as the canonical reference.
+ * See: [Section 34](34-test-utility-helper-design.md)
  */
 export function parseAndValidateUrl(url: string): {
   pathname: string;
@@ -146,7 +152,7 @@ export function parseAndValidateUrl(url: string): {
  * Load fixture from file system.
  */
 export function loadFixture(path: string): any {
-  return require(`../../../../fixtures/ogc-api/csapi/${path}`);
+  return require(`../../../../fixtures/csapi/${path}`);
 }
 
 /**
@@ -162,32 +168,40 @@ export function createMockEndpoint(collectionInfo: any): any {
 
 ### 1.3 Fixture Organization
 
-**Fixture Structure (from Section 15):**
+**Fixture Structure (from Section 15, revised in Phase 2A — see also [Section 15 Part 2](15-part-2-fixture-documentation-best-practices.md) for documentation best practices):**
+
+CSAPI fixtures use URL-path-mirroring under `fixtures/csapi/`, matching the upstream `fixtures/ogc-api/` pattern. Parser fixtures (SensorML, SWE Common) use flat directories. See [Section 15 §5.2](15-fixture-sourcing-organization.md) for the authoritative directory structure.
 
 ```
-fixtures/ogc-api/csapi/
-├── collections/
-│   ├── collection-weather-sensors.json
-│   ├── collection-traffic-cameras.json
-│   └── collection-water-quality.json
-├── systems/
-│   ├── system-weather-station-001.json
-│   ├── system-weather-station-002.json
-│   └── system-traffic-camera-001.json
-├── datastreams/
-│   ├── datastream-temperature.json
-│   └── datastream-humidity.json
-├── observations/
-│   ├── observations-temperature-timeseries.json
-│   └── observations-humidity-single.json
-├── sensorml/
-│   ├── simple-sensor.xml
-│   ├── physical-system.xml
-│   └── physical-component.xml
-└── swe-common/
-    ├── datarecord-simple.json
-    ├── datarecord-nested.json
-    └── dataarray-2d.json
+fixtures/
+├── csapi/                                # CSAPI service protocol
+│   ├── sample-server.json                # Landing page for mock CSAPI server
+│   ├── sample-server/
+│   │   ├── conformance.json              # /conformance
+│   │   ├── collections.json              # /collections
+│   │   ├── systems.json                  # /systems (collection)
+│   │   ├── systems/
+│   │   │   ├── weather-station-001.json  # /systems/{id}
+│   │   │   └── weather-station-001/
+│   │   │       └── datastreams.json      # /systems/{id}/datastreams
+│   │   ├── datastreams.json
+│   │   ├── datastreams/
+│   │   │   └── temperature-series-001.json
+│   │   └── observations.json
+│   ├── no-csapi.json                     # Server without CSAPI conformance
+│   └── empty-server.json                 # Server with empty collections
+├── sensorml/                             # SensorML parser fixtures
+│   ├── physicalsystem-weather-station.json
+│   ├── physicalcomponent-thermometer.json
+│   └── physicalsystem-missing-identifier.json
+├── swe-common/                           # SWE Common parser fixtures
+│   ├── json/
+│   │   ├── quantity-temperature.json
+│   │   ├── datarecord-weather-data.json
+│   │   └── dataarray-trajectory.json
+│   └── text/                             # Defer until parser supports text
+├── ogc-api/                              # (existing — unchanged)
+└── ...                                   # wfs/, wms/, wmts/, stac/, tms/
 ```
 
 **Fixture Naming Convention:**
@@ -1854,8 +1868,13 @@ describe('Worker - CSAPI Support', () => {
 
 ```typescript
 /**
- * @fileoverview End-to-end integration tests for CSAPI workflows
+ * @fileoverview Integration tests for CSAPI workflows
  * @module csapi/integration/discovery
+ *
+ * NOTE: "Integration tests" in this project = multi-component workflow tests
+ * through the public API with mocked HTTP responses (per Section 14). The
+ * term "end-to-end" is reserved for tests using real servers (out of scope).
+ * See Section 7 and Section 14 for the full terminology discussion.
  */
 
 describe('CSAPI Integration - Discovery Workflow', () => {
@@ -1989,7 +2008,7 @@ npm run test:coverage
 
 **Pattern:** URL validation + parameter encoding + resource availability
 
-**Standard Test Structure:**
+**Standard Test Structure** (follows the universal template from [Section 13 §3.1](13-resource-method-testing-patterns.md) — see Doc 13 for the full resource method testing template):
 
 ```typescript
 describe('[ResourceType] Methods', () => {
@@ -2351,7 +2370,7 @@ npm test -- url_builder.spec.ts
 
 **Step 1: Create fixture**
 
-Create `fixtures/ogc-api/csapi/swe-common/datarecord-simple.json`:
+Create `fixtures/swe-common/json/datarecord-simple.json`:
 
 ```json
 {
@@ -2376,12 +2395,7 @@ Create `fixtures/ogc-api/csapi/swe-common/datarecord-simple.json`:
       }
     }
   ],
-  "_metadata": {
-    "specVersion": "OGC 08-094r1",
-    "sourceURL": "http://www.opengis.net/doc/IS/SWE/2.0",
-    "createdDate": "2024-02-06",
-    "validated": true
-  }
+  "_comment": "Fixture metadata is NOT embedded per Doc 15 Part 2 findings — use descriptive filenames + git history instead"
 }
 ```
 
@@ -2473,7 +2487,7 @@ npm test -- swe-common-parser.spec.ts
 
 **Step 1: Create collection fixture**
 
-`fixtures/ogc-api/csapi/collections/collection-weather-sensors.json`:
+`fixtures/csapi/sample-server/collections/collection-weather-sensors.json`:
 
 ```json
 {
@@ -2579,7 +2593,7 @@ npm test -- integration/discovery.spec.ts
 
 **Before committing any tests, validate against Section 36 checklist:**
 
-> **Note:** This is a condensed 27-item version of Section 36's full 41-item checklist, optimized for quick pre-commit self-review. See [Section 36: Test Quality Checklist and Review Process](36-test-quality-checklist-review-process.md) for the complete checklist and review process details. Also reference [Section 18: Error Condition Testing Strategy](18-error-condition-testing-strategy.md) for systematic error testing approaches (network errors, validation errors, HTTP status codes, timeout handling).
+> **Note:** This is a condensed 27-item version of Section 36's full 41-item checklist, optimized for quick pre-commit self-review. Section 36 also provides a simplified 10-item self-review checklist for rapid checks — use that for day-to-day commits and this 27-item version for thorough validation of new test files. See [Section 36: Test Quality Checklist and Review Process](36-test-quality-checklist-review-process.md) for the complete checklist and review process details. Also reference [Section 18: Error Condition Testing Strategy](18-error-condition-testing-strategy.md) for systematic error testing approaches (network errors, validation errors, HTTP status codes, timeout handling).
 
 **Pre-Commit Checklist:**
 
@@ -3131,14 +3145,14 @@ const mockCollection = {
 **Failure: "Fixture not found"**
 
 ```
-Error: Cannot find module '../../../../fixtures/ogc-api/csapi/systems/system-001.json'
+Error: Cannot find module '../../../../fixtures/csapi/systems/system-001.json'
 ```
 
 **Cause:** Fixture file missing or incorrect path
 **Fix:**
 ```bash
 # Check fixture exists
-ls fixtures/ogc-api/csapi/systems/
+ls fixtures/csapi/sample-server/systems/
 
 # Create fixture if missing
 # Verify path in loadFixture() call
@@ -3252,7 +3266,7 @@ const { pathname, searchParams, segments } = parseAndValidateUrl(url);
 
 **loadFixture(path: string)**
 
-Loads fixture from `fixtures/ogc-api/csapi/` directory.
+Loads fixture from `fixtures/csapi/` directory.
 
 ```typescript
 const fixture = loadFixture('systems/system-001.json');

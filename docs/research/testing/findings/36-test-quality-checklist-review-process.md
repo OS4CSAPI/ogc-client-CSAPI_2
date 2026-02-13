@@ -65,6 +65,8 @@ This document provides a comprehensive quality checklist and review process for 
 | **Deep** | Edge cases, error paths, branch coverage | Self-review |
 | **Coverage** | Statement >80%, Branch >80%, no flakiness | Self-review |
 
+> **Note (Phase 4 Review):** The ROADMAP v3.0 authoritative minimum is **>80% statement, >80% branch**. The component-specific targets of 85-95% / 80-95% that appear throughout this document (D-5, QM-1, QM-2, coverage examples) are **aspirational stretch goals** from Doc 17's component complexity analysis, not mandatory requirements. The self-review checklist above uses the >80% ROADMAP minimum as the acceptance threshold.
+
 ### Review Process
 
 **Single-Stage Self-Review:**
@@ -1232,6 +1234,8 @@ Sign-off recommendation:           ✅ APPROVED
 ---
 
 ## 7. Common Quality Issues and Solutions
+
+> **Cross-reference:** For the foundational definition of meaningful vs trivial tests, including the complete taxonomy of 7 trivial indicators and 7 meaningful characteristics, see [Section 06: Meaningful vs Trivial Definition](06-meaningful-vs-trivial-definition.md). The examples below show how to apply those principles as quick-fix patterns during code review.
 
 ### 7.1 Trivial Tests Anti-Patterns
 

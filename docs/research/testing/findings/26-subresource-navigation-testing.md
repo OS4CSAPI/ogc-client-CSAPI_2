@@ -863,7 +863,7 @@ it('handles invalid parent ID gracefully', async () => {
   parseAndValidateUrl(url, {
     pathname: '/systems/invalid-id-999/subsystems'
   });
-  // Expect 404 from server (not client error)
+  // Client correctly constructs URL; 404 handling tested separately in error tests
 });
 ```
 
@@ -886,7 +886,7 @@ it('handles invalid child ID', async () => {
   parseAndValidateUrl(url, {
     pathname: '/systems/wx-001/subsystems/invalid-child-999'
   });
-  // Expect 404 from server
+  // Client correctly constructs URL with invalid ID; error handling tested separately
 });
 ```
 

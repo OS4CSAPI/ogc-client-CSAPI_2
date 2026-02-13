@@ -40,6 +40,8 @@ This research defines comprehensive coverage targets for the CSAPI test implemen
 - **Meaningful Metrics:** Edge case coverage, error path testing, assertion quality prioritized over raw percentages
 - **Implementation:** Jest configuration with per-component glob patterns and incremental tracking per ROADMAP phase
 
+> **Note (Phase 4 Review):** The ROADMAP v3.0 authoritative minimum is **>80% statement, >80% branch**. The component-specific targets of 85-95% statement / 80-95% branch presented in this document are **aspirational stretch goals** based on component complexity analysis. During implementation, >80% is the mandatory floor; higher targets are encouraged but not required.
+
 **Deliverable:** Ready-to-use Jest coverage configuration + quality metrics framework
 
 ---
@@ -48,7 +50,7 @@ This research defines comprehensive coverage targets for the CSAPI test implemen
 
 ### 1.1 Official CSAPI Requirements
 
-From [`csapi-implementation-guide.md`](../../../csapi-implementation-guide.md):
+From [`csapi-implementation-guide.md`](../../../planning/csapi-implementation-guide.md):
 
 > **Code coverage**: >80% statement coverage, >80% branch coverage, 100% public API coverage
 
@@ -1088,8 +1090,8 @@ test('multiply calculates product', () => {
 4. [Section 9: SensorML Testing Requirements](./09-sensorml-testing-requirements.md) - SensorML test lines
 5. [Section 10: SWE Common Testing Requirements](./10-swe-common-testing-requirements.md) - SWE Common test lines
 6. [Section 12: QueryBuilder Testing Strategy](./12-querybuilder-testing-strategy.md) - URL Builder test lines
-7. [Section 16: Worker Extensions Testing Strategy](./16-worker-extensions-testing-strategy.md) - Worker test lines
-8. [CSAPI Implementation Guide](../../../csapi-implementation-guide.md) - Official coverage requirements
+7. [Section 16: Worker Extensions Testing Strategy](./16-worker-extensions-testing.md) - Worker test lines
+8. [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) - Official coverage requirements
 9. [Jest Coverage Configuration](https://jestjs.io/docs/configuration#coveragethreshold-object) - Jest docs
 
 ---

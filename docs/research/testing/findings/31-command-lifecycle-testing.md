@@ -1,5 +1,17 @@
 # Section 31: Command Lifecycle Testing Strategy
 
+> ⚠️ **REVIEW NOTICE — HIGH (Phase 4, H1): Tests Assert Fixture Response Data, Not Client Logic**
+>
+> **Phase 4 Cross-Cutting Review | Anti-Patterns: AP1, AP4**
+>
+> This document contains test templates in Sections 3.1–3.3 that assert fixture data values directly (`response.ok`, `response.status`, `response.data.id`, `response.data.status.statusCode`, `result.data.inline.temperature`) rather than testing client-side parsing, URL construction, or data transformation. These tests would pass even if the client code did nothing — the mock returns the fixture, and the test asserts the fixture's own content. Additionally, `mockServer.mockAsyncCommand()` introduces a custom mock server abstraction rather than using the upstream `globalThis.fetch` mocking convention.
+>
+> **What's usable:** Specification analysis (Sections 1–2) — lifecycle states, transition rules, sync vs async execution models, polling strategies. Test scenario tables (Section 3 tables) — comprehensive scenario coverage. State machine testing approach (Section 3.5). Fixture design (Sections 4–5).
+>
+> **What must be rewritten:** Sections 3.1, 3.2, 3.3 test implementations must be reframed to: mock `globalThis.fetch` with fixture responses → call client methods (e.g., `client.commands.submit()`, `client.commands.getStatus()`) → assert the client's parsed/transformed output (URL construction, parsed status objects, error wrapping), not the raw fixture data values.
+>
+> See also: [Phase 4 Cross-Cutting Review](../review/phase-4-cross-cutting-review.md)
+
 **Research Plan:** [Research Plan 31: Command Lifecycle Testing Strategy](../research-plans/31-command-lifecycle-testing.md)
 
 **Research Questions:** 6 core questions about command submission, status tracking, result retrieval, cancel operations, sync vs async commands, and fixtures.
@@ -549,6 +561,8 @@ async submitCommand(controlStreamId: string, params: any) {
 
 ### 3.1 Command Submission Tests (6-8 tests)
 
+> ⚠️ **AP1/AP4**: Test code below asserts fixture response values (`response.ok`, `response.status`, `response.data.id`, `response.data.status.statusCode`, `response.headers.location`). Must be rewritten to mock `globalThis.fetch` → call client method → assert client's URL construction and parsed output structure.
+
 **Priority:** **CRITICAL**
 
 | Test ID | Scenario | Expected Behavior | Lines |
@@ -682,6 +696,8 @@ describe('Command Submission', () => {
 ```
 
 ### 3.2 Status Tracking Tests (8-10 tests)
+
+> ⚠️ **AP1/AP4**: Test code below uses `mockServer.mockAsyncCommand()` (custom mock server, not upstream `globalThis.fetch` pattern) and asserts fixture data values (`status.data.status.statusCode`, `status.data.status.percentCompletion`, `status.data.status.executionTime`). Must be rewritten to mock `globalThis.fetch` → call client polling methods → assert client's parsed status objects and polling behavior.
 
 **Priority:** **CRITICAL**
 
@@ -918,6 +934,8 @@ describe('Command Status Tracking', () => {
 ```
 
 ### 3.3 Result Retrieval Tests (6-8 tests)
+
+> ⚠️ **AP1/AP4**: Test code below asserts fixture content values (`result.data.inline.imageUrl`, `result.data.inline.temperature`, `result.data.observations`, `result.data.datastream`). Must be rewritten to mock `globalThis.fetch` → call client result retrieval method → assert client's parsed result structure and any URL resolution/transformation.
 
 **Priority:** **HIGH**
 
