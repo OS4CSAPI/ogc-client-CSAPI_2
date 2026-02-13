@@ -1619,6 +1619,8 @@ describe('System Methods', () => {
 
 #### Task 2.2-2.9: Remaining Resource Types
 
+> **Note:** For complete method lists per resource type (including all CRUD, navigation, and temporal methods), see [ROADMAP v3.0 Phase 2 tasks](../../../planning/ROADMAP.md).
+
 **Follow same pattern for:**
 - Task 2.2: DataStreams Methods (2-3 hours, ~10 methods)
 - Task 2.3: Observations Methods (3-4 hours, ~12 methods - most complex)
@@ -1655,18 +1657,20 @@ npm test -- url_builder.spec.ts
 #
 # Tests: 184 passed, 184 total
 # Time: 8.5s
-# Coverage: Statement 92%, Branch 88%, Function 90%
+# Coverage: Statement >80%, Branch >80% (ROADMAP minimum)
 ```
 
 **✅ Phase 2 Complete!** - All 70-80 QueryBuilder methods implemented and tested
 
 ---
 
-### Phase 3: Format Handling (16-28 hours, 15 subtasks)
+### Phase 3: Format Handling (16-28 hours, 17 tasks per ROADMAP v3.0)
+
+> **Note:** This playbook groups Phase 3 into simplified subtask ranges (3.1-3.5, 3.6-3.10, 3.11-3.15) for readability. ROADMAP v3.0 defines **17 granular tasks** with explicit dependency ordering. Refer to [ROADMAP v3.0 Phase 3](../../../planning/ROADMAP.md) for the authoritative task list and dependencies.
 
 **Goal:** SensorML/SWE parsers + GeoJSON/Format Detector/Validator extensions
 
-**Dependencies:** Phase 1-2 complete
+**Dependencies:** Phase 1-2 complete. **Critical:** SWE Common types must be completed before SensorML types (dependency).
 
 **Incremental Testing:** Write tests immediately after each subtask (not batched)
 
@@ -2575,6 +2579,8 @@ npm test -- integration/discovery.spec.ts
 
 **Before committing any tests, validate against Section 36 checklist:**
 
+> **Note:** This is a condensed 27-item version of Section 36's full 41-item checklist, optimized for quick pre-commit self-review. See [Section 36: Test Quality Checklist and Review Process](36-test-quality-checklist-review-process.md) for the complete checklist and review process details. Also reference [Section 18: Error Condition Testing Strategy](18-error-condition-testing-strategy.md) for systematic error testing approaches (network errors, validation errors, HTTP status codes, timeout handling).
+
 **Pre-Commit Checklist:**
 
 ```markdown
@@ -2925,7 +2931,7 @@ npm run fixtures:validate -- --resource systems
 - [ ] All parameter encodings tested
 - [ ] Resource availability validation tested
 - [ ] Integration with OgcApiEndpoint tested
-- [ ] Coverage: Statement >90%, Branch >85%
+- [ ] Coverage: Statement >80%, Branch >80% (ROADMAP minimum)
 
 **Parser Component:**
 
@@ -2935,7 +2941,7 @@ npm run fixtures:validate -- --resource systems
 - [ ] Nested structures tested (1-2 levels)
 - [ ] Type inference tested
 - [ ] Error handling tested
-- [ ] Coverage: Statement >88%, Branch >82%
+- [ ] Coverage: Statement >80%, Branch >80% (ROADMAP minimum)
 
 **Integration Component:**
 
@@ -2945,29 +2951,31 @@ npm run fixtures:validate -- --resource systems
 - [ ] Command execution workflow tested
 - [ ] Error handling tested
 - [ ] Fixtures validated
-- [ ] Coverage: E2E workflows >90%
+- [ ] Coverage: Statement >80%, Branch >80% (ROADMAP minimum)
 
 ### 7.2 Phase Completion Checklist
 
-**Phase 1: Core Structure**
+> **Note:** The Phase 1 entries below show `[x]` checkmarks as **examples of what completed entries look like** — Phase 1 has NOT been implemented yet. Use `[ ]` unchecked boxes when tracking actual progress.
+
+**Phase 1: Core Structure** _(example of completed format)_
 
 - [ ] Task 1.1: Type System ✅
   - [x] model.ts created (~350-400 lines)
   - [x] model.spec.ts created (~200-300 lines)
   - [x] All tests passing
-  - [x] Coverage >85%
+  - [x] Coverage >80% (ROADMAP minimum)
 
 - [ ] Task 1.2: Helper Utilities ✅
   - [x] helpers.ts created (~50-80 lines)
   - [x] helpers.spec.ts created (~150-200 lines)
   - [x] All tests passing
-  - [x] Coverage >90%
+  - [x] Coverage >80% (ROADMAP minimum)
 
 - [ ] Task 1.3: Stub QueryBuilder ✅
   - [x] url_builder.ts created (~100-150 lines)
   - [x] url_builder.spec.ts created (~100-150 lines)
   - [x] All tests passing
-  - [x] Coverage >85%
+  - [x] Coverage >80% (ROADMAP minimum)
 
 - [ ] Task 1.4: OgcApiEndpoint Integration ✅
   - [x] endpoint.ts modified (+35 lines)
@@ -2990,16 +2998,15 @@ npm run fixtures:validate -- --resource systems
   - [ ] Commands (9 methods, 18 tests)
 
 - [ ] Coverage targets met
-  - [ ] Statement >92%
-  - [ ] Branch >88%
-  - [ ] Function >90%
+  - [ ] Statement >80% (ROADMAP minimum)
+  - [ ] Branch >80% (ROADMAP minimum)
 
-**Phase 3: Format Handling**
+**Phase 3: Format Handling** _(17 tasks per ROADMAP v3.0)_
 
 - [ ] SWE Common Parser (5 subtasks)
 - [ ] SensorML Parser (5 subtasks)
-- [ ] Extensions (5 subtasks)
-- [ ] Coverage: Statement >88%, Branch >82%
+- [ ] Extensions (5 subtasks) + 2 additional tasks (see ROADMAP v3.0)
+- [ ] Coverage: Statement >80%, Branch >80% (ROADMAP minimum)
 
 **Phase 4: Worker & Tests**
 
@@ -3012,13 +3019,15 @@ npm run fixtures:validate -- --resource systems
 
 **By Component:**
 
-| Component | Statement | Branch | Function |
-|-----------|-----------|--------|----------|
-| QueryBuilder | 92% | 88% | 90% |
-| Parsers | 88% | 82% | 86% |
-| Integration | 90% | 85% | 88% |
-| Utilities | 95% | 90% | 100% |
-| **Overall** | **90%** | **85%** | **88%** |
+> **Note:** ROADMAP v3.0 specifies **>80% statement and branch coverage** as the minimum requirement. The targets below are stretch goals — meeting the ROADMAP minimum is sufficient for completion.
+
+| Component | Minimum (ROADMAP) | Stretch Goal |
+|-----------|-------------------|---------------|
+| QueryBuilder | >80% stmt, >80% branch | 92% stmt, 88% branch |
+| Parsers | >80% stmt, >80% branch | 88% stmt, 82% branch |
+| Integration | >80% stmt, >80% branch | 90% stmt, 85% branch |
+| Utilities | >80% stmt, >80% branch | 95% stmt, 90% branch |
+| **Overall** | **>80% stmt, >80% branch** | **90% stmt, 85% branch** |
 
 **Measuring Progress:**
 
@@ -3334,7 +3343,18 @@ it('[test name]', () => {
 3. Re-run tests using those fixtures
 4. Update fixture inventory documentation
 
-### 10.2 Adding New Tests
+### 10.2 Regression Testing
+
+> **Reference:** See [Section 20: Regression Testing Strategy](20-regression-testing-strategy.md) for comprehensive regression prevention approaches.
+
+**Before adding CSAPI code:**
+1. Run full existing test suite (`npm test`) — all existing tests must pass
+2. After adding CSAPI code, run full suite again — no existing tests should break
+3. If existing tests fail, the CSAPI addition has introduced a regression — fix before proceeding
+
+**Key principle:** CSAPI is an _addition_ to the library. Existing Features, Tiles, EDR, WFS, WMS, WMTS functionality must remain fully passing at all times.
+
+### 10.3 Adding New Tests
 
 **Checklist:**
 
@@ -3347,7 +3367,7 @@ it('[test name]', () => {
 - [ ] Tests run and pass
 - [ ] Coverage targets met
 
-### 10.3 Test Health Monitoring
+### 10.4 Test Health Monitoring
 
 **Monthly health check:**
 
@@ -3409,7 +3429,7 @@ npm run fixtures:validate
 **Testing Principles:**
 - **Meaningful:** Validate real behavior, not mocks
 - **Useful:** Catch real bugs (validated by breaking code)
-- **Deep:** Comprehensive coverage (>85% statement, >80% branch)
+- **Deep:** Comprehensive coverage (>80% statement, >80% branch per ROADMAP)
 - **End-to-End:** Complete workflows (3+ operations)
 
 **For detailed research, reference Sections 1-37.**
