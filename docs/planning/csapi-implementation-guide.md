@@ -1123,6 +1123,8 @@ Deployment navigates to:
 
 **Key finding:** Every navigation pattern requires traversing resource type boundaries. Multi-hop paths are common (3-6 resource types in single workflow).
 
+**Canonical URL equivalence guarantee:** Every resource accessible via a nested endpoint (e.g., `/systems/{id}/subsystems/{subId}`) is also accessible at its canonical top-level URL (e.g., `/systems/{subId}`). The server guarantees the same resource representation at both URLs. This means the client can always use canonical URLs for direct access and nested URLs for scoped queries — both return identical data.
+
 #### Seamless Navigation with Single-Class
 
 **Implementation:**
@@ -1549,7 +1551,9 @@ The CSAPIQueryBuilder includes Properties resource methods to manage CSAPI Prope
 - Get single property: `GET /properties/{id}`
 - Query properties: `GET /properties?q=temperature&system=...`
 - Properties by system: `GET /properties?system={systemId}` (properties this system can observe)
-- Properties in collection: `GET /collections/{collectionId}/items?featureType=sosa:ObservableProperty`
+- Properties in collection: `GET /collections/{collectionId}/items?itemType=sosa:ObservableProperty`
+
+> **⚠️ Non-Feature Resource:** Properties are the only Part 1 resource that is **not** a GeoJSON Feature. The CSAPI specification uses `resources`/`itemType` (not `features`/`featureType`) for Properties collections. The response is a plain JSON collection with `items` (not `features`), and collection metadata uses `itemType` (not `featureType`). This distinction must be handled in the response parser.
 
 **Property Metadata to Parse:**
 - `definition`: URI from controlled vocabulary (QUDT, CF, etc.)
@@ -1971,6 +1975,9 @@ This URL builder implements FULL query parameter support for CSAPI Parts 1 and 2
 - Query parameter: `f=json|geojson|sml+json|swe+json|swe+text|html`
 - HTTP Accept header: `application/json`, `application/geo+json`, `application/sml+json`, `application/swe+json`, `application/swe+text`
 - Format-specific parameters for Part 2: `obsFormat` (observation encoding), `cmdFormat` (command encoding)
+
+**Deferred Parameters (LOW priority):**
+- `sortBy` / `sortOrder`: Sorting parameters are defined in OGC API – Common but are **not required** by the CSAPI specification. Implementation is deferred as LOW priority — the client will not include `sortBy`/`sortOrder` support in the initial contribution. Server-side default ordering (by resource ID or temporal order) is sufficient for all planned use cases.
 
 **References:**
 - [Query Parameter Requirements](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/requirements/csapi-query-parameters.md) - Complete catalog of all CSAPI query parameters
@@ -3077,6 +3084,8 @@ The format detector is existing code that examines HTTP response headers (Conten
 
 The validator is existing code that checks whether parsed documents conform to format specifications and semantic constraints. For CSAPI, we will extend this validator with validation of CSAPI requirements. The extension will check CSAPI-specific requirements: required properties for each resource type, valid enumeration values, URI format validation, temporal validity constraints, spatial constraint validation, association integrity, and schema conformance for Part 2 resources (Observation results must match DataStream schema, Command parameters must match ControlStream schema). The extension will add CSAPI validation rules to the existing validation pipeline, reporting errors and warnings through the same error handling mechanism used for other formats.
 
+> **⚠️ Clarification — Client-Side Validation Only:** The validation rules below are **implementation specifications for client-side input validation** (Responsibility 5: Validate). They define what the client checks before sending requests or after parsing responses. They are **NOT test criteria for verifying server data correctness** — testing whether a server returns valid data is AP3 (Server Conformance Testing). Tests should verify that the validator correctly rejects invalid inputs (e.g., missing required fields, malformed URIs), not that fixture data passes validation.
+
 **CSAPI Validation Rules:**
 
 **Part 1 Resource Validation:**
@@ -3175,6 +3184,8 @@ The background processing component extends the existing Web Worker infrastructu
 
 **Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI message handlers to existing worker)
 
+> **⏱️ Phasing Note:** Worker extensions are **Phase 4 only**. All CSAPI parsing and validation must work synchronously on the main thread first (Phases 1-3). Worker offloading is a performance optimization added after core functionality is complete and tested.
+
 **References:**
 - [pr114-analysis.md](../research/upstream/pr114-analysis.md): Worker patterns for EDR implementation
 - [csapi-part2-requirements.md](../research/requirements/csapi-part2-requirements.md): Performance requirements for large observation datasets
@@ -3237,6 +3248,21 @@ The test coverage component extends the existing Jest test suite to cover all CS
 - **Performance testing** is OUT OF SCOPE for the initial contribution. Performance profiling and benchmarking may be added post-merge as a separate effort. (See Doc 33 — retained as reference only, not actionable.)
 - **Real-world server testing** is OUT OF SCOPE — all tests use mocked HTTP responses per AP2 (no live server dependencies). Real-server compatibility validation is deferred to post-merge integration testing. (See Doc 32 — AP2-bannered, retained as reference only.)
 
+**HTTP Mocking Convention:**
+All tests mock HTTP at the `globalThis.fetch` level using Jest's `jest.fn()` — no real network calls. This follows the upstream library's established pattern and enforces AP2 compliance:
+
+```typescript
+// Standard fetch mocking pattern (used in ALL test files)
+globalThis.fetch = jest.fn().mockResolvedValue({
+  ok: true,
+  status: 200,
+  json: () => Promise.resolve(fixtureData),
+  headers: new Headers({ 'content-type': 'application/geo+json' }),
+});
+```
+
+Never use `nock`, `msw`, or other HTTP interception libraries — `globalThis.fetch` mocking is the project convention.
+
 **Test Fixture Directory:**
 All CSAPI test fixtures are organized under `fixtures/csapi/sample-server/` using a **URL-path-mirroring convention** — the fixture directory structure mirrors the API endpoint paths for easy discovery:
 
@@ -3255,6 +3281,8 @@ fixtures/csapi/sample-server/
 ```
 
 This convention ensures fixture paths are predictable from the API endpoint being tested: the mock for `GET /collections/weather-stations/systems` lives at `fixtures/csapi/sample-server/collections/weather-stations/systems/`.
+
+**Estimated fixture count:** ~80-100 JSON/XML files covering all 9 resource types, all format variations (GeoJSON, SensorML, SWE Common), error responses, and edge cases.
 
 **Test Coverage Targets:**
 - **Code coverage**: >80% statement coverage, >80% branch coverage, 100% public API coverage
@@ -4371,7 +4399,7 @@ Every component described above aligns with these core project goals:
 1. Write method signatures before implementation
 3. Add comprehensive JSDoc comments with parameters, return types, examples
 4. Implement functionality with inline documentation for complex logic
-5. Write tests as you implement (not deferred to later)
+5. Write tests as you implement (not deferred to later) — **max 2-3 hours or 800 LOC between test runs** (incremental cadence from ROADMAP v3, 31 checkpoints)
 6. Document edge cases and validation rules as discovered
 7. Add usage examples to JSDoc for common scenarios
 8. Validate against spec examples throughout
@@ -4387,6 +4415,7 @@ Every component described above aligns with these core project goals:
 - Performance profiling for heavy operations
 - Follow three-tier type hierarchy
 - Use helper methods for code reuse (no inheritance)
+- **Meaningful vs trivial** testing standard: every test must validate meaningful client behavior (parsing correctness, URL construction, error handling), not trivial assertions like "object exists" or "type is defined." See [Doc 06 — Meaningful vs Trivial Definition](../research/testing/findings/06-meaningful-vs-trivial-definition.md) for the "meaningful vs trivial" distinction and upstream examples.
 
 **Documentation Standards:**
 - Clear, concise method descriptions
