@@ -4,7 +4,7 @@
 
 **Research Questions:** 7 core questions about fixture extraction from specifications, sourcing strategies (OpenSensorHub availability, hand-crafting needs), organization by resource type and format, reusability structures, provenance documentation, and synchronization with spec updates
 
-**Methodology:** 5-phase systematic analysis (Phase 1: Fixture Inventory cataloging ~280 fixtures across all test types → Phase 2: Fixture Sourcing Analysis evaluating specification examples and server availability → Phase 3: Organization Structure Design with directory hierarchies and naming conventions → Phase 4: Reusability and Maintenance Strategy with validation procedures → Phase 5: Synthesis into comprehensive execution plan)
+**Methodology:** 5-phase systematic analysis (Phase 1: Fixture Inventory cataloging fixtures across all test types → Phase 2: Fixture Sourcing Analysis evaluating specification examples and server availability → Phase 3: Organization Structure Design with directory hierarchies and naming conventions → Phase 4: Reusability and Maintenance Strategy with validation procedures → Phase 5: Synthesis into comprehensive execution plan)
 
 **Research Time:** 3.5 hours (January 31, 2025)
 
@@ -23,7 +23,7 @@
 - Section 13: [Resource Method Testing Patterns](13-resource-method-testing-patterns.md) (23 resource fixtures)
 - Section 14: [Integration Test Workflow Design](14-integration-test-workflow-design.md) (33 workflow fixtures)
 
-**Document Purpose:** Provides a comprehensive plan for acquiring, organizing, and maintaining ~280 test fixtures across all test types with specific sourcing strategies, directory structure design, file naming conventions, reusability patterns, provenance tracking, and lifecycle management procedures
+**Document Purpose:** Provides a comprehensive plan for acquiring, organizing, and maintaining test fixtures across all test types with specific sourcing strategies, directory structure design, file naming conventions, reusability patterns, provenance tracking, and lifecycle management procedures
 
 ---
 
@@ -49,19 +49,21 @@
 
 ## 1. Executive Summary
 
+> **⚠️ REVISED (Phase 2A Review):** Original fixture count target of ~280 has been revised to **~80-100** based on comparison with the upstream repo, which supports 6+ API types with only 120 total fixtures. The original estimate of ~280 fixtures for CSAPI alone would exceed the entire existing fixture library by 2.3x. The most inflated category was SWE Common (120 proposed — reduced to 15-25). Effort estimate revised from 240-290 hours to **~50-75 hours**. Start with ~30 critical-path fixtures and add incrementally as tests demand.
+
 ### 1.1 Fixture Requirements Overview
 
-**Total Fixtures Identified:** **~280 fixtures minimum** across all test types
+**Total Fixtures Identified:** **~80-100 fixtures** across all test types *(revised from original ~280)*
 
-**Breakdown by Section:**
-- Section 8 (CSAPI Spec): 25+ examples (Part 1: 11, Part 2: 14+)
-- Section 9 (SensorML): ~25 fixtures (5 PhysicalSystem, 3 PhysicalComponent, etc.)
-- Section 10 (SWE Common): ~120 fixtures (40 JSON, 40 Text, 40 Binary)
-- Section 11 (GeoJSON CSAPI): ~20 fixtures (5 resource types × 4 variants)
+**Breakdown by Section (revised):**
+- Section 8 (CSAPI Spec): 15-20 examples (Part 1 + Part 2)
+- Section 9 (SensorML): 8-12 fixtures (key document types + 2-3 error cases)
+- Section 10 (SWE Common): 15-25 fixtures (JSON primary, text/binary only as needed by parser)
+- Section 11 (GeoJSON CSAPI): 10-15 fixtures (5 resource types × 2-3 variants)
 - Section 12 (QueryBuilder): 5 universal fixtures
-- Section 13 (Resource Methods): 23 fixtures (5 universal + 18 resource-specific)
-- Section 14 (Integration Workflows): 33 fixtures across 4 workflows
-- **Additional edge cases:** ~30 error/edge case fixtures
+- Section 13 (Resource Methods): 15-20 fixtures (universal + key resource-specific)
+- Section 14 (Integration Workflows): 10-15 fixtures (discovery + observation workflows)
+- **Additional edge cases:** 5-8 error/edge case fixtures
 
 **Primary Sources Identified:**
 1. ✅ **CSAPI Part 1 & 2 Specifications** - Available examples with JSON representations
@@ -83,108 +85,84 @@
 - **Multiple dimensions**: Resource type, format, variant (valid/invalid), test type, workflow
 - **Reusability needs**: Universal fixtures shared across test types vs. resource-specific fixtures
 - **Encoding variations**: JSON, Text (CSV), Binary (base64) for SWE Common datastreams
-- **Maintenance overhead**: ~280+ fixtures require systematic validation and update procedures
+- **Maintenance overhead**: Follow upstream approach — git history + PR review, no special infrastructure
 
 ### 1.3 Strategic Approach
 
 **Three-Phase Sourcing Plan:**
 
-**Phase 1: Specification Extraction** (Weeks 1-2)
-- Extract examples from CSAPI, SensorML, SWE Common specs
-- Convert spec examples to standalone fixture files
-- Validate extracted fixtures against JSON schemas
-- **Deliverables:** ~170 fixtures from specifications
+**Phase 1: Critical Path Fixtures** (Week 1)
+- Extract key examples from CSAPI, SensorML, SWE Common specs
+- Create QueryBuilder/Resource Method fixtures
+- Create discovery workflow fixtures
+- **Deliverables:** ~30 critical-path fixtures
 
-**Phase 2: Hand-Crafted Fixtures** (Weeks 3-4)
-- Create error case fixtures (invalid properties, schema violations)
-- Create edge case fixtures (empty collections, null geometries, extreme values)
-- Create workflow-specific fixtures (multi-hop navigation, circular references)
-- **Deliverables:** ~80 hand-crafted fixtures
+**Phase 2: Incremental Expansion** (Weeks 2-3)
+- Add fixtures as tests demand them (test-driven fixture creation)
+- Create error/edge case fixtures as error-handling tests are written
+- Expand SWE Common coverage for formats actually parsed by client
+- **Deliverables:** ~40-50 additional fixtures
 
-**Phase 3: Validation and Integration** (Week 5)
-- Validate all fixtures against schemas
-- Create fixture metadata (source, date, validation status)
-- Integrate fixtures into test file structure
-- **Deliverables:** Complete validated fixture library
+**Phase 3: Remaining Coverage** (As needed)
+- Add SWE text/binary fixtures only when parser supports them
+- Add advanced workflow fixtures when integration tests reach that scope
+- **Deliverables:** ~10-20 remaining fixtures
 
 ---
 
 ## 2. Fixture Inventory and Counts
 
+> **⚠️ REVISED (Phase 2A Review):** Fixture counts below have been revised downward. The upstream repo supports 6+ API types with 120 total fixtures. Original estimates of ~280 for CSAPI alone were inflated ~3x. SWE Common was the most inflated category (120 → 15-25). Adopt a test-driven approach: create fixtures as tests demand them.
+
 ### 2.1 Complete Fixture Matrix
 
 | **Section** | **Category** | **Fixture Count** | **Formats** | **Variants** | **Source** |
 |------------|--------------|------------------|-------------|--------------|------------|
-| **Section 8** | CSAPI Spec Examples | 25+ | JSON | Valid | CSAPI Specs |
-| | Part 1 Resources | 11 | JSON | Valid | Part 1 |
-| | Part 2 Observations | 14+ | JSON | Valid | Part 2 |
-| **Section 9** | SensorML | ~25 | JSON | Valid + Error | SensorML 3.0 Spec |
-| | PhysicalSystem | 5 | JSON | 3 valid, 2 error | Spec + Hand-craft |
-| | PhysicalComponent | 3 | JSON | 2 valid, 1 error | Spec + Hand-craft |
-| | SimpleProcess | 2 | JSON | Valid | Spec |
-| | AggregateProcess | 3 | JSON | Valid | Spec |
-| | Composite systems | 4 | JSON | Valid | Hand-craft |
-| | Error cases | 5 | JSON | Invalid | Hand-craft |
-| | Spec examples | 3 | JSON | Valid | SensorML Spec |
-| **Section 10** | SWE Common | ~120 | 3 encodings | Valid + Error | SWE 3.0 Spec |
-| | JSON encoding | 40 | JSON | 35 valid, 5 error | Spec + Hand-craft |
-| | Text encoding (CSV) | 40 | Text | 35 valid, 5 error | Spec + Hand-craft |
-| | Binary encoding | 40 | Binary (base64) | 35 valid, 5 error | Spec + Hand-craft |
-| **Section 11** | GeoJSON CSAPI | ~20 | JSON | Valid + Invalid | Hand-craft |
-| | Systems | 4 | JSON | 2 valid, 2 invalid | CSAPI Spec + Hand-craft |
-| | Deployments | 4 | JSON | 2 valid, 2 invalid | CSAPI Spec + Hand-craft |
-| | Procedures | 4 | JSON | 2 valid, 2 invalid | CSAPI Spec + Hand-craft |
-| | SamplingFeatures | 4 | JSON | 2 valid, 2 invalid | CSAPI Spec + Hand-craft |
-| | Properties | 4 | JSON | 2 valid, 2 invalid | CSAPI Spec + Hand-craft |
+| **Section 8** | CSAPI Spec Examples | 15-20 | JSON | Valid | CSAPI Specs |
+| **Section 9** | SensorML | 8-12 | JSON | Valid + Error | SensorML 3.0 Spec |
+| | PhysicalSystem | 3 | JSON | 2 valid, 1 error | Spec + Hand-craft |
+| | PhysicalComponent | 2 | JSON | 1 valid, 1 error | Spec + Hand-craft |
+| | Process types | 3 | JSON | Valid | Spec |
+| | Error/composite | 2-4 | JSON | Mixed | Hand-craft |
+| **Section 10** | SWE Common | 15-25 | JSON primary | Valid + Error | SWE 3.0 Spec |
+| | JSON encoding | 10-15 | JSON | Valid + error | Spec + Hand-craft |
+| | Text encoding | 3-5 | Text | Valid | Spec (as needed) |
+| | Binary encoding | 2-5 | Binary | Valid | Hand-craft (as needed) |
+| **Section 11** | GeoJSON CSAPI | 10-15 | JSON | Valid + Invalid | Hand-craft |
+| | 5 resource types | 10-15 | JSON | 2-3 per type | CSAPI Spec + Hand-craft |
 | **Section 12** | QueryBuilder | 5 | JSON | Valid | Hand-craft |
-| | conformance-all | 1 | JSON | Valid | Hand-craft |
-| | conformance-part1 | 1 | JSON | Valid | Hand-craft |
-| | collection-info-all | 1 | JSON | Valid | Hand-craft |
-| | collection-info-part1 | 1 | JSON | Valid | Hand-craft |
-| | collection-info-none | 1 | JSON | Error | Hand-craft |
-| **Section 13** | Resource Methods | 23 | JSON | Valid | Hand-craft |
+| **Section 13** | Resource Methods | 15-20 | JSON | Valid | Hand-craft |
 | | Universal fixtures | 5 | JSON | Valid | Same as Section 12 |
-| | Resource-specific | 18 | JSON | Valid | Hand-craft |
-| | (9 types × 2 each) | | | collection + item | |
-| **Section 14** | Integration Workflows | 33 | JSON | Valid + Edge | Hand-craft |
-| | Discovery workflow | 8 | JSON | Valid | Hand-craft |
-| | Observation workflow | 10 | JSON | Valid | Hand-craft |
-| | Command workflow | 8 | JSON | Valid | Hand-craft |
-| | Navigation workflow | 7 | JSON | Valid + Edge | Hand-craft |
-| **Additional** | Error/Edge Cases | ~30 | Various | Invalid/Edge | Hand-craft |
-| | Empty collections | 9 | JSON | Edge | Hand-craft |
-| | Null geometries | 5 | JSON | Edge | Hand-craft |
-| | Invalid URIs | 5 | JSON | Error | Hand-craft |
-| | Schema violations | 5 | JSON | Error | Hand-craft |
-| | Circular references | 3 | JSON | Edge | Hand-craft |
-| | Large datasets | 3 | JSON | Edge | Hand-craft |
-| **TOTAL** | | **~280** | | | |
+| | Resource-specific | 10-15 | JSON | collection + item | Hand-craft |
+| **Section 14** | Integration Workflows | 10-15 | JSON | Valid + Edge | Hand-craft |
+| | Discovery workflow | 6-8 | JSON | Valid | Hand-craft |
+| | Observation workflow | 4-7 | JSON | Valid | Hand-craft |
+| **Additional** | Error/Edge Cases | 5-8 | Various | Invalid/Edge | Hand-craft |
+| **TOTAL** | | **~80-100** | | | |
 
 ### 2.2 Fixture Complexity Analysis
 
-**Simple Fixtures** (~80 fixtures, 15-30 minutes each):
+**Simple Fixtures** (~40 fixtures, 15-30 minutes each):
 - Conformance responses (single objects)
 - Collection-info responses (simple arrays)
-- Empty collections
-- Error responses
+- Empty collections, error responses
 
-**Medium Fixtures** (~150 fixtures, 30-60 minutes each):
+**Medium Fixtures** (~40 fixtures, 30-60 minutes each):
 - Single resource GeoJSON features (Systems, Deployments, etc.)
 - SensorML PhysicalSystem/PhysicalComponent
 - SWE Common JSON DataRecords/DataArrays
 - Simple workflow responses
 
-**Complex Fixtures** (~50 fixtures, 1-3 hours each):
+**Complex Fixtures** (~15 fixtures, 1-3 hours each):
 - Composite SensorML systems with nested components
-- SWE Common binary-encoded datastreams (requires encoding knowledge)
-- Multi-hop navigation scenarios
-- Integration workflow complete response chains
+- SWE Common binary-encoded datastreams (only if parser requires)
+- Integration workflow response chains
 
 **Estimated Effort:**
-- Simple: 80 × 20 min avg = 1,600 min = **27 hours**
-- Medium: 150 × 45 min avg = 6,750 min = **113 hours**
-- Complex: 50 × 2 hr avg = **100 hours**
-- **Total fixture creation effort: ~240 hours (~6 weeks at 40 hrs/week)**
+- Simple: 40 × 20 min avg = 800 min = **13 hours**
+- Medium: 40 × 45 min avg = 1,800 min = **30 hours**
+- Complex: 15 × 2 hr avg = **30 hours**
+- **Total fixture creation effort: ~73 hours (~2 weeks at 40 hrs/week)**
 
 ---
 
@@ -1312,136 +1290,60 @@ npm run validate:fixtures
 
 ---
 
-## 10. Fixture Validation Requirements
+## 10. Fixture Quality Assurance
 
-### 10.1 Schema Validation
+> **⚠️ REVISED (Phase 2A Review):** This section originally proposed an elaborate fixture validation infrastructure (schema validators, semantic validators, CI/CD pipeline, automated validation scripts) that validates fixture *content* against OGC specifications. This is a server-testing anti-pattern — fixtures are **test inputs**, not test subjects. The upstream repo validates its 120 fixtures through the only mechanism that matters: **tests pass or fail**.
+>
+> The original content has been replaced with client-oriented guidance aligned with upstream practices and the Phase 0 anti-pattern catalog.
 
-**JSON Schema Validators:**
-- **Tool:** Ajv (Another JSON Schema Validator) - https://ajv.js.org/
-- **Usage:**
-  ```typescript
-  import Ajv from 'ajv';
-  import csapiSchema from './schemas/csapi-system.json';
-  import systemFixture from './fixtures/geojson-csapi/systems/system-weather-station-valid.json';
-  
-  const ajv = new Ajv();
-  const validate = ajv.compile(csapiSchema);
-  const valid = validate(systemFixture);
-  
-  if (!valid) {
-    console.error(validate.errors);
-  }
-  ```
+### 10.1 Fixture Quality Through Tests
 
-**Schema Sources:**
-- **CSAPI:** JSON schemas from CSAPI specification (if available) or hand-crafted
-- **GeoJSON:** `@types/geojson` TypeScript definitions
-- **SensorML:** https://schemas.opengis.net/sensorML/3.0/json/
-- **SWE Common:** https://schemas.opengis.net/sweCommon/3.0/json/
+Fixtures are validated by the tests that use them. A fixture is "valid" if it enables the test to exercise the intended client behavior:
 
-**Validation Scope:**
-- **MUST validate:** All "valid" fixtures (should pass schema validation)
-- **MAY NOT validate:** "invalid" and "error" fixtures (expected to fail)
-- **MUST document:** Validation status in fixture metadata
-
-### 10.2 Semantic Validation
-
-**Beyond Schema:** Validate CSAPI-specific semantics
-
-**Validation Rules:**
-- **URI format:** `uid` property is valid URI
-- **Vocabulary values:** `featureType`, `systemType`, etc. from controlled vocabularies
-- **Temporal periods:** `validTime` is valid ISO8601 period (start/end or start/null)
-- **Link integrity:** `href` values in `links` array are valid URLs (for integration fixtures)
-- **Geometry constraints:** Non-spatial resources (Procedures, Properties) have `null` geometry
-- **Required properties:** All required CSAPI properties present
-
-**Custom Validator Example:**
 ```typescript
-function validateCSAPISystem(feature: SystemFeature): ValidationResult {
-  const errors: string[] = [];
-  
-  // Validate uid is URI
-  if (!isValidURI(feature.properties.uid)) {
-    errors.push('uid must be valid URI');
-  }
-  
-  // Validate featureType from vocabulary
-  if (!VALID_FEATURE_TYPES.includes(feature.properties.featureType)) {
-    errors.push(`featureType '${feature.properties.featureType}' not in vocabulary`);
-  }
-  
-  // Validate systemType (optional but must be from vocab if present)
-  if (feature.properties.systemType && !VALID_SYSTEM_TYPES.includes(feature.properties.systemType)) {
-    errors.push(`systemType '${feature.properties.systemType}' not in vocabulary`);
-  }
-  
-  return { valid: errors.length === 0, errors };
-}
+// CORRECT: Test validates CLIENT parsing using fixture as input
+it('should extract system UID from GeoJSON feature', () => {
+  const system = parseSystem(systemFixture);
+  expect(system.uid).toBe('urn:example:weather-station-001');
+});
+
+// CORRECT: Test validates CLIENT error handling using deliberately invalid fixture
+it('should throw when system feature lacks UID', () => {
+  expect(() => parseSystem(systemMissingUidFixture)).toThrow();
+});
 ```
 
-### 10.3 Integration Validation
-
-**Link Integrity:** Validate integration workflow fixture chains
-
-**Validation Rules:**
-- **Link resolution:** All `href` values in workflow fixtures resolve to other fixtures in chain
-- **Consistent IDs:** Resource IDs match across fixtures (e.g., system ID in discovery fixture matches system ID in datastream fixture)
-- **Complete workflows:** Each workflow has all required fixtures (root → final step)
-
-**Example Validation:**
+**What NOT to do:**
 ```typescript
-// Validate discovery workflow link chain
-const landingPage = require('./fixtures/integration/discovery/discovery-root-landing-page.json');
-const conformance = require('./fixtures/integration/discovery/discovery-conformance.json');
-
-// Check that landing page conformance link points to conformance fixture
-const conformanceLink = landingPage.links.find(l => l.rel === 'conformance');
-expect(conformanceLink.href).toBe('/conformance'); // Mock server path
-
-// Check that conformance fixture exists and has expected structure
-expect(conformance).toHaveProperty('conformsTo');
-expect(conformance.conformsTo).toBeInstanceOf(Array);
+// WRONG: Validates the fixture itself, not client code (Anti-Pattern 1 & 4)
+it('should have valid URI in uid field', () => {
+  expect(isValidURI(systemFixture.properties.uid)).toBe(true);
+});
 ```
 
-### 10.4 Automated Validation Pipeline
+### 10.2 Fixture Review During PRs
 
-**CI/CD Integration:**
-```yaml
-# .github/workflows/validate-fixtures.yml
-name: Validate Fixtures
+When adding new fixtures, PR review should verify:
+- **Filename is descriptive** — follows naming convention (Section 6)
+- **Placed in correct directory** — follows organization (Section 5)
+- **Associated test exists** — fixture is used by at least one test
+- **No sensitive data** — no credentials, internal URLs, PII
+- **Commit message documents provenance** — source URL, spec section, or creation rationale
 
-on:
-  pull_request:
-    paths:
-      - 'fixtures/**'
-  push:
-    paths:
-      - 'fixtures/**'
+### 10.3 Detecting Orphaned Fixtures
 
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: npm ci
-      - run: npm run validate:fixtures:schema
-      - run: npm run validate:fixtures:semantic
-      - run: npm run validate:fixtures:integration
+Periodically verify all fixtures are referenced by tests:
+```bash
+# Find fixtures not referenced in any source file
+for f in $(find fixtures/ -type f -name '*.json' -o -name '*.xml'); do
+  basename=$(basename "$f")
+  if ! grep -rq "$basename" src/; then
+    echo "ORPHANED: $f"
+  fi
+done
 ```
 
-**Validation Scripts** (`package.json`):
-```json
-{
-  "scripts": {
-    "validate:fixtures:schema": "ts-node scripts/validate-schema.ts",
-    "validate:fixtures:semantic": "ts-node scripts/validate-semantic.ts",
-    "validate:fixtures:integration": "ts-node scripts/validate-integration.ts",
-    "validate:fixtures": "npm run validate:fixtures:schema && npm run validate:fixtures:semantic && npm run validate:fixtures:integration"
-  }
-}
-```
+No automated CI/CD pipeline for fixture validation is needed — the existing test suite serves this purpose.
 
 ---
 
@@ -1579,106 +1481,76 @@ jobs:
 
 ## 12. Implementation Priorities
 
+> **⚠️ REVISED (Phase 2A Review):** Fixture counts and effort estimates revised to align with upstream scale (120 fixtures for 6+ API types). Adopt test-driven fixture creation: create fixtures when tests need them.
+
 ### 12.1 Critical Path Fixtures (High Priority)
 
 **Must Have for MVP Testing:**
 
-**QueryBuilder and Resource Methods (28 fixtures):**
+**QueryBuilder and Resource Methods (~15 fixtures):**
 - 5 universal fixtures (conformance, collection-info)
-- 18 resource-specific fixtures (9 types × 2 each)
-- 5 basic error fixtures (404, 400, empty collection, etc.)
+- 8-10 resource-specific fixtures (key resource types)
+- 2-3 basic error fixtures (404, 400, empty collection)
 - **Rationale:** Core CSAPI functionality depends on these; blocks unit tests
 
-**GeoJSON CSAPI Valid Features (10 fixtures):**
-- 2 valid fixtures per resource type (Systems, Deployments, Procedures, SamplingFeatures, Properties)
-- **Rationale:** Property extraction and validation tests require valid examples
+**GeoJSON CSAPI Valid Features (5-10 fixtures):**
+- 1-2 valid fixtures per key resource type
+- **Rationale:** Property extraction tests require valid examples
 
-**Integration Discovery Workflow (8 fixtures):**
-- Complete discovery workflow chain (root → collections → system → datastream)
+**Integration Discovery Workflow (6-8 fixtures):**
+- Discovery workflow chain (root → collections → system → datastream)
 - **Rationale:** Most common user workflow; demonstrates full API navigation
 
-**Total Critical Path:** **46 fixtures** (~55 hours effort)
+**Total Critical Path:** **~30 fixtures** (~20 hours effort)
 
 ### 12.2 High Priority Fixtures
 
 **Needed for Comprehensive Testing:**
 
-**SensorML Core Fixtures (~15 fixtures):**
-- PhysicalSystem (3 valid, 2 error)
-- PhysicalComponent (2 valid, 1 error)
-- SimpleProcess (2 valid)
-- AggregateProcess (2 valid)
-- Composite systems (3 valid)
-- **Rationale:** SensorML parser testing requires diverse examples
+**SensorML Core Fixtures (~8 fixtures):**
+- PhysicalSystem (2 valid, 1 error)
+- PhysicalComponent (1 valid, 1 error)
+- Process types (2-3 valid)
+- **Rationale:** SensorML parser testing requires representative examples
 
-**SWE Common JSON Encoding (~40 fixtures):**
-- All component types (scalars, ranges, records, arrays, streams)
-- Error cases included
-- **Rationale:** SWE parser testing depends on comprehensive coverage
+**SWE Common JSON Encoding (~12 fixtures):**
+- Key component types (scalars, records, arrays, streams)
+- 2-3 error cases
+- **Rationale:** SWE parser testing — cover types our client actually parses
 
-**Integration Observation Workflow (10 fixtures):**
-- Complete observation retrieval workflow
+**Integration Observation Workflow (5-7 fixtures):**
+- Observation retrieval workflow
 - **Rationale:** Second most common workflow; demonstrates datastream access
 
-**Total High Priority:** **65 fixtures** (~80 hours effort)
+**Total High Priority:** **~25 fixtures** (~25 hours effort)
 
-### 12.3 Medium Priority Fixtures
+### 12.3 Deferred Fixtures
 
-**Valuable but Can Be Deferred:**
+**Add incrementally as tests demand:**
 
-**GeoJSON CSAPI Invalid Features (10 fixtures):**
-- Error cases for each resource type
-- **Rationale:** Error handling tests are important but MVP can proceed without
+- GeoJSON CSAPI invalid features (error-handling tests)
+- SWE Common text/binary encoding (when parser supports these)
+- Command and navigation workflows (when integration tests reach this scope)
+- SensorML composite/error cases
+- Extreme edge cases (large datasets, deep nesting)
 
-**SWE Common Text Encoding (~40 fixtures):**
-- CSV encoding of all component types
-- **Rationale:** Format variation testing; lower priority than JSON
+**Estimated deferred:** **~25-45 fixtures** (~25 hours effort, spread over time)
 
-**Integration Command and Navigation Workflows (15 fixtures):**
-- Command submission workflow (8)
-- Cross-resource navigation (7)
-- **Rationale:** Advanced workflows; defer until core workflows tested
+### 12.4 Phased Implementation Timeline
 
-**SensorML Error and Composite Fixtures (~10 fixtures):**
-- Error cases and complex compositions
-- **Rationale:** Edge case testing; not needed for basic parser validation
-
-**Total Medium Priority:** **75 fixtures** (~85 hours effort)
-
-### 12.4 Low Priority Fixtures
-
-**Nice to Have / Future Enhancements:**
-
-**SWE Common Binary Encoding (~40 fixtures):**
-- Base64-encoded binary datastreams
-- **Rationale:** Performance and encoding variation; can defer until optimization phase
-
-**Extreme Edge Cases (~30 fixtures):**
-- Large collections (1000 items)
-- Deep nesting (10 levels)
-- Circular references
-- **Rationale:** Performance and stress testing; defer until MVP complete
-
-**Total Low Priority:** **70 fixtures** (~70 hours effort)
-
-### 12.5 Phased Implementation Timeline
-
-**Phase 1 (MVP):** Critical Path + High Priority = **111 fixtures (~135 hours / ~3.5 weeks)**
+**Phase 1 (MVP):** Critical Path = **~30 fixtures (~20 hours / 3 days)**
 - Supports core unit tests
-- Supports integration discovery and observation workflows
-- Enables SensorML and SWE JSON parser testing
+- Supports discovery workflow integration test
 
-**Phase 2 (Complete):** Medium Priority = **75 fixtures (~85 hours / ~2 weeks)**
-- Adds error case coverage
-- Adds SWE text encoding support
-- Adds advanced workflows (command, navigation)
+**Phase 2 (Solid Coverage):** High Priority = **~25 fixtures (~25 hours / 4 days)**
+- SensorML and SWE JSON parser testing
+- Observation workflow integration test
 
-**Phase 3 (Comprehensive):** Low Priority = **70 fixtures (~70 hours / ~2 weeks)**
-- Adds SWE binary encoding support
-- Adds performance and stress test fixtures
-- Achieves full fixture library coverage
+**Phase 3 (Incremental):** Deferred = **~25-45 fixtures (~25 hours, as needed)**
+- Test-driven: create fixtures when tests demand them
+- No artificial target — let test coverage drive fixture count
 
-**Total Effort:** **256 fixtures, ~290 hours, ~7.5 weeks**
+**Total Effort:** **~80-100 fixtures, ~70 hours, ~2 weeks**
 
 ---
 
@@ -1744,18 +1616,17 @@ jobs:
 - **Likelihood:** Medium (fixtures not validated before use)
 - **Impact:** High (tests pass with invalid data)
 - **Mitigation:**
-  - ✅ Automated validation pipeline (Section 10.4)
-  - CI/CD blocks merge if validation fails
-  - Metadata tracks validation status
-  - Periodic re-validation (quarterly)
+  - Tests that use fixtures serve as validation (if tests pass, fixtures are adequate)
+  - PR review for new fixtures catches obvious issues
+  - No separate validation infrastructure needed (upstream approach)
 
-**Risk 8: Semantic Validation Gaps**
-- **Likelihood:** Medium (schema validation insufficient)
-- **Impact:** Medium (tests miss CSAPI-specific errors)
+**Risk 8: ~~Semantic Validation Gaps~~ Fixture Adequacy**
+- **Likelihood:** Low (tests catch inadequate fixtures immediately)
+- **Impact:** Low (fix fixture when test fails)
 - **Mitigation:**
-  - Custom semantic validators (Section 10.2)
-  - Vocabulary validation against controlled lists
-  - Link integrity validation for integration fixtures
+  - Test assertions verify client behavior, not fixture content
+  - PR review checks fixture realism during code review
+  - Descriptive filenames enable quick identification of fixture purpose
 
 ### 13.4 Effort Estimation Risks
 
@@ -1781,80 +1652,44 @@ jobs:
 
 ## 14. Success Criteria
 
+> **⚠️ REVISED (Phase 2A Review):** Success criteria revised to remove references to hallucinated metadata system, fixture validation infrastructure, and inflated counts. Aligned with upstream approach.
+
 ### 14.1 Completeness Criteria
 
 **Fixture Count Targets:**
-- [ ] **Minimum 280 fixtures** created across all categories
-- [ ] **All 9 CSAPI resource types** represented
-- [ ] **All 3 SWE encoding formats** covered (JSON, Text, Binary)
-- [ ] **All 5 SensorML process types** represented
-- [ ] **All 4 integration workflows** have complete fixture chains
+- [ ] **~80-100 fixtures** created across all categories *(revised from 280)*
+- [ ] **Key CSAPI resource types** represented (Systems, Deployments, Procedures, Datastreams, Observations at minimum)
+- [ ] **SWE JSON encoding** covered (text/binary added only when parser needs them)
+- [ ] **Key SensorML document types** represented
+- [ ] **Discovery + observation workflows** have fixture chains
 
 **Coverage Criteria:**
 - [ ] **100% critical path fixtures** (Section 12.1) created
-- [ ] **90%+ high priority fixtures** (Section 12.2) created
-- [ ] **Valid + invalid variants** for all resource types
-- [ ] **Error cases** for common scenarios (404, 400, schema violations)
-- [ ] **Edge cases** for boundary conditions (empty, null, large, deep)
+- [ ] **High priority fixtures** (Section 12.2) created
+- [ ] **Valid + invalid variants** for key resource types
+- [ ] **Error cases** for common scenarios (404, 400, empty collection)
 
 ### 14.2 Quality Criteria
 
-**Validation:**
-- [ ] **100% of "valid" fixtures** pass JSON schema validation
-- [ ] **100% of "valid" fixtures** pass semantic validation (vocabularies, URIs)
-- [ ] **Integration workflow fixtures** have verified link integrity
-- [ ] **"Invalid" fixtures** documented as invalid-by-design with reason
-
-**Metadata:**
-- [ ] **100% of fixtures** have complete metadata (source, dates, purpose)
-- [ ] **All sourced fixtures** have source URLs documented
-- [ ] **Validation status** documented for all fixtures
-- [ ] **Related fixtures** cross-referenced (SWE encoding variants, workflow chains)
-
-**Documentation:**
-- [ ] **`README.md`** created with library overview
-- [ ] **`SOURCES.md`** created with provenance tracking
-- [ ] **`VALIDATION.md`** created with validation status
-- [ ] **`CHANGELOG.md`** created for fixture library updates
-- [ ] **This document (Section 15)** updated with final counts and status
+**Quality is validated through tests, not separate infrastructure:**
+- [ ] **All fixtures** used by at least one test
+- [ ] **All tests pass** with their fixture inputs
+- [ ] **Filenames** follow naming conventions (Section 6)
+- [ ] **Git commit messages** document fixture provenance
+- [ ] **No sensitive data** in any fixture (credentials, internal URLs)
 
 ### 14.3 Integration Criteria
 
 **Test Integration:**
 - [ ] **Fixtures imported** into unit tests (QueryBuilder, Resource Methods, Format Parsers)
-- [ ] **Fixtures imported** into integration tests (4 workflows)
+- [ ] **Fixtures imported** into integration tests (discovery, observation workflows)
 - [ ] **All tests passing** with fixture library
-- [ ] **No hardcoded test data** remaining in test files (all fixtures externalized)
+- [ ] **Fixture loading** follows upstream patterns (mock fetch or import)
 
-**Tooling:**
-- [ ] **Automated validation scripts** created (schema, semantic, integration)
-- [ ] **CI/CD pipeline** configured for fixture validation
-- [ ] **Fixture loading utilities** created (TypeScript helpers)
-- [ ] **Fixture count inventory** automated (script to count fixtures)
+### 14.4 Deliverable Checklist
 
-### 14.4 Maintainability Criteria
-
-**Organization:**
-- [ ] **Directory structure** implemented per Section 5
-- [ ] **Naming conventions** followed consistently per Section 6
-- [ ] **No duplicate fixtures** (same content, different names)
-- [ ] **Clear reusability patterns** established and documented
-
-**Procedures:**
-- [ ] **Update procedures** documented (Section 9)
-- [ ] **Validation procedures** documented (Section 10)
-- [ ] **Deprecation procedures** documented (Section 9.4)
-- [ ] **Periodic review schedule** established (quarterly)
-
-### 14.5 Deliverable Checklist
-
-- [ ] **Fixture library** (~280 files in `fixtures/` directory)
-- [ ] **Documentation files** (README, SOURCES, VALIDATION, CHANGELOG)
-- [ ] **Validation scripts** (schema, semantic, integration validators)
-- [ ] **CI/CD configuration** (GitHub Actions workflow)
-- [ ] **Fixture loading utilities** (TypeScript helpers)
+- [ ] **Fixture library** (~80-100 files following upstream directory structure)
 - [ ] **This research document** (Section 15 deliverable)
-- [ ] **Research plan updated** (Section 15 marked complete)
 - [ ] **Committed and pushed** to repository
 
 **Acceptance Criteria:**
@@ -1862,9 +1697,8 @@ jobs:
 1. All fixture categories identified and sourced
 2. Directory structure designed and documented
 3. Sourcing execution plan defined
-4. Maintenance procedures established
-5. Success criteria documented
-6. Deliverable created and committed
+4. Success criteria documented
+5. Deliverable created and committed
 
 ---
 
@@ -1964,7 +1798,7 @@ jobs:
 3. Commit deliverable to repository
 4. Proceed to Section 16 or next research priority
 
-**Total Fixture Target:** ~280 fixtures minimum
-**Estimated Effort:** ~240-290 hours (~6-7.5 weeks at 40 hrs/week)
-**Implementation Phases:** 3 phases (MVP, Complete, Comprehensive)
+**Total Fixture Target:** ~80-100 fixtures *(revised from ~280)*
+**Estimated Effort:** ~70 hours (~2 weeks at 40 hrs/week) *(revised from ~240-290 hours)*
+**Implementation Phases:** 3 phases (MVP, Solid Coverage, Incremental)
 **Success Criteria:** Documented in Section 14

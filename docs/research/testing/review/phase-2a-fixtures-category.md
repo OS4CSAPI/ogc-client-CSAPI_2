@@ -21,9 +21,9 @@ The fixtures category contains three documents at different stages of maturity. 
 **Overall Assessment:** The fixtures category demonstrates a healthy self-correction process (Part 2 catching Part 1's hallucination), but remediation was incomplete — the hallucinated content still exists in Part 1, and several secondary issues (inflated counts, server-testing patterns, over-engineered infrastructure) persist across documents.
 
 **Severity Summary:**
-- Critical Issues: 1 (unresolved hallucination in Part 1 Section 7)
-- High Issues: 4 (inflated counts, anti-pattern violations, directory mismatch, naming inconsistency)
-- Medium Issues: 3 (effort estimate inflation, over-engineered infrastructure, inaccurate fixture counts in guide)
+- Critical Issues: 1 (~~unresolved hallucination in Part 1 Section 7~~ resolved, see C1 commit `990e60e`)
+- High Issues: 4 (~~inflated counts~~ H1 resolved; ~~anti-pattern violations~~ H2 resolved; directory mismatch; naming inconsistency)
+- Medium Issues: 3 (~~effort estimate inflation~~ resolved with H1; over-engineered infrastructure; inaccurate fixture counts in guide)
 - Low Issues: 2 (academic over-documentation, incomplete action items)
 - Positive Findings: 5
 
