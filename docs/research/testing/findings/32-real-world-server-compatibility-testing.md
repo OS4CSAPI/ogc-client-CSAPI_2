@@ -1,5 +1,15 @@
 # Section 32: Real-World Server Compatibility Testing
 
+> **⚠️ REVIEW NOTICE (Phase 2E — C1): CRITICAL ANTI-PATTERN IDENTIFIED**
+>
+> This document's fundamental architecture is a **hybrid fixture/live test execution model** — the exact architecture the senior developer identified as the primary failure mode in the previous attempt (see [Phase 0: Lessons from Failed Attempt](../../review/phase-0-lessons-from-failed-attempt.md), Anti-Pattern AP2). Tests that run against live OpenSensorHub and 52°North servers, conditionally skip based on server availability, and validate server response content rather than client code are **not acceptable** for contribution to upstream `ogc-client`.
+>
+> **~35% of this document is client-oriented and valuable:** Section 5.1 (Conformance Detection) and Section 5.5 (Graceful Degradation) correctly test client behavior using mocked fetch and fixture data. These sections should be used during implementation.
+>
+> **~65% of this document tests server behavior and must NOT be implemented as written:** Sections 4 (hybrid execution strategy), 5.2 (OpenSensorHub live tests), 5.3 (52°North live tests), 5.4 (server availability gating), 6 (live infrastructure), and 7 (rate limiting). The server profile research in Sections 1-3 remains useful as reference context for fixture design, similar to Doc 22 Section 2.
+>
+> Key anti-pattern instances: `checkServerAvailability()` gating, `console.warn('...skipping')` × 5+, hardcoded credentials (`username: 'ogc'`), `npm run test:live` nightly scripts, `*.live.spec.ts` / `*.offline.spec.ts` dual jest projects.
+
 **Research Plan:** [Research Plan 32: Real-World Server Compatibility Testing](../research-plans/32-real-world-server-compatibility-testing.md)
 
 **Research Questions:** 6 core questions about OpenSensorHub testing, 52°North testing, server variations, partial conformance scenarios, server-specific quirks, and compatibility test suite structure.
@@ -685,6 +695,8 @@ function isValidCSAPIId(id: string): boolean {
 
 ## 4. Test Execution Strategies
 
+> **⚠️ REVIEW NOTICE (Phase 2E — C1, AP2):** This entire section describes a hybrid fixture/live execution model that mirrors the failed attempt's architecture. **Do not implement this.** All tests must use `globalThis.fetch` mocking with deterministic fixtures per upstream conventions. There should be no `test:live` scripts, no nightly CI runs against external servers, no `checkServerAvailability()` gating. The server profile information from Sections 1-3 should inform fixture design, but tests must never make real HTTP requests.
+
 ### 4.1 Live Testing (Nightly/Manual)
 
 **When to Use:**
@@ -998,6 +1010,8 @@ describe('Conformance Detection', () => {
 
 ### 5.2 Full Conformance Tests (OpenSensorHub) (~20 tests, 400-500 lines)
 
+> **⚠️ REVIEW NOTICE (Phase 2E — C1, AP1/AP4/AP5):** The test implementation below connects to a live OpenSensorHub server with hardcoded credentials, conditionally skips via `console.warn('OSH unavailable - skipping tests'); return;`, and asserts server response content (`expect(systems.items.length).toBeGreaterThan(0)`, `expect(system.id).toMatch(/^[a-z0-9]+$/)`, `expect(ds).toHaveProperty('observedProperty')`). These all test server behavior, not client code. **Do not implement as written.** Instead, use the test scenario IDs (COMPAT-OSH-001 through -020) as inspiration for fixture-based client tests: mock fetch → call client methods → assert client's parsed outputs, constructed URLs, and set capability flags.
+
 **Priority:** **HIGH**
 
 | Test ID | Scenario | Expected Behavior | Lines |
@@ -1194,6 +1208,8 @@ describe('OpenSensorHub Full Conformance', () => {
 
 ### 5.3 Partial Conformance Tests (52°North) (~15 tests, 300-400 lines)
 
+> **⚠️ REVIEW NOTICE (Phase 2E — C1, AP1/AP4):** Same issues as Section 5.2. These tests connect to a live 52°North server, assert server response content (`expect(deployment.geometry.coordinates).toHaveLength(2)`, `expect(lon).toBeCloseTo(14.03, 0)` — specific Baltic Sea coordinates), and validate server data shapes (`expect(sys.id)` UUID/URN format checks). The partial conformance *scenarios* are valuable — they describe how the client should handle missing ControlStreams and incomplete Part 2 — but must be rewritten as fixture-based client behavior tests. See Section 5.5 for the correct approach.
+
 **Priority:** **HIGH**
 
 | Test ID | Scenario | Expected Behavior | Lines |
@@ -1367,6 +1383,8 @@ describe('52North Partial Conformance', () => {
 ---
 
 ### 5.4 Server Availability Tests (~5 tests, 100 lines)
+
+> **⚠️ REVIEW NOTICE (Phase 2E — C1, AP2/AP5):** Server availability checking is the hallmark of a server conformance test suite, not a client library test suite. In client tests, the "server" is a mocked fetch that always returns deterministic fixtures — it is never "unavailable." The `checkServerAvailability()` function, `console.warn('...skipping')` pattern, and `expect(typeof available).toBe('boolean')` assertion all test server infrastructure, not client code. **Do not implement.** If the client needs to handle unreachable servers, test that through mocked fetch that simulates network errors — which is already covered by error handling tests (Doc 18).
 
 **Priority:** **CRITICAL**
 
@@ -1585,6 +1603,8 @@ describe('Graceful Degradation', () => {
 
 ## 6. Test Infrastructure Design
 
+> **⚠️ REVIEW NOTICE (Phase 2E — C1, AP2):** This entire section designs infrastructure for live server testing: `ServerConfig` with hardcoded URLs and credentials (`username: 'ogc', password: 'ogc'`), `checkServerAvailability()` with console.warn skipping, fixture recording utilities that connect to live servers, and dual jest projects (`*.offline.spec.ts` / `*.live.spec.ts`). **Do not implement any of this.** The upstream test infrastructure is simple: `globalThis.fetch` mock in `beforeEach`, fixture files as static JSON, single jest configuration. No server configs, no availability checkers, no recording utilities needed.
+
 ### 6.1 Server Configuration
 
 ```typescript
@@ -1760,6 +1780,8 @@ module.exports = {
 ---
 
 ## 7. Rate Limiting and Throttling
+
+> **⚠️ REVIEW NOTICE (Phase 2E — C1, AP2):** Rate limiting and throttling are concerns for live server testing, which is not part of the client library test suite. Mocked fetch responses are instantaneous and unlimited. **Do not implement.**
 
 ### 7.1 Rate Limiting Considerations
 

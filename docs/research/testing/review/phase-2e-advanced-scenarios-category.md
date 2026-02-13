@@ -540,7 +540,7 @@ The aggregate scope creep (~683 tests, ~450h) is the category-level concern that
 
 | ID | Severity | Doc | Description | Status |
 |----|----------|-----|-------------|--------|
-| C1 | CRITICAL | 32 | Hybrid fixture/live execution model (AP2) | ❌ Open |
+| C1 | CRITICAL | 32 | Hybrid fixture/live execution model (AP2) | ✅ Resolved |
 | C2 | CRITICAL | 23 | Test templates assert fixture content via `fetchJson()` (AP1) | ❌ Open |
 | H1 | HIGH | 32 | Response content assertions throughout (AP1, AP4) | ❌ Open |
 | H2 | HIGH | 25 | 45 scenarios test server HTTP response behavior (AP1) | ❌ Open |
