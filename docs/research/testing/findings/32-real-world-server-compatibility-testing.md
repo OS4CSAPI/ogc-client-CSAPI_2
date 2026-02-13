@@ -96,6 +96,8 @@ This document defines strategies for validating the TypeScript CSAPI client libr
 
 ## 1. CSAPI Server Inventory
 
+> **ℹ️ REVIEW NOTICE (Phase 2E — C1 supplement):** Sections 1-3 document real server profiles (OpenSensorHub, 52°North) with live URLs, credentials, pagination limits, and backend details. Like Doc 22 Section 2, these profiles are **reference context only** — they inform fixture design and explain why certain test scenarios exist. When implementing tests, derive fixtures from these profiles but never connect to live servers or import server-specific behaviors into test assertions.
+
 ### 1.1 OpenSensorHub (Full Conformance)
 
 **Server Details:**
@@ -872,6 +874,8 @@ npm run test:exploratory
 
 ### 5.1 Conformance Detection Tests (~6 tests, 100 lines)
 
+> **✅ REVIEW NOTICE (Phase 2E — C1 supplement):** This section is **client-oriented and should be used during implementation.** The conformance detection test scenarios (COMPAT-CONF-001 through -006) test how the client parses conformance declarations, probes endpoints, and adapts behavior — genuine client code testing. These scenarios complement [Doc 22 (Conformance and Capability Testing)](22-conformance-capability-testing.md) and should be cross-referenced during implementation.
+
 **Priority:** **CRITICAL**
 
 | Test ID | Scenario | Expected Behavior | Lines |
@@ -1472,6 +1476,8 @@ describe('Server Availability', () => {
 ---
 
 ### 5.5 Graceful Degradation Tests (~10 tests, 200-250 lines)
+
+> **✅ REVIEW NOTICE (Phase 2E — C1 supplement):** This section is the **strongest content in this document** and demonstrates the correct testing approach: `globalThis.fetch` is mocked with fixture data, assertions target client behavior (`client.datastreams` is null, CRUD throws `ConformanceError`), and no live server connections are used. These graceful degradation scenarios supplement [Doc 22 (Conformance and Capability Testing)](22-conformance-capability-testing.md) Section 5 and should be cross-referenced during implementation.
 
 **Priority:** **MEDIUM**
 
