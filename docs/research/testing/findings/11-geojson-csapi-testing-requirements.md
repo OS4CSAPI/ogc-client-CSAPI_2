@@ -1,5 +1,42 @@
 # Section 11: GeoJSON CSAPI Testing Requirements
 
+> **⚠️ REVIEW NOTICE — Phase 2D Issues H3, M3, L2 (Resolved)**
+>
+> This document contains strong GeoJSON extension research (property extraction
+> patterns, `identifyResourceType()` logic, `parseValidTime()` transformation,
+> `parseAssociationLinks()`, FeatureCollection parsing, geometry constraints)
+> but also includes content that needs reorientation before implementation:
+>
+> **H3 — Server Data Validation Functions:** Sections 5, 7, 12, 17.3, and
+> Appendix A contain `validateUID()`, `validateName()`, `validateFeatureType()`,
+> `validateSystemType()`, and `validateAssetType()` functions that test whether
+> server-provided values conform to the spec (valid URI format, SOSA vocabulary
+> membership, enum allowlists). These are server-side concerns — our parser
+> should *extract* these values into typed properties, not *validate* them.
+> Parser tests should verify: `parseSystemFeature(fixture).uid === 'urn:...'`
+> not: `isValidURI(feature.properties.uid) === true`. See review notices at
+> each affected section.
+>
+> **M3 — Property Matrix Mirrors Spec Structure:** Section 4 catalogs every
+> property across 5 resource types with 150+ validation rules. This is useful
+> as a *reference* for what properties exist and which are required, but should
+> not be translated into 150+ individual test cases. Tests should be structured
+> as: `parseSystemFeature(fullFixture) → verify all typed properties extracted`.
+>
+> **L2 — Over-Specified Test Organization:** Section 14 prescribes test file
+> structure, describe-block hierarchy, and naming conventions before any code
+> exists. Let test organization emerge from implementation following upstream
+> patterns (see `src/wfs/featureprops.spec.ts`).
+>
+> **Directly usable content:** Sections 1-3 (scope, reuse strategy, extension
+> requirements, `identifyResourceType()`), Section 8 (`parseValidTime()`),
+> Section 9 (`parseAssociationLinks()`), Section 10 (FeatureCollection parsing),
+> Section 11 (geometry constraints), Section 16 (anti-patterns — especially
+> "DON'T re-test RFC 7946").
+>
+> **Prerequisite:** An output model (TypeScript interfaces) must be defined
+> before these requirements can become concrete test cases.
+
 **Research Plan:** [Research Plan 11: GeoJSON CSAPI Extensions Testing Requirements](../research-plans/11-geojson-csapi-testing-requirements.md)  
 **Research Questions:** 74 questions about CSAPI Part 1 GeoJSON requirements, existing GeoJSON parser analysis, resource type differentiation across 5 types, property validation (URI formats, controlled vocabularies, temporal), geometry handling, featureType vocabulary, temporal property validation, link validation, FeatureCollection testing, error handling, specification examples, OpenSensorHub real-world examples, and parser implementation testing  
 **Methodology:** 5-phase systematic analysis (CSAPI Part 1 GeoJSON requirements extraction for all 5 resource types → Existing parser analysis documenting RFC 7946 coverage and reuse strategy → Resource type deep dive defining Systems/Deployments/Procedures/SamplingFeatures/Properties specific testing → Example and fixture analysis from spec and OpenSensorHub → Test strategy design for integration with existing parser)  
@@ -11,7 +48,7 @@
 - [CSAPI Implementation Guide](../../../planning/csapi-implementation-guide.md) (GeoJSON handler extensions)
 
 **Supporting Resources:**
-- Section 8: [CSAPI Specification Test Requirements](08-csapi-specification-test-requirements.md) (GeoJSON validation rules from Part 1)
+- Section 8: [CSAPI Specification Reference](08-csapi-specification-test-requirements.md) (reclassified from test requirements — spec property catalog, not test generator)
 - [Part 1 Requirements Analysis](../../requirements/csapi-part1-requirements.md) (property definitions)
 - [Format Requirements Analysis](../../requirements/csapi-format-requirements.md) (GeoJSON requirements)
 - [OpenSensorHub Analysis](../../requirements/csapi-opensensorhub-analysis.md) (real-world GeoJSON examples)
@@ -341,6 +378,14 @@ function identifyResourceType(feature: Feature): ResourceType {
 
 ### 3.3 Validation Layer Requirements
 
+> **⚠️ REVIEW NOTICE (H3):** Rules 1 and 2 below (URI Validation, Vocabulary
+> Validation) are server-side data quality concerns. Our parser extracts
+> `uid`, `systemType`, `featureType` as string values — it does not need to
+> validate their format or vocabulary membership. Rule 3 (Temporal Validation)
+> is partially legitimate: parsing ISO 8601 strings into Date objects is parser
+> behavior, but enforcing start ≤ end ordering is a data quality check.
+> **Reframe as:** What properties to extract and what TypeScript types they map to.
+
 **Property Validation Rules:**
 
 1. **URI Validation**:
@@ -372,6 +417,16 @@ function identifyResourceType(feature: Feature): ResourceType {
 ---
 
 ## 4. Resource Type Property Matrix
+
+> **⚠️ REVIEW NOTICE (M3):** The property tables below catalog every property
+> across 5 resource types with detailed validation rules. This is valuable as
+> a *specification reference* for what properties exist, which are required,
+> and what their types are. However, these 150+ validation rules should NOT
+> become 150+ individual test cases. Parser tests should be structured as:
+> `parseSystemFeature(fullFixture) → assert all typed properties extracted`
+> using a small number of representative fixtures per resource type.
+> The "Validation" column describes spec constraints on server data, not
+> parser behavior — our parser extracts values, it doesn't police them.
 
 ### 4.1 Systems Resource Properties
 
@@ -523,6 +578,22 @@ function identifyResourceType(feature: Feature): ResourceType {
 ---
 
 ## 5. Common Property Validation
+
+> **⚠️ REVIEW NOTICE (H3 — Core Section):** This section defines
+> `validateUID()`, `validateName()`, and `validateFeatureType()` functions
+> that test whether server-provided values conform to URI format rules and
+> SOSA vocabulary membership. These are server data validation concerns —
+> our parser should *extract* these values into typed properties, not
+> *validate* them against the spec.
+>
+> **What to keep:** The property descriptions, types, and examples are useful
+> reference for building TypeScript interfaces and understanding what the
+> parser needs to extract from `feature.properties`.
+>
+> **What to reframe:** Replace `validateUID(uid): boolean` with
+> `parseSystemFeature(fixture).uid === 'urn:...'` — test that extraction works,
+> not that the value is a valid URI. The ✅/❌ test case lists describe spec
+> conformance, not parser behavior.
 
 ### 5.1 Required Common Properties
 
@@ -873,6 +944,15 @@ const PROCEDURE_TYPES = [
 ---
 
 ## 7. Vocabulary Validation Requirements
+
+> **⚠️ REVIEW NOTICE (H3):** The vocabulary lists below are useful as
+> *reference material* for understanding CSAPI resource type ontology.
+> However, testing whether the parser rejects values outside these lists
+> (`validateSystemType()`, `validateAssetType()`) is server data validation.
+> Our parser extracts `systemType` as a string — it does not need to check
+> it against an allowlist. These lists inform TypeScript type definitions
+> (e.g., `type AssetType = 'Equipment' | 'Human' | 'Simulation'`) but
+> should not generate vocabulary-membership test cases.
 
 ### 7.1 SOSA/SSN Vocabulary
 
@@ -1506,6 +1586,12 @@ HTTP Status: 400 Bad Request
 ```
 
 **Category 3: Invalid Vocabulary Value**
+
+> **⚠️ REVIEW NOTICE (H3):** This error category describes server-side
+> rejection of invalid vocabulary values. Our parser extracts vocabulary
+> values as strings — it does not reject unrecognized values. Remove or
+> reframe as: parser extracts `systemType` value regardless of vocabulary.
+
 ```typescript
 // Error when vocabulary value not recognized
 // Applies to: featureType, systemType, procedureType, assetType
@@ -1519,6 +1605,11 @@ HTTP Status: 400 Bad Request
 ```
 
 **Category 4: Invalid URI Format**
+
+> **⚠️ REVIEW NOTICE (H3):** This error category describes server-side
+> rejection of malformed URIs. Our parser extracts URI values as strings —
+> it does not validate URI format. Remove or reframe.
+
 ```typescript
 // Error when URI property has invalid format
 // Applies to: uid, systemType, procedureType, featureType
@@ -1782,6 +1873,15 @@ fixtures/csapi-geojson/
 ---
 
 ## 14. Test Organization
+
+> **⚠️ REVIEW NOTICE (L2):** This section prescribes test file structure,
+> describe-block hierarchy, and naming conventions before any code exists.
+> This level of detail is premature — let test organization emerge from
+> implementation following upstream patterns (see `src/wfs/featureprops.spec.ts`
+> for how ogc-client organizes parser tests). The single-file approach
+> (`geojson-csapi.spec.ts`) is a reasonable starting point, but the internal
+> structure should follow whatever the parser API looks like, not a plan
+> written before the parser exists.
 
 ### 14.1 Test File Structure
 
@@ -2221,6 +2321,14 @@ function parseCSAPIGeoJSON(json: unknown): CSAPIResource {
 
 ### 17.3 Validation Strategy
 
+> **⚠️ REVIEW NOTICE (H3):** The "progressive validation" pattern below
+> mixes property extraction (Steps 1 and 4) with server data validation
+> (Steps 2 and 3). `validateURI()`, `validateFeatureType()`,
+> `validateSystemTypeVocabulary()`, and `validateAssetTypeEnum()` are
+> server-side concerns. The parser should extract and type-coerce, not
+> validate vocabulary membership or URI format. Step 1 (check required
+> properties exist) and Step 4 (extract) are directly usable.
+
 **Progressive Validation:**
 ```typescript
 function parseSystemFeature(feature: Feature): System {
@@ -2342,6 +2450,13 @@ function validateSystemType(systemType: string): void {
 ---
 
 ## Appendix A: Example Test Implementation
+
+> **⚠️ REVIEW NOTICE (H3):** The example tests below mix legitimate parser
+> tests (property extraction, validTime parsing) with server data validation
+> tests (systemType vocabulary rejection, assetType enum validation, URI
+> format checking). Use the property extraction and temporal parsing tests
+> as models; replace vocabulary/format validation tests with extraction-
+> focused assertions.
 
 ### Full Example: Systems Resource Testing
 
@@ -2533,7 +2648,7 @@ describe('Systems Resource GeoJSON Parsing', () => {
 
 ## Document Metadata
 
-**Status:** Complete  
+**Status:** Complete — Review notices added (Phase 2D issues H3, M3, L2)  
 **Word Count:** ~15,000 words  
 **Sections:** 18  
 **Estimated Test Count:** ~150 tests across all resource types  
