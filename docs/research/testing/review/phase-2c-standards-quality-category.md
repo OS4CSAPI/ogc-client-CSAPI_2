@@ -173,7 +173,7 @@ This entire system is AP3 (OGC Requirement Traceability) — organizing tests ar
 
 **Severity:** HIGH  
 **Document:** [17-coverage-targets-and-metrics.md](../findings/17-coverage-targets-and-metrics.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** Doc 17 contains two contradictory test line estimates within the same document:
 - Line 59: "Total Test Lines: ~4,500-6,000 lines expected" (from Implementation Guide)
@@ -187,6 +187,8 @@ The 13,090–17,016 figure is **3× higher** than every other estimate in the re
 The inflation comes from extremely granular component estimates: Endpoint (~4,800 lines), Workers (~2,310–2,860 lines), Parsers (~2,200–3,300 lines) that appear to have been estimated independently without reconciliation against the authoritative Doc 19 file inventory.
 
 **Fix Required:** Reconcile the component target matrix (Section 2.1) with Doc 19's authoritative 22-file / 4,040–5,340 line inventory. Add a cross-reference note acknowledging the discrepancy and clarifying which estimate is authoritative.
+
+**Resolution:** Added a discrepancy warning directly after the “Total Estimated Test Lines” figure in the component target matrix. The warning cross-references the Implementation Guide, Doc 19, and Doc 20 estimates, identifies the Endpoint ~4,800 line figure as the primary inflation driver, and directs readers to use Doc 19’s file inventory for sizing. Coverage percentage targets preserved as valid.
 
 ---
 
@@ -477,7 +479,7 @@ Proceed to **Phase 2D: Format Parsers** (Docs 09, 10, 11), which have high AP4 r
 |----|----------|-------------|-------|--------|
 | C1 | CRITICAL | 36 | "Spec Compliance Over Implementation" philosophy (AP3) | ✅ Resolved |
 | C2 | CRITICAL | 35, 36, 37 | Systemic AP3 through `@specification` tag traceability system | ✅ Resolved |
-| H1 | HIGH | 17 | Test line estimate 13,090–17,016 is 3× higher than all other estimates | ❌ Open |
+| H1 | HIGH | 17 | Test line estimate 13,090–17,016 is 3× higher than all other estimates | ✅ Resolved |
 | H2 | HIGH | 36 | Invented 3-stage enterprise review process with 41-item checklist | ❌ Open |
 | H3 | HIGH | 37 | Over-engineered maintenance framework (70–120 hrs/yr, custom tools, RACI) | ❌ Open |
 | H4 | HIGH | 35 | Massive JSDoc over-engineering despite acknowledging upstream minimalism | ❌ Open |

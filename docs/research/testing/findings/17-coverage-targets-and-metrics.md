@@ -138,6 +138,13 @@ Based on component complexity, criticality, and testing effort from Sections 8-1
 
 **Total Estimated Test Lines:** ~13,090-17,016 lines
 
+> **⚠️ Estimate Discrepancy (H1 review fix):** This component-level total of ~13,090–17,016 lines is **~3× higher** than all other estimates in the research series and the Implementation Guide:
+> - **Implementation Guide** (§1.1 above): ~4,500–6,000 lines
+> - **Doc 19** (authoritative file inventory, 22 files): ~4,040–5,340 lines
+> - **Doc 20** (module-level estimates): ~4,150–5,850 lines
+>
+> The inflation appears to result from component estimates being developed independently (Sections 8–16) without reconciliation against the file-level inventory. For example, Endpoint alone is estimated at ~4,800 lines — nearly the entire budget from Doc 19. **The authoritative estimate is Doc 19's 4,040–5,340 lines across 22 files.** The coverage *percentage targets* in this matrix remain valid; only the line count estimates are inflated. When planning test implementation, use Doc 19's file inventory as the sizing reference.
+
 ### 2.2 Detailed Component Targets
 
 #### QueryBuilders (URL Builders)
