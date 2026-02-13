@@ -150,11 +150,13 @@ expect(areaUrlWithoutParam).toEqual(areaUrlWithouParam);
 
 **Severity:** MEDIUM  
 **Document:** [34-test-utility-helper-design.md](../findings/34-test-utility-helper-design.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** Document 34 uses phrasing like "Current Pattern (Repeated in 50+ test files)" when describing code duplication. Zero CSAPI test files exist. These are speculative projections about future duplication, but the phrasing implies measurement of existing code.
 
 **Fix Required:** Reframe as "Projected Pattern (Would repeat across ~22 test files)" to accurately describe the speculative nature.
+
+**Resolution:** Reframed all 4 sections (1.2–1.5) from "Current Pattern (Repeated)" to "Projected Pattern (Would repeat without utilities/across test files)" and replaced inflated "repeated in N+ test files/tests" counts with descriptive scope (e.g., "would repeat across most test files", "would repeat across observation/datastream tests").
 
 ---
 

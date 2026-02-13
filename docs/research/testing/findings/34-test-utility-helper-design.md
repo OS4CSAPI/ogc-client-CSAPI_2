@@ -134,9 +134,9 @@ These utilities are **CSAPI innovations** required for Connected Systems API tes
 
 ### 1.2 URL Validation Patterns
 
-**Current Pattern (Repeated):**
+**Projected Pattern (Would repeat across ~22 test files):**
 ```typescript
-// Repeated in 50+ test files
+// Would repeat across most test files without utility
 const url = builder.getSystems({ limit: 10 });
 const parsed = new URL(url);
 
@@ -162,9 +162,9 @@ parseAndValidateUrl(url, {
 
 ### 1.3 Fixture Loading Patterns
 
-**Current Pattern (Repeated):**
+**Projected Pattern (Would repeat across ~22 test files):**
 ```typescript
-// Repeated in 40+ test files
+// Would repeat across most test files without utility
 import { readFile } from 'fs/promises';
 import * as path from 'path';
 
@@ -182,9 +182,9 @@ const fixture = await loadFixture('csapi/systems/systems-collection.json');
 
 ### 1.4 Mock Fetch Setup Patterns
 
-**Current Pattern (Repeated):**
+**Projected Pattern (Would repeat across ~22 test files):**
 ```typescript
-// Repeated in 30+ test files
+// Would repeat across most test files without utility
 beforeAll(() => {
   globalThis.fetch = jest.fn().mockImplementation(async (urlOrInfo) => {
     const url = new URL(
@@ -226,18 +226,18 @@ beforeAll(() => {
 
 ### 1.5 Assertion Patterns
 
-**Current Pattern (Repeated):**
+**Projected Pattern (Would repeat without utilities):**
 ```typescript
-// ISO 8601 validation - repeated in 25+ tests
+// ISO 8601 validation - would repeat across observation/datastream tests
 expect(phenomenonTime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/);
 
-// GeoJSON validation - repeated in 20+ tests
+// GeoJSON validation - would repeat across parser/integration tests
 expect(location).toHaveProperty('type', 'Point');
 expect(location).toHaveProperty('coordinates');
 expect(Array.isArray(location.coordinates)).toBe(true);
 expect(location.coordinates.length).toBe(2);
 
-// Error validation - repeated in 35+ tests
+// Error validation - would repeat across most test files
 expect(error).toBeInstanceOf(EndpointError);
 expect(error.message).toContain('expected message');
 expect(error.httpStatus).toBe(404);
