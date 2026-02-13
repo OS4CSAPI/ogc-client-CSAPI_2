@@ -196,7 +196,7 @@ The inflation comes from extremely granular component estimates: Endpoint (~4,80
 
 **Severity:** HIGH  
 **Document:** [36-test-quality-checklist-review-process.md](../findings/36-test-quality-checklist-review-process.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** Doc 36 proposes a 3-stage review process with invented roles:
 - **Stage 1:** Self-review (15–30 minutes per test file)
@@ -208,6 +208,8 @@ This includes a **41-item checklist** (21 "critical"), elaborate markdown review
 Upstream `camptocamp/ogc-client` is a small open-source library where contributions go through standard GitHub PR review. There is no "Tech Lead sign-off," no peer reviewer role distinct from maintainer review, and no 41-item quality gate. This enterprise QA framework would be rejected by upstream maintainers as over-engineering.
 
 **Fix Required:** Simplify to a single-stage self-review checklist (8–12 items maximum) aligned with upstream's actual PR review expectations. Remove invented roles. Remove the 100-run flakiness requirement.
+
+**Resolution:** Replaced 3-stage enterprise review (Self-Review → Peer Review → Tech Lead Sign-Off) with single-stage self-review containing 10 items. Removed invented roles, 41-item/21-critical checklist, elaborate markdown templates (Self-Review, Peer Review, Sign-Off), 3-tier remediation escalation, and the QM-4 100-run flakiness requirement. Simplified overview table from 41 items / 6 dimensions / 3 stages to 4 dimensions / single stage. Added H2 review notice.
 
 ---
 
@@ -480,7 +482,7 @@ Proceed to **Phase 2D: Format Parsers** (Docs 09, 10, 11), which have high AP4 r
 | C1 | CRITICAL | 36 | "Spec Compliance Over Implementation" philosophy (AP3) | ✅ Resolved |
 | C2 | CRITICAL | 35, 36, 37 | Systemic AP3 through `@specification` tag traceability system | ✅ Resolved |
 | H1 | HIGH | 17 | Test line estimate 13,090–17,016 is 3× higher than all other estimates | ✅ Resolved |
-| H2 | HIGH | 36 | Invented 3-stage enterprise review process with 41-item checklist | ❌ Open |
+| H2 | HIGH | 36 | Invented 3-stage enterprise review process with 41-item checklist | ✅ Resolved |
 | H3 | HIGH | 37 | Over-engineered maintenance framework (70–120 hrs/yr, custom tools, RACI) | ❌ Open |
 | H4 | HIGH | 35 | Massive JSDoc over-engineering despite acknowledging upstream minimalism | ❌ Open |
 | H5 | HIGH | 20 | EDR file-level line counts demonstrably wrong (model.spec.ts off by 3×) | ❌ Open |

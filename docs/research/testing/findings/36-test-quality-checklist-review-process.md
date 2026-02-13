@@ -56,27 +56,23 @@ This document provides a comprehensive quality checklist and review process for 
 
 ### Checklist Overview
 
-| Quality Dimension | Checklist Items | Critical Items | Review Stage |
-|-------------------|-----------------|----------------|--------------|
-| **Meaningful** | 8 items | 4 critical | Self-review |
-| **Useful** | 7 items | 3 critical | Self-review |
-| **Deep** | 9 items | 5 critical | Peer review |
-| **End-to-End** | 6 items | 3 critical | Peer review |
-| **Documentation** | 5 items | 2 critical | Self-review |
-| **Quality Metrics** | 6 items | 4 critical | Final sign-off |
-| **TOTAL** | **41 items** | **21 critical** | **3 stages** |
+> **⚠️ Review Notice (H2 fix):** The original 41-item / 3-stage enterprise review process with invented roles (Self-Review → Peer Review → Tech Lead Sign-Off) has been simplified to align with upstream `camptocamp/ogc-client` conventions. Upstream uses standard GitHub PR review with no formal quality gate, no distinct reviewer roles, and no multi-stage sign-off. The checklist below retains the most valuable quality checks as a **single-stage self-review** the developer runs before submitting a PR.
+
+| Quality Dimension | Key Checks | Review Stage |
+|-------------------|------------|---------------|
+| **Meaningful** | Real fixtures, behavior assertions, complete validation | Self-review |
+| **Useful** | Bug detection, clear failures, fast execution | Self-review |
+| **Deep** | Edge cases, error paths, branch coverage | Self-review |
+| **Coverage** | Statement >80%, Branch >80%, no flakiness | Self-review |
 
 ### Review Process
 
-**3-Stage Review:**
-1. **Self-Review** (Developer) - Complete checklist before PR submission
-2. **Peer Review** (Team Member) - Validate checklist during PR review
-3. **Final Sign-Off** (Tech Lead) - Approve completion and merge
+**Single-Stage Self-Review:**
+1. Developer completes the condensed checklist before PR submission
+2. Standard GitHub PR review by maintainer (upstream convention)
 
 **Typical Timeline:**
-- Self-review: 15-30 minutes per test file
-- Peer review: 10-20 minutes per PR
-- Final sign-off: 5-10 minutes per component
+- Self-review checklist: 5–10 minutes per test file
 
 ---
 
@@ -624,7 +620,7 @@ it('includes required system properties', () => { /* ... */ });
 | QM-1 | Line coverage meets component target (85-95%) | ✅ YES | Run coverage report - check statement % |
 | QM-2 | Branch coverage meets component target (80-95%) | ✅ YES | Run coverage report - check branch % |
 | QM-3 | Edge case coverage: All identified cases tested | ✅ YES | Edge case list vs test cases |
-| QM-4 | No test flakiness (100 runs, 0 failures) | ✅ YES | Run test suite 100 times |
+| QM-4 | No test flakiness detected | ❌ NO | Run tests multiple times if flakiness suspected |
 | QM-5 | Test independence verified | ❌ NO | Run tests in random order |
 | QM-6 | Performance: Tests run within time limits | ❌ NO | Check test timing in output |
 
@@ -642,15 +638,11 @@ Lines        : 92.1% (532/578)   ✅ Target: 85-95%
 
 **QM-4 Example (Flakiness Check):**
 ```bash
-# Run tests 100 times to detect flakiness
-for i in {1..100}; do
-  npm test -- --testNamePattern="QueryBuilder"
-  if [ $? -ne 0 ]; then
-    echo "FLAKY TEST DETECTED on iteration $i"
-    exit 1
-  fi
-done
-echo "✅ No flakiness detected (100 runs)"
+# Re-run tests a few times if flakiness is suspected
+npm test -- --testNamePattern="QueryBuilder"
+npm test -- --testNamePattern="QueryBuilder"
+npm test -- --testNamePattern="QueryBuilder"
+# If any run fails non-deterministically, investigate the flaky test
 ```
 
 **QM-5 Example (Independence Check):**
@@ -666,237 +658,49 @@ npm test -- --testNamePattern="specific test name"
 
 ## 3. Review Process Workflow
 
-### 3.1 Three-Stage Review
+> **⚠️ Simplified Review Process (H2 fix):** The original 3-stage enterprise review (Self-Review → Peer Review → Tech Lead Sign-Off) with 41-item checklist, invented roles, mandatory 100-run flakiness checks, and elaborate markdown templates has been replaced with a single-stage self-review checklist. This aligns with upstream `camptocamp/ogc-client` conventions: standard GitHub PR review, no formal quality gates, no distinct reviewer roles.
 
-**Stage 1: Self-Review (Developer)**
+### 3.1 Single-Stage Self-Review
 
 **When:** Before PR submission  
-**Duration:** 15-30 minutes per test file  
+**Duration:** 5–10 minutes per test file  
 **Responsibility:** Developer who wrote tests  
 
-**Checklist Sections:**
-- ✅ Meaningful Test Validation (8 items)
-- ✅ Useful Test Validation (7 items)
-- ✅ Documentation Validation (5 items)
+**Self-Review Checklist (10 items):**
 
-**Process:**
-1. Run complete checklist against test file
-2. Fix any failing checklist items
-3. Document known limitations/gaps
-4. Run test suite to validate all pass
-5. Run coverage report to validate targets met
-6. Commit tests with checklist completion notes
-
-**Self-Review Template:**
 ```markdown
-## Test Quality Self-Review Checklist
+## Test Quality Self-Review
 
-**Component:** CSAPIQueryBuilder  
-**Test File:** `csapi-querybuilder.spec.ts`  
-**Date:** 2026-02-06  
-**Reviewer:** Developer Name  
+**Test File:** `csapi-querybuilder.spec.ts`
 
-### Meaningful Tests
-- [x] M-1: Uses real spec examples
-- [x] M-2: Complete structure validation
-- [x] M-3: Realistic scenarios
-- [x] M-4: Behavior (not implementation)
-- [ ] M-5: Real server fixtures (N/A - URL building only)
-- [x] M-6: Client behavior validation
-- [ ] M-7: Integration points (N/A - unit tests)
-- [x] M-8: Clear error messages
+### Meaningful & Useful
+- [ ] Tests use real fixtures (not invented data)
+- [ ] Tests assert behavior, not implementation details
+- [ ] Tests catch bugs when code is intentionally broken
+- [ ] Failure messages are clear and actionable
+- [ ] Tests run fast (<200ms each)
 
-### Useful Tests
-- [x] U-1: Bug detection validated
-- [x] U-2: Clear failure messages
-- [x] U-3: Fast execution (avg 45ms)
-- [x] U-4: Test independence
-- [x] U-5: Public API only
-- [x] U-6: Survives refactoring
-- [x] U-7: Debug-friendly
+### Coverage & Depth
+- [ ] Happy path, edge cases, and error conditions covered
+- [ ] Statement coverage >80%, branch coverage >80%
+- [ ] No flaky tests detected
+- [ ] Tests are independent (pass in any order)
 
-### Documentation
-- [x] DOC-1: Utilities documented
-- [x] DOC-2: @specification tags
-- [x] DOC-3: @fixture references
-- [ ] DOC-4: @scenario tags (N/A - straightforward tests)
-- [x] DOC-5: Coverage gaps documented
-
-**Coverage Report:**
-- Statement: 93.2% ✅
-- Branch: 89.5% ✅
-- Function: 96.8% ✅
-
-**Known Gaps:**
-- Antimeridian-crossing bbox not tested (low priority edge case)
-- Performance testing with 1000+ parameters deferred to Phase 5
-
-**Ready for Peer Review:** ✅ YES
+### Ready
+- [ ] All tests pass locally before PR submission
 ```
 
-**Stage 2: Peer Review (Team Member)**
+**After self-review:** Submit PR for standard GitHub review by maintainer.
 
-**When:** During PR review  
-**Duration:** 10-20 minutes per PR  
-**Responsibility:** Peer reviewer (not original developer)  
+### 3.2 Remediation
 
-**Checklist Sections:**
-- ✅ Deep Test Validation (9 items)
-- ✅ End-to-End Test Validation (6 items)
-- ✅ Spot-check Meaningful/Useful (3-5 random items)
+If a PR reviewer identifies quality issues:
 
-**Process:**
-1. Review self-review checklist completion
-2. Spot-check 3-5 meaningful/useful items
-3. Validate deep coverage (edge cases, errors)
-4. Validate E2E workflows (if applicable)
-5. Review code coverage report
-6. Verify test independence (run tests in random order)
-7. Approve or request changes
-
-**Peer Review Template:**
-```markdown
-## Test Quality Peer Review
-
-**Component:** CSAPIQueryBuilder  
-**PR:** #142  
-**Date:** 2026-02-06  
-**Reviewer:** Peer Name  
-
-### Self-Review Validation
-- [x] Self-review checklist complete
-- [x] Known gaps documented
-- [x] Coverage targets met
-
-### Spot-Check Meaningful/Useful
-- [x] M-2: Complete validation confirmed (reviewed 3 tests)
-- [x] U-1: Bug detection validated (broke code, tests failed)
-- [x] U-4: Independence confirmed (ran single test)
-
-### Deep Test Validation
-- [x] D-1: Happy path covered (all common scenarios)
-- [x] D-2: Boundary values tested (0, 1, max)
-- [x] D-3: Edge cases documented (7 cases listed)
-- [x] D-4: Error conditions tested (5 error types)
-- [x] D-5: Coverage targets met (93%/89%)
-- [x] D-6: All branches covered (coverage report)
-- [x] D-7: Parameter combinations (key combos tested)
-- [x] D-8: Error messages validated
-- [ ] D-9: Integration points (N/A - unit tests)
-
-### End-to-End Validation
-- [ ] E2E tests (N/A - QueryBuilder is unit-level)
-
-**Issues Found:**
-- NONE
-
-**Recommendation:** ✅ APPROVE
-```
-
-**Stage 3: Final Sign-Off (Tech Lead)**
-
-**When:** Before merge  
-**Duration:** 5-10 minutes per component  
-**Responsibility:** Tech lead or senior developer  
-
-**Checklist Sections:**
-- ✅ Quality Metrics Validation (6 items)
-- ✅ Overall quality assessment
-- ✅ Integration with broader test suite
-
-**Process:**
-1. Review self-review + peer review checklists
-2. Validate coverage metrics
-3. Run flakiness check (if not already done)
-4. Assess overall test quality
-5. Verify integration with existing tests
-6. Sign off on completion
-7. Merge PR
-
-**Sign-Off Template:**
-```markdown
-## Test Quality Final Sign-Off
-
-**Component:** CSAPIQueryBuilder  
-**PR:** #142  
-**Date:** 2026-02-06  
-**Tech Lead:** Lead Name  
-
-### Review Validation
-- [x] Self-review complete and thorough
-- [x] Peer review complete and thorough
-- [x] All checklist items addressed
-
-### Quality Metrics
-- [x] QM-1: Statement coverage 93.2% (target 85-95%) ✅
-- [x] QM-2: Branch coverage 89.5% (target 80-95%) ✅
-- [x] QM-3: Edge cases covered (7/7 documented cases)
-- [x] QM-4: No flakiness (100 runs, 0 failures)
-- [x] QM-5: Test independence verified
-- [x] QM-6: Performance within limits (avg 45ms)
-
-### Integration Assessment
-- [x] Tests integrate cleanly with existing suite
-- [x] No conflicts with other test files
-- [x] Follows established patterns
-- [x] Documentation complete
-
-**Overall Quality:** ✅ EXCELLENT  
-**Decision:** ✅ APPROVED FOR MERGE
-
-**Sign-Off:** Tech Lead Name, 2026-02-06
-```
-
-### 3.2 Review Stage Responsibilities
-
-| Stage | Reviewer | Focus | Duration | Outcome |
-|-------|----------|-------|----------|---------|
-| **Self-Review** | Developer | Meaningful, Useful, Documentation | 15-30 min | Checklist complete, ready for PR |
-| **Peer Review** | Team Member | Deep, E2E, Spot-check | 10-20 min | Approve or request changes |
-| **Final Sign-Off** | Tech Lead | Metrics, Integration, Overall | 5-10 min | Approve merge or escalate issues |
-
-### 3.3 Remediation Process
-
-**If Checklist Items Fail:**
-
-**Minor Issues (1-3 items):**
-1. Developer fixes issues
+1. Developer addresses feedback in the PR
 2. Re-runs self-review checklist
-3. Updates PR with fixes
-4. Peer reviewer re-reviews
+3. Updates PR — standard GitHub PR workflow
 
-**Major Issues (4+ items):**
-1. PR marked "Changes Requested"
-2. Developer addresses all issues
-3. Complete new self-review
-4. New peer review required
-5. Final sign-off re-validation
-
-**Critical Issues (tests don't catch bugs, wrong approach):**
-1. PR marked "Major Changes Needed"
-2. Discussion with tech lead required
-3. May require redesign
-4. Complete new review cycle
-
-**Example Remediation:**
-```markdown
-## Remediation Plan - PR #142
-
-**Issues Identified:**
-1. M-2: Only 2 tests use complete validation, 8 use toBeTruthy() only
-2. D-3: Edge cases not documented (found 5 missing cases)
-3. U-1: Bug detection not validated (did not intentionally break code)
-
-**Remediation Actions:**
-1. ✅ Add parseAndValidateUrl() to 8 tests (completed)
-2. ✅ Document 5 additional edge cases + add tests (completed)
-3. ✅ Validate bug detection by breaking code (completed)
-
-**Re-Review:**
-- Self-review: ✅ Complete
-- Peer review: ✅ Approved
-- Ready for sign-off: ✅ YES
-```
+No escalation tiers, no separate sign-off stage.
 
 ---
 
