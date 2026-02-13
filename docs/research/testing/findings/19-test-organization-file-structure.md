@@ -407,6 +407,8 @@ fixtures/
 
 **Total Fixtures:** ~280 files organized by test type
 
+> **Fixture Count Cross-Reference:** This ~280 total (from Section 15) is the aggregate across all test categories. It includes the 23 resource method unit test fixtures from Section 13 (5 universal + 18 resource-specific), the 33 integration workflow fixtures from Section 14 (discovery, observation, command, navigation), plus ~224 additional fixtures for format parsing (SensorML, SWE Common, GeoJSON), worker extensions, and error/edge case scenarios.
+
 ---
 
 ## 5. File Naming Conventions

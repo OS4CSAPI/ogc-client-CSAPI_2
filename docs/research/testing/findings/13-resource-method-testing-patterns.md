@@ -1096,6 +1096,8 @@ fixtures/csapi-querybuilder/
 
 **Note:** Section 12 documents 5 universal fixtures. This section adds 18 resource-specific fixtures for realistic response testing.
 
+> **Fixture Count Cross-Reference:** This document's 23 fixtures cover resource method unit tests only. Section 14 specifies an additional 33 fixtures for integration workflow tests (discovery, observation, command, navigation). Section 19 reports ~280 total fixtures across the entire test suite (sourced from Section 15), which includes these 23 plus integration, format parsing, and error condition fixtures.
+
 ### 8.3 Fixture Usage
 
 **Universal Fixtures:**

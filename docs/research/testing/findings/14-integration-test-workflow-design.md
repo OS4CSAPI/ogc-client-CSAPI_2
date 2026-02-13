@@ -1545,6 +1545,8 @@ fixtures/csapi/
 | **Navigation** | 8 | Cross-resource relationships |
 | **TOTAL** | **33** | Complete workflow coverage |
 
+> **Fixture Count Cross-Reference:** This document's 33 fixtures cover integration workflow tests only. Section 13 specifies 23 fixtures for resource method unit tests (5 universal + 18 resource-specific). Section 19 reports ~280 total fixtures across the entire test suite (sourced from Section 15), which includes these 33 plus unit test, format parsing, and error condition fixtures. The 23 + 33 = 56 fixtures from Sections 13 and 14 account for ~20% of the total; the remainder covers format parsers (SensorML, SWE Common, GeoJSON), worker extensions, and error/edge case scenarios.
+
 ### 9.3 Fixture Quality Standards
 
 **✅ Real Spec Examples:**

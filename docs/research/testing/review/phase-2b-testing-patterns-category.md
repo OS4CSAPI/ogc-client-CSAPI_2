@@ -204,7 +204,7 @@ This tests whether the mocked fixture contains the right shape — the mock is s
 
 **Severity:** MEDIUM  
 **Documents:** [13-resource-method-testing-patterns.md](../findings/13-resource-method-testing-patterns.md), [14-integration-test-workflow-design.md](../findings/14-integration-test-workflow-design.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** Fixture counts vary across documents without reconciliation:
 - Doc 13: 23 fixtures (5 universal + 18 resource-specific)
@@ -214,6 +214,8 @@ This tests whether the mocked fixture contains the right shape — the mock is s
 These counts are not additive in any obvious way and no document reconciles them.
 
 **Fix Required:** Add a cross-reference note in each document explaining the scope of its fixture count and how it relates to the total across all documents.
+
+**Resolution:** Added "Fixture Count Cross-Reference" blockquote notes to all three documents: Doc 13 (Section 8.2), Doc 14 (Section 9.2), and Doc 19 (Section 4.3). Each note explains the document's own scope and how its count relates to the others. The 23 + 33 = 56 fixtures from Docs 13/14 account for ~20% of the ~280 total; the remainder covers format parsers, worker extensions, and error scenarios.
 
 ---
 
