@@ -241,13 +241,15 @@ All of this is for a contribution to someone else's repository. The contributor 
 
 **Severity:** HIGH  
 **Document:** [35-jsdoc-testing-documentation-standards.md](../findings/35-jsdoc-testing-documentation-standards.md)  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** Doc 35 correctly identifies that upstream has near-zero JSDoc in test files (~0.3% documentation density, 0 `@fileoverview`, 0 `@module`). But then proposes 12 JSDoc tag types, 12 templates, custom tags (`@specification`, `@fixture`, `@coverage`, `@scenario`), and detailed documentation standards that would add ~2,000 lines of JSDoc boilerplate to a ~5,000 line test suite.
 
 The document honestly acknowledges the tension: "Don't over-document tests (upstream proves tests can be self-documenting)." But its recommendations contradict this acknowledgment.
 
 **Fix Required:** Align recommendations with upstream's proven minimalist approach. JSDoc for test utility functions (`@param`, `@returns`) is reasonable. Custom `@specification` tags, `@fileoverview` blocks for every test file, and `@fixture` annotations are not. Reduce to: (1) JSDoc for exported helper functions, (2) descriptive `describe`/`it` block names (already upstream practice), (3) optional brief comments for complex test setup.
+
+**Resolution:** Rewrote Doc 35 from 2,178 lines to 382 lines. Removed: 12 JSDoc tag type definitions with detailed Purpose/Usage/When to Use/Example blocks, 4 custom tags (`@specification` already removed in C2, plus `@fixture`, `@coverage`, `@scenario`), 3 tag combination patterns, 4-level documentation level design (file/suite/test/helper with elaborate decision matrices), 12 templates (file-level ×3, test case ×3, helper ×3, plus variants), 365 lines of documentation standards and guidelines, documentation review process with roles (Developer/Reviewer/Maintainer), quarterly audit procedures, 287 lines of patterns and anti-patterns, implementation estimates (30 hours for 80 test files, ROI analysis), 285 lines of complete documentation examples (4 full annotated test files), and 3-phase migration strategy. Replaced with three rules: (1) JSDoc for exported test helpers with `@param`/`@returns`/`@example`, (2) self-documenting test names (upstream practice), (3) optional brief `//` comments for non-obvious behavior. Kept §1 upstream analysis (valuable evidence), added H4 review notice.
 
 ---
 
@@ -486,7 +488,7 @@ Proceed to **Phase 2D: Format Parsers** (Docs 09, 10, 11), which have high AP4 r
 | H1 | HIGH | 17 | Test line estimate 13,090–17,016 is 3× higher than all other estimates | ✅ Resolved |
 | H2 | HIGH | 36 | Invented 3-stage enterprise review process with 41-item checklist | ✅ Resolved |
 | H3 | HIGH | 37 | Over-engineered maintenance framework (70–120 hrs/yr, custom tools, RACI) | ✅ Resolved |
-| H4 | HIGH | 35 | Massive JSDoc over-engineering despite acknowledging upstream minimalism | ❌ Open |
+| H4 | HIGH | 35 | Massive JSDoc over-engineering despite acknowledging upstream minimalism | ✅ Resolved |
 | H5 | HIGH | 20 | EDR file-level line counts demonstrably wrong (model.spec.ts off by 3×) | ❌ Open |
 | M1 | MEDIUM | 03 | Fabricated "~80% estimated" coverage for upstream | ❌ Open |
 | M2 | MEDIUM | 17 | AP3 in behavior coverage metrics (spec requirements as coverage targets) | ❌ Open |
