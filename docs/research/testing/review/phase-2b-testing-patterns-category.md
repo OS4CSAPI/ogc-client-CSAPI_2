@@ -223,7 +223,7 @@ These counts are not additive in any obvious way and no document reconciles them
 
 **Severity:** LOW  
 **Documents:** All 5  
-**Status:** ❌ Open
+**Status:** ✅ Resolved
 
 **Problem:** 10,257 lines across 5 documents for testing patterns that could be conveyed more concisely. Significant redundancy exists:
 - Documents 06 and 13 both define "meaningful" testing depth criteria
@@ -234,6 +234,14 @@ These counts are not additive in any obvious way and no document reconciles them
 **Impact:** Implementers face confusion about which document is authoritative and which version of overlapping guidance to follow.
 
 **Recommendation:** No immediate fix needed, but when implementation begins, designate a single "Testing Patterns Reference" document that supersedes overlapping sections.
+
+**Resolution:** Added "Authority Note" cross-references at each overlap point in the non-authoritative documents:
+- Doc 13, Section 6 (test depth): points to Doc 06 as authoritative for meaningful/trivial criteria
+- Doc 13, Section 7 (test organization): points to Doc 19 as authoritative for file structure
+- Doc 13, Section 7.3 (shared utilities): points to Doc 34 as authoritative for utility specifications
+- Doc 14, Section 14.2 (test organization): points to Doc 19 (files) and Doc 34 (utilities) as authoritative
+
+Each note follows the pattern: "If [topic] conflicts, [authoritative doc] takes precedence."
 
 ---
 

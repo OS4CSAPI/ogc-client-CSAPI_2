@@ -912,6 +912,8 @@ describe('getCommandStatus()', () => {
 
 ### 6.1 "Meaningful" Resource Method Testing
 
+> **Authority Note:** The authoritative definition of "meaningful" vs "trivial" test criteria is in [Section 06](06-meaningful-vs-trivial-definition.md). This section applies those criteria to resource method testing specifically. If definitions conflict, Section 06 takes precedence.
+
 **✅ DO (Meaningful Tests):**
 
 1. **Use parseAndValidateUrl utility** (from Section 12)
@@ -992,6 +994,8 @@ describe('getCommandStatus()', () => {
 
 ## 7. Test Organization
 
+> **Authority Note:** The authoritative test file organization is defined in [Section 19](19-test-organization-file-structure.md). The file structure below is derived from Section 19. If file names, paths, or counts conflict, Section 19 takes precedence.
+
 ### 7.1 Integration with Section 12
 
 **Key Decision:** Resource method tests ARE QueryBuilder tests (not separate test files)
@@ -1028,6 +1032,8 @@ src/ogc-api/csapi/
 - Reduced merge conflicts
 
 ### 7.3 Shared Test Utilities
+
+> **Authority Note:** The authoritative test utility specifications (signatures, implementations, organization) are in [Section 34](34-test-utility-helper-design.md). The references below are summaries. If utility signatures or organization conflict, Section 34 takes precedence.
 
 **From Section 12 (url_builder.spec.ts):**
 

@@ -2095,6 +2095,8 @@ it('validates last page state', async () => {
 
 ### 14.2 Test Organization
 
+> **Authority Note:** The authoritative test file organization is defined in [Section 19](19-test-organization-file-structure.md). The file structure below is a summary for integration test context. If file names, paths, or counts conflict, Section 19 takes precedence. Test utility specifications are authoritative in [Section 34](34-test-utility-helper-design.md).
+
 **File Structure:**
 
 ```
