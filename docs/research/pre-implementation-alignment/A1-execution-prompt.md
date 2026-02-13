@@ -1,0 +1,61 @@
+# A1 Execution Prompt
+
+**Use this prompt to execute the A1 research plan. Copy everything below the line.**
+
+---
+
+## Prompt
+
+Execute research plan A1: **Test Research ↔ Implementation Guide Bidirectional Alignment**.
+
+The research plan is at: `docs/research/pre-implementation-alignment/A1-research-plan-test-research-vs-implementation-guide.md`
+
+Read the full research plan first, then execute all 12 checks systematically. Here is the execution guidance:
+
+### Documents to cross-reference:
+
+**Anchor:** `docs/planning/csapi-implementation-guide.md` (v7.0, ~4,200 lines)
+
+**Test Research Corpus:** 38 findings documents in `docs/research/testing/findings/` (Docs 01-38 plus Doc 15 Part 2) and 13 review files in `docs/research/testing/review/` (Phase 0-4 reports, notes, verified conformance URIs)
+
+### What to do:
+
+**Part I — Forward Checks (Implementation Guide → Test Research):**
+
+1. **Check 1 (Component Coverage):** Read implementation guide §5-§8 (lines 301-2982) to extract all 12 components. For each component, read the corresponding test research document(s) listed in the research plan's cross-reference map. Rate each as Complete/Partial/Missing. Document gaps.
+
+2. **Check 2 (Method-Level Coverage):** Read implementation guide §6 resource method sections (lines 1193-1715) to extract every QueryBuilder method signature across all 9 resource types. Cross-reference each method against Doc 12's method inventory (Sections 5-13). Identify any methods without test scenarios.
+
+3. **Check 3 (Estimate Consistency):** Read implementation guide §9 and §13 for test estimates. Read Doc 19 executive summary for the authoritative file inventory. Read Doc 20 for test-to-code ratios. Read ROADMAP summary table. Reconcile all numbers into one table. Flag discrepancies >20%.
+
+4. **Check 4 (Orphan Detection):** Scan each test research document's Document Purpose header. Verify the tested component exists in the implementation guide. Flag any test specs for non-existent components (expect Docs 32, 33 to be properly flagged already).
+
+**Part II — Reverse Checks (Test Research → Implementation Guide):**
+
+5. **Check 5 (Scope Decisions):** Read Phase 0-4 review reports for every scope-altering finding. For each, check whether the implementation guide reflects it. Key decisions to check: performance testing OUT OF SCOPE, real-world server testing rejected, binary SWE deferred, worker extensions Phase 4 only, `_metadata` pattern rejected, enterprise review simplified, incremental testing cadence.
+
+6. **Check 6 (Client Responsibility Model):** Read Phase 0 report for the 5 client responsibilities (Parse, Construct, Transform, Handle, Validate). Check whether implementation guide §3 or §4 states them. Scan implementation guide code examples in §6, §7, §11, §12 for any that test server behavior rather than client behavior.
+
+7. **Check 7 (Architectural Patterns):** Check implementation guide for: (a) `parseAndValidateUrl` signature — does it use `hostname` (correct) or `host`? (b) fixture directory — `fixtures/csapi/` (correct) or `fixtures/ogc-api/csapi/`? (c) test file count — 17 (original) or 22 (Doc 19)? (d) test utility structure from Doc 34? (e) any SensorThings API terminology? (f) QueryBuilder-not-standalone-clients warning?
+
+8. **Check 8 (Specification Details):** Read Doc 08 (CSAPI spec test requirements), Doc 26 §1 (16 parent-child relationships), Doc 28 (temporal patterns), Doc 29 (spatial patterns), Doc 31 (command state machine). For each, check whether the implementation guide's corresponding section contains equivalent detail or could benefit from enrichment.
+
+9. **Check 9 (Convention Alignment):** Read implementation guide §16 (Development Standards). Cross-reference against test research conventions: `globalThis.fetch` mocking, `*.spec.ts` naming, three-tier imports, JSDoc, error handling. Then reverse: check whether §16 references the anti-pattern catalog, "meaningful vs trivial" standard, or incremental testing cadence.
+
+10. **Check 10 (Anti-Pattern Compliance):** Read Phase 0's AP1-AP5 definitions. Scan implementation guide §6, §7, §11, §12 code examples for any that would produce anti-pattern violations if a developer followed them literally as test templates.
+
+11. **Check 11 (Fixture Strategy):** Read implementation guide §9 fixture references. Compare against Doc 15 §5.2 (revised structure) and Doc 15 Part 2 (no embedded metadata). Check whether the implementation guide uses outdated fixture paths or patterns.
+
+12. **Check 12 (Terminology):** Search implementation guide for: "integration test", "end-to-end", "e2e", "ObservedProperties", "Sensors", "FeaturesOfInterest", "SensorThings" — flag any incorrect usage. Verify the 9 CSAPI resource type names are used consistently.
+
+### Output format:
+
+Generate a report saved to `docs/research/pre-implementation-alignment/findings/A1-test-research-vs-implementation-guide-report.md` with:
+
+1. **Executive Summary** — overall alignment status, total finding count by severity
+2. **Part I Findings** — one subsection per check (1-4), each finding with severity (Critical/High/Medium/Low), description, specific line references, and recommended resolution
+3. **Part II Findings** — one subsection per check (5-12), each finding with severity, description, what the implementation guide currently says (with line reference), what the test research says (with document reference), and recommended update
+4. **Recommendations** — prioritized action list
+5. **Acceptance Criteria Checklist** — the 12 checkboxes from the research plan, marked pass/fail
+
+Commit the report and push when complete. Use commit message format: `docs(alignment): A1 report — Test Research ↔ Implementation Guide findings`
