@@ -1,5 +1,20 @@
 # Section 24: Query Parameter Combination Testing - FINDINGS
 
+> ⚠️ **REVIEW NOTICE — HIGH (H3): Server Validation and Precedence Tests Mixed with Client URL Construction**
+>
+> **Phase 2E Review | Issues: H3, M1, M11 | Anti-Patterns: AP1**
+>
+> This document is ~70% client-oriented. The URL construction tests using `builder.*` (Section 4.1, ~60 scenarios) are correctly client-oriented — they verify the client combines query parameters into valid URLs. However, Section 4.2 contains two categories of server behavior testing:
+>
+> - **Category A (10 scenarios):** "Wrong Parameter for Resource" — tests whether the SERVER validates parameter applicability (`GET /properties?bbox=...` → `Expected: 400 Bad Request`). The client's job is to build the URL, not enforce server-side parameter applicability.
+> - **Category C (10 scenarios):** "Precedence Conflicts" — tests SERVER's precedence resolution (`offset + cursor` → `cursor takes precedence`). The client sends both; the server decides precedence.
+>
+> Additionally, Section 5.1 introduces `ParameterValidationError` which contradicts Doc 18's established error philosophy (reuse `EndpointError` / native `Error`).
+>
+> **What's usable:** URL construction (Section 4.1), parameter encoding (Section 4.4), client-side validation of obviously invalid values like bbox minLon > maxLon (Section 4.2 Category B partial).
+>
+> See also: [Phase 2E Review Report](../review/phase-2e-advanced-scenarios-category.md)
+
 **Research Plan:** [Research Plan 24: Query Parameter Combination Testing](../research-plans/24-query-parameter-combination-testing.md)
 
 **Research Questions:** 6 core questions about CSAPI query parameters inventory, testing valid parameter combinations, testing invalid parameter combinations, parameter precedence rules, testing spatial + temporal + relationship parameters together, and handling conflicting parameters
@@ -398,6 +413,10 @@ it('paginates with bbox filter', async () => {
 
 ### 4.1 Valid Combination Scenarios (60 scenarios)
 
+> ✅ **REVIEW NOTICE: Correctly Client-Oriented — URL Construction Tests**
+>
+> These 60 scenarios test client URL construction: `builder.getSystems({ bbox: [...], limit: 50 })` → verify URL contains `?bbox=-180,-90,180,90&limit=50`. This is the correct pattern — testing that the client builds valid query strings from typed parameters. These follow the upstream `parseAndValidateUrl()` pattern.
+
 #### Category A: Two-Parameter Combinations (20 scenarios)
 
 1. **bbox + limit**
@@ -708,6 +727,10 @@ it('paginates with bbox filter', async () => {
 
 #### Category A: Wrong Parameter for Resource (10 scenarios)
 
+> ⚠️ **REVIEW NOTICE (H3): Server Validation Testing — Not Client Responsibility**
+>
+> These 10 scenarios test whether the SERVER validates parameter applicability (`GET /properties?bbox=...` → `Expected: 400 Bad Request or silently ignored`). The client's job is to build the URL requested by the user and handle whatever response comes back. It should not implement server-side parameter applicability rules. If client-side guardrails are desired (e.g., TypeScript types that don't allow `bbox` on property queries), test the type system, not the HTTP response.
+
 61. **bbox on Properties** (no geometry)
     ```
     GET /properties?bbox=-180,-90,180,90
@@ -769,6 +792,12 @@ it('paginates with bbox filter', async () => {
     ```
 
 #### Category B: Invalid Parameter Values (10 scenarios)
+
+> ⚠️ **REVIEW NOTICE (M11): Mixed Client/Server Invalid Parameter Tests**
+>
+> ~50% of these scenarios are legitimate client validation (bbox minLon > maxLon, negative limit, negative offset) — the client CAN and SHOULD reject obviously invalid values before sending a request. These are correctly testable as client-side `ParameterValidator` behavior.
+>
+> ~50% test server behavior: invalid format → 406, exceeds Part 2 max limit → 400, malformed URI → server rejection. These are server compliance tests. Only retain tests where the client itself performs the validation before the request is sent.
 
 71. **Invalid bbox format** (wrong number of coordinates)
     ```
@@ -832,6 +861,10 @@ it('paginates with bbox filter', async () => {
     ```
 
 #### Category C: Precedence Conflicts (10 scenarios)
+
+> ⚠️ **REVIEW NOTICE (H3): Precedence Conflict Tests Test Server Behavior**
+>
+> These 10 scenarios test how the SERVER resolves precedence when conflicting parameters are sent (`cursor takes precedence`, `phenomenonTime takes precedence`, `f parameter takes precedence over Accept header`). The client sends both parameters; the server decides which takes precedence. Client tests should verify the URL is correctly constructed with both parameters — what the server does with them is server behavior.
 
 81. **offset + cursor** (conflicting pagination)
     ```
@@ -1034,6 +1067,10 @@ it('paginates with bbox filter', async () => {
 
 ### 4.4 Parameter Encoding Scenarios (10 scenarios)
 
+> ✅ **REVIEW NOTICE: Correctly Client-Oriented — URL Encoding Tests**
+>
+> These encoding scenarios test actual client behavior: how the client encodes commas, colons, plus signs, and other special characters in query parameter values. This is genuine client URL construction logic that should be tested.
+
 111. **Comma NOT encoded** (delimiter)
      ```
      ?id=sys123,sys456
@@ -1099,6 +1136,12 @@ it('paginates with bbox filter', async () => {
 ## 5. Parameter Validation Patterns
 
 ### 5.1 Client-Side Validation
+
+> ⚠️ **REVIEW NOTICE (M1): `ParameterValidationError` Contradicts Doc 18 Error Philosophy**
+>
+> This section introduces `class ParameterValidationError extends Error` with custom properties (`parameterName`, `parameterValue`, `validationRule`), used 12+ times throughout the document. Doc 18 (Error Condition Testing Strategy) explicitly established: "Reuse existing `EndpointError` and native `Error` — no new error classes needed." This is a direct cross-document contradiction.
+>
+> **Resolution:** Use existing `EndpointError` or native `Error` per Doc 18's established philosophy. The validation logic itself (bbox range checking, limit bounds) is useful; only the custom error class needs to be replaced.
 
 **Before Sending Request:**
 
