@@ -1,5 +1,17 @@
 # Section 23: Pagination Testing Strategy - FINDINGS
 
+> ⚠️ **REVIEW NOTICE — CRITICAL (C2): `fetchJson()` Test Templates Assert Fixture Content, Not Client Behavior**
+>
+> **Phase 2E Review | Issues: C2, H7, M4, M9, L3 | Anti-Patterns: AP1, AP4, AP5**
+>
+> This document is ~40% client-oriented. The URL construction tests using `builder.*` + `parseAndValidateUrl()` (Sections 5.1-5.3 partial) and the link parsing utilities (Section 5.4) are correctly client-oriented. However, Sections 5.1-5.2 contain ~30 test scenarios using an undefined `fetchJson()` function that directly assert server response fixture content — these would pass even if the client code did nothing.
+>
+> **What's usable:** URL construction tests (`builder.getSystems()`, `builder.getObservations()`), link parsing utilities (`extractNextLink`, `extractCursor`, `isLastPage`), fixture design patterns (Section 4).
+>
+> **What must be rewritten:** All `fetchJson()` tests must be reframed as: feed fixture through mocked `globalThis.fetch` → call client pagination methods → assert client's parsed output. See Section 5.4 for the document's own model of correctly client-oriented tests.
+>
+> See also: [Phase 2E Review Report](../review/phase-2e-advanced-scenarios-category.md)
+
 **Research Plan:** [Research Plan 23: Pagination Testing Strategy](../research-plans/23-pagination-testing.md)
 
 **Research Questions:** 6 core questions about testing offset-based pagination (limit/offset), cursor-based pagination (limit/cursor), edge cases (empty pages, boundary conditions), pagination with filtering, pagination link parsing, and fixtures needed for multi-page scenarios
@@ -534,6 +546,10 @@ it('applies pagination parameters', async () => {
 
 ### 3.6 Metadata Validation (5 scenarios)
 
+> ℹ️ **REVIEW NOTICE (L3): Metadata Validation Checks Fixture Invariants, Not Client Behavior**
+>
+> These 5 scenarios validate spec invariants (`numberReturned === features.length`, `numberMatched ≥ numberReturned`) that are properties of the server response, not client transformations. In a mocked-fetch test, the fixture already contains these values by construction — asserting them tests the fixture, not the client. If client code needs to USE `numberMatched` (e.g., to display total count), test the client's consumption of that value, not its presence in the response.
+
 54. **numberReturned matches item count**
     - Validate `numberReturned` equals `features.length`
     - Expected: Values match
@@ -866,6 +882,20 @@ it('applies pagination parameters', async () => {
 
 ### 5.1 Offset Pagination Test Template
 
+> ⚠️ **REVIEW NOTICE (C2, M4, M9, L3): Mixed Client/Server Test Patterns**
+>
+> This section contains a mix of correctly client-oriented and server-oriented tests:
+>
+> **✅ Usable — URL construction tests** ("Basic Navigation", "Boundary Conditions" first halves): `builder.getSystems()` + `parseAndValidateUrl()` correctly test client URL construction. These follow upstream patterns.
+>
+> **❌ Must rewrite — `fetchJson()` tests** ("Edge Cases", "Metadata Validation"): These assert fixture content (`response.features`, `response.numberMatched`, `response.numberReturned`) — the exact AP1 anti-pattern. The fixture will always contain whatever you put in it.
+>
+> **❌ Must rewrite — "Invalid Parameters" block (M4):** Tests like `fetchJson('/systems?limit=0')` expecting `400` test whether the SERVER validates limits. Only client-side validation (e.g., `builder` rejects negative limit before sending request) is appropriate for client tests.
+>
+> **❌ Must rewrite — Conditional assertion (M9):** `if (response.numberMatched !== undefined) { expect(...) }` — in client tests, you control the fixture. If you need `numberMatched`, include it in the fixture; don't conditionally assert.
+>
+> **Rewrite pattern:** Feed fixture through mocked `globalThis.fetch` → call client pagination method → assert client parsed output (extracted page metadata, constructed next-page URL, `isLastPage()` return value).
+
 ```typescript
 describe('Offset-Based Pagination', () => {
   describe('Basic Navigation', () => {
@@ -1031,6 +1061,19 @@ describe('Offset-Based Pagination', () => {
 ```
 
 ### 5.2 Cursor Pagination Test Template
+
+> ⚠️ **REVIEW NOTICE (C2, H7): Cursor Pagination Tests Assert Server Behavior**
+>
+> **✅ Usable — URL construction tests** ("Basic Navigation" first two): `builder.getObservations()` + `parseAndValidateUrl()` and cursor URL construction are correctly client-oriented.
+>
+> **❌ Must rewrite — Server behavior assertions (H7):** Multiple tests assert server pagination state:
+> - "follows cursor chain" loops through pages testing SERVER produces no duplicates
+> - "Large Dataset Streaming" tests SERVER returns 1000+ unique items across pages
+> - "Part 2 Limits" `fetchJson('/observations?limit=15000')` expects 400 — tests SERVER rejects over-limit
+> - "Invalid Cursor" tests expect SERVER to return 400 for bad cursor format
+> - "Metadata Validation" asserts fixture response metadata
+>
+> **Client tests should verify:** client correctly extracts cursor from response links, client constructs next-page URL with cursor parameter, client recognizes last page (no `next` link). See Section 5.4 for the correct pattern.
 
 ```typescript
 describe('Cursor-Based Pagination', () => {
@@ -1293,6 +1336,10 @@ describe('Pagination with Filtering', () => {
 ```
 
 ### 5.4 Link Parsing Utility Tests
+
+> ✅ **REVIEW NOTICE: Strongest Section — Correctly Client-Oriented**
+>
+> This section is the model for how all pagination tests in this document should work. These tests exercise client utility functions (`extractNextLink()`, `extractCursor()`, `isLastPage()`) with deterministic input data and assert client transformation outputs. No `fetchJson()`, no fixture content assertions, no server behavior testing. The `fetchJson()` tests in Sections 5.1-5.2 should be rewritten to follow this pattern: feed fixture → call client function → assert client output.
 
 ```typescript
 describe('Pagination Link Utilities', () => {
