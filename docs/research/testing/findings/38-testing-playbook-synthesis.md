@@ -25,6 +25,16 @@
 **Last Updated:** February 6, 2026  
 **Based On:** Sections 1-37 Research Findings + ROADMAP v3.0
 
+> **⚠️ Phase 3 Review Notice (February 14, 2026)**
+>
+> This playbook was written February 6, 2026. Phase 2A-2F review corrections (February 12-13, 2026) take precedence where they conflict with this document. Key conflicts:
+> - **Performance testing is OUT OF SCOPE** (Doc 33) — Parts 3.4, 6.4, and 8.3 contain performance content that should be disregarded
+> - **Phase 3 task count:** This document references "15 subtasks" but ROADMAP v3.0 specifies 17 tasks — refer to ROADMAP v3.0 for authoritative task list
+> - **Coverage targets:** This document's targets (90/85/88%) are stretch goals; ROADMAP v3.0 minimum is >80% statement and branch
+> - **Phase 1 checklist (Part 7.2):** Checkmarks are examples of completed format, not actual progress
+>
+> See [Phase 3 Synthesis Validation Report](../review/phase-3-synthesis-validation.md) for the full 10-issue review.
+
 ---
 
 ## How to Use This Playbook
@@ -2184,19 +2194,13 @@ describe('[UtilityName] Utility', () => {
     it('throws error for invalid input', () => {
       expect(() => functionName(invalidInput)).toThrow('[ExpectedError]');
     });
-
-    it('performs efficiently for large input', () => {
-      const largeInput = generateLargeInput(10000);
-      const start = performance.now();
-      const result = functionName(largeInput);
-      const duration = performance.now() - start;
-      
-      expect(result).toBeDefined();
-      expect(duration).toBeLessThan(100); // < 100ms
-    });
   });
 });
 ```
+
+> **⚠️ PERFORMANCE TESTING IS NOT IN SCOPE ⚠️**
+>
+> The original pattern included a performance timing test (`performance.now()` with `expect(duration).toBeLessThan(100)`). Per Doc 33 and project-wide decision, **performance testing will NOT be implemented**. Upstream `ogc-client` has ZERO performance tests. Do not add performance assertions to test utilities.
 
 **Key Points:**
 - ✅ Test typical case
@@ -2881,6 +2885,10 @@ npm test -- --coverage --verbose
 
 ### 6.4 Performance Commands
 
+> **⚠️ PERFORMANCE TESTING IS NOT IN SCOPE ⚠️**
+>
+> Per Doc 33, performance testing will NOT be implemented. Upstream `ogc-client` has ZERO performance tests. The commands below are retained for reference only — do not implement performance test infrastructure.
+
 **Profile test execution:**
 ```bash
 npm test -- --logHeapUsage
@@ -3162,6 +3170,10 @@ console.log('Mock:', mockCollection);
 ```
 
 ### 8.3 Performance Issues
+
+> **⚠️ PERFORMANCE TESTING IS NOT IN SCOPE ⚠️**
+>
+> Per Doc 33, performance testing will NOT be implemented. The troubleshooting guidance below is retained for reference only if performance symptoms arise during functional testing, but do not add dedicated performance tests or assertions.
 
 **Issue: Tests running slowly (>10 seconds)**
 
