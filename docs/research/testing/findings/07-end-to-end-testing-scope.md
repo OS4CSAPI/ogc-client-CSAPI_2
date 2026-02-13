@@ -1,5 +1,14 @@
 # End-to-End Testing Scope and Strategy for CSAPI
 
+> **📝 Phase 2F Review Notice (February 2026)**
+>
+> This document was reviewed in [Phase 2F: Integration & Workflow Category Deep Dive](../review/phase-2f-integration-workflow-category.md) and **passed** with two minor refinement notes:
+>
+> - **M1 — Effort Estimates:** The comprehensive E2E suite (~700-1,000 lines, 3.0-3.75× test-to-code ratio) is significantly above upstream average (1.44×). Recommend labeling E2E estimates as "Minimum Viable" (~400-500 lines) vs "Comprehensive" (~700-1,000 lines) and starting with minimum viable for initial contribution.
+> - **M2 — Command Feasibility Wording:** Section 5.3's "validate result" in the Command Submission workflow should clarify: this means asserting the client's parsed response structure (client transformation), NOT testing the server's feasibility verdict.
+>
+> Overall verdict: ✅ **Pass** — This document provides the strongest E2E definition in the research corpus.
+
 **Research Plan:** [Research Plan 07: End-to-End Testing Scope Definition](../research-plans/07-end-to-end-testing-scope.md)  
 **Research Questions:** 54 questions about e2e definition for URL-building libraries, scope and boundaries, integration vs e2e distinction, workflow-based testing, upstream and industry patterns, test pyramid distribution, test structure, coverage requirements, error scenarios, and performance considerations  
 **Methodology:** 3-phase systematic analysis (Upstream e2e analysis from Sections 1-2 → Industry e2e analysis from Section 3 and client library patterns → CSAPI e2e definition applying patterns to URL builder architecture)  

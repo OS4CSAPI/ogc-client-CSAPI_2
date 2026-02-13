@@ -1,5 +1,17 @@
 # Worker Extensions Testing Strategy
 
+> **⚠️ Phase 2F Review Notice (February 2026)**
+>
+> This document was reviewed in [Phase 2F: Integration & Workflow Category Deep Dive](../review/phase-2f-integration-workflow-category.md). Three high-priority issues were identified:
+>
+> - **H1 — Scope Gating Required:** This testing strategy is **Phase 4 material**. Worker message handlers (`csapi-worker.ts`) must be implemented before these tests can be written. Do not implement before Phases 1-3 are complete. See ROADMAP.md Phase 4, Task 1.
+> - **H2 — Performance Tests Non-Deterministic:** Performance threshold assertions (Section 7: `expect(duration).toBeLessThan(200)`) test the environment, not client code logic. Move to a separate, optional test suite not run in CI. Keep timing metadata collection (logging) but remove hard assertions from the standard test suite.
+> - **H3 — Binary SWE Parsing Deferred:** PARSE_SWE_BINARY message type (15 scenarios, 180-200 lines) is beyond initial contribution scope per Phase 2E L1 finding. Mark as deferred; exclude from initial effort estimates.
+>
+> Additional medium-priority notes: M3 (TRAVERSE_HIERARCHY needs explicit fetch mocking strategy), M4 (differentiate minimum viable ~200-300 lines from comprehensive ~2,310-2,860 lines), M5 (scope dependency on non-existent message handlers). See Phase 2F report for details.
+>
+> **Adjusted initial contribution scope:** ~200-300 test lines (minimum viable: 9 message types × 1-2 scenarios each, 4-6 hours) rather than 201 scenarios / 47-61 hours.
+
 **Research Plan:** [Research Plan 16: Worker Extensions Testing Strategy](../research-plans/16-worker-extensions-testing.md)
 
 **Research Questions:** 6 core questions about testing Worker message types in Jest, async parsing operations, fallback for non-worker environments, fixture requirements for heavy parsing, performance characteristics, and integration tests with parsers
