@@ -6,7 +6,7 @@
 >
 > - **H1 — Scope Gating Required:** This testing strategy is **Phase 4 material**. Worker message handlers (`csapi-worker.ts`) must be implemented before these tests can be written. Do not implement before Phases 1-3 are complete. See ROADMAP.md Phase 4, Task 1.
 > - **H2 — Performance Testing Out of Scope:** Performance threshold assertions (Section 7: `expect(duration).toBeLessThan(200)`) are **out of scope** for this contribution project, consistent with the project-wide scope decision (see Doc 33: "⚠️ PERFORMANCE TESTING IS NOT IN SCOPE ⚠️"). Upstream `ogc-client` has zero performance tests. Section 7 is retained as reference material only — do not implement any performance test assertions.
-> - **H3 — Binary SWE Parsing Deferred:** PARSE_SWE_BINARY message type (15 scenarios, 180-200 lines) is beyond initial contribution scope per Phase 2E L1 finding. Mark as deferred; exclude from initial effort estimates.
+> - **H3 — `PARSE_SWE_BINARY` Worker Offloading Deferred:** PARSE_SWE_BINARY worker message type (15 scenarios, 180-200 lines) is deferred to Phase 4 along with the rest of this document. **Clarification:** This deferral applies only to the worker message type. Binary SWE parsing at the parser level (Doc 10, 96 tests) is IN SCOPE per the implementation guide §7 and Phase 2D assessment (M2/P4).
 >
 > Additional medium-priority notes: M3 (TRAVERSE_HIERARCHY needs explicit fetch mocking strategy), M4 (differentiate minimum viable ~200-300 lines from comprehensive ~2,310-2,860 lines), M5 (scope dependency on non-existent message handlers). See Phase 2F report for details.
 >

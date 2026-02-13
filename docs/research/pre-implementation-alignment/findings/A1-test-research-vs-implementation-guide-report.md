@@ -53,7 +53,7 @@ The implementation guide and test research corpus are **structurally well-aligne
 | 9 | SWE Common Handler | §7 | Doc 10 | **Complete** | 15 component types, 3 encodings, 96 binary tests. Pre-req gaps: no parser output interfaces (H1/H2) |
 | 10 | Format Detector | §7 | Docs 22, 25 | **Partial** | Document structure analysis fallback NOT covered; Doc 25 H2: 45/50 scenarios test server behavior |
 | 11 | Validator | §7 | Doc 22 | **Partial** | Conformance validation covered; content validation (schema compliance, batch validation) NOT standalone-specified |
-| 12 | Worker Extensions | §8 | Doc 16 | **Complete** | 9 message types, 201 scenarios. `PARSE_SWE_BINARY` correctly deferred. Phase 4 gated. |
+| 12 | Worker Extensions | §8 | Doc 16 | **Complete** | 9 message types, 201 scenarios. `PARSE_SWE_BINARY` worker offloading deferred to Phase 4 (binary parsing itself remains in scope per Doc 10). Phase 4 gated. |
 
 **Check 1 Findings:**
 
@@ -120,7 +120,7 @@ Additional: Nested endpoints (15 chains), URL encoding (15 scenarios), resource 
 |----------|---------|-------------|
 | Doc 32 | Real-world server compatibility testing | **Partially orphaned** — AP2 bannered. ~35% overlaps Doc 22 |
 | Doc 33 | Performance and efficiency testing | **Fully orphaned** — OUT OF SCOPE banner. Retained as reference |
-| Doc 16 | `PARSE_SWE_BINARY` message type | **Correctly deferred** — H3 flag, beyond initial scope |
+| Doc 16 | `PARSE_SWE_BINARY` message type | **Worker offloading deferred to Phase 4** — H3 flag applies to worker message type only; binary SWE parsing itself is in scope (Doc 10, Phase 2D P4) |
 | Doc 31 | Command lifecycle testing | **NOT orphaned** — in-scope, AP1/AP4 on test implementations only |
 
 **Check 4 Findings:**
@@ -145,7 +145,7 @@ Additional: Nested endpoints (15 chains), URL encoding (15 scenarios), resource 
 |----|---------------|--------|-------------|----------|
 | C5-M1 | Performance testing OUT OF SCOPE | Phase 2F H2, Phase 3 H1 | **No** — §9/§16 don't note exclusion | **Medium** |
 | C5-M2 | Real-world server testing rejected (AP2) | Phase 2E C1 | **No** — no test scope exclusions in guide | **Medium** |
-| C5-M3 | Binary SWE parsing deferred | Phase 2F H3 | **No** — §7 SWE Common treats Binary as fully in-scope | **Medium** |
+| C5-M3 | `PARSE_SWE_BINARY` worker offloading deferred (Phase 4) | Phase 2F H3 | **Correctly not reflected** — §7 SWE Common correctly treats binary parsing as in-scope; only the worker message type is deferred | **Low** (downgraded — guide is correct) |
 | C5-M4 | `OgcApiEndpoint.fromUrl()` doesn't exist | Phase 1 M3 | **No** — still used in §11 (line 3089) | **Medium** |
 | C5-L1 | Worker extensions = Phase 4 only | Phase 2F H1 | **No** — §8 has no phasing constraint | **Low** |
 | C5-L2 | Enterprise review process simplified | Phase 2C H2 | **No** — §16 doesn't reference cadence | **Low** |
@@ -375,7 +375,7 @@ Prioritized action list across all 12 checks. Items grouped by priority tier.
 | 1 | C10-H1 | Add note: "These are application usage examples, not test patterns. For test patterns, use mocked fetch per §9." | **Guide** | §12, before first scenario (line ~3340) |
 | 2 | C5-M4 / C7-M3 | Replace `OgcApiEndpoint.fromUrl()` with `new OgcApiEndpoint()` | **Guide** | §11, line 3089 |
 | 3 | C3-M1 / C7-M2 | Update test file count from 17 to 22 per Doc 19 | **Guide** | §13 Code Volume Summary, line 4000 |
-| 4 | C5-M3 | Add note: "Binary SWE encoding is deferred beyond initial contribution scope (Phase 2E L1). JSON and Text encodings are in-scope." | **Guide** | §7 SWE Common section |
+| 4 | C5-M3 | ~~WITHDRAWN~~ — Binary SWE parsing is in scope per guide and Doc 10 Phase 2D P4. Only the `PARSE_SWE_BINARY` worker message type (Doc 16) is deferred to Phase 4. No guide change needed. | N/A | N/A |
 | 5 | C8-M4 | Add command status lifecycle: `PENDING→ACCEPTED→EXECUTING→COMPLETED\|FAILED\|CANCELED` | **Guide** | §6 Commands Resource Methods |
 | 6 | C8-M5 | Add `obsFormat` (required) to DataStream schema endpoint and `cmdFormat` (required) to ControlStream schema endpoint | **Guide** | §6 DataStreams + §6 ControlStreams schema method signatures |
 
@@ -451,7 +451,7 @@ The implementation guide and test research corpus are **well-aligned structurall
 The most important actions before coding begins:
 1. Fix `OgcApiEndpoint.fromUrl()` in §11 (incorrect API)
 2. Update file count to 22 in §13
-3. Add Binary SWE deferral note to §7
+3. ~~Add Binary SWE deferral note to §7~~ (withdrawn — binary parsing is in scope; only worker offloading deferred)
 4. Add AP2 warning to §12 scenarios
 5. Add command state machine to §6
 

@@ -46,7 +46,7 @@ The Implementation Guide and Test Research are the **stronger sources of truth**
 
 7. **Check 7 (Testing Cadence):** For each of the 34 ROADMAP tasks, calculate: (a) max implementation lines before tests, (b) max hours before tests. Verify no task exceeds 800 lines without tests or 3 hours without tests. Count total test checkpoints.
 
-8. **Check 8 (Scope Boundaries):** Verify the ROADMAP does NOT include dedicated tasks for: performance testing, real-world server testing, binary SWE full support, migration testing. Check ROADMAP Phase 4 Task 1 for `PARSE_SWE_BINARY` — this message type is listed but binary SWE was deferred. Flag if contradictory.
+8. **Check 8 (Scope Boundaries):** Verify the ROADMAP does NOT include dedicated tasks for: performance testing, real-world server testing, migration testing. Check ROADMAP Phase 4 Task 1 for `PARSE_SWE_BINARY` — this worker message type is correctly deferred along with the rest of Doc 16 (Phase 4). Binary SWE parsing at the parser level (Doc 10) is in scope.
 
 9. **Check 9 (Anti-Pattern Audit):** Read every "Test immediately" section across all 34 ROADMAP tasks. For each, check whether the test descriptions could lead to AP1 (testing response content), AP3 (server conformance testing), or AP4 (asserting data shape) violations. Flag problematic language and recommend rewording.
 

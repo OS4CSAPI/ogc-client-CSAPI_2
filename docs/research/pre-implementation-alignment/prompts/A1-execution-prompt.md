@@ -82,7 +82,7 @@ Then execute **only Checks 5-8** with full depth.
 
 ### What to do (Checks 5-8 only):
 
-5. **Check 5 (Scope Decisions):** Read Phase 0-4 review reports for every scope-altering finding. For each, check whether the implementation guide reflects it. Key decisions to check: performance testing OUT OF SCOPE, real-world server testing rejected, binary SWE deferred, worker extensions Phase 4 only, `_metadata` pattern rejected, enterprise review simplified, incremental testing cadence.
+5. **Check 5 (Scope Decisions):** Read Phase 0-4 review reports for every scope-altering finding. For each, check whether the implementation guide reflects it. Key decisions to check: performance testing OUT OF SCOPE, real-world server testing rejected, `PARSE_SWE_BINARY` worker offloading deferred (binary parsing itself is in scope per Doc 10/Phase 2D), worker extensions Phase 4 only, `_metadata` pattern rejected, enterprise review simplified, incremental testing cadence.
 
 6. **Check 6 (Client Responsibility Model):** Read Phase 0 report for the 5 client responsibilities (Parse, Construct, Transform, Handle, Validate). Check whether implementation guide §3 or §4 states them. Scan implementation guide code examples in §6, §7, §11, §12 for any that test server behavior rather than client behavior.
 

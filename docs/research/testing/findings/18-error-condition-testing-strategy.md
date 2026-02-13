@@ -1,12 +1,12 @@
 # Section 18: Error Condition Testing Strategy
 
-> ⚠️ **REVIEW NOTICE — LOW (L1, L2): Scope Items — Binary Parsing and Worker Errors Beyond Initial Contribution**
+> ⚠️ **REVIEW NOTICE — LOW (L1, L2): Scope Items — Binary Error Test Specificity and Worker Errors**
 >
 > **Phase 2E Review | Issues: L1, L2 | Severity: LOW**
 >
-> This document is largely well-structured for client-side error testing. Two sections propose tests for functionality beyond the initial contribution scope:
+> This document is largely well-structured for client-side error testing. Two sections may need refinement:
 >
-> - **Section 4.2.3** (SWE Common Binary Encoding Errors, ~23-25 tests): Binary SWE parsing (endianness, buffer truncation, data type codes) is speculative — binary encoding support may be far beyond initial contribution scope.
+> - **Section 4.2.3** (SWE Common Binary Encoding Errors, ~23-25 tests): These specific binary error test scenarios (endianness, buffer truncation, data type codes) may be speculative and need refinement once binary parsing is implemented. **Clarification:** Binary SWE parsing itself IS in scope per the implementation guide §7 and Phase 2D assessment (Doc 10, M2/P4: "sound and directly usable"). This L1 flag is about error test specificity only.
 > - **Section 4.5** (Worker Extension Errors, ~7 tests): Worker error scenarios (initialization failure, timeout, premature termination) reference infrastructure that doesn't exist yet.
 >
 > **What's usable now:** Sections 4.1 (QueryBuilder errors), 4.2.1 (GeoJSON parser errors), 4.2.2 (SensorML parser errors), 4.3 (Resource method errors), 4.4 (Integration workflow errors), Section 5 (Error test pattern design).
@@ -420,9 +420,9 @@ The CSAPI specification does NOT define custom error response schemas (e.g., RFC
 
 #### 4.2.3 SWE Common Parser Errors
 
-> ⚠️ **REVIEW NOTICE (L1): Binary Encoding Errors May Be Beyond Initial Scope**
+> ⚠️ **REVIEW NOTICE (L1): Binary Encoding Error Test Scenarios May Need Refinement**
 >
-> The Binary Encoding Errors subsection (~7 tests for buffer truncation, endianness, invalid data type codes) is speculative. Binary SWE Common parsing is complex and may not be part of the initial contribution. JSON and Text encoding error tests are usable now; defer Binary encoding tests until binary support is confirmed in scope.
+> The Binary Encoding Errors subsection (~7 tests for buffer truncation, endianness, invalid data type codes) may be speculative in their specificity. These tests should be refined once binary SWE parsing implementation details are clearer. **Clarification:** Binary SWE Common parsing IS in scope per the implementation guide §7 and Phase 2D assessment (Doc 10, M2/P4). This L1 flag is about error test specificity, not about binary parsing scope.
 
 **From [Section 10: SWE Common Testing Requirements](./10-swe-common-testing-requirements.md):**
 

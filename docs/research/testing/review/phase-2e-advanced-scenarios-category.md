@@ -368,9 +368,9 @@ Section 4.2 Category B: ~50% are legitimate client validation (bbox minLon > max
 
 ## 7. Low-Priority Issues
 
-### L1: Doc 18 — SWE Common Binary Parsing Error Scenarios Beyond Initial Scope
+### L1: Doc 18 — SWE Common Binary Encoding *Error Test Scenarios* May Be Speculative
 
-23-25 binary encoding error tests (wrong endianness, insufficient buffer, invalid data type codes) are speculative — binary SWE parsing may be far beyond initial contribution scope.
+23-25 binary encoding error tests (wrong endianness, insufficient buffer, invalid data type codes) are speculative — these specific error scenarios may need refinement once binary parsing is implemented. **Clarification:** Binary SWE parsing itself (Doc 10, 96 tests) is IN SCOPE per the implementation guide §7 and Phase 2D assessment (M2, P4: "sound and directly usable"). This L1 flag is about the *error test specificity* in Doc 18 §4.2.3 only, not about binary parsing scope.
 
 ---
 
@@ -563,7 +563,7 @@ The aggregate scope creep (~683 tests, ~450h) is the category-level concern that
 | M9 | MEDIUM | 23 | Conditional assertion on fixture content (AP5) | ✅ Resolved |
 | M10 | MEDIUM | 32 | Server ID format and coordinate assertions (AP4) | ✅ Resolved |
 | M11 | MEDIUM | 24 | Mixed client/server invalid parameter tests (AP1) | ✅ Resolved |
-| L1 | LOW | 18 | SWE binary parsing errors beyond initial scope | ✅ Resolved |
+| L1 | LOW | 18 | SWE binary encoding error test scenarios may be speculative (binary parsing itself is in scope) | ✅ Resolved |
 | L2 | LOW | 18 | Worker extension errors — premature | ✅ Resolved |
 | L3 | LOW | 23 | Metadata validation checks fixture invariants (AP4) | ✅ Resolved |
 | L4 | LOW | 29 | Point bbox test compares result set sizes (AP4) | ✅ Resolved |

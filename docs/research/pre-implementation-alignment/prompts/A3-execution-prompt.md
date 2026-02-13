@@ -40,7 +40,7 @@ The Implementation Guide (post-A1) is the **definitive source of truth**. The Co
 
 3. **Check 3 (Format Support):** Verify all 4 bullet points under "Format Support":
    - "SensorML 3.0 parser" — read §7 SensorML section, verify "all system models" and "recursive component parsing"
-   - "SWE Common 3.0 parser supporting all three encodings (JSON, Text/CSV, Binary)" — **critical:** Binary SWE was deferred (Phase 2E L1). Does this overclaim?
+   - "SWE Common 3.0 parser supporting all three encodings (JSON, Text/CSV, Binary)" — **note:** Binary SWE *parsing* is in scope per Doc 10 and Phase 2D assessment (M2/P4). Only `PARSE_SWE_BINARY` worker offloading (Doc 16) is deferred to Phase 4. "All three encodings" is correct for parsing.
    - "GeoJSON extensions" — verify against §7
    - "Format detection and content negotiation" — verify against §7, check whether "content negotiation" is accurately described
 

@@ -100,7 +100,7 @@ After A1 resolution, this is the canonical specification. Any discrepancy betwee
 
 2. **"SWE Common 3.0 parser supporting all three encodings (JSON, Text/CSV, Binary) with schema validation"**
    - Verify all three encodings are in the guide
-   - **Critical check:** Binary SWE was deferred per Phase 2E L1. Does the Contribution Goal's "all three encodings" still hold, or should Binary be noted as deferred?
+   - **Critical check:** The `PARSE_SWE_BINARY` worker message type (Doc 16) is deferred to Phase 4, but binary SWE *parsing* itself (Doc 10) is IN SCOPE per the implementation guide §7 and Phase 2D assessment (M2/P4: "sound and directly usable"). The Contribution Goal's "all three encodings" is correct for parsing.
    - Verify "schema validation" matches the guide's validator component
 
 3. **"GeoJSON extensions recognizing all CSAPI-specific resource types and properties"**
@@ -111,7 +111,7 @@ After A1 resolution, this is the canonical specification. Any discrepancy betwee
    - Verify format detector extensions in the guide (§7)
    - Check whether "content negotiation" is accurately described or overscoped
 
-**Deliverable:** Per-bullet accuracy assessment, especially Binary SWE deferral impact.
+**Deliverable:** Per-bullet accuracy assessment. Note: Binary SWE *parsing* is in scope (Doc 10); only `PARSE_SWE_BINARY` worker offloading (Doc 16) is deferred to Phase 4.
 
 ---
 

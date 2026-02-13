@@ -33,7 +33,7 @@ Pass 2 executes the four reverse checks from the A1 research plan, asking: *"Has
 |---|---------------|--------|------------------------|--------|----------|
 | 1 | Performance testing OUT OF SCOPE | Phase 2F H2, Phase 3 H1 | §9 Testing, §16 | **Not reflected** — §9 mentions "Performance profiling for heavy operations" as a quality standard in §16 without noting it's excluded from test scope | **Medium** |
 | 2 | Real-world server testing rejected (AP2) | Phase 2E C1 (Doc 32) | §9 or §16 | **Not reflected** — no mention of test scope exclusions | **Medium** |
-| 3 | Binary SWE parsing deferred | Phase 2F H3, Phase 2E L1 | §7 SWE Common | **Not reflected** — §7 SWE Common section describes Binary encoding as fully in-scope with equal treatment to JSON/Text. No deferral note | **Medium** |
+| 3 | `PARSE_SWE_BINARY` worker offloading deferred | Phase 2F H3, Phase 2E L1 | §8 Worker | **Correctly not reflected** — §7 SWE Common correctly treats binary parsing as in-scope (Doc 10, Phase 2D P4: "sound and directly usable"). Only the worker message type (Doc 16) is deferred to Phase 4. Guide is correct as-is. | ~~Medium~~ **Withdrawn** |
 | 4 | Worker extensions = Phase 4 only | Phase 2F H1 | §8 Worker | **Not reflected** — §8 describes worker extensions without phasing constraint | **Low** |
 | 5 | `_metadata` fixture pattern = hallucinated | Phase 2A C1, Phase 4 H4 | §9 fixture guidance | **Not applicable** — guide does not reference `_metadata` pattern | ✅ N/A |
 | 6 | Enterprise review process simplified | Phase 2C H2 | §16 | **Not reflected** — §16 says "Write tests as you implement" but doesn't reference the 31-checkpoint cadence or max 2-3 hr rule | **Low** |
@@ -62,7 +62,7 @@ Pass 2 executes the four reverse checks from the A1 research plan, asking: *"Has
 
 | Severity | Count | Key Items |
 |----------|-------|-----------|
-| **Medium** | 4 | Binary SWE deferral not noted; performance testing exclusion not noted; real-world testing exclusion not noted; `OgcApiEndpoint.fromUrl()` still used in examples |
+| **Medium** | 3 | Performance testing exclusion not noted; real-world testing exclusion not noted; `OgcApiEndpoint.fromUrl()` still used in examples (binary SWE deferral withdrawn — guide is correct) |
 | **Low** | 9 | Worker phasing, review cadence, fixture counts, Doc 08 reclassification, space encoding, error class restriction, template rejection, aggregate scope, conformance URIs |
 | **N/A (already clear)** | 4 | `_metadata`, fixture validation, traceability system, path correction |
 | **Reflected** | 4 | Colocated tests, path `src/ogc-api/csapi/`, coverage >80%, file structure |
@@ -210,7 +210,7 @@ The most impactful enrichments are:
 |------|------|-------|--------|
 | 1 | **`OgcApiEndpoint.fromUrl()` in §11 example** | C7g | Replace with `new OgcApiEndpoint()` — incorrect API that will cause runtime errors if copied |
 | 2 | **Test file count: 17 → 22** | C7c | Update §13 Code Volume Summary to 22 files per Doc 19 |
-| 3 | **Binary SWE deferral not noted** | C5.3 | Add deferral note to §7 SWE Common section |
+| ~~3~~ | ~~Binary SWE deferral not noted~~ | ~~C5.3~~ | **WITHDRAWN** — Guide correctly treats binary parsing as in-scope. Only `PARSE_SWE_BINARY` worker offloading is deferred (Doc 16, Phase 4). No guide change needed. |
 | 4 | **Command state machine not documented** | C8.E6 | Add state value list and transition diagram to §6 Commands |
 | 5 | **`obsFormat`/`cmdFormat` required params missing** | C8.E7 | Add to §6 DataStreams and ControlStreams schema method docs |
 | 6 | **Client responsibility model absent** | C6.1 | Add 5-responsibility statement to §3 Purpose and Scope |
@@ -232,7 +232,7 @@ Several Pass 2 findings reinforce or extend Pass 1 findings:
 
 The reverse direction (Test Research → Implementation Guide) reveals a **significant propagation gap**. The implementation guide (v7.0, Feb 5) pre-dates the test research review phases (Feb 12-13) by 7 days, and nearly all review-phase scope decisions, corrections, and specification details have not been reflected back.
 
-No critical or high-severity findings exist, but the 13 medium-severity items collectively represent a **meaningful quality gap** that should be addressed before coding begins — especially items #1 (incorrect API), #2 (file count), #3 (binary SWE deferral), and #4 (command state machine).
+No critical or high-severity findings exist, but the 13 medium-severity items collectively represent a **meaningful quality gap** that should be addressed before coding begins — especially items #1 (incorrect API), #2 (file count), and #4 (command state machine). (Item #3 binary SWE deferral has been withdrawn — the guide correctly treats binary parsing as in-scope.)
 
 Pass 3 will execute the bidirectional checks (Checks 9-12) and produce the final consolidated report with all update recommendations.
 

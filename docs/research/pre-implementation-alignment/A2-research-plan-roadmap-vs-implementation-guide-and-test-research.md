@@ -238,11 +238,11 @@ After A1 resolution, scope decisions, anti-pattern rules, fixture strategy, test
 1. Extract OUT OF SCOPE items from test research:
    - Performance testing (Doc 33)
    - Real-world server testing (Doc 32, AP2)
-   - Binary SWE parsing full support (deferred per Phase 2E L1)
+   - `PARSE_SWE_BINARY` worker offloading deferred to Phase 4 (binary parsing itself is in scope per Doc 10/Phase 2D)
    - Migration testing (not defined)
 2. Verify the ROADMAP does NOT include dedicated tasks for these
 3. Extract IN SCOPE items from test research that require implementation work and verify the ROADMAP covers them
-4. Check the ROADMAP's Worker Extensions task (Phase 4, Task 1) — it lists `PARSE_SWE_BINARY` as a message type, but binary SWE was deferred. Flag if contradictory.
+4. Check the ROADMAP's Worker Extensions task (Phase 4, Task 1) — it lists `PARSE_SWE_BINARY` as a message type, which is correctly deferred with the rest of Doc 16 (Phase 4). Binary SWE parsing at the parser level (Doc 10) is in scope.
 
 **Deliverable:** Scope boundary checklist (IN SCOPE covered / OUT OF SCOPE excluded / Contradictions flagged).
 

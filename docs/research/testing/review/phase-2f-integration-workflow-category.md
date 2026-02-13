@@ -293,12 +293,12 @@ These assertions will produce different results on different hardware, CI enviro
 **Impact:** Performance tests will cause CI flakiness and false failures. They test the environment, not the client code logic.  
 **Resolution:** Move performance threshold assertions to a separate, **optional** test suite (e.g., `performance.spec.ts` with `jest --testPathPattern=performance` run manually, not in CI). Keep performance metadata *collection* (logging) but remove hard assertions in the standard test suite.
 
-**(H3) Binary SWE parsing tests are beyond initial scope**
+**(H3) `PARSE_SWE_BINARY` worker message type is deferred to Phase 4 (binary parsing itself remains in scope)**
 
-The PARSE_SWE_BINARY message type includes 15 test scenarios (180-200 lines). Phase 2E already identified binary SWE parsing as L1 (beyond scope of initial contribution). This message type and its tests should be clearly scope-gated.
+The PARSE_SWE_BINARY message type includes 15 test scenarios (180-200 lines). This message type’s *worker offloading* tests should be deferred along with the rest of Doc 16 (Phase 4). **Clarification:** This deferral applies only to the worker message type in Doc 16. Binary SWE parsing at the parser level (Doc 10, 96 tests, ~50% of SWE Common effort) is IN SCOPE per the implementation guide §7 and Phase 2D assessment (M2, P4: "sound and directly usable").
 
-**Impact:** Low — does not affect other message types. But including it in test counts inflates effort estimates.  
-**Resolution:** Mark PARSE_SWE_BINARY as "deferred scope" in the test plan. Remove from initial effort estimates (reduces from 201→186 scenarios, 47-61→42-54 hours).
+**Impact:** Low — does not affect other message types or binary parsing scope. Removing from worker test counts reduces from 201→186 scenarios.
+**Resolution:** Mark PARSE_SWE_BINARY worker message type as deferred within Doc 16. This does NOT affect Doc 10 binary parsing tests.
 
 **(M3) TRAVERSE_HIERARCHY involves HTTP fetching — needs explicit mocking strategy**
 
@@ -321,7 +321,7 @@ Section 6 defines 6 concurrent request scenarios. While valuable for production 
 **Impact:** Minor — adds ~100-150 test lines of limited additional value.  
 **Resolution:** Verify whether upstream `worker.spec.ts` already tests concurrent message handling. If so, note that CSAPI inherits this behavior and does not need separate concurrent tests.
 
-#### Verdict: ⚠️ Issues Found — H1 (scope gating), H2 (performance tests non-deterministic), H3 (binary SWE deferred)
+#### Verdict: ⚠️ Issues Found — H1 (scope gating), H2 (performance tests non-deterministic), H3 (`PARSE_SWE_BINARY` worker offloading deferred)
 
 ---
 
@@ -399,7 +399,7 @@ Despite the scope concerns (H1), Doc 16's technical analysis of the upstream wor
 
 1. **Add scope-gating notice to Doc 16** — "This testing strategy is Phase 4 material. Do not implement before Phases 1-3 are complete."
 2. **Separate Doc 16 performance tests** into optional suite — Remove hard timing assertions from standard test runs.
-3. **Mark PARSE_SWE_BINARY as deferred** — Exclude from initial effort estimates per Phase 2E L1 finding.
+3. **Mark PARSE_SWE_BINARY worker message type as deferred** — Exclude worker offloading tests from initial effort estimates. Binary parsing itself (Doc 10) remains in scope.
 
 ### 7.2 Refinement Suggestions (Non-Blocking)
 
@@ -424,7 +424,7 @@ Despite the scope concerns (H1), Doc 16's technical analysis of the upstream wor
 |----|----------|----------|-------------|--------|
 | H1 | Doc 16 | High | Worker testing strategy premature — Phase 4 scope gating needed | ✅ Resolved |
 | H2 | Doc 16 | High | Performance thresholds out of scope — aligned with Doc 33 project-wide exclusion | ✅ Resolved |
-| H3 | Doc 16 | High | Binary SWE tests beyond scope — defer per Phase 2E L1 | ✅ Resolved |
+| H3 | Doc 16 | High | `PARSE_SWE_BINARY` worker message type deferred to Phase 4 — binary parsing itself (Doc 10) remains in scope | ✅ Resolved |
 | M1 | Doc 07 | Medium | E2E effort estimates — added "Initial Contribution Target" vs "Stretch Goal" labels | ✅ Resolved |
 | M2 | Doc 07 | Medium | Command feasibility "validate result" — clarified to assert URL + parsed structure, not server verdict | ✅ Resolved |
 | M3 | Doc 16 | Medium | TRAVERSE_HIERARCHY fetch mocking — added explicit mock injection note at Section 2.3.2 | ✅ Resolved |

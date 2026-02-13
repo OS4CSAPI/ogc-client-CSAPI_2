@@ -167,7 +167,7 @@ Note: Doc 17's inflated estimates were already flagged (H1 review fix with discr
 |----------|-----------------|-----------------|
 | Doc 32 | Real-world server compatibility testing | Flagged AP2, heavily bannered |
 | Doc 33 | Performance testing | Flagged OUT OF SCOPE |
-| Doc 16 | Binary SWE parsing (PARSE_SWE_BINARY) | Deferred per Phase 2E L1 |
+| Doc 16 | `PARSE_SWE_BINARY` worker offloading | Worker message type deferred to Phase 4 (binary parsing itself in scope per Doc 10, Phase 2D) |
 | Doc 31 | Command lifecycle (Part 2 scope) | Phase 4 material, bannered |
 
 **Deliverable:** Orphan list with disposition (properly flagged vs needs action).
@@ -193,7 +193,7 @@ Note: Doc 17's inflated estimates were already flagged (H1 review fix with discr
 |----------------|--------|------------------------|
 | Performance testing OUT OF SCOPE | Doc 33, Phase 2E | §9 or §3 |
 | Real-world server testing rejected (AP2) | Doc 32, Phase 2E | §16 |
-| Binary SWE parsing deferred | Doc 16, Phase 2E L1 | §7 SWE Common section |
+| `PARSE_SWE_BINARY` worker offloading deferred | Doc 16, Phase 2F H3 | §8 Worker (not §7 — binary parsing is in scope) |
 | Worker extensions = Phase 4 only | Doc 16, Phase 2F H1 | §8 |
 | `_metadata` fixture pattern = hallucinated | Doc 15P2 | §9 fixture guidance |
 | Enterprise review process simplified | Doc 36, Phase 2C H2 | §16 or §9 |
