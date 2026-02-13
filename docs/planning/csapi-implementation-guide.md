@@ -736,6 +736,42 @@ This section quantifies why helper methods in a single class provide massive cod
 | **Hierarchical** | recursive | Systems, Deployments | Same logic |
 | **Pagination** | cursor | Observations, Commands | Same logic |
 
+#### Temporal Parameter Applicability Matrix
+
+Each temporal parameter uses the same ISO 8601 encoding logic but applies to different resource types. The `encodeDateTime()` helper is shared; the `buildQueryString()` method selects which parameters to include based on the resource type.
+
+| Resource Type | `datetime` | `phenomenonTime` | `resultTime` | `executionTime` | `issueTime` |
+|---------------|:----------:|:-----------------:|:------------:|:---------------:|:-----------:|
+| **Systems** | ✅ | — | — | — | — |
+| **Deployments** | ✅ | — | — | — | — |
+| **Procedures** | — | — | — | — | — |
+| **Sampling Features** | — | — | — | — | — |
+| **Properties** | — | — | — | — | — |
+| **DataStreams** | ✅ | ✅ | ✅ | — | — |
+| **Observations** | — | ✅ | ✅ | — | — |
+| **Control Streams** | ✅ | — | — | ✅ | ✅ |
+| **Commands** | — | — | — | ✅ | ✅ |
+
+**Parameter semantics:**
+- **`datetime`** — Filters by `validTime` property (when resource description is valid). Origin: OGC API – Common.
+- **`phenomenonTime`** — When the observation phenomenon occurred (applies to the feature of interest). Origin: CSAPI Part 2.
+- **`resultTime`** — When the observation result was produced/recorded. Supports `latest` special value (see below). Origin: CSAPI Part 2.
+- **`executionTime`** — When command was or will be executed. Origin: CSAPI Part 2.
+- **`issueTime`** — When command was issued/submitted. Constraint: `issueTime ≤ executionTime`. Origin: CSAPI Part 2.
+
+**`latest` special value for `resultTime`:**
+The `resultTime` parameter supports a special value `latest` that returns observations or datastreams with the most recent result time. Example: `GET /observations?resultTime=latest`. This is defined in the CSAPI Part 2 specification. Note: `now` is NOT a supported special value in CSAPI.
+
+**ISO 8601 format support:**
+
+The `encodeDateTime()` helper must accept these formats:
+
+| Category | Count | Examples |
+|----------|-------|----------|
+| **Instants** | 7 | `2024-01-15`, `2024-01-15T12:00:00Z`, `2024-01-15T12:00:00+05:00`, `2024-01-15T12:00:00.123Z` |
+| **Intervals** | 7 | `2024-01-01/2024-12-31`, `../2024-12-31` (open start), `2024-01-01/..` (open end), `../..` (fully open), `2024-01-01T00:00:00Z/P1M` (start+duration) |
+| **Durations** | 9 | `P1Y`, `P1M`, `P1D`, `PT1H`, `PT30M`, `PT45S`, `P1DT12H` (used in intervals only, not standalone) |
+
 #### Code Reuse Metrics: Single-Class Architecture
 
 ```typescript
@@ -797,6 +833,20 @@ export default class CSAPIQueryBuilder {
   }
   
   private validateBBox(bbox: BBoxFilter): void {
+    // Value count: must be 4 (2D) or 6 (3D)
+    // 4-value: minLon, minLat, maxLon, maxLat
+    // 6-value: minLon, minLat, minElev, maxLon, maxLat, maxElev
+    
+    // Coordinate range validation (WGS 84 / CRS84)
+    // Latitude:  -90 to +90 (inclusive)
+    // Longitude: -180 to +180 (inclusive)
+    // Elevation: any numeric value (meters above WGS 84 ellipsoid)
+    
+    // Ordering: minLon < maxLon, minLat < maxLat, minElev < maxElev
+    // NOTE: minLon > maxLon is INVALID (antimeridian crossing not supported)
+    //   → server returns 400 Bad Request
+    //   → client workaround: split into two queries and merge results
+    
     if (bbox.minLon >= bbox.maxLon || bbox.minLat >= bbox.maxLat) {
       throw new Error('Invalid bbox: min values must be less than max values');
     }
@@ -847,6 +897,53 @@ export default class CSAPIQueryBuilder {
 - Reuse efficiency: **85%** (helpers used by 60+ methods)
 - Code duplication: **0 lines**
 - Maintenance locations: **1 file** (all parameter logic in one place)
+
+#### Bbox Validation Rules (Complete Specification)
+
+The `validateBBox()` helper enforces these constraints per CSAPI Part 1 and OGC API – Common:
+
+| Rule | Constraint | Error on Violation |
+|------|------------|-------------------|
+| **Value count** | Exactly 4 (2D) or 6 (3D) | 400 Bad Request |
+| **Latitude range** | -90 ≤ lat ≤ +90 | 400 Bad Request |
+| **Longitude range** | -180 ≤ lon ≤ +180 | 400 Bad Request |
+| **Ordering (lat)** | minLat < maxLat | 400 Bad Request |
+| **Ordering (lon)** | minLon < maxLon | 400 Bad Request |
+| **Ordering (elev)** | minElev < maxElev (6-value only) | 400 Bad Request |
+| **CRS** | WGS 84 / CRS84 only (lon, lat order). No `bbox-crs` param. | N/A — not negotiable |
+| **Antimeridian** | NOT supported. minLon > maxLon → 400 | 400 Bad Request |
+| **Non-numeric values** | All values must be valid numbers | 400 Bad Request |
+
+**Coordinate order:** CRS84 = **longitude, latitude** (NOT latitude, longitude as in EPSG:4326).
+
+**Spatial semantics:**
+- Bbox returns resources whose geometry **intersects** the bbox (not "contained within")
+- **Point bbox** (min = max) is VALID — queries resources at a single point
+- Resources with **null geometry** are **excluded** from spatial query results
+- Global bbox (`-180,-90,180,90`) returns all resources with non-null geometry
+- Valid bbox with no intersecting resources returns **empty FeatureCollection** (not an error)
+
+**Antimeridian workaround:** Client must split into two queries and merge results:
+```
+// Instead of: bbox=170,-10,-170,10  (INVALID — minLon > maxLon)
+// Use:
+bbox=170,-10,180,10    // Eastern hemisphere portion
+bbox=-180,-10,-170,10  // Western hemisphere portion
+```
+
+**Spatial parameter support by resource type:**
+
+| Resource | `bbox` Supported | Notes |
+|----------|:----------------:|-------|
+| Systems | ✅ | Geometry optional (may be null) |
+| Deployments | ✅ | Geometry optional |
+| Procedures | ✅ | Geometry optional |
+| Sampling Features | ✅ | Geometry optional |
+| DataStreams | ❌ | Inherits geometry from parent System |
+| Observations | ❌ | Inherits geometry from DataStream/System |
+| Control Streams | ❌ | Inherits geometry from parent System |
+| Commands | ❌ | Inherits geometry from ControlStream/System |
+| Properties | ❌ | Non-spatial resource |
 
 #### Alternative: Multi-Class Code Duplication
 
@@ -937,6 +1034,49 @@ This section demonstrates how the single-class architecture enables fluent metho
 - **100% cross resource boundaries** - Not a single pattern stays within one resource type
 - **Maximum depth: 6+ levels** - System → Subsystem → ... → DataStream → Observation
 - **Industry standard:** Fluent APIs used by AWS SDK, Google Cloud Client, Stripe API
+
+#### Relationship Taxonomy (3 Types)
+
+The 16 navigation patterns fall into three distinct relationship types, each with different traversal characteristics:
+
+| Type | Count | Definition | Recursive? | Bidirectional? |
+|------|-------|------------|:----------:|:--------------:|
+| **Hierarchical** | 2 | Parent-child with recursive nesting — child is same type as parent | Yes (`recursive=true`) | No |
+| **Compositional** | 12 | Parent owns child — child cannot exist independently of parent | No (depth = 1) | No |
+| **Associative** | 2 | Many-to-many — both resources exist independently | No | Yes |
+
+**All 16 relationships classified:**
+
+**Part 1 — Core Resource Relationships (9):**
+
+| # | Parent → Child | Endpoint | Type |
+|---|----------------|----------|------|
+| 1 | System → Subsystems | `/systems/{id}/subsystems` | **Hierarchical** |
+| 2 | System → SamplingFeatures | `/systems/{id}/samplingFeatures` | Compositional |
+| 3 | System → Deployments | `/systems/{id}/deployments` | **Associative** |
+| 4 | System → DataStreams | `/systems/{id}/datastreams` | Compositional (cross-part) |
+| 5 | System → ControlStreams | `/systems/{id}/controlstreams` | Compositional (cross-part) |
+| 6 | System → SystemEvents | `/systems/{id}/events` | Compositional (cross-part) |
+| 7 | Deployment → Subdeployments | `/deployments/{id}/subdeployments` | **Hierarchical** |
+| 8 | Deployment → Systems | Reverse via query (`GET /systems?deployment=...`) | **Associative** (reverse) |
+| 9 | Collection → Items | `/collections/{id}/items` | Compositional |
+
+**Part 2 — Dynamic Data Relationships (7):**
+
+| # | Parent → Child | Endpoint | Type |
+|---|----------------|----------|------|
+| 10 | DataStream → Observations | `/datastreams/{id}/observations` | Compositional |
+| 11 | ControlStream → Commands | `/controlstreams/{id}/commands` | Compositional |
+| 12 | ControlStream → Feasibility | `/controlstreams/{id}/feasibility` | Compositional |
+| 13 | Command → Status | `/commands/{id}/status` | Compositional |
+| 14 | Command → Result | `/commands/{id}/result` | Compositional |
+| 15 | Feasibility → Status | `/feasibility/{id}/status` | Compositional |
+| 16 | Feasibility → Result | `/feasibility/{id}/result` | Compositional |
+
+**Type characteristics:**
+- **Hierarchical (2):** Subsystems and Subdeployments support unlimited recursive nesting via `recursive=true`. The child is the same resource type as the parent.
+- **Compositional (12):** The child is created via the parent endpoint (e.g., `POST /datastreams/{id}/observations`) but has a canonical URL at the top level (e.g., `/observations/{id}`). Nesting depth is exactly 1.
+- **Associative (2):** Only the Systems ↔ Deployments relationship. Navigable bidirectionally: forward via `/systems/{id}/deployments`, reverse via `GET /deployments?system={id}` or link following.
 
 **Navigation pattern examples:**
 
