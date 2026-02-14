@@ -273,7 +273,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
      - Test temporal filtering
      - Test bulk creation
      - Test navigation to datastream/feature/system
-     - Test format query parameter encoding (e.g., `resultFormat: 'swe+json'` → correct URL parameter)
+     - Test obsFormat query parameter encoding (e.g., `obsFormat: 'application/swe+json'` → correct URL parameter)
 
 8. **Control Streams Methods** (~1.5-2 hours implementation + ~0.5 hour testing, Medium-High complexity)
    - **Implement 8 Control Streams methods in `url_builder.ts`:**
