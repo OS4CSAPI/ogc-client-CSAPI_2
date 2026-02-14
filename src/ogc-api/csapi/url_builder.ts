@@ -30,12 +30,32 @@ export default class CSAPIQueryBuilder {
   private baseUrl: string;
 
   /**
+   * Optional map of resource type → absolute URL, supplied when the
+   * server advertises top-level (non-collection-scoped) resource URLs
+   * in the root API document. When present, `buildResourceUrl()` uses
+   * these absolute URLs instead of computing paths relative to the
+   * collection self link.
+   */
+  private resourceUrls_: Map<string, string>;
+
+  /**
    * @param collection_ - The OGC API collection metadata object.
    *   Must contain a `links` array; CSAPI resource availability is
    *   discovered from link relations matching `ogc-cs:{resourceType}`,
    *   plain resource names, or `items` links with resource hrefs.
+   * @param resourceUrls - Optional map of resource type names to absolute
+   *   URLs. When provided (e.g., from the root API document), these URLs
+   *   are used as the base for resource endpoints instead of the
+   *   collection-scoped self link. This supports servers that expose
+   *   CSAPI resources at the API root (e.g., `/api/systems`) rather than
+   *   under a collection path (e.g., `/collections/{id}/systems`).
+   * @see https://docs.ogc.org/is/23-001/23-001.html
    */
-  constructor(private collection_: OgcApiCollectionInfo) {
+  constructor(
+    private collection_: OgcApiCollectionInfo,
+    resourceUrls?: Map<string, string>
+  ) {
+    this.resourceUrls_ = resourceUrls ?? new Map();
     this.baseUrl = this.extractBaseUrl();
     this.availableResources = this.extractAvailableResources();
   }
@@ -130,12 +150,19 @@ export default class CSAPIQueryBuilder {
 
   /**
    * Core URL construction helper.
-   * Handles canonical and nested resource endpoints.
+   * Handles canonical, nested, and top-level resource endpoints.
+   *
+   * If the constructor received a `resourceUrls` map containing an
+   * absolute URL for the given `resourceType`, that URL is used as the
+   * base (top-level pattern). Otherwise, the URL is built relative to
+   * the collection self link (collection-scoped pattern).
+   *
    * @param resourceType - Resource type (systems, deployments, etc.)
    * @param id - Optional resource ID.
    * @param subPath - Optional sub-path (subsystems, datastreams, etc.)
    * @param options - Query parameters.
    * @returns Fully constructed URL string.
+   * @see https://docs.ogc.org/is/23-001/23-001.html
    */
   private buildResourceUrl(
     resourceType: string,
@@ -143,7 +170,12 @@ export default class CSAPIQueryBuilder {
     subPath?: string,
     options?: QueryOptions
   ): string {
-    let url = `${this.baseUrl}/${resourceType}`;
+    // Use the absolute resource URL when available (top-level pattern),
+    // otherwise fall back to collection-scoped base URL.
+    const resourceBase = this.resourceUrls_.has(resourceType)
+      ? this.resourceUrls_.get(resourceType).replace(/\/+$/, '')
+      : `${this.baseUrl}/${resourceType}`;
+    let url = resourceBase;
     if (id) url += `/${encodeResourceId(id)}`;
     if (subPath) url += `/${subPath}`;
     return url + this.buildQueryString(options);

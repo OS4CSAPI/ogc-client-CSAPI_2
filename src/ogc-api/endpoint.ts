@@ -50,6 +50,7 @@ import {
 import { getBaseUrl, getChildPath } from '../shared/url-utils.js';
 import EDRQueryBuilder from './edr/url_builder.js';
 import CSAPIQueryBuilder from './csapi/url_builder.js';
+import { CSAPIResourceTypes } from './csapi/model.js';
 
 /**
  * Represents an OGC API endpoint advertising various collections and services.
@@ -340,8 +341,15 @@ ${e.message}`);
     // because parseBaseCollectionInfo strips the links array, and
     // CSAPIQueryBuilder needs ogc-cs:* link relations to discover resources.
     const collectionDoc = await this.getCollectionDocument(collectionId);
+
+    // Extract resource URLs from the root API document. Servers that
+    // expose top-level resource endpoints (e.g., /api/systems) advertise
+    // them via link relations in the root document.
+    const resourceUrls = await this.extractRootResourceUrls();
+
     const result = new CSAPIQueryBuilder(
-      collectionDoc as unknown as OgcApiCollectionInfo
+      collectionDoc as unknown as OgcApiCollectionInfo,
+      resourceUrls
     );
     cache.set(collectionId, result);
     return result;
@@ -352,6 +360,55 @@ ${e.message}`);
    */
   get tileMatrixSets(): Promise<string[]> {
     return this.tileMatrixSetsFull.then((sets) => sets.map((set) => set.id));
+  }
+
+  /**
+   * Extracts absolute resource URLs from the root API document's links.
+   *
+   * Scans the root document for link relations that identify CSAPI resource
+   * endpoints (using the same three conventions as
+   * {@link CSAPIQueryBuilder.extractAvailableResources}). Returns a Map of
+   * resource type name → absolute URL, which can be passed to the builder
+   * to support top-level (non-collection-scoped) resource URL patterns.
+   *
+   * @returns Map of resource type → absolute URL (may be empty).
+   */
+  private async extractRootResourceUrls(): Promise<Map<string, string>> {
+    const resourceUrls = new Map<string, string>();
+    const rootDoc = await this.root;
+    const links = rootDoc?.links;
+    if (!Array.isArray(links)) return resourceUrls;
+
+    const knownTypes: ReadonlySet<string> = new Set(CSAPIResourceTypes);
+
+    for (const link of links) {
+      const rel = link.rel;
+      const href = link.href;
+      if (typeof rel !== 'string' || typeof href !== 'string') continue;
+
+      // Convention 1: ogc-cs: prefixed
+      const match = rel.match(/^ogc-cs:(.+)$/);
+      if (match) {
+        resourceUrls.set(match[1], href);
+        continue;
+      }
+
+      // Convention 2: plain resource name
+      if (knownTypes.has(rel)) {
+        resourceUrls.set(rel, href);
+        continue;
+      }
+
+      // Convention 3: rel: "items" with resource type in href
+      if (rel === 'items') {
+        const segment = href.replace(/\/+$/, '').split('/').pop();
+        if (segment && knownTypes.has(segment)) {
+          resourceUrls.set(segment, href);
+        }
+      }
+    }
+
+    return resourceUrls;
   }
 
   private getCollectionDocument(collectionId: string): Promise<OgcApiDocument> {

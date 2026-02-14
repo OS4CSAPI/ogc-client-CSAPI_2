@@ -208,6 +208,82 @@ describe('Resource validation', () => {
 });
 
 // ========================================
+// Top-Level (Non-Collection-Scoped) Resource URLs
+// ========================================
+
+describe('Top-level resource URLs', () => {
+  function makeTopLevelBuilder() {
+    const resourceUrls = new Map<string, string>([
+      ['systems', 'http://server/sensorhub/api/systems'],
+      ['datastreams', 'http://server/sensorhub/api/datastreams'],
+    ]);
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'http://server/sensorhub/api/collections/all' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+          { rel: 'ogc-cs:datastreams', type: '', title: '', href: '/datastreams' },
+        ],
+      }),
+      resourceUrls
+    );
+  }
+
+  it('collection-scoped builder still produces correct URLs (no regression)', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+    expect(builder.getSystems()).toBe('https://example.com/collections/iot/systems');
+  });
+
+  it('uses absolute resource URL when resourceUrls map is provided', () => {
+    const url = makeTopLevelBuilder().getSystems();
+    expect(url).toBe('http://server/sensorhub/api/systems');
+  });
+
+  it('appends resource ID correctly with top-level URL', () => {
+    const url = makeTopLevelBuilder().getSystem('sys-001');
+    expect(url).toBe('http://server/sensorhub/api/systems/sys-001');
+  });
+
+  it('appends sub-path correctly with top-level URL', () => {
+    const url = makeTopLevelBuilder().getSystemSubsystems('sys-001');
+    expect(url).toBe('http://server/sensorhub/api/systems/sys-001/subsystems');
+  });
+
+  it('appends query parameters correctly with top-level URL', () => {
+    const url = makeTopLevelBuilder().getSystems({ limit: 5, q: 'weather' });
+    expect(url).toBe('http://server/sensorhub/api/systems?limit=5&q=weather');
+  });
+
+  it('encodes special characters in ID with top-level URL', () => {
+    const url = makeTopLevelBuilder().getSystem('sys/001');
+    expect(url).toBe('http://server/sensorhub/api/systems/sys%2F001');
+  });
+
+  it('strips trailing slash from absolute resource URL', () => {
+    const resourceUrls = new Map<string, string>([
+      ['systems', 'http://server/api/systems/'],
+    ]);
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'http://server/api' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      }),
+      resourceUrls
+    );
+    expect(builder.getSystems()).toBe('http://server/api/systems');
+  });
+});
+
+// ========================================
 // getSystems
 // ========================================
 
