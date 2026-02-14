@@ -201,6 +201,44 @@ describe('scanCsapiLinks', () => {
     ];
     expect(scanCsapiLinks(links)).toEqual(new Map());
   });
+
+  it('strips query parameters from items href before matching', () => {
+    const links = [
+      { rel: 'items', href: '/systems?f=application/json' },
+      { rel: 'items', href: '/deployments?f=application/json' },
+    ];
+    const result = scanCsapiLinks(links);
+    expect(result.size).toBe(2);
+    expect(result.get('systems')).toBe('/systems?f=application/json');
+    expect(result.get('deployments')).toBe('/deployments?f=application/json');
+  });
+
+  it('strips query parameters and trailing slashes from items href', () => {
+    const links = [
+      { rel: 'items', href: '/procedures/?f=application/json' },
+    ];
+    const result = scanCsapiLinks(links);
+    expect(result.size).toBe(1);
+    expect(result.get('procedures')).toBe('/procedures/?f=application/json');
+  });
+
+  it('normalizes featuresOfInterest to samplingFeatures in items href', () => {
+    const links = [
+      { rel: 'items', href: '/featuresOfInterest' },
+    ];
+    const result = scanCsapiLinks(links);
+    expect(result.size).toBe(1);
+    expect(result.get('samplingFeatures')).toBe('/featuresOfInterest');
+  });
+
+  it('normalizes featuresOfInterest with query params to samplingFeatures', () => {
+    const links = [
+      { rel: 'items', href: '/featuresOfInterest?f=application/json' },
+    ];
+    const result = scanCsapiLinks(links);
+    expect(result.size).toBe(1);
+    expect(result.get('samplingFeatures')).toBe('/featuresOfInterest?f=application/json');
+  });
 });
 
 // ========================================

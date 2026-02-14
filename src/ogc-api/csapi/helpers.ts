@@ -108,7 +108,9 @@ export function encodeResourceId(id: string): string {
  * 2. **Plain resource name** — `rel: "systems"` where the value is a known
  *    {@link CSAPIResourceTypes} member
  * 3. **`items` with resource href** — `rel: "items"` where the `href` path
- *    ends with a known resource type name
+ *    ends with a known resource type name (query parameters are stripped
+ *    before matching; the alias `featuresOfInterest` is normalized to
+ *    `samplingFeatures`)
  *
  * @param links - Array of link objects (e.g., from a collection or root document).
  * @returns Map of resource type name → href string. Empty if no CSAPI links found.
@@ -145,9 +147,11 @@ export function scanCsapiLinks(
 
     // Convention 3: rel: "items" with resource type in href
     if (rel === 'items' && typeof href === 'string') {
-      const segment = href.replace(/\/+$/, '').split('/').pop();
-      if (segment && knownTypes.has(segment)) {
-        result.set(segment, href);
+      const segment = href.split('?')[0].replace(/\/+$/, '').split('/').pop();
+      // Normalize known server naming variants to spec resource type names
+      const normalized = segment === 'featuresOfInterest' ? 'samplingFeatures' : segment;
+      if (normalized && knownTypes.has(normalized)) {
+        result.set(normalized, href);
       }
     }
   }
