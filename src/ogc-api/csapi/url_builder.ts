@@ -1,5 +1,5 @@
 import type { OgcApiCollectionInfo } from '../model.js';
-import type { QueryOptions, SystemQueryOptions, DeploymentQueryOptions, ProcedureQueryOptions, SamplingFeatureQueryOptions, PropertyQueryOptions } from './model.js';
+import type { QueryOptions, SystemQueryOptions, DeploymentQueryOptions, ProcedureQueryOptions, SamplingFeatureQueryOptions, PropertyQueryOptions, DatastreamQueryOptions, ObservationQueryOptions } from './model.js';
 import { CSAPIResourceTypes } from './model.js';
 import { EndpointError } from '../../shared/errors.js';
 import {
@@ -1119,5 +1119,254 @@ export default class CSAPIQueryBuilder {
   getPropertyHistory(id: string, options?: QueryOptions): string {
     this.assertResourceAvailable('properties');
     return this.buildResourceUrl('properties', id, 'history', options);
+  }
+
+  // ── DATASTREAMS ──
+
+  /**
+   * Returns the URL for querying all datastreams.
+   *
+   * DataStreams represent collections of observations from the same system
+   * with shared schemas. Supports filtering by system, observed property,
+   * and temporal parameters.
+   *
+   * @param options - Optional query parameters including `systemId`, `observedPropertyId`,
+   *   `phenomenonTime`, `resultTime`, plus standard pagination and filtering.
+   * @returns URL string for the datastreams collection endpoint.
+   * @throws {EndpointError} If 'datastreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getDataStreams({ limit: 10, observedPropertyId: 'temperature' });
+   * // => "https://example.com/collections/iot/datastreams?limit=10&observedPropertyId=temperature"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
+   */
+  getDataStreams(options?: DatastreamQueryOptions): string {
+    this.assertResourceAvailable('datastreams');
+    return this.buildResourceUrl('datastreams', undefined, undefined, options);
+  }
+
+  /**
+   * Returns the URL for retrieving a single datastream by ID.
+   *
+   * @param id - The datastream resource identifier.
+   * @param options - Optional query parameters (e.g., format selection).
+   * @returns URL string for the single datastream endpoint.
+   * @throws {EndpointError} If 'datastreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getDataStream('ds-001');
+   * // => "https://example.com/collections/iot/datastreams/ds-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
+   */
+  getDataStream(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('datastreams');
+    return this.buildResourceUrl('datastreams', id, undefined, options);
+  }
+
+  /**
+   * Returns the URL for creating a new datastream.
+   *
+   * The request body (not part of the URL) must include the result schema,
+   * observed properties, and system association.
+   *
+   * @returns URL string for the datastreams creation endpoint (POST).
+   * @throws {EndpointError} If 'datastreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.createDataStream();
+   * // => "https://example.com/collections/iot/datastreams"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
+   */
+  createDataStream(): string {
+    this.assertResourceAvailable('datastreams');
+    return this.buildResourceUrl('datastreams');
+  }
+
+  /**
+   * Returns the URL for updating an existing datastream.
+   *
+   * Caution: schema changes may affect existing observations.
+   *
+   * @param id - The datastream resource identifier.
+   * @returns URL string for the datastream update endpoint (PUT).
+   * @throws {EndpointError} If 'datastreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.updateDataStream('ds-001');
+   * // => "https://example.com/collections/iot/datastreams/ds-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
+   */
+  updateDataStream(id: string): string {
+    this.assertResourceAvailable('datastreams');
+    return this.buildResourceUrl('datastreams', id);
+  }
+
+  /**
+   * Returns the URL for deleting a datastream.
+   *
+   * @param id - The datastream resource identifier.
+   * @returns URL string for the datastream deletion endpoint (DELETE).
+   * @throws {EndpointError} If 'datastreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.deleteDataStream('ds-001');
+   * // => "https://example.com/collections/iot/datastreams/ds-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
+   */
+  deleteDataStream(id: string): string {
+    this.assertResourceAvailable('datastreams');
+    return this.buildResourceUrl('datastreams', id);
+  }
+
+  /**
+   * Returns the URL for retrieving a datastream's result schema.
+   *
+   * The `obsFormat` query parameter is **required** per Part 2, Req 11.
+   * Omitting it causes the server to return 400 Bad Request.
+   *
+   * @param id - The datastream resource identifier.
+   * @param options - Optional query parameters. Should include `f` set to the
+   *   desired observation format (e.g., `application/swe+json`).
+   * @returns URL string for the datastream schema endpoint.
+   * @throws {EndpointError} If 'datastreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getDataStreamSchema('ds-001', { f: 'application/swe+json' });
+   * // => "https://example.com/collections/iot/datastreams/ds-001/schema?f=application%2Fswe%2Bjson"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#req_datastream_schema
+   */
+  getDataStreamSchema(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('datastreams');
+    return this.buildResourceUrl('datastreams', id, 'schema', options);
+  }
+
+  /**
+   * Returns the URL for listing observations within a datastream.
+   *
+   * Supports temporal filtering via `phenomenonTime` and `resultTime`,
+   * including the special `latest` value for `resultTime`.
+   * Supports cursor-based pagination via the `cursor` parameter.
+   *
+   * @param id - The datastream resource identifier.
+   * @param options - Optional query parameters including `phenomenonTime`,
+   *   `resultTime`, `cursor`, plus standard pagination and filtering.
+   * @returns URL string for the datastream's observations endpoint.
+   * @throws {EndpointError} If 'datastreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getDataStreamObservations('ds-001', { resultTime: 'latest', limit: 100 });
+   * // => "https://example.com/collections/iot/datastreams/ds-001/observations?resultTime=latest&limit=100"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
+   */
+  getDataStreamObservations(id: string, options?: ObservationQueryOptions): string {
+    this.assertResourceAvailable('datastreams');
+    return this.buildResourceUrl('datastreams', id, 'observations', options);
+  }
+
+  /**
+   * Returns the URL for creating an observation within a datastream.
+   *
+   * The request body (not part of the URL) must conform to the datastream's
+   * result schema.
+   *
+   * @param datastreamId - The datastream resource identifier.
+   * @returns URL string for the observation creation endpoint (POST).
+   * @throws {EndpointError} If 'datastreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.createObservation('ds-001');
+   * // => "https://example.com/collections/iot/datastreams/ds-001/observations"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
+   */
+  createObservation(datastreamId: string): string {
+    this.assertResourceAvailable('datastreams');
+    return this.buildResourceUrl('datastreams', datastreamId, 'observations');
+  }
+
+  /**
+   * Returns the URL for listing systems that produce a datastream.
+   *
+   * @param id - The datastream resource identifier.
+   * @param options - Optional query parameters for filtering systems.
+   * @returns URL string for the datastream's systems endpoint.
+   * @throws {EndpointError} If 'datastreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getDataStreamSystems('ds-001');
+   * // => "https://example.com/collections/iot/datastreams/ds-001/systems"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
+   */
+  getDataStreamSystems(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('datastreams');
+    return this.buildResourceUrl('datastreams', id, 'systems', options);
+  }
+
+  /**
+   * Returns the URL for listing procedures associated with a datastream.
+   *
+   * @param id - The datastream resource identifier.
+   * @param options - Optional query parameters for filtering procedures.
+   * @returns URL string for the datastream's procedures endpoint.
+   * @throws {EndpointError} If 'datastreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getDataStreamProcedures('ds-001');
+   * // => "https://example.com/collections/iot/datastreams/ds-001/procedures"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
+   */
+  getDataStreamProcedures(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('datastreams');
+    return this.buildResourceUrl('datastreams', id, 'procedures', options);
+  }
+
+  /**
+   * Returns the URL for retrieving a datastream's version history.
+   *
+   * @param id - The datastream resource identifier.
+   * @param options - Optional query parameters for filtering history entries.
+   * @returns URL string for the datastream history endpoint.
+   * @throws {EndpointError} If 'datastreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getDataStreamHistory('ds-001', { limit: 5 });
+   * // => "https://example.com/collections/iot/datastreams/ds-001/history?limit=5"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
+   */
+  getDataStreamHistory(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('datastreams');
+    return this.buildResourceUrl('datastreams', id, 'history', options);
   }
 }

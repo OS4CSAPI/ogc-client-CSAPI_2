@@ -1505,3 +1505,280 @@ describe('Property resource validation', () => {
     expect(() => builder.getPropertyHistory('x')).toThrow(EndpointError);
   });
 });
+
+// ========================================
+// DataStreams Methods
+// ========================================
+
+describe('getDataStreams', () => {
+  function makeDsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:datastreams', type: '', title: '', href: '/datastreams' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makeDsBuilder().getDataStreams();
+    expect(url).toBe('https://example.com/collections/iot/datastreams');
+  });
+
+  it('returns correct URL with limit', () => {
+    const url = makeDsBuilder().getDataStreams({ limit: 20 });
+    expect(url).toBe('https://example.com/collections/iot/datastreams?limit=20');
+  });
+
+  it('returns correct URL with systemId filter', () => {
+    const url = makeDsBuilder().getDataStreams({ systemId: 'sys-001' });
+    expect(url).toBe('https://example.com/collections/iot/datastreams?systemId=sys-001');
+  });
+
+  it('returns correct URL with observedPropertyId filter', () => {
+    const url = makeDsBuilder().getDataStreams({ observedPropertyId: 'temperature' });
+    expect(url).toBe('https://example.com/collections/iot/datastreams?observedPropertyId=temperature');
+  });
+
+  it('returns correct URL with phenomenonTime temporal filter', () => {
+    const url = makeDsBuilder().getDataStreams({
+      phenomenonTime: { start: new Date('2024-01-01T00:00:00Z'), end: new Date('2024-12-31T23:59:59Z') },
+    });
+    expect(url).toBe('https://example.com/collections/iot/datastreams?phenomenonTime=2024-01-01T00%3A00%3A00.000Z%2F2024-12-31T23%3A59%3A59.000Z');
+  });
+
+  it('returns correct URL with resultTime temporal filter', () => {
+    const url = makeDsBuilder().getDataStreams({ resultTime: new Date('2024-06-01T00:00:00Z') });
+    expect(url).toBe('https://example.com/collections/iot/datastreams?resultTime=2024-06-01T00%3A00%3A00.000Z');
+  });
+
+  it('returns correct URL with multiple options', () => {
+    const url = makeDsBuilder().getDataStreams({ limit: 10, offset: 5, systemId: 'sys-001' });
+    expect(url).toBe('https://example.com/collections/iot/datastreams?limit=10&offset=5&systemId=sys-001');
+  });
+
+  it('returns correct URL with q parameter', () => {
+    const url = makeDsBuilder().getDataStreams({ q: 'weather' });
+    expect(url).toBe('https://example.com/collections/iot/datastreams?q=weather');
+  });
+});
+
+describe('getDataStream', () => {
+  function makeDsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:datastreams', type: '', title: '', href: '/datastreams' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with resource ID', () => {
+    const url = makeDsBuilder().getDataStream('ds-001');
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001');
+  });
+
+  it('encodes special characters in ID', () => {
+    const url = makeDsBuilder().getDataStream('urn:example:ds:001');
+    expect(url).toBe('https://example.com/collections/iot/datastreams/urn%3Aexample%3Ads%3A001');
+  });
+});
+
+describe('DataStream CRUD operations', () => {
+  function makeDsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:datastreams', type: '', title: '', href: '/datastreams' },
+        ],
+      })
+    );
+  }
+
+  it('createDataStream returns correct URL', () => {
+    const url = makeDsBuilder().createDataStream();
+    expect(url).toBe('https://example.com/collections/iot/datastreams');
+  });
+
+  it('updateDataStream returns correct URL', () => {
+    const url = makeDsBuilder().updateDataStream('ds-001');
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001');
+  });
+
+  it('deleteDataStream returns correct URL', () => {
+    const url = makeDsBuilder().deleteDataStream('ds-001');
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001');
+  });
+});
+
+describe('getDataStreamSchema', () => {
+  function makeDsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:datastreams', type: '', title: '', href: '/datastreams' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with obsFormat parameter', () => {
+    const url = makeDsBuilder().getDataStreamSchema('ds-001', { f: 'application/swe+json' });
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/schema?f=application%2Fswe%2Bjson');
+  });
+
+  it('returns correct URL without options', () => {
+    const url = makeDsBuilder().getDataStreamSchema('ds-001');
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/schema');
+  });
+});
+
+describe('getDataStreamObservations', () => {
+  function makeDsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:datastreams', type: '', title: '', href: '/datastreams' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makeDsBuilder().getDataStreamObservations('ds-001');
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/observations');
+  });
+
+  it('returns correct URL with resultTime instant', () => {
+    const url = makeDsBuilder().getDataStreamObservations('ds-001', { resultTime: new Date('2024-06-01T00:00:00Z') });
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/observations?resultTime=2024-06-01T00%3A00%3A00.000Z');
+  });
+
+  it('returns correct URL with phenomenonTime filter', () => {
+    const url = makeDsBuilder().getDataStreamObservations('ds-001', {
+      phenomenonTime: { start: new Date('2024-01-01T00:00:00Z'), end: new Date('2024-06-01T00:00:00Z') },
+    });
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/observations?phenomenonTime=2024-01-01T00%3A00%3A00.000Z%2F2024-06-01T00%3A00%3A00.000Z');
+  });
+
+  it('returns correct URL with cursor-based pagination', () => {
+    const url = makeDsBuilder().getDataStreamObservations('ds-001', { cursor: 'abc123', limit: 50 });
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/observations?cursor=abc123&limit=50');
+  });
+
+  it('returns correct URL with limit', () => {
+    const url = makeDsBuilder().getDataStreamObservations('ds-001', { limit: 100 });
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/observations?limit=100');
+  });
+});
+
+describe('createObservation', () => {
+  function makeDsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:datastreams', type: '', title: '', href: '/datastreams' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL for observation creation', () => {
+    const url = makeDsBuilder().createObservation('ds-001');
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/observations');
+  });
+
+  it('encodes special characters in datastream ID', () => {
+    const url = makeDsBuilder().createObservation('urn:example:ds:001');
+    expect(url).toBe('https://example.com/collections/iot/datastreams/urn%3Aexample%3Ads%3A001/observations');
+  });
+});
+
+describe('DataStream association methods', () => {
+  function makeDsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:datastreams', type: '', title: '', href: '/datastreams' },
+        ],
+      })
+    );
+  }
+
+  it('getDataStreamSystems returns correct URL', () => {
+    const url = makeDsBuilder().getDataStreamSystems('ds-001');
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/systems');
+  });
+
+  it('getDataStreamSystems returns correct URL with pagination', () => {
+    const url = makeDsBuilder().getDataStreamSystems('ds-001', { limit: 5, offset: 10 });
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/systems?limit=5&offset=10');
+  });
+
+  it('getDataStreamProcedures returns correct URL', () => {
+    const url = makeDsBuilder().getDataStreamProcedures('ds-001');
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/procedures');
+  });
+
+  it('getDataStreamProcedures returns correct URL with options', () => {
+    const url = makeDsBuilder().getDataStreamProcedures('ds-001', { limit: 10 });
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/procedures?limit=10');
+  });
+});
+
+describe('getDataStreamHistory', () => {
+  function makeDsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:datastreams', type: '', title: '', href: '/datastreams' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makeDsBuilder().getDataStreamHistory('ds-001');
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/history');
+  });
+
+  it('returns correct URL with limit', () => {
+    const url = makeDsBuilder().getDataStreamHistory('ds-001', { limit: 5 });
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/history?limit=5');
+  });
+});
+
+describe('DataStream resource validation', () => {
+  it('throws EndpointError when datastreams is unavailable', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        id: 'sensors',
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/sensors' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+    expect(() => builder.getDataStreams()).toThrow(EndpointError);
+    expect(() => builder.getDataStream('x')).toThrow(EndpointError);
+    expect(() => builder.createDataStream()).toThrow(EndpointError);
+    expect(() => builder.updateDataStream('x')).toThrow(EndpointError);
+    expect(() => builder.deleteDataStream('x')).toThrow(EndpointError);
+    expect(() => builder.getDataStreamSchema('x')).toThrow(EndpointError);
+    expect(() => builder.getDataStreamObservations('x')).toThrow(EndpointError);
+    expect(() => builder.createObservation('x')).toThrow(EndpointError);
+    expect(() => builder.getDataStreamSystems('x')).toThrow(EndpointError);
+    expect(() => builder.getDataStreamProcedures('x')).toThrow(EndpointError);
+    expect(() => builder.getDataStreamHistory('x')).toThrow(EndpointError);
+  });
+});
