@@ -457,7 +457,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 
 11. **SWE Common Simple Components Parser** (~2-3 hours, Medium-High complexity)
     - Create `formats/swecommon/components.ts` (~300-400 lines)
-    - Implement parsers for all simple component types (Quantity, Count, Text, Boolean, Time, Category)
+    - Implement parsers for all simple component types (Quantity, Count, Text, Boolean, Time, Category) and range types (QuantityRange, CountRange, TimeRange, CategoryRange)
     - Handle UOM, constraints, code spaces
     - **Write JSDoc:** Document each component parser with examples
     - **Test immediately:** Add component parser tests (~200-300 lines tests)

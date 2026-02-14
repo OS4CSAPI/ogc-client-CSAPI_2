@@ -3056,6 +3056,7 @@ The SWE Common handler is new code we need to build to parse [OGC SWE Common 3.0
 
 **Range Components (new in 3.0):**
 - **QuantityRange**: Range of numeric values with units (temperature range)
+- **CountRange**: Range of integer count values (count interval)
 - **CategoryRange**: Range of categorical values (quality range indicators)
 - **TimeRange**: Temporal interval (observation period, validity period)
 
