@@ -1,0 +1,581 @@
+import type { BoundingBox, DateTimeParameter, CrsCode, MimeType } from '../../shared/models.js';
+import type { OgcApiDocumentLink } from '../model.js';
+import type { Geometry } from 'geojson';
+
+// ========================================
+// CSAPI Resource Type Constants
+// ========================================
+
+/**
+ * All CSAPI resource types as defined in OGC API - Connected Systems Parts 1 & 2.
+ *
+ * Part 1: systems, deployments, samplingFeatures, procedures, properties
+ * Part 2: datastreams, observations, controlStreams, commands
+ *
+ * @see https://docs.ogc.org/is/23-001/23-001.html
+ * @see https://docs.ogc.org/is/23-002/23-002.html
+ */
+export const CSAPIResourceTypes = [
+  'systems',
+  'deployments',
+  'samplingFeatures',
+  'procedures',
+  'properties',
+  'datastreams',
+  'observations',
+  'controlStreams',
+  'commands',
+] as const;
+
+/** Union type of all CSAPI resource type strings. */
+export type CSAPIResourceType = (typeof CSAPIResourceTypes)[number];
+
+// ========================================
+// Command Status Code
+// ========================================
+
+/**
+ * Status codes for commands as defined in OGC API - Connected Systems Part 2.
+ * @see https://docs.ogc.org/is/23-002/23-002.html
+ */
+export const CommandStatusCodes = [
+  'PENDING',
+  'ACCEPTED',
+  'REJECTED',
+  'SCHEDULED',
+  'UPDATED',
+  'CANCELED',
+  'EXECUTING',
+  'FAILED',
+  'COMPLETED',
+] as const;
+
+/** Union type of all command status code strings. */
+export type CommandStatusCode = (typeof CommandStatusCodes)[number];
+
+// ========================================
+// System Type URIs
+// ========================================
+
+/**
+ * Discriminator URIs for the `featureType` property on System resources.
+ * @see https://docs.ogc.org/is/23-001/23-001.html
+ */
+export const SystemTypeUris = [
+  'http://www.w3.org/ns/sosa/Sensor',
+  'http://www.w3.org/ns/sosa/Actuator',
+  'http://www.w3.org/ns/sosa/Platform',
+  'http://www.w3.org/ns/sosa/Sampler',
+  'http://www.w3.org/ns/sosa/System',
+] as const;
+
+/** Union type of system featureType discriminator URIs. */
+export type SystemTypeUri = (typeof SystemTypeUris)[number];
+
+// ========================================
+// Helper Types
+// ========================================
+
+/**
+ * A time interval with a required start and optional end.
+ * Used by `validTime`, `phenomenonTime`, `resultTime`, etc.
+ */
+export interface TimeInterval {
+  start: Date;
+  end?: Date;
+}
+
+/**
+ * HATEOAS link extended with CSAPI-relevant `rel` values.
+ * @see https://docs.ogc.org/is/23-001/23-001.html
+ */
+export type ResourceLink = OgcApiDocumentLink;
+
+// ========================================
+// Query Options
+// ========================================
+
+/**
+ * Base query options shared by all CSAPI resource list endpoints.
+ * @see https://docs.ogc.org/is/23-001/23-001.html
+ */
+export interface QueryOptions {
+  /** Maximum number of resources to return. */
+  limit?: number;
+  /** Offset-based pagination: number of resources to skip. */
+  offset?: number;
+  /** Cursor-based pagination: opaque token from a previous response. */
+  cursor?: string;
+  /** Spatial filter: bounding box [minx, miny, maxx, maxy]. */
+  bbox?: BoundingBox;
+  /** Temporal filter: single instant or interval. */
+  datetime?: DateTimeParameter;
+  /** Free-text search query. */
+  q?: string;
+  /** Filter by local resource ID(s). */
+  id?: string | string[];
+  /** Response format. */
+  f?: MimeType;
+  /** Coordinate reference system for response geometries. */
+  crs?: CrsCode;
+}
+
+/**
+ * Query options for System list endpoints.
+ * @see https://docs.ogc.org/is/23-001/23-001.html
+ */
+export interface SystemQueryOptions extends QueryOptions {
+  /** Filter by parent system ID (for subsystem queries). */
+  parent?: string;
+  /** Filter by procedure ID. */
+  procedureId?: string;
+  /** Filter by feature of interest ID. */
+  foiId?: string;
+  /** Filter by observed property ID. */
+  observedPropertyId?: string;
+  /** Filter by controlled property ID. */
+  controlledPropertyId?: string;
+  /** Include subsystems recursively. */
+  recursive?: boolean;
+}
+
+/**
+ * Query options for Deployment list endpoints.
+ * @see https://docs.ogc.org/is/23-001/23-001.html
+ */
+export interface DeploymentQueryOptions extends QueryOptions {
+  /** Filter by parent deployment ID (for subdeployment queries). */
+  parent?: string;
+  /** Filter by deployed system ID. */
+  systemId?: string;
+  /** Include subdeployments recursively. */
+  recursive?: boolean;
+}
+
+/**
+ * Query options for Procedure list endpoints.
+ * @see https://docs.ogc.org/is/23-001/23-001.html
+ */
+export type ProcedureQueryOptions = QueryOptions;
+
+/**
+ * Query options for SamplingFeature list endpoints.
+ * @see https://docs.ogc.org/is/23-001/23-001.html
+ */
+export type SamplingFeatureQueryOptions = QueryOptions;
+
+/**
+ * Query options for Property list endpoints.
+ * @see https://docs.ogc.org/is/23-001/23-001.html
+ */
+export type PropertyQueryOptions = QueryOptions;
+
+/**
+ * Query options for DataStream list endpoints.
+ * @see https://docs.ogc.org/is/23-002/23-002.html
+ */
+export interface DatastreamQueryOptions extends QueryOptions {
+  /** Filter by system ID. */
+  systemId?: string;
+  /** Filter by observed property ID. */
+  observedPropertyId?: string;
+  /** Filter by phenomenon time interval. */
+  phenomenonTime?: DateTimeParameter;
+  /** Filter by result time interval. */
+  resultTime?: DateTimeParameter;
+}
+
+/**
+ * Query options for Observation list endpoints.
+ * @see https://docs.ogc.org/is/23-002/23-002.html
+ */
+export interface ObservationQueryOptions extends QueryOptions {
+  /** Filter by phenomenon time interval. */
+  phenomenonTime?: DateTimeParameter;
+  /** Filter by result time interval. */
+  resultTime?: DateTimeParameter;
+}
+
+/**
+ * Query options for ControlStream list endpoints.
+ * @see https://docs.ogc.org/is/23-002/23-002.html
+ */
+export interface ControlStreamQueryOptions extends QueryOptions {
+  /** Filter by system ID. */
+  systemId?: string;
+  /** Filter by controlled property ID. */
+  controlledPropertyId?: string;
+}
+
+/**
+ * Query options for Command list endpoints.
+ * @see https://docs.ogc.org/is/23-002/23-002.html
+ */
+export interface CommandQueryOptions extends QueryOptions {
+  /** Filter by issue time interval. */
+  issueTime?: DateTimeParameter;
+  /** Filter by execution time interval. */
+  executionTime?: DateTimeParameter;
+  /** Filter by current status code. */
+  currentStatus?: CommandStatusCode;
+}
+
+// ========================================
+// Part 1 Resource Interfaces (GeoJSON)
+// ========================================
+
+/**
+ * A System resource in GeoJSON format.
+ *
+ * Systems represent sensing, actuating, sampling, or computational assets
+ * (sensors, platforms, actuators, samplers, or composite systems).
+ *
+ * Required properties: `featureType`, `uid`, `name` (per OGC spec).
+ *
+ * @see https://docs.ogc.org/is/23-001/23-001.html
+ */
+export interface System {
+  /** Server-assigned local identifier (read-only). */
+  id: string;
+  type: 'Feature';
+  properties: {
+    /** Discriminator URI indicating the system type. */
+    featureType: SystemTypeUri | string;
+    /** Globally unique identifier URI (required by spec). */
+    uid: string;
+    /** Human-readable name. */
+    name: string;
+    /** Human-readable description. */
+    description?: string;
+    /** Asset type classification. */
+    assetType?: 'Equipment' | 'Human' | 'LivingThing' | 'Simulation' | 'Process' | 'Group' | 'Other';
+    /** Validity time period for this system. */
+    validTime?: TimeInterval;
+  };
+  geometry?: Geometry;
+  links: ResourceLink[];
+}
+
+/**
+ * A Deployment resource in GeoJSON format.
+ *
+ * Deployments represent the deployment of one or more systems at a location
+ * for a specific time period.
+ *
+ * Required properties: `featureType`, `uid`, `name`, `validTime` (per OGC spec).
+ *
+ * @see https://docs.ogc.org/is/23-001/23-001.html
+ */
+export interface Deployment {
+  /** Server-assigned local identifier (read-only). */
+  id: string;
+  type: 'Feature';
+  properties: {
+    /** Discriminator URI (sosa:Deployment). */
+    featureType: string;
+    /** Globally unique identifier URI (required by spec). */
+    uid: string;
+    /** Human-readable name. */
+    name: string;
+    /** Human-readable description. */
+    description?: string;
+    /** Time period during which systems are deployed (required). */
+    validTime: TimeInterval;
+  };
+  geometry?: Geometry;
+  links: ResourceLink[];
+}
+
+/**
+ * A Procedure resource in GeoJSON format.
+ *
+ * Procedures describe methodologies for observation, actuation, or sampling.
+ * In GeoJSON encoding, geometry is always null; detailed descriptions use SensorML.
+ *
+ * Required properties: `featureType`, `uid`, `name` (per OGC spec).
+ *
+ * @see https://docs.ogc.org/is/23-001/23-001.html
+ */
+export interface Procedure {
+  /** Server-assigned local identifier (read-only). */
+  id: string;
+  type: 'Feature';
+  properties: {
+    /** Discriminator URI indicating the procedure type. */
+    featureType: string;
+    /** Globally unique identifier URI (required by spec). */
+    uid: string;
+    /** Human-readable name. */
+    name: string;
+    /** Human-readable description. */
+    description?: string;
+  };
+  /** Always null in GeoJSON encoding. */
+  geometry: null;
+  links: ResourceLink[];
+}
+
+/**
+ * A SamplingFeature resource in GeoJSON format.
+ *
+ * Sampling features represent the spatial or physical entity at or on which
+ * observations are made (e.g., a monitoring station, a transect, a specimen).
+ *
+ * Required properties: `featureType`, `uid`, `name` (per OGC spec).
+ * The `sampledFeature@link` link relation is also required.
+ *
+ * @see https://docs.ogc.org/is/23-001/23-001.html
+ */
+export interface SamplingFeature {
+  /** Server-assigned local identifier (read-only). */
+  id: string;
+  type: 'Feature';
+  properties: {
+    /** Type URI for the sampling feature. */
+    featureType: string;
+    /** Globally unique identifier URI (required by spec). */
+    uid: string;
+    /** Human-readable name. */
+    name: string;
+    /** Human-readable description. */
+    description?: string;
+    /** Optional validity time period. */
+    validTime?: TimeInterval;
+  };
+  geometry?: Geometry;
+  links: ResourceLink[];
+}
+
+/**
+ * A Property resource (DerivedProperty).
+ *
+ * Properties define observable or controllable quantities. Unlike other Part 1
+ * resources, Property is NOT a GeoJSON Feature — it is a flat SWE Common object.
+ *
+ * Required properties: `label`, `uniqueId`, `baseProperty` (per OGC spec).
+ *
+ * @see https://docs.ogc.org/is/23-001/23-001.html
+ */
+export interface Property {
+  /** Server-assigned local identifier (read-only). */
+  id?: string;
+  /** Human-readable label (required). */
+  label: string;
+  /** Human-readable description. */
+  description?: string;
+  /** Globally unique identifier URI (required). */
+  uniqueId: string;
+  /** URI of the base property this is derived from (required). */
+  baseProperty: string;
+  /** URI of the object type this property applies to. */
+  objectType?: string;
+  /** URI of the statistic type (e.g., mean, max). */
+  statistic?: string;
+  links?: ResourceLink[];
+}
+
+// ========================================
+// Part 2 Resource Interfaces
+// ========================================
+
+/**
+ * A DataStream resource.
+ *
+ * DataStreams represent a stream of observations from a system, linking
+ * a system to its observed properties and observation results.
+ *
+ * Required properties: `name`, `system@link`, `observedProperties`,
+ * `phenomenonTime`, `resultTime`, `resultType`, `live` (per OGC spec).
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html
+ */
+export interface Datastream {
+  /** Server-assigned local identifier (read-only). */
+  id: string;
+  /** Human-readable name. */
+  name: string;
+  /** Human-readable description. */
+  description?: string;
+  /** Validity time period. */
+  validTime?: TimeInterval;
+  /** Supported response formats (read-only). */
+  formats: string[];
+  /** Name of the system output this datastream represents. */
+  outputName?: string;
+  /** IDs/URIs of observed properties (read-only). */
+  observedProperties: string[];
+  /** Time extent of phenomenon times in this datastream (read-only, null if empty). */
+  phenomenonTime: TimeInterval | null;
+  /** Time extent of result times in this datastream (read-only, null if empty). */
+  resultTime: TimeInterval | null;
+  /** Type of result values. */
+  resultType: 'measure' | 'vector' | 'record' | 'coverage' | 'complex' | null;
+  /** Whether this datastream provides live data. */
+  live: boolean | null;
+  /** Datastream classification: status reporting or observation. */
+  type?: 'status' | 'observation';
+  links: ResourceLink[];
+}
+
+/**
+ * An Observation resource.
+ *
+ * Observations represent individual observation events with a result value.
+ * Not a GeoJSON Feature — flat object.
+ *
+ * Required properties: `resultTime` (per OGC spec).
+ * Must have either `result` (inline) or a result link.
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html
+ */
+export interface Observation {
+  /** Server-assigned local identifier (read-only). */
+  id: string;
+  /** Phenomenon time (defaults to resultTime if not provided). */
+  phenomenonTime?: string;
+  /** Time at which the result was produced (required). */
+  resultTime: string;
+  /** Parameters associated with this observation. */
+  parameters?: Record<string, unknown>;
+  /** Inline result value (type depends on observed property). */
+  result?: unknown;
+  links?: ResourceLink[];
+}
+
+/**
+ * A ControlStream resource.
+ *
+ * ControlStreams represent a channel for sending commands to a system,
+ * linking a system to its controllable properties.
+ *
+ * Required properties: `name`, `system@link`, `controlledProperties`,
+ * `issueTime`, `executionTime`, `live`, `async` (per OGC spec).
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html
+ */
+export interface ControlStream {
+  /** Server-assigned local identifier (read-only). */
+  id: string;
+  /** Human-readable name. */
+  name: string;
+  /** Human-readable description. */
+  description?: string;
+  /** Validity time period. */
+  validTime?: TimeInterval;
+  /** Supported response formats (read-only). */
+  formats: string[];
+  /** Name of the system input this control stream represents. */
+  inputName?: string;
+  /** IDs/URIs of controlled properties (read-only). */
+  controlledProperties: string[];
+  /** Time extent of command issue times (read-only, null if empty). */
+  issueTime: TimeInterval | null;
+  /** Time extent of command execution times (read-only, null if empty). */
+  executionTime: TimeInterval | null;
+  /** Whether this control stream accepts live commands. */
+  live: boolean | null;
+  /** Whether commands are handled asynchronously. */
+  async: boolean;
+  links: ResourceLink[];
+}
+
+/**
+ * A Command resource.
+ *
+ * Commands represent tasking requests sent to a system via a control stream.
+ * Not a GeoJSON Feature — flat object.
+ *
+ * Required properties: `issueTime`, `parameters` (per OGC spec).
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html
+ */
+export interface Command {
+  /** Server-assigned local identifier (read-only). */
+  id: string;
+  /** Time the command was issued (read-only). */
+  issueTime: string;
+  /** Execution time period (read-only). */
+  executionTime?: TimeInterval;
+  /** Identity of the command sender (read-only). */
+  sender?: string;
+  /** Current status of the command (read-only). */
+  currentStatus?: CommandStatusCode;
+  /** Command parameters (required). */
+  parameters: Record<string, unknown>;
+  links?: ResourceLink[];
+}
+
+/**
+ * A CommandStatus resource.
+ *
+ * Represents a status update for a command.
+ *
+ * Required properties: `reportTime`, `statusCode` (per OGC spec).
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html
+ */
+export interface CommandStatus {
+  /** Server-assigned local identifier (read-only). */
+  id: string;
+  /** Time the status was reported (read-only). */
+  reportTime: string;
+  /** Status code. */
+  statusCode: CommandStatusCode;
+  /** Completion percentage (0-100). */
+  percentCompletion?: number;
+  /** Execution time period. */
+  executionTime?: TimeInterval;
+  /** Human-readable status message. */
+  message?: string;
+  links?: ResourceLink[];
+}
+
+// ========================================
+// Collection Types
+// ========================================
+
+/**
+ * A GeoJSON FeatureCollection response for Part 1 resources.
+ * @see https://docs.ogc.org/is/23-001/23-001.html
+ */
+export interface FeatureCollection<T> {
+  type: 'FeatureCollection';
+  features: T[];
+  links: ResourceLink[];
+  numberMatched?: number;
+  numberReturned: number;
+  timeStamp?: string;
+}
+
+/**
+ * A collection response for Part 2 resources (not GeoJSON).
+ * @see https://docs.ogc.org/is/23-002/23-002.html
+ */
+export interface ItemCollection<T> {
+  items: T[];
+  links: ResourceLink[];
+  numberMatched?: number;
+  numberReturned: number;
+  timeStamp?: string;
+}
+
+/** Collection of System features. */
+export type SystemCollection = FeatureCollection<System>;
+/** Collection of Deployment features. */
+export type DeploymentCollection = FeatureCollection<Deployment>;
+/** Collection of Procedure features. */
+export type ProcedureCollection = FeatureCollection<Procedure>;
+/** Collection of SamplingFeature features. */
+export type SamplingFeatureCollection = FeatureCollection<SamplingFeature>;
+/** Collection of Property items. */
+export type PropertyCollection = ItemCollection<Property>;
+/** Collection of Datastream items. */
+export type DatastreamCollection = ItemCollection<Datastream>;
+/** Collection of Observation items. */
+export type ObservationCollection = ItemCollection<Observation>;
+/** Collection of ControlStream items. */
+export type ControlStreamCollection = ItemCollection<ControlStream>;
+/** Collection of Command items. */
+export type CommandCollection = ItemCollection<Command>;
+/** Collection of CommandStatus items. */
+export type CommandStatusCollection = ItemCollection<CommandStatus>;
