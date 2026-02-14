@@ -8,6 +8,8 @@
 
 > **📝 Post-Audit Update (February 2026):** After this report was completed, ROADMAP was updated from v3.0 to v3.1 — removing worker extensions (Phase 4 Task 4.1) from scope. Key numbers changed: 34→33 tasks, 60-88→57-84 hours, 4,400-6,300→4,200-6,000 test lines. Check 8 (Scope Boundaries) has been updated to reflect this decision. Other checks retain their original v3.0 figures for audit integrity — the findings remain valid as the changes only reduce scope (no new gaps introduced).
 
+> **✅ Resolution Update (February 2026):** All 17 actionable findings have been resolved across ROADMAP v3.2 and Guide v7.0. Prompt 1 applied 14 ROADMAP-only fixes (commit 35746ca). Prompt 2 applied 5 cross-document fixes: 13 "70-80"→"80" Guide replacements, estimate reconciliation (Guide aligned to ROADMAP's 57-84 hrs / 8-11 wks), test line range annotation (Doc 19 authoritative 4,040-5,340), and Guide Code Volume sub-category alignment with Doc 19. See Priority tables below for per-item status.
+
 ---
 
 ## Executive Summary
@@ -362,35 +364,35 @@ Both are cases where A1 updated the Guide and/or test research but the ROADMAP w
 
 ### Priority 1: Fix Before Implementation (7 items)
 
-| # | Finding | Action | Target Document |
-|---|---------|--------|-----------------|
-| 1 | F2.2 / F6.1 | Update test file count 17→22, total files 41→46 | ROADMAP summary table |
-| 2 | F3.3 | Add `sortBy`/`sortOrder` to Phase 2 descriptions | ROADMAP Phase 2 |
-| 3 | F11.1 | Add AP1-AP5 catalog reference + "meaningful vs trivial" standard | ROADMAP Dev Standards |
-| 4 | F11.2 | Add `globalThis.fetch` mocking convention note | ROADMAP Dev Standards |
-| 5 | F2.1 / F12.1 | Reconcile total hours (60-88 vs 51-72); designate authoritative source | ROADMAP + Guide §13 |
-| 6 | F7.2 | Clarify 800 LOC threshold for type definitions (or split Task 3.5) | ROADMAP Dev Standards |
-| 7 | F1.1 | Fix Phase 3 task count in executive summary (15→17) | ROADMAP line 27 |
+| # | Finding | Action | Target Document | Status |
+|---|---------|--------|-----------------|--------|
+| 1 | F2.2 / F6.1 | Update test file count 17→22, total files 41→46 | ROADMAP summary table | ✅ Resolved (ROADMAP v3.2) |
+| 2 | F3.3 | Add `sortBy`/`sortOrder` to Phase 2 descriptions | ROADMAP Phase 2 | ✅ Resolved (ROADMAP v3.2) |
+| 3 | F11.1 | Add AP1-AP5 catalog reference + "meaningful vs trivial" standard | ROADMAP Dev Standards | ✅ Resolved (ROADMAP v3.2) |
+| 4 | F11.2 | Add `globalThis.fetch` mocking convention note | ROADMAP Dev Standards | ✅ Resolved (ROADMAP v3.2) |
+| 5 | F2.1 / F12.1 | Reconcile total hours (60-88 vs 51-72); designate authoritative source | ROADMAP + Guide §13 | ✅ Resolved (Guide aligned to ROADMAP 57-84 hrs) |
+| 6 | F7.2 | Clarify 800 LOC threshold for type definitions (or split Task 3.5) | ROADMAP Dev Standards | ✅ Resolved (ROADMAP v3.2 — note added to Task 3.5) |
+| 7 | F1.1 | Fix Phase 3 task count in executive summary (15→17) | ROADMAP line 27 | ✅ Resolved (ROADMAP v3.2) |
 
 ### Priority 2: Incorporate Before Implementation (7 items)
 
-| # | Finding | Action | Target Document |
-|---|---------|--------|-----------------|
-| 8 | F9.1 | Reword Task 2.7 "Test result format handling" → "Test format query parameter encoding" | ROADMAP Task 2.7 |
-| 9 | F9.2 | Reword Tasks 3.1/3.3 "Test validation rules" → "Test validator rejects invalid input" | ROADMAP Tasks 3.1, 3.3 |
-| 10 | F1.3 / F4.1 | Clarify Task 3.1 creates `formats/geojson.ts` | ROADMAP Task 3.1 |
-| 11 | F4.2 | Add fixture directory reference (`fixtures/csapi/sample-server/`) | ROADMAP |
-| 12 | F8.2 | Add brief "Scope Exclusions" note | ROADMAP |
-| 13 | F2.3 | Align calendar time estimates; state weekly pace assumption | ROADMAP + Guide |
-| 14 | F3.2 | Update "70-80" → "80" methods | ROADMAP + Guide |
+| # | Finding | Action | Target Document | Status |
+|---|---------|--------|-----------------|--------|
+| 8 | F9.1 | Reword Task 2.7 "Test result format handling" → "Test format query parameter encoding" | ROADMAP Task 2.7 | ✅ Resolved (ROADMAP v3.2) |
+| 9 | F9.2 | Reword Tasks 3.1/3.3 "Test validation rules" → "Test validator rejects invalid input" | ROADMAP Tasks 3.1, 3.3 | ✅ Resolved (ROADMAP v3.2) |
+| 10 | F1.3 / F4.1 | Clarify Task 3.1 creates `formats/geojson.ts` | ROADMAP Task 3.1 | ✅ Resolved (ROADMAP v3.2) |
+| 11 | F4.2 | Add fixture directory reference (`fixtures/csapi/sample-server/`) | ROADMAP | ✅ Resolved (ROADMAP v3.2) |
+| 12 | F8.2 | Add brief "Scope Exclusions" note | ROADMAP | ✅ Resolved (ROADMAP v3.2) |
+| 13 | F2.3 | Align calendar time estimates; state weekly pace assumption | ROADMAP + Guide | ✅ Resolved (Guide aligned to 8-11 wks at 6-8 hrs/week) |
+| 14 | F3.2 | Update "70-80" → "80" methods | ROADMAP + Guide | ✅ Resolved (ROADMAP v3.2 + Guide 13 locations) |
 
 ### Priority 3: Nice-to-Have (3 items)
 
-| # | Finding | Action | Target Document |
-|---|---------|--------|-----------------|
-| 15 | F7.1 | Add note that Task 1.1 should write types incrementally with mid-task test | ROADMAP Task 1.1 |
-| 16 | F11.3 | Move cadence quantification into Dev Standards section | ROADMAP |
-| 17 | F4.4 / F6.2 | Align Guide Code Volume sub-categories with Doc 19 | Guide |
+| # | Finding | Action | Target Document | Status |
+|---|---------|--------|-----------------|--------|
+| 15 | F7.1 | Add note that Task 1.1 should write types incrementally with mid-task test | ROADMAP Task 1.1 | ✅ Resolved (ROADMAP v3.2) |
+| 16 | F11.3 | Move cadence quantification into Dev Standards section | ROADMAP | ✅ Resolved (ROADMAP v3.2) |
+| 17 | F4.4 / F6.2 | Align Guide Code Volume sub-categories with Doc 19 | Guide | ✅ Resolved (Guide test table aligned to Doc 19) |
 
 ---
 

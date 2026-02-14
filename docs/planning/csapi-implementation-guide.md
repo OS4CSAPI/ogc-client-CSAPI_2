@@ -31,15 +31,15 @@ This implementation adds Connected Systems API (CSAPI) support to the Camptocamp
 - **Integration Footprint:** 64 lines across 3 files (`endpoint.ts`: 35 lines, `info.ts`: 12 lines, `index.ts`: 17 lines)
 - **QueryBuilder Pattern:** Single `CSAPIQueryBuilder` class accessed via `endpoint.csapi(collectionId)` (follows upstream EDR pattern from PR #114)
 - **9 Resource Types:** Systems, Deployments, Procedures, Sampling Features, Properties, DataStreams, Observations, Control Streams, Commands - all as methods within one QueryBuilder class
-- **Resource Validation:** All ~70-80 methods validate resource availability and fail-fast with clear error messages (user mandate)
+- **Resource Validation:** All ~80 methods validate resource availability and fail-fast with clear error messages (user mandate)
 - **Type System:** Complete TypeScript types for all resources (1,750-2,400 lines) with three-tier hierarchy
 - **Full CSAPI Support:** Complete Parts 1 & 2 implementation with all query parameters, filtering, pagination, and format support - NOT MVP scope
 
 **Scope Clarification:** While architecturally elegant (3 new classes, 9 extensions), the CSAPIQueryBuilder represents ~70% of new code volume because it implements comprehensive URL construction for 60-70 unique URL patterns across all CSAPI resource types with full CRUD, query, filter, and pagination capabilities. See [Summary: Build vs Extend Breakdown](#summary-build-vs-extend-breakdown) for detailed component inventory.
 
-**Estimated Code Volume:** ~4,614-6,094 lines implementation + ~4,500-6,000 lines tests = **~9,114-12,094 lines total**
+**Estimated Code Volume:** ~4,614-6,094 lines implementation + ~4,040-5,340 lines tests = **~8,654-11,434 lines total**
 
-**Estimated Effort:** 40-60 hours development time (6-8 weeks calendar time with testing)
+**Estimated Effort:** 57-84 hours development time (8-11 weeks calendar time at 6-8 hrs/week; see ROADMAP for phase breakdown)
 
 ---
 
@@ -183,7 +183,7 @@ This model defines the boundary between client and server concerns. The client n
 ┌─────────────────────────────────────────────────────────────────┐
 │             CSAPIQueryBuilder (NEW - single class)              │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │ Resource Validation (all 70-80 methods):                 │   │
+│  │ Resource Validation (all 80 methods):                    │   │
 │  │  • availableResources property (Set<string>)             │   │
 │  │  • Validate before building URL                          │   │
 │  │  • Fail-fast with clear error messages                   │   │
@@ -548,7 +548,7 @@ export default class CSAPIQueryBuilder {
     this.availableResources = this.extractAvailableResources();
   }
   
-  // Validate in ALL 70-80 methods before building URLs
+  // Validate in ALL 80 methods before building URLs
   async getSystems(options?: QueryOptions): Promise<string> {
     if (!this.availableResources.has('systems')) {
       throw new EndpointError(
@@ -569,7 +569,7 @@ export default class CSAPIQueryBuilder {
     return this.buildResourceUrl('deployments', undefined, undefined, options);
   }
   
-  // ... validation in all 70-80 methods (~2 lines per method = ~140-160 lines total)
+  // ... validation in all 80 methods (~2 lines per method = ~160 lines total)
 }
 ```
 
@@ -695,7 +695,7 @@ export default class CSAPIQueryBuilder {
   }
   
   // ========================================
-  // PUBLIC METHODS (70-80 methods)
+  // PUBLIC METHODS (80 methods)
   // ========================================
   
   // All public methods use the helpers above for code reuse
@@ -704,7 +704,7 @@ export default class CSAPIQueryBuilder {
 
 **Code Reuse Benefits:**
 
-- `buildResourceUrl()` used by ~70-80 methods → ~60% code reduction
+- `buildResourceUrl()` used by ~80 methods → ~60% code reduction
 - `buildQueryString()` used by all parameterized methods → ~85% reuse
 - `extractAvailableResources()` called once in constructor
 
@@ -874,7 +874,7 @@ export default class CSAPIQueryBuilder {
   }
   
   // ========================================
-  // PUBLIC METHODS (70-80 methods)
+  // PUBLIC METHODS (80 methods)
   // All methods use shared helpers above
   // ========================================
   
@@ -908,7 +908,7 @@ export default class CSAPIQueryBuilder {
 
 **Code Metrics - Single-Class:**
 - Parameter helpers: **150-200 lines** (ONE implementation)
-- Methods using helpers: **70-80 methods**
+- Methods using helpers: **80 methods**
 - Reuse efficiency: **85%** (helpers used by 60+ methods)
 - Code duplication: **0 lines**
 - Maintenance locations: **1 file** (all parameter logic in one place)
@@ -2109,7 +2109,7 @@ src/ogc-api/csapi/
 
 **Core files (3):**
 - `model.ts` - All TypeScript type definitions (GeoJSON-based resources)
-- `url_builder.ts` - CSAPIQueryBuilder class with all 70-80 methods
+- `url_builder.ts` - CSAPIQueryBuilder class with all 80 methods
 - `helpers.ts` - Pure utility functions (URL building, validation, etc.)
 
 **Format files (15):**
@@ -3307,7 +3307,7 @@ This convention ensures fixture paths are predictable from the API endpoint bein
 
 ### API Documentation: Extending Existing TypeDoc Documentation
 
-The API documentation component extends the existing TypeDoc documentation to cover all CSAPI additions. For CSAPI, we will add documentation for all new TypeScript interfaces and types, the new factory method and getters on OgcApiEndpoint (`csapi()`, `hasConnectedSystems`, `csapiCollections`), all 70-80 methods on the CSAPIQueryBuilder class, usage examples for every resource type and query pattern, format handler documentation, and migration guides for users of other CSAPI clients. The library uses TypeDoc to generate API documentation from TypeScript source code comments, providing type-aware documentation with cross-references and examples. The extension will add JSDoc comments to all new code, following the existing documentation standards and style.
+The API documentation component extends the existing TypeDoc documentation to cover all CSAPI additions. For CSAPI, we will add documentation for all new TypeScript interfaces and types, the new factory method and getters on OgcApiEndpoint (`csapi()`, `hasConnectedSystems`, `csapiCollections`), all 80 methods on the CSAPIQueryBuilder class, usage examples for every resource type and query pattern, format handler documentation, and migration guides for users of other CSAPI clients. The library uses TypeDoc to generate API documentation from TypeScript source code comments, providing type-aware documentation with cross-references and examples. The extension will add JSDoc comments to all new code, following the existing documentation standards and style.
 
 **Documentation to Add:**
 - **Interface Documentation**: All CSAPI TypeScript interfaces (System, Deployment, DataStream, Observation, etc.)
@@ -4237,7 +4237,7 @@ buildCityDashboard('https://api.smartcity.gov/csapi', [-122.5, 37.7, -122.3, 37.
 | Category | Files | Lines | Complexity | Status |
 |----------|-------|-------|------------|--------|
 | **Core Implementation** | **3** | **1,100-1,280** | **Medium** | **Structure complete** |
-| url_builder.ts | 1 | 700-800 | Medium | 70-80 methods |
+| url_builder.ts | 1 | 700-800 | Medium | 80 methods |
 | model.ts | 1 | 350-400 | Low | Type definitions |
 | helpers.ts | 1 | 50-80 | Low | Utilities |
 | **Format Implementation** | **18** | **3,450-4,750** | **High** | **Structure complete** |
@@ -4258,10 +4258,11 @@ buildCityDashboard('https://api.smartcity.gov/csapi', [-122.5, 37.7, -122.3, 37.
 
 | Category | Files | Lines | Complexity | Status |
 |----------|-------|-------|------------|--------|
-| Core tests | 2 | 1,000-1,300 | Medium | Patterns complete |
-| Format tests | 15 | 2,540-3,340 | High | Patterns complete |
-| Test utilities | 3 | 200-300 | Low | Helper infrastructure |
-| Integration tests | 2 | 300-400 | Medium | Multi-component workflows |
+| Core unit tests | 3 | 450-650 | Medium | Patterns complete |
+| URL builder tests | 9 | 1,390-1,790 | Medium | Patterns complete |
+| Format parser tests | 3 | 1,000-1,300 | High | Patterns complete |
+| Integration tests | 4 | 900-1,150 | Medium | Multi-component workflows |
+| Test utilities | 3 | 300-450 | Low | Helper infrastructure |
 | **TOTAL TESTS** | **22** | **4,040-5,340** | **High** | **Ready** |
 
 ### Grand Total
@@ -4291,7 +4292,7 @@ buildCityDashboard('https://api.smartcity.gov/csapi', [-122.5, 37.7, -122.3, 37.
 1. **Format Parsers Dominate:** 76-78% of implementation is format parsing (justifies "why full format handling" section)
 2. **Minimal Integration:** Only 64 lines modify existing files (upstream-friendly)
 3. **Resource Validation:** ~140-160 lines (~3% of total) for significant UX improvement
-4. **Test Coverage:** >80% coverage with ~4,500-6,000 lines of tests
+4. **Test Coverage:** >80% coverage with ~4,040-5,340 lines of tests
 5. **Complexity Distribution:** 10 low, 4 medium, 10 high complexity files
 
 **Confidence:** ⭐⭐⭐⭐⭐ (5/5) - Based on 13 research plans
@@ -4312,7 +4313,7 @@ buildCityDashboard('https://api.smartcity.gov/csapi', [-122.5, 37.7, -122.3, 37.
 5. **Format Detector** - Add SensorML 3.0 and SWE Common 3.0 media types (extend existing content negotiation)
 6. **Validator** - Add CSAPI validation rules (extend existing validation framework)
 7. **Background Processing** - Add CSAPI operations to Web Worker (extend existing worker with new message types)
-8. **Test Coverage** - Add CSAPI test suites to Jest framework (extend existing test infrastructure, ~4,500-6,000 lines)
+8. **Test Coverage** - Add CSAPI test suites to Jest framework (extend existing test infrastructure, ~4,040-5,340 lines)
 9. **API Documentation** - Add CSAPI docs to TypeDoc (extend existing documentation)
 
 ### Components Building New Code (3 components):
@@ -4320,7 +4321,7 @@ buildCityDashboard('https://api.smartcity.gov/csapi', [-122.5, 37.7, -122.3, 37.
    - url_builder.ts: ~700-800 lines (includes validation)
    - model.ts: ~350-400 lines (GeoJSON types)
    - helpers.ts: ~50-80 lines (utilities)
-   - **70-80 public methods** for all 9 CSAPI resource types
+   - **80 public methods** for all 9 CSAPI resource types
    - **Resource validation** in all methods (fail-fast with clear errors)
    - **3 helper methods** for code reuse (not inheritance)
    - **60-70 unique URL patterns** (CRUD, nested, schema, status endpoints)
@@ -4348,7 +4349,7 @@ buildCityDashboard('https://api.smartcity.gov/csapi', [-122.5, 37.7, -122.3, 37.
 
 **Integration Footprint:** Total modifications to existing files: 64 lines across 3 files (`endpoint.ts`: 35 lines, `info.ts`: 12 lines, `index.ts`: 17 lines). This minimal footprint follows the proven EDR integration pattern exactly.
 
-**Resource Validation:** All 70-80 methods validate resource availability before building URLs (~140-160 lines total, ~2 lines per method). This user-mandated feature provides fail-fast behavior with clear error messages, improving developer experience for CSAPI's 9 resource types.
+**Resource Validation:** All 80 methods validate resource availability before building URLs (~160 lines total, ~2 lines per method). This user-mandated feature provides fail-fast behavior with clear error messages, improving developer experience for CSAPI's 9 resource types.
 
 **Helper Methods:** 2-3 private helper methods provide code reuse without inheritance, following 100% of upstream patterns. No abstract base classes, no inheritance chains.
 
@@ -4367,10 +4368,10 @@ buildCityDashboard('https://api.smartcity.gov/csapi', [-122.5, 37.7, -122.3, 37.
 The format parsers represent ~76-78% of new code because CSAPI requires full parsing of SensorML 3.0 and SWE Common 3.0 (unlike other OGC APIs that only build URLs). This consolidated single-class architecture follows the upstream EDR pattern (one QueryBuilder per API family) but delivers functionally extensive capabilities across all CSAPI resources. Clients evaluating scope should understand that while architecturally elegant (3 new classes), the functional scope is substantial - implementing complete CSAPI Part 1 and Part 2 specifications with full query, filter, and pagination support across all resource types.
 
 ### Estimated Scope:
-- **Extending existing code:** ~20% of effort (9 small extensions, 64 total lines modified in existing files + ~4,500-6,000 test lines)
+- **Extending existing code:** ~20% of effort (9 small extensions, 64 total lines modified in existing files + ~4,040-5,340 test lines)
 - **Building new code:** ~80% of effort (QueryBuilder: ~1,100-1,280 lines + Format parsers: ~3,450-4,750 lines)
-- **Total estimated lines of code:** ~9,114-12,094 lines (implementation + tests)
-- **Total estimated time:** 51-72 hours development (6-9 weeks calendar time with testing)
+- **Total estimated lines of code:** ~8,654-11,434 lines (implementation + tests)
+- **Total estimated time:** 57-84 hours development (8-11 weeks calendar time at 6-8 hrs/week)
 - **Complexity:** 10 low, 4 medium, 10 high complexity files
 
 **Confidence:** ⭐⭐⭐⭐⭐ (5/5) - All estimates validated through 13 research plans

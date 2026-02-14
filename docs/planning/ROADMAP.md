@@ -1,7 +1,7 @@
 # CSAPI Implementation Roadmap
 
 **Last Updated:** February 5, 2026  
-**Version:** 3.1 (Worker Extensions Removed from Scope)
+**Version:** 3.2 (A2 Alignment — Estimates & Test Ranges Reconciled)
 
 ---
 
@@ -29,7 +29,7 @@ This roadmap outlines the complete implementation plan for adding Connected Syst
 
 **Total Scope:**
 - **Implementation:** ~4,800-6,450 lines across 24 files
-- **Tests:** ~4,200-6,000 lines across 22 test files
+- **Tests:** ~4,200-6,000 lines across 22 test files (phase-level range; authoritative per-file breakdown in [Doc 19](../research/testing/findings/19-test-organization-file-structure.md) yields 4,040-5,340)
 - **Total Code:** ~9,000-12,450 lines
 
 **Key Dependencies:**
@@ -696,9 +696,20 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 ## Version History
 
 **Document:** CSAPI Implementation Roadmap (Standalone)  
-**Version:** 3.1 (Worker Extensions Removed from Scope)  
+**Version:** 3.2 (A2 Alignment — Estimates & Test Ranges Reconciled)  
 **Date:** February 5, 2026  
 **Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete with incremental testing and correct dependencies
+
+**Version 3.2 - A2 Alignment — Estimates & Test Ranges Reconciled (February 5, 2026):**
+- All 80 method references aligned (previously "70-80")
+- Test line range annotated with Doc 19 authoritative per-file breakdown (4,040-5,340)
+- Phase 3 task count corrected to 17 tasks (from 15)
+- sortBy/sortOrder added to Phase 2 Task 2.7 Observations
+- Task 1.1 note: factory method returns new class, not OgcApiEndpoint subclass
+- Task 3.1/3.3/3.5 wording, scope, and spec references refined
+- Scope Exclusions section added (performance, real-world, migration testing)
+- Development Standards expanded with AP catalog, globalThis.fetch, testing cadence
+- Resolves all 19 actionable A2 audit findings
 
 **Version 3.1 - Worker Extensions Removed from Scope (February 5, 2026):**
 - Removed Phase 4 Task 4.1 (Worker Extensions — 9 CSAPI message types, ~3-4 hours)
