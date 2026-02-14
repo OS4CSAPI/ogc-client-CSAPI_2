@@ -1465,12 +1465,17 @@ The CSAPIQueryBuilder includes Procedures resource methods to manage CSAPI Proce
 - Delete procedure: `DELETE /procedures/{id}`
 
 **Procedure Properties to Parse:**
-- `procedureType`: URI indicating type (sensor, algorithm, protocol)
-- `methodKind`: URI from controlled vocabulary
-- `attachedTo`: Link to system that uses this procedure
-- `inputs`: Input parameters/requirements (from SensorML)
-- `outputs`: Output specifications (from SensorML)
-- `parameters`: Configuration parameters (from SensorML)
+
+*GeoJSON encoding (`application/geo+json`):*
+- `featureType`: Procedure type URI from `ProcedureTypeUris` (e.g., `sosa:Procedure`, `sosa:ObservingProcedure`, `sosa:SamplingProcedure`, `sosa:ActuatingProcedure`)
+- `uid`: Globally unique identifier URI
+- `name`, `description`: Human-readable metadata
+- `geometry`: Always `null` in GeoJSON encoding
+
+*SensorML encoding (`application/sml+json`) — additional properties:*
+- `inputs`: Input parameters/requirements
+- `outputs`: Output specifications
+- `parameters`: Configuration parameters
 - `documentation`: Links to manuals, specifications
 
 **Procedure Relationship Management:**
@@ -1516,12 +1521,19 @@ The CSAPIQueryBuilder includes Sampling Features resource methods to manage CSAP
 - Delete sampling feature: `DELETE /samplingFeatures/{id}`
 
 **Sampling Feature Properties to Parse:**
-- `samplingFeatureType`: URI indicating type (point, specimen, transect)
-- `sampledFeature`: Link to ultimate feature of interest
-- `relatedSamplingFeature`: Links to related sampling features
-- `hostedProcedure`: Procedures performed at this location
-- `shape`: Geometry (point, line, polygon) of sampling location
-- `samplingMethod`: How sample was collected
+
+*GeoJSON encoding (`application/geo+json`):*
+- `featureType`: Type URI for sampling feature
+- `uid`: Globally unique identifier URI
+- `name`, `description`: Human-readable metadata
+- `validTime`: Optional validity period (timePeriod)
+- `sampledFeature@link`: Required link to ultimate feature of interest
+- `geometry`: Spatial geometry of sampling location (Point, Polygon, etc.)
+
+*Relationship management (via HATEOAS links):*
+- Systems using this sampling feature
+- Related sampling features (hierarchical relationships)
+- Observations at this sampling feature (Part 2)
 
 **Sampling Feature Relationship Management:**
 - Systems using this sampling feature
@@ -1943,7 +1955,7 @@ This URL builder implements FULL query parameter support for CSAPI Parts 1 and 2
 - `id`: Filter by resource ID (multiple IDs supported as comma-separated list)
 - `uid`: Filter by unique identifier (URN-based filtering)
 - `q`: Full-text search across resource properties
-- `{propertyName}`: Filter by any resource property (e.g., `name=Weather%20Station`, `systemType=sosa:Sensor`)
+- `{propertyName}`: Filter by any resource property (e.g., `name=Weather%20Station`, `featureType=sosa:Sensor`)
 
 **CSAPI Hierarchical Parameters:**
 - `recursive`: Boolean flag for hierarchical queries (subsystems, subdeployments)
@@ -2279,54 +2291,60 @@ export interface System {
   id: string;
   type: 'System';
   properties: {
+    featureType: string;       // SystemTypeUris discriminator (sosa:Sensor, sosa:Platform, etc.)
+    uid: string;               // Globally unique identifier URI (required by spec)
     name: string;
     description?: string;
-    uid?: string;
+    assetType?: string;        // Equipment, Human, LivingThing, Simulation, Process, Group, Other
+    validTime?: TimeInterval;
+    // SensorML-only properties (populated when system fetched in application/sml+json):
     keywords?: string[];
     classification?: string[];
-    validTime?: TimeInterval;
     contacts?: Contact[];
     capabilities?: Characteristic[];
     characteristics?: Characteristic[];
   };
   geometry?: Geometry;
-  links: ResourceLink[];
+  links: ResourceLink[];       // Includes systemKind@link and association navigation
 }
 
 export interface Deployment {
   id: string;
   type: 'Deployment';
   properties: {
+    featureType: string;       // DeploymentTypeUris discriminator (sosa:Deployment)
+    uid: string;               // Globally unique identifier URI (required by spec)
     name: string;
     description?: string;
-    deploymentTime: TimeInterval;
-    platformId?: string;
-    systemIds?: string[];
+    validTime: TimeInterval;   // Time period during which systems are deployed (required)
   };
-  geometry?: Point;
-  links: ResourceLink[];
+  geometry?: Geometry;         // Deployment area (can be Polygon, not just Point)
+  links: ResourceLink[];       // Includes platform@link, deployedSystems@link navigation
 }
 
 export interface SamplingFeature {
   id: string;
   type: 'SamplingFeature';
   properties: {
+    featureType: string;       // Type URI for sampling feature
+    uid: string;               // Globally unique identifier URI (required by spec)
     name: string;
     description?: string;
-    featureType: string;
-    sampledFeatureId?: string;
+    validTime?: TimeInterval;  // Optional validity period
   };
   geometry?: Geometry;
-  links: ResourceLink[];
+  links: ResourceLink[];       // Includes sampledFeature@link navigation (required)
 }
 
 export interface Procedure {
   id: string;
   type: 'Procedure';
   properties: {
+    featureType: string;       // ProcedureTypeUris discriminator (sosa:Procedure, sosa:ObservingProcedure, etc.)
+    uid: string;               // Globally unique identifier URI (required by spec)
     name: string;
     description?: string;
-    procedureType: string;
+    // Note: geometry is always null in GeoJSON encoding; detailed descriptions use SensorML
   };
   links: ResourceLink[];
 }
@@ -2897,20 +2915,28 @@ export interface Capability {
 
 ### GeoJSON Handler: Extending Existing Parser
 
-The GeoJSON handler is existing code in the library that parses GeoJSON Feature and FeatureCollection documents, supporting all seven geometry types (Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, GeometryCollection). For CSAPI, we will extend this handler with recognition and extraction of CSAPI-specific properties. The extension will recognize CSAPI-specific feature types through the `featureType` property and extract CSAPI resource properties from the feature `properties` object. CSAPI Part 1 resources (Systems, Deployments, Procedures, Sampling Features) are encoded as GeoJSON features with additional semantic properties like `systemType`, `assetType`, `uniqueIdentifier`, `validTime`, and association links to related resources. The extension will add type checking for these CSAPI properties and validation rules specific to each CSAPI feature type, while maintaining compatibility with generic GeoJSON handling for other OGC API standards.
+The GeoJSON handler is existing code in the library that parses GeoJSON Feature and FeatureCollection documents, supporting all seven geometry types (Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, GeometryCollection). For CSAPI, we will extend this handler with recognition and extraction of CSAPI-specific properties. The extension will recognize CSAPI-specific feature types through the `featureType` property and extract CSAPI resource properties from the feature `properties` object. CSAPI Part 1 resources (Systems, Deployments, Procedures, Sampling Features) are encoded as GeoJSON features with additional semantic properties like `featureType` (type discriminator), `uid` (globally unique identifier), `assetType`, `validTime`, and `@link` association properties. The extension will add type checking for these CSAPI properties and validation rules specific to each CSAPI feature type, while maintaining compatibility with generic GeoJSON handling for other OGC API standards.
 
-**CSAPI-Specific GeoJSON Properties:**
-- Systems: `systemType` (URI), `assetType` (enum), `uniqueIdentifier` (URI), `validTime` (period), association arrays (`subsystems`, `deployments`, `procedures`, `samplingFeatures`, `datastreams`, `controlstreams`)
-- Deployments: `deployedSystems` (array), `validTime` (period), spatial/temporal extent
-- Procedures: `procedureType` (URI), `methodKind` (URI), `attachedTo` (link to system)
-- Sampling Features: `samplingFeatureType` (URI), `sampledFeature` (link), `relatedSamplingFeature` (links)
-- All resources: `id`, `name`, `description`, `links` (HATEOAS navigation)
+**CSAPI GeoJSON Properties (per OGC Part 1 OpenAPI schema):**
+
+All GeoJSON resources inherit from the base `feature` schema with required properties:
+- All resources: `featureType` (type discriminator URI — required), `uid` (globally unique identifier URI — required), `name` (required string), `description` (optional string), `links` (HATEOAS navigation array)
+
+Resource-specific properties:
+- Systems: `featureType` (constrained to `SystemTypeUris`: `sosa:Sensor`, `sosa:Platform`, `sosa:Actuator`, `sosa:Sampler`, `sosa:System` or full URI equivalents), `assetType` (enum: `Equipment`, `Human`, `LivingThing`, `Simulation`, `Process`, `Group`, `Other`), `validTime` (timePeriod array of 2 ISO 8601 date-time strings), `systemKind@link` (link to procedure/datasheet)
+- Deployments: `featureType` (constrained to `DeploymentTypeUris`: `sosa:Deployment`), `validTime` (required timePeriod), `platform@link` (link to platform), `deployedSystems@link` (array of links to deployed systems)
+- Procedures: `featureType` (constrained to `ProcedureTypeUris`: `sosa:Procedure`, `sosa:ObservingProcedure`, `sosa:SamplingProcedure`, `sosa:ActuatingProcedure`, etc.), `geometry: null` (procedures have no geometry in GeoJSON encoding; detailed descriptions use SensorML encoding)
+- Sampling Features: `featureType` (type URI), `validTime` (optional timePeriod), `sampledFeature@link` (required link to sampled feature)
+
+> **Note on association navigation:** Associations (`subsystems`, `deployments`, `procedures`, `samplingFeatures`, `datastreams`, `controlstreams`) are accessed via HATEOAS `links` array entries with matching `rel` values, not as inline properties. The `@link` properties above are inline link objects within the `properties` object, distinct from the top-level `links` array.
 
 **Validation Requirements:**
-- `uniqueIdentifier` must be valid URI (preferably URN format following RFC 8141)
-- `systemType` must be from SOSA/SSN vocabulary (`sosa:Sensor`, `sosa:Platform`, `sosa:Actuator`, `sosa:Sampler`, etc.)
-- `validTime` must be ISO 8601 temporal period or instant
-- Association arrays must contain valid resource links (href + rel) or inline features
+- `uid` must be valid URI (preferably URN format following RFC 8141)
+- `featureType` for Systems must be from `SystemTypeUris` (`sosa:Sensor`, `sosa:Platform`, `sosa:Actuator`, `sosa:Sampler`, `sosa:System`, or full URI equivalents)
+- `featureType` for Deployments must be from `DeploymentTypeUris` (`sosa:Deployment`)
+- `featureType` for Procedures must be from `ProcedureTypeUris` (`sosa:Procedure`, `sosa:ObservingProcedure`, `sosa:SamplingProcedure`, `sosa:ActuatingProcedure`, etc.)
+- `validTime` must be an array of exactly 2 ISO 8601 date-time strings (or `"now"`)
+- `@link` properties must contain valid link objects (`href` required; optional `uid`, `title`, `type`)
 - Geometry must be valid per RFC 7946 (WGS84 coordinates, right-hand rule for polygons)
 
 **Implementation Type:** EXTENDING EXISTING CODE
@@ -2919,8 +2945,8 @@ The GeoJSON handler is existing code in the library that parses GeoJSON Feature 
 - [RFC 7946 (GeoJSON)](https://tools.ietf.org/html/rfc7946): Normative specification for GeoJSON format
 - [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): CSAPI-specific GeoJSON property requirements
 - [OGC API - Connected Systems Part 1: OpenAPI Specification](../research/standards/ogcapi-connectedsystems-1.bundled.oas31.yaml): GeoJSON schema definitions for Part 1 resources
-- [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Vocabulary for systemType and property URIs
-- [RFC 8141 (URN Syntax)](https://tools.ietf.org/html/rfc8141): uniqueIdentifier format requirements
+- [SOSA/SSN Ontology](https://www.w3.org/TR/vocab-ssn/): Vocabulary for featureType values (SystemTypeUris, DeploymentTypeUris, ProcedureTypeUris)
+- [RFC 8141 (URN Syntax)](https://tools.ietf.org/html/rfc8141): uid URI format requirements
 
 ---
 
@@ -3097,11 +3123,11 @@ The validator is existing code that checks whether parsed documents conform to f
 **CSAPI Validation Rules:**
 
 **Part 1 Resource Validation:**
-- Systems: `uniqueIdentifier` (required URI), `systemType` (required, from SOSA vocabulary), `name` (required string)
-- Deployments: `validTime` (required temporal period), spatial extent (required)
-- Procedures: `procedureType` (required URI), attached system reference validation
-- Sampling Features: `sampledFeature` (required reference), geometry (required)
-- Properties: `definition` (required URI from vocabulary), `label` (required string)
+- Systems: `uid` (required URI), `featureType` (required, from `SystemTypeUris`), `name` (required string)
+- Deployments: `uid` (required URI), `featureType` (required, from `DeploymentTypeUris`), `validTime` (required timePeriod), spatial extent (required)
+- Procedures: `uid` (required URI), `featureType` (required, from `ProcedureTypeUris`)
+- Sampling Features: `uid` (required URI), `sampledFeature@link` (required link), geometry (required)
+- Properties: `uniqueId` (required URI), `label` (required string), `baseProperty` (required URI)
 
 **Part 2 Resource Validation:**
 - DataStreams: schema validation (result schema must be valid SWE Common DataComponent), observed properties must reference existing Property resources
@@ -3414,7 +3440,8 @@ systems.features.forEach((system: System) => {
 
 // Multi-resource workflows with type safety
 const deployment: Deployment = await fetchDeployment(deploymentId);
-const datastream: Datastream = await fetchDatastream(deployment.properties.systemIds[0]);
+const systemLink = deployment.links.find(l => l.rel === 'deployedSystems');
+const datastream: Datastream = await fetchDatastream(systemLink?.href);
 console.log(datastream.properties.observedPropertyId); // ✅ Full type safety
 ```
 
@@ -3974,7 +4001,7 @@ async function trackDeploymentNetwork(
   const deployment = await deploymentResponse.json();
   
   console.log(`Tracking deployment: ${deployment.properties.name}`);
-  console.log(`Deployed: ${deployment.properties.deploymentTime.start}`);
+  console.log(`Deployed: ${deployment.properties.validTime.start}`);
   
   // 2. Get all systems in deployment
   const systemsUrl = await client.getDeploymentSystems(deploymentId);

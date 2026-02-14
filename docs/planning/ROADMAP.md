@@ -347,13 +347,13 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 1. **GeoJSON Handler Extensions** (~2-3 hours, Medium complexity)
    - Create `formats/geojson.ts` (~50-100 lines) extending existing GeoJSON parser
    - Add recognition for CSAPI `featureType` property (sosa:System, sosa:Deployment, etc.)
-   - Extract CSAPI-specific properties (uniqueIdentifier, systemType, assetType, validTime, etc.)
-   - Add validation for CSAPI GeoJSON requirements (uniqueIdentifier must be URI, systemType from SOSA vocabulary)
+   - Extract CSAPI-specific properties (uid, featureType, assetType, validTime, @link associations, etc.)
+   - Add validation for CSAPI GeoJSON requirements (uid must be URI, featureType from spec-defined type URIs)
    - **Write JSDoc:** Document CSAPI property extraction, validation rules
    - **Test immediately:** Add tests for CSAPI GeoJSON parsing (~150-300 lines tests)
      - Test featureType recognition
      - Test property extraction
-     - Test validator correctly rejects invalid GeoJSON input (e.g., missing uniqueIdentifier, invalid systemType)
+     - Test validator correctly rejects invalid GeoJSON input (e.g., missing uid, invalid featureType)
 
 2. **Format Detector Extensions** (~1-2 hours, Low complexity)
    - Extend existing format detector
