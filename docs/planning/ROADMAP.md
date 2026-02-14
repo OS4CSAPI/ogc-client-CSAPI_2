@@ -251,9 +251,9 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - **Write JSDoc:** Document methods with temporal patterns, schema retrieval, examples
    - **Test immediately:** Add DataStreams tests (~45-55 lines tests)
      - Test temporal filtering (phenomenonTime, resultTime)
-     - Test schema retrieval
+     - Test schema retrieval (obsFormat parameter)
      - Test observation creation
-     - Test cursor-based pagination
+     - Test cursor-based pagination on getDataStreamObservations
 
 7. **Observations Methods** (~1.5-2 hours implementation + ~0.5 hour testing, Medium-High complexity)
    - **Implement 9 Observations methods in `url_builder.ts`:**
