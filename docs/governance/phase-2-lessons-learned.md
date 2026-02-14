@@ -1,8 +1,8 @@
 # Phase 2 Implementation Lessons Learned
 
-**Purpose:** Actionable lessons extracted from Phase 1–2.2 code reviews, smoke tests, and fix reports. Every remaining Phase 2 issue (Issues #7–#13) **must** be read alongside this document. These are not suggestions — they are guardrails derived from mistakes we actually made and documented.
+**Purpose:** Actionable lessons extracted from Phase 1–2.3 code reviews, smoke tests, and fix reports. Every remaining Phase 2 issue (Issues #7–#13) **must** be read alongside this document. These are not suggestions — they are guardrails derived from mistakes we actually made and documented.
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Date:** February 14, 2026  
 **Source documents:**
 - `docs/implementation/phase-1-code-review.md` (Findings F1–F9)
@@ -10,6 +10,8 @@
 - `docs/implementation/phase-2.2-code-review.md` (Findings F1–F15, Root Cause Analysis)
 - `docs/implementation/live-server-smoke-test-post-phase-2.1.md` (5 server findings)
 - `docs/implementation/live-server-smoke-test-post-phase-2.2.md` (Validation of fixes)
+- `docs/implementation/live-server-smoke-test-52north.md` (52North comparative test)
+- `docs/implementation/cross-server-interoperability-analysis.md` (Cross-server analysis)
 
 ---
 
@@ -23,6 +25,8 @@ When working on any Phase 2 issue (#7–#13):
 4. **Check the temporal keys note** in Lesson 3 if your resource type has temporal parameters
 5. **Verify the resource type string** per Lesson 4 in every `assertResourceAvailable()` call
 6. **Do not create new files** per Lesson 5 — all work goes into existing files
+7. **Smoke test against both servers** per Lesson 8 — OpenSensorHub (auth required, ask for credentials) and 52North
+8. **Do not modify code during smoke tests** per Lesson 10 — report findings, then create issues for fixes
 
 ---
 
@@ -160,3 +164,42 @@ When copying Systems methods to create Deployments methods, it's easy to change 
 1. If the existing logic can be called directly, call it
 2. If it needs to be extracted into a shared helper, flag it as a comment on the issue — do not make the extraction yourself (that crosses issue scope)
 3. Do not copy-paste method bodies and change names/strings — this is the #1 source of DRY violations in our history
+
+---
+
+## Lesson 8: Single-Server Testing Creates False Confidence
+
+**What happened:** We ran three smoke tests (Phase 2.1, 2.2, 2.3) against a single server (OpenSensorHub). All three declared Convention 3 link detection working. Two real bugs — query params in hrefs breaking segment extraction, and `featuresOfInterest` not matching our `samplingFeatures` resource type — were invisible because OpenSensorHub doesn't use either pattern. It took a second server from a different vendor (52North) to expose them.
+
+**Why it matters:** A single server exercises one implementation's conventions. Real interoperability bugs hide in the gaps between implementations. Three smoke tests against the same server gave us false confidence that discovery was solid.
+
+**Action:** Every phase-end smoke test should hit both live servers:
+- **OpenSensorHub** (`http://45.55.99.236:8080/sensorhub/api`) — requires Basic auth. Credentials are NOT stored in the repository. If you have forgotten them, ask the human collaborator.
+- **52North** (`https://csa.demo.52north.org/`) — no auth, but requires `-SkipCertificateCheck` (expired SSL cert).
+
+---
+
+## Lesson 9: "Works By Luck" Is a Bug
+
+**What happened:** Convention 3 parsing works on 52North *only* because HTML links (no query params) happen to appear before JSON links (with query params) in the server's response. If link ordering changed, discovery would silently break. The code produced correct output for the wrong reason.
+
+**Why it matters:** Code that succeeds due to incidental conditions (response ordering, favorable data shapes, specific server behavior) is fragile. It passes tests and smoke tests but breaks when assumptions shift.
+
+**Action:** When testing against live servers, look for cases where our code succeeds — then ask *why* it succeeds. If the answer depends on response ordering or other incidental server behavior, that's a latent bug to track.
+
+---
+
+## Lesson 10: Smoke Tests Are Read-Only — Fixes Come Through Issues
+
+**What happened:** The 52North smoke test revealed two real bugs in `scanCsapiLinks()`. Rather than fixing them immediately during the smoke test, we documented them in the smoke test report, discussed the findings, assessed upstream impact, and then created a tracked issue (#39) with a scoped fix plan.
+
+**Why it matters:** Smoke tests exist to observe and report, not to drive code changes directly. If we fix bugs during the smoke test itself, we bypass the discussion → assessment → scoping workflow that prevents premature or poorly scoped changes. Our established process is:
+
+1. **Complete the phase work** — implement per the issue scope
+2. **Run the smoke test** — observe, do not modify code
+3. **Write the report** — document findings with evidence
+4. **Discuss** — determine what's ours vs. upstream, assess impact
+5. **Create issues** — scope fixes with acceptance criteria and constraints
+6. **Implement fixes** — per the new issue, with tests
+
+**Action:** Never modify source code as a result of a smoke test finding without first going through steps 3–5. Smoke test reports must not include code changes — they are documentation artifacts only.
