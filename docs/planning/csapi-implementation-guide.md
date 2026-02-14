@@ -1563,6 +1563,12 @@ The CSAPIQueryBuilder includes Properties resource methods to manage CSAPI Prope
 - `subProperties`: Child properties
 - `units`: Standard units of measure
 
+**Association Navigation:**
+- Systems observing property: `GET /properties/{id}/systems`
+- DataStreams for property: `GET /properties/{id}/datastreams` (Part 2 cross-reference)
+- Control streams for property: `GET /properties/{id}/controlstreams` (Part 2 cross-reference)
+- Property history: `GET /properties/{id}/history`
+
 **Property Relationship Management:**
 - Systems capable of observing this property
 - DataStreams observing this property (Part 2)
