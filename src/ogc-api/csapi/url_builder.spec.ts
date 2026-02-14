@@ -1324,3 +1324,154 @@ describe('SamplingFeature resource validation', () => {
     expect(() => builder.getSamplingFeatureHistory('x')).toThrow(EndpointError);
   });
 });
+
+// ========================================
+// Properties Methods
+// ========================================
+
+describe('getProperties', () => {
+  function makePropBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:properties', type: '', title: '', href: '/properties' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makePropBuilder().getProperties();
+    expect(url).toBe('https://example.com/collections/iot/properties');
+  });
+
+  it('returns correct URL with limit', () => {
+    const url = makePropBuilder().getProperties({ limit: 20 });
+    expect(url).toBe('https://example.com/collections/iot/properties?limit=20');
+  });
+
+  it('returns correct URL with q parameter', () => {
+    const url = makePropBuilder().getProperties({ q: 'temperature' });
+    expect(url).toBe('https://example.com/collections/iot/properties?q=temperature');
+  });
+
+  it('returns correct URL with id filter', () => {
+    const url = makePropBuilder().getProperties({ id: 'temp-01' });
+    expect(url).toBe('https://example.com/collections/iot/properties?id=temp-01');
+  });
+
+  it('returns correct URL with multiple options', () => {
+    const url = makePropBuilder().getProperties({ limit: 10, offset: 5, q: 'pressure' });
+    expect(url).toBe('https://example.com/collections/iot/properties?limit=10&offset=5&q=pressure');
+  });
+});
+
+describe('getProperty', () => {
+  function makePropBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:properties', type: '', title: '', href: '/properties' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with resource ID', () => {
+    const url = makePropBuilder().getProperty('temperature-01');
+    expect(url).toBe('https://example.com/collections/iot/properties/temperature-01');
+  });
+
+  it('encodes special characters in ID', () => {
+    const url = makePropBuilder().getProperty('urn:qudt:Temperature');
+    expect(url).toBe('https://example.com/collections/iot/properties/urn%3Aqudt%3ATemperature');
+  });
+});
+
+describe('Property association methods', () => {
+  function makePropBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:properties', type: '', title: '', href: '/properties' },
+        ],
+      })
+    );
+  }
+
+  it('getPropertySystems returns correct URL', () => {
+    const url = makePropBuilder().getPropertySystems('temperature-01');
+    expect(url).toBe('https://example.com/collections/iot/properties/temperature-01/systems');
+  });
+
+  it('getPropertySystems returns correct URL with pagination', () => {
+    const url = makePropBuilder().getPropertySystems('temperature-01', { limit: 5, offset: 10 });
+    expect(url).toBe('https://example.com/collections/iot/properties/temperature-01/systems?limit=5&offset=10');
+  });
+
+  it('getPropertyDataStreams returns correct URL', () => {
+    const url = makePropBuilder().getPropertyDataStreams('temperature-01');
+    expect(url).toBe('https://example.com/collections/iot/properties/temperature-01/datastreams');
+  });
+
+  it('getPropertyDataStreams returns correct URL with options', () => {
+    const url = makePropBuilder().getPropertyDataStreams('temperature-01', { limit: 10 });
+    expect(url).toBe('https://example.com/collections/iot/properties/temperature-01/datastreams?limit=10');
+  });
+
+  it('getPropertyControlStreams returns correct URL', () => {
+    const url = makePropBuilder().getPropertyControlStreams('valve-position-01');
+    expect(url).toBe('https://example.com/collections/iot/properties/valve-position-01/controlstreams');
+  });
+
+  it('getPropertyControlStreams returns correct URL with options', () => {
+    const url = makePropBuilder().getPropertyControlStreams('valve-position-01', { limit: 10 });
+    expect(url).toBe('https://example.com/collections/iot/properties/valve-position-01/controlstreams?limit=10');
+  });
+});
+
+describe('getPropertyHistory', () => {
+  function makePropBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:properties', type: '', title: '', href: '/properties' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makePropBuilder().getPropertyHistory('temperature-01');
+    expect(url).toBe('https://example.com/collections/iot/properties/temperature-01/history');
+  });
+
+  it('returns correct URL with limit', () => {
+    const url = makePropBuilder().getPropertyHistory('temperature-01', { limit: 5 });
+    expect(url).toBe('https://example.com/collections/iot/properties/temperature-01/history?limit=5');
+  });
+});
+
+describe('Property resource validation', () => {
+  it('throws EndpointError when properties is unavailable', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        id: 'sensors',
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/sensors' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+    expect(() => builder.getProperties()).toThrow(EndpointError);
+    expect(() => builder.getProperty('x')).toThrow(EndpointError);
+    expect(() => builder.getPropertySystems('x')).toThrow(EndpointError);
+    expect(() => builder.getPropertyDataStreams('x')).toThrow(EndpointError);
+    expect(() => builder.getPropertyControlStreams('x')).toThrow(EndpointError);
+    expect(() => builder.getPropertyHistory('x')).toThrow(EndpointError);
+  });
+});

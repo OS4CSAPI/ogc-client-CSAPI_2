@@ -1,5 +1,5 @@
 import type { OgcApiCollectionInfo } from '../model.js';
-import type { QueryOptions, SystemQueryOptions, DeploymentQueryOptions, ProcedureQueryOptions, SamplingFeatureQueryOptions } from './model.js';
+import type { QueryOptions, SystemQueryOptions, DeploymentQueryOptions, ProcedureQueryOptions, SamplingFeatureQueryOptions, PropertyQueryOptions } from './model.js';
 import { CSAPIResourceTypes } from './model.js';
 import { EndpointError } from '../../shared/errors.js';
 import {
@@ -970,5 +970,154 @@ export default class CSAPIQueryBuilder {
   getSamplingFeatureHistory(id: string, options?: QueryOptions): string {
     this.assertResourceAvailable('samplingFeatures');
     return this.buildResourceUrl('samplingFeatures', id, 'history', options);
+  }
+
+  // ========================================
+  // PROPERTIES METHODS
+  // ========================================
+
+  /**
+   * Returns the URL for listing properties.
+   *
+   * Properties define the observable or controllable quantities that systems
+   * can measure or actuate (e.g., temperature, pressure, valve position).
+   * Properties are the only Part 1 resource that is **not** a GeoJSON Feature;
+   * responses use a plain JSON collection with `items` (not `features`).
+   *
+   * Properties are **read-only** — there are no create, update, or delete
+   * endpoints for Properties in the CSAPI specification.
+   *
+   * @param options - Optional query parameters for filtering properties.
+   *   Properties support: `system`, `baseProperty`, `id`, `uid`, `q`,
+   *   property filters, `limit`, `offset`, `f`, `sortBy`, `sortOrder`.
+   *   Properties do NOT support `bbox` or `datetime`.
+   * @returns URL string for the properties list endpoint.
+   * @throws {EndpointError} If 'properties' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getProperties({ q: 'temperature', limit: 10 });
+   * // => "https://example.com/collections/iot/properties?q=temperature&limit=10"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_property_resources
+   */
+  getProperties(options?: PropertyQueryOptions): string {
+    this.assertResourceAvailable('properties');
+    return this.buildResourceUrl('properties', undefined, undefined, options);
+  }
+
+  /**
+   * Returns the URL for retrieving a single property by ID.
+   *
+   * Properties are the only Part 1 resource that is **not** a GeoJSON Feature;
+   * the response is a plain JSON object (not a GeoJSON Feature).
+   *
+   * @param id - The property resource identifier.
+   * @param options - Optional query parameters (e.g., `f` for format).
+   * @returns URL string for the individual property endpoint.
+   * @throws {EndpointError} If 'properties' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getProperty('temperature-01');
+   * // => "https://example.com/collections/iot/properties/temperature-01"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_property_resources
+   */
+  getProperty(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('properties');
+    return this.buildResourceUrl('properties', id, undefined, options);
+  }
+
+  /**
+   * Returns the URL for listing systems that observe or actuate a property.
+   *
+   * @param id - The property resource identifier.
+   * @param options - Optional query parameters for filtering systems.
+   * @returns URL string for the property's systems endpoint.
+   * @throws {EndpointError} If 'properties' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getPropertySystems('temperature-01', { limit: 5 });
+   * // => "https://example.com/collections/iot/properties/temperature-01/systems?limit=5"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_property_resources
+   */
+  getPropertySystems(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('properties');
+    return this.buildResourceUrl('properties', id, 'systems', options);
+  }
+
+  /**
+   * Returns the URL for listing datastreams associated with a property.
+   *
+   * This is a Part 2 cross-reference endpoint linking Part 1 properties
+   * to Part 2 datastream data.
+   *
+   * @param id - The property resource identifier.
+   * @param options - Optional query parameters for filtering datastreams.
+   * @returns URL string for the property's datastreams endpoint.
+   * @throws {EndpointError} If 'properties' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getPropertyDataStreams('temperature-01');
+   * // => "https://example.com/collections/iot/properties/temperature-01/datastreams"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
+   */
+  getPropertyDataStreams(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('properties');
+    return this.buildResourceUrl('properties', id, 'datastreams', options);
+  }
+
+  /**
+   * Returns the URL for listing control streams associated with a property.
+   *
+   * This is a Part 2 cross-reference endpoint linking Part 1 properties
+   * to Part 2 control stream data.
+   *
+   * @param id - The property resource identifier.
+   * @param options - Optional query parameters for filtering control streams.
+   * @returns URL string for the property's control streams endpoint.
+   * @throws {EndpointError} If 'properties' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getPropertyControlStreams('valve-position-01');
+   * // => "https://example.com/collections/iot/properties/valve-position-01/controlstreams"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_control_stream_resources
+   */
+  getPropertyControlStreams(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('properties');
+    return this.buildResourceUrl('properties', id, 'controlstreams', options);
+  }
+
+  /**
+   * Returns the URL for retrieving a property's version history.
+   *
+   * @param id - The property resource identifier.
+   * @param options - Optional query parameters for filtering history entries.
+   * @returns URL string for the property history endpoint.
+   * @throws {EndpointError} If 'properties' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getPropertyHistory('temperature-01', { limit: 5 });
+   * // => "https://example.com/collections/iot/properties/temperature-01/history?limit=5"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_property_history
+   */
+  getPropertyHistory(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('properties');
+    return this.buildResourceUrl('properties', id, 'history', options);
   }
 }
