@@ -2110,7 +2110,7 @@ src/ogc-api/csapi/
 **Core files (3):**
 - `model.ts` - All TypeScript type definitions (GeoJSON-based resources)
 - `url_builder.ts` - CSAPIQueryBuilder class with all 80 methods
-- `helpers.ts` - Pure utility functions (URL building, validation, etc.)
+- `helpers.ts` - Pure utility functions (URL encoding, temporal parsing, validation)
 
 **Format files (15):**
 - `formats/index.ts` - Barrel file for parser exports

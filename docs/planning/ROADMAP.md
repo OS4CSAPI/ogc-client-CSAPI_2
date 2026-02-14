@@ -78,23 +78,28 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - **Test:** Create `model.spec.ts` for type validation tests (~200-300 lines)
    - **Note:** This task estimates 4-5 hours including tests. Write types incrementally — aim for a mid-task test checkpoint around the 2.5-3 hour mark (e.g., after Part 1 interfaces, before Part 2 interfaces).
 
-2. **Create Helper Utilities** (~3-4 hours, Low complexity)
+2. **Create Helper Utilities** (~2-3 hours, Low complexity)
    - Create `src/ogc-api/csapi/helpers.ts` (~50-80 lines)
-   - Implement `buildResourceUrl(resourceType, id?, subPath?, options?)` - core URL construction
-   - Implement `buildQueryString(options?)` - parameter serialization with encoding
-   - Implement URL encoding utilities, temporal parsing utilities, validation utilities
+   - Implement URL encoding utilities (properly encode special characters in query parameter values)
+   - Implement temporal encoding utility (ISO 8601 formatting for CSAPI temporal parameters — similar to EDR's `DateTimeParameterToEDRString`)
+   - Implement resource type validation utility (is string a valid `CSAPIResourceType`?)
+   - Implement parameter validation utilities (e.g., `limit` must be positive integer)
+   - **Note:** `buildResourceUrl()` and `buildQueryString()` are **private methods inside the QueryBuilder class** (see Guide §6 "Helper Methods"), not standalone helpers. They require `this.baseUrl` and are tested indirectly through public API method tests. This file contains only standalone pure functions.
    - **Write JSDoc:** Document each utility function with parameter descriptions, examples
-   - **Test:** Add helper tests (~100-150 lines for helpers)
+   - **Test:** Add helper tests (~80-120 lines for helpers)
 
-3. **Create Stub QueryBuilder** (~2-3 hours, Low complexity)
+3. **Create Stub QueryBuilder** (~3-4 hours, Low complexity)
    - Create `src/ogc-api/csapi/url_builder.ts` (stub with constructor + 1-2 methods)
    - Implement constructor with collection info parameter
-   - Implement `extractAvailableResources()` helper for resource discovery
+   - Implement `extractAvailableResources()` private helper for resource discovery
    - Create `availableResources` property (Set<string>)
-   - Implement 1-2 simple methods (e.g., `getSystems()`, `getSystem(id)`) as proof of concept
+   - Implement private `buildResourceUrl(resourceType, id?, subPath?, options?)` — core URL construction using `this.baseUrl`
+   - Implement private `buildQueryString(options?)` — parameter serialization with encoding
+   - Implement 1-2 simple public methods (e.g., `getSystems()`, `getSystem(id)`) as proof of concept using the private helpers
    - Validate resource availability before URL construction
-   - **Write JSDoc:** Document constructor, helper methods, and validation pattern
-   - **Test:** Create `url_builder.spec.ts` with basic tests for constructor and resource validation (~100-150 lines)
+   - **Note:** `buildResourceUrl()`, `buildQueryString()`, and `extractAvailableResources()` are private methods tested indirectly through public API method tests (see Guide §6 "Helper Methods" testing note).
+   - **Write JSDoc:** Document constructor, public methods, and validation pattern. Private helpers get internal JSDoc only.
+   - **Test:** Create `url_builder.spec.ts` with basic tests for constructor, resource validation, and the 1-2 public methods (~100-150 lines)
 
 4. **Integrate with OgcApiEndpoint** (~3-4 hours, Low complexity)
    - Modify `src/ogc-api/endpoint.ts` (+35 lines)
