@@ -5,7 +5,7 @@ import {
   isValidResourceType,
   assertValidResourceType,
   encodeResourceId,
-  encodeArrayParameter,
+  scanCsapiLinks,
   validateLimit,
   validateBbox,
 } from './helpers.js';
@@ -127,23 +127,79 @@ describe('encodeResourceId', () => {
   });
 });
 
-describe('encodeArrayParameter', () => {
-  it('returns empty string for empty array', () => {
-    expect(encodeArrayParameter([])).toBe('');
+// ========================================
+// Link Scanning
+// ========================================
+
+describe('scanCsapiLinks', () => {
+  it('returns empty map for empty links array', () => {
+    expect(scanCsapiLinks([])).toEqual(new Map());
   });
 
-  it('returns single value without comma', () => {
-    expect(encodeArrayParameter(['sys-001'])).toBe('sys-001');
+  it('returns empty map for non-array input', () => {
+    expect(scanCsapiLinks(null as unknown as [])).toEqual(new Map());
   });
 
-  it('joins multiple values with commas', () => {
-    expect(encodeArrayParameter(['sys-001', 'sys-002', 'sys-003'])).toBe(
-      'sys-001,sys-002,sys-003'
-    );
+  it('detects ogc-cs: prefixed link relations', () => {
+    const links = [
+      { rel: 'ogc-cs:systems', href: 'http://example.com/api/systems' },
+      { rel: 'ogc-cs:deployments', href: 'http://example.com/api/deployments' },
+    ];
+    const result = scanCsapiLinks(links);
+    expect(result.size).toBe(2);
+    expect(result.get('systems')).toBe('http://example.com/api/systems');
+    expect(result.get('deployments')).toBe('http://example.com/api/deployments');
   });
 
-  it('encodes special characters in individual values', () => {
-    expect(encodeArrayParameter(['a/b', 'c d'])).toBe('a%2Fb,c%20d');
+  it('detects plain resource name link relations', () => {
+    const links = [
+      { rel: 'systems', href: 'http://example.com/api/systems' },
+      { rel: 'datastreams', href: 'http://example.com/api/datastreams' },
+    ];
+    const result = scanCsapiLinks(links);
+    expect(result.size).toBe(2);
+    expect(result.get('systems')).toBe('http://example.com/api/systems');
+    expect(result.get('datastreams')).toBe('http://example.com/api/datastreams');
+  });
+
+  it('detects items links with resource type in href', () => {
+    const links = [
+      { rel: 'items', href: 'http://example.com/api/systems' },
+      { rel: 'items', href: 'http://example.com/api/observations/' },
+    ];
+    const result = scanCsapiLinks(links);
+    expect(result.size).toBe(2);
+    expect(result.get('systems')).toBe('http://example.com/api/systems');
+    expect(result.get('observations')).toBe('http://example.com/api/observations/');
+  });
+
+  it('handles mixed conventions in the same links array', () => {
+    const links = [
+      { rel: 'ogc-cs:systems', href: 'http://example.com/api/systems' },
+      { rel: 'deployments', href: 'http://example.com/api/deployments' },
+      { rel: 'items', href: 'http://example.com/api/procedures' },
+      { rel: 'self', href: 'http://example.com/api' },
+    ];
+    const result = scanCsapiLinks(links);
+    expect(result.size).toBe(3);
+    expect(result.has('systems')).toBe(true);
+    expect(result.has('deployments')).toBe(true);
+    expect(result.has('procedures')).toBe(true);
+  });
+
+  it('ignores links without string rel', () => {
+    const links = [
+      { href: 'http://example.com/api/systems' },
+      { rel: 123, href: 'http://example.com/api/systems' },
+    ] as unknown as Array<{ rel?: string; href?: string }>;
+    expect(scanCsapiLinks(links)).toEqual(new Map());
+  });
+
+  it('ignores items links with non-resource-type href', () => {
+    const links = [
+      { rel: 'items', href: 'http://example.com/api/widgets' },
+    ];
+    expect(scanCsapiLinks(links)).toEqual(new Map());
   });
 });
 

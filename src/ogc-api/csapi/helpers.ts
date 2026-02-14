@@ -94,18 +94,65 @@ export function encodeResourceId(id: string): string {
   return encodeURIComponent(id);
 }
 
+// ========================================
+// Link Scanning
+// ========================================
+
 /**
- * Encodes an array of values as a comma-separated string suitable for
- * CSAPI query parameters that accept multiple values (e.g., `id=sys1,sys2,sys3`).
+ * Scans an array of link objects for CSAPI resource references and returns
+ * a Map of resource type name → href.
  *
- * Each individual value is percent-encoded before joining.
+ * Recognizes three OGC link relation conventions, in priority order:
  *
- * @param values - Array of string values to encode.
- * @returns Comma-separated encoded string, or an empty string if the array is empty.
+ * 1. **`ogc-cs:` prefixed** — `rel: "ogc-cs:systems"` → resource `"systems"`
+ * 2. **Plain resource name** — `rel: "systems"` where the value is a known
+ *    {@link CSAPIResourceTypes} member
+ * 3. **`items` with resource href** — `rel: "items"` where the `href` path
+ *    ends with a known resource type name
+ *
+ * @param links - Array of link objects (e.g., from a collection or root document).
+ * @returns Map of resource type name → href string. Empty if no CSAPI links found.
+ * @see https://docs.ogc.org/is/23-001/23-001.html
  */
-export function encodeArrayParameter(values: string[]): string {
-  if (values.length === 0) return '';
-  return values.map((v) => encodeURIComponent(v)).join(',');
+export function scanCsapiLinks(
+  links: Array<{ rel?: string; href?: string }>
+): Map<string, string> {
+  const result = new Map<string, string>();
+
+  if (!Array.isArray(links)) {
+    return result;
+  }
+
+  const knownTypes: ReadonlySet<string> = new Set(CSAPIResourceTypes);
+
+  for (const link of links) {
+    const rel = link.rel;
+    const href = link.href;
+    if (typeof rel !== 'string') continue;
+
+    // Convention 1: ogc-cs: prefixed (e.g., rel: "ogc-cs:systems")
+    const match = rel.match(/^ogc-cs:(.+)$/);
+    if (match) {
+      result.set(match[1], typeof href === 'string' ? href : '');
+      continue;
+    }
+
+    // Convention 2: plain resource name (e.g., rel: "systems")
+    if (knownTypes.has(rel)) {
+      result.set(rel, typeof href === 'string' ? href : '');
+      continue;
+    }
+
+    // Convention 3: rel: "items" with resource type in href
+    if (rel === 'items' && typeof href === 'string') {
+      const segment = href.replace(/\/+$/, '').split('/').pop();
+      if (segment && knownTypes.has(segment)) {
+        result.set(segment, href);
+      }
+    }
+  }
+
+  return result;
 }
 
 // ========================================

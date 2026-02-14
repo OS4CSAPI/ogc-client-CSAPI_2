@@ -5,6 +5,7 @@ import { EndpointError } from '../../shared/errors.js';
 import {
   encodeResourceId,
   formatDateTimeParameter,
+  scanCsapiLinks,
   validateLimit,
   validateBbox,
 } from './helpers.js';
@@ -106,46 +107,11 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html
    */
   private extractAvailableResources(): Set<string> {
-    const resources = new Set<string>();
     const links = this.collection_.links;
-
     if (!Array.isArray(links)) {
-      return resources;
+      return new Set<string>();
     }
-
-    const knownTypes: ReadonlySet<string> = new Set(CSAPIResourceTypes);
-
-    for (const link of links) {
-      const rel = (link as { rel?: string }).rel;
-      if (typeof rel !== 'string') continue;
-
-      // Convention 1: ogc-cs: prefixed (e.g., rel: "ogc-cs:systems")
-      const match = rel.match(/^ogc-cs:(.+)$/);
-      if (match) {
-        resources.add(match[1]);
-        continue;
-      }
-
-      // Convention 2: plain resource name (e.g., rel: "systems")
-      if (knownTypes.has(rel)) {
-        resources.add(rel);
-        continue;
-      }
-
-      // Convention 3: rel: "items" with resource type in href
-      if (rel === 'items') {
-        const href = (link as { href?: string }).href;
-        if (typeof href === 'string') {
-          // Extract the last path segment from the href
-          const segment = href.replace(/\/+$/, '').split('/').pop();
-          if (segment && knownTypes.has(segment)) {
-            resources.add(segment);
-          }
-        }
-      }
-    }
-
-    return resources;
+    return new Set(scanCsapiLinks(links).keys());
   }
 
   /**
@@ -172,8 +138,9 @@ export default class CSAPIQueryBuilder {
   ): string {
     // Use the absolute resource URL when available (top-level pattern),
     // otherwise fall back to collection-scoped base URL.
-    const resourceBase = this.resourceUrls_.has(resourceType)
-      ? this.resourceUrls_.get(resourceType).replace(/\/+$/, '')
+    const topLevelUrl = this.resourceUrls_.get(resourceType);
+    const resourceBase = topLevelUrl
+      ? topLevelUrl.replace(/\/+$/, '')
       : `${this.baseUrl}/${resourceType}`;
     let url = resourceBase;
     if (id) url += `/${encodeResourceId(id)}`;

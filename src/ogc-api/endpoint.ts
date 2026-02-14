@@ -50,7 +50,7 @@ import {
 import { getBaseUrl, getChildPath } from '../shared/url-utils.js';
 import EDRQueryBuilder from './edr/url_builder.js';
 import CSAPIQueryBuilder from './csapi/url_builder.js';
-import { CSAPIResourceTypes } from './csapi/model.js';
+import { scanCsapiLinks } from './csapi/helpers.js';
 
 /**
  * Represents an OGC API endpoint advertising various collections and services.
@@ -374,41 +374,10 @@ ${e.message}`);
    * @returns Map of resource type → absolute URL (may be empty).
    */
   private async extractRootResourceUrls(): Promise<Map<string, string>> {
-    const resourceUrls = new Map<string, string>();
     const rootDoc = await this.root;
     const links = rootDoc?.links;
-    if (!Array.isArray(links)) return resourceUrls;
-
-    const knownTypes: ReadonlySet<string> = new Set(CSAPIResourceTypes);
-
-    for (const link of links) {
-      const rel = link.rel;
-      const href = link.href;
-      if (typeof rel !== 'string' || typeof href !== 'string') continue;
-
-      // Convention 1: ogc-cs: prefixed
-      const match = rel.match(/^ogc-cs:(.+)$/);
-      if (match) {
-        resourceUrls.set(match[1], href);
-        continue;
-      }
-
-      // Convention 2: plain resource name
-      if (knownTypes.has(rel)) {
-        resourceUrls.set(rel, href);
-        continue;
-      }
-
-      // Convention 3: rel: "items" with resource type in href
-      if (rel === 'items') {
-        const segment = href.replace(/\/+$/, '').split('/').pop();
-        if (segment && knownTypes.has(segment)) {
-          resourceUrls.set(segment, href);
-        }
-      }
-    }
-
-    return resourceUrls;
+    if (!Array.isArray(links)) return new Map();
+    return scanCsapiLinks(links);
   }
 
   private getCollectionDocument(collectionId: string): Promise<OgcApiDocument> {
