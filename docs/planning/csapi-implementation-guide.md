@@ -2840,7 +2840,7 @@ export interface DataArray {
   label?: string;
   description?: string;
   definition?: string;
-  elementType: SWEDataComponent;
+  elementType: DataField;       // Named wrapper (same SoftNamedProperty as DataRecord fields)
   elementCount?: ElementCount;
   values?: EncodedValues;
   encoding?: DataEncoding;
@@ -3569,8 +3569,9 @@ schema.fields.forEach((field) => {
   
   if (field.component.type === 'DataArray') {
     const array = field.component as DataArray;
-    console.log(array.elementType.type);     // Element type
-    console.log(array.encoding?.type);       // 'JSON' | 'Text' | 'Binary'
+    console.log(array.elementType.name);              // Element type name
+    console.log(array.elementType.component.type);    // Element component type
+    console.log(array.encoding?.type);                // 'JSONEncoding' | 'TextEncoding' | 'BinaryEncoding'
   }
 });
 
