@@ -1,5 +1,5 @@
 import type { OgcApiCollectionInfo } from '../model.js';
-import type { QueryOptions, SystemQueryOptions, DeploymentQueryOptions } from './model.js';
+import type { QueryOptions, SystemQueryOptions, DeploymentQueryOptions, ProcedureQueryOptions } from './model.js';
 import { CSAPIResourceTypes } from './model.js';
 import { EndpointError } from '../../shared/errors.js';
 import {
@@ -619,5 +619,174 @@ export default class CSAPIQueryBuilder {
   getDeploymentHistory(id: string, options?: QueryOptions): string {
     this.assertResourceAvailable('deployments');
     return this.buildResourceUrl('deployments', id, 'history', options);
+  }
+
+  // ========================================
+  // PROCEDURES METHODS
+  // ========================================
+
+  /**
+   * Returns the URL for listing procedures.
+   *
+   * @param options - Optional query parameters for filtering procedures.
+   *   Procedures support: `id`, `uid`, `q`, `limit`, `offset`, `f`.
+   *   Procedures do NOT support `bbox`, `datetime`, `parent`, or `recursive`.
+   * @returns URL string for the procedures list endpoint.
+   * @throws {EndpointError} If 'procedures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getProcedures({ limit: 10, q: 'thermometer' });
+   * // => "https://example.com/collections/iot/procedures?limit=10&q=thermometer"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
+   */
+  getProcedures(options?: ProcedureQueryOptions): string {
+    this.assertResourceAvailable('procedures');
+    return this.buildResourceUrl('procedures', undefined, undefined, options);
+  }
+
+  /**
+   * Returns the URL for retrieving a single procedure by ID.
+   *
+   * @param id - The procedure resource identifier.
+   * @param options - Optional query parameters.
+   * @returns URL string for the individual procedure endpoint.
+   * @throws {EndpointError} If 'procedures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getProcedure('proc-001');
+   * // => "https://example.com/collections/iot/procedures/proc-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
+   */
+  getProcedure(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('procedures');
+    return this.buildResourceUrl('procedures', id, undefined, options);
+  }
+
+  /**
+   * Returns the URL for creating a new procedure (POST target).
+   *
+   * @returns URL string for the procedures collection endpoint.
+   * @throws {EndpointError} If 'procedures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.createProcedure();
+   * // POST to => "https://example.com/collections/iot/procedures"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
+   */
+  createProcedure(): string {
+    this.assertResourceAvailable('procedures');
+    return this.buildResourceUrl('procedures');
+  }
+
+  /**
+   * Returns the URL for updating an existing procedure (PUT target).
+   *
+   * @param id - The procedure resource identifier to update.
+   * @returns URL string for the individual procedure endpoint.
+   * @throws {EndpointError} If 'procedures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.updateProcedure('proc-001');
+   * // PUT to => "https://example.com/collections/iot/procedures/proc-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
+   */
+  updateProcedure(id: string): string {
+    this.assertResourceAvailable('procedures');
+    return this.buildResourceUrl('procedures', id);
+  }
+
+  /**
+   * Returns the URL for deleting a procedure (DELETE target).
+   *
+   * @param id - The procedure resource identifier to delete.
+   * @returns URL string for the individual procedure endpoint.
+   * @throws {EndpointError} If 'procedures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.deleteProcedure('proc-001');
+   * // DELETE to => "https://example.com/collections/iot/procedures/proc-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
+   */
+  deleteProcedure(id: string): string {
+    this.assertResourceAvailable('procedures');
+    return this.buildResourceUrl('procedures', id);
+  }
+
+  /**
+   * Returns the URL for listing systems that implement a procedure.
+   *
+   * @param id - The procedure resource identifier.
+   * @param options - Optional query parameters for filtering systems.
+   * @returns URL string for the procedure's systems endpoint.
+   * @throws {EndpointError} If 'procedures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getProcedureSystems('proc-001', { limit: 5 });
+   * // => "https://example.com/collections/iot/procedures/proc-001/systems?limit=5"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
+   */
+  getProcedureSystems(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('procedures');
+    return this.buildResourceUrl('procedures', id, 'systems', options);
+  }
+
+  /**
+   * Returns the URL for listing datastreams associated with a procedure.
+   *
+   * @param id - The procedure resource identifier.
+   * @param options - Optional query parameters for filtering datastreams.
+   * @returns URL string for the procedure's datastreams endpoint.
+   * @throws {EndpointError} If 'procedures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getProcedureDataStreams('proc-001');
+   * // => "https://example.com/collections/iot/procedures/proc-001/datastreams"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
+   */
+  getProcedureDataStreams(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('procedures');
+    return this.buildResourceUrl('procedures', id, 'datastreams', options);
+  }
+
+  /**
+   * Returns the URL for retrieving a procedure's version history.
+   *
+   * @param id - The procedure resource identifier.
+   * @param options - Optional query parameters for filtering history entries.
+   * @returns URL string for the procedure history endpoint.
+   * @throws {EndpointError} If 'procedures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getProcedureHistory('proc-001', { limit: 5 });
+   * // => "https://example.com/collections/iot/procedures/proc-001/history?limit=5"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_history
+   */
+  getProcedureHistory(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('procedures');
+    return this.buildResourceUrl('procedures', id, 'history', options);
   }
 }

@@ -890,3 +890,189 @@ describe('Deployment resource validation', () => {
     expect(() => builder.getDeployments()).toThrow(EndpointError);
   });
 });
+
+// ========================================
+// Procedures Methods
+// ========================================
+
+describe('getProcedures', () => {
+  function makeProcBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:procedures', type: '', title: '', href: '/procedures' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makeProcBuilder().getProcedures();
+    expect(url).toBe('https://example.com/collections/iot/procedures');
+  });
+
+  it('returns correct URL with limit', () => {
+    const url = makeProcBuilder().getProcedures({ limit: 10 });
+    expect(url).toBe('https://example.com/collections/iot/procedures?limit=10');
+  });
+
+  it('returns correct URL with offset', () => {
+    const url = makeProcBuilder().getProcedures({ offset: 20 });
+    expect(url).toBe('https://example.com/collections/iot/procedures?offset=20');
+  });
+
+  it('returns correct URL with q parameter', () => {
+    const url = makeProcBuilder().getProcedures({ q: 'thermometer' });
+    expect(url).toBe('https://example.com/collections/iot/procedures?q=thermometer');
+  });
+
+  it('returns correct URL with id filter', () => {
+    const url = makeProcBuilder().getProcedures({ id: 'proc-001' });
+    expect(url).toBe('https://example.com/collections/iot/procedures?id=proc-001');
+  });
+
+  it('returns correct URL with array id filter', () => {
+    const url = makeProcBuilder().getProcedures({ id: ['proc-001', 'proc-002'] });
+    expect(url).toBe('https://example.com/collections/iot/procedures?id=proc-001%2Cproc-002');
+  });
+
+  it('returns correct URL with f (format) parameter', () => {
+    const url = makeProcBuilder().getProcedures({ f: 'application/json' });
+    expect(url).toBe('https://example.com/collections/iot/procedures?f=application%2Fjson');
+  });
+
+  it('returns correct URL with multiple options', () => {
+    const url = makeProcBuilder().getProcedures({ limit: 5, offset: 10, q: 'sensor' });
+    expect(url).toBe('https://example.com/collections/iot/procedures?limit=5&offset=10&q=sensor');
+  });
+});
+
+describe('getProcedure', () => {
+  function makeProcBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:procedures', type: '', title: '', href: '/procedures' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with resource ID', () => {
+    const url = makeProcBuilder().getProcedure('proc-001');
+    expect(url).toBe('https://example.com/collections/iot/procedures/proc-001');
+  });
+
+  it('encodes special characters in ID', () => {
+    const url = makeProcBuilder().getProcedure('urn:example:proc:001');
+    expect(url).toBe('https://example.com/collections/iot/procedures/urn%3Aexample%3Aproc%3A001');
+  });
+});
+
+describe('Procedure CRUD operations', () => {
+  function makeProcBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:procedures', type: '', title: '', href: '/procedures' },
+        ],
+      })
+    );
+  }
+
+  it('createProcedure returns correct URL', () => {
+    const url = makeProcBuilder().createProcedure();
+    expect(url).toBe('https://example.com/collections/iot/procedures');
+  });
+
+  it('updateProcedure returns correct URL', () => {
+    const url = makeProcBuilder().updateProcedure('proc-001');
+    expect(url).toBe('https://example.com/collections/iot/procedures/proc-001');
+  });
+
+  it('deleteProcedure returns correct URL', () => {
+    const url = makeProcBuilder().deleteProcedure('proc-001');
+    expect(url).toBe('https://example.com/collections/iot/procedures/proc-001');
+  });
+});
+
+describe('Procedure association methods', () => {
+  function makeProcBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:procedures', type: '', title: '', href: '/procedures' },
+        ],
+      })
+    );
+  }
+
+  it('getProcedureSystems returns correct URL', () => {
+    const url = makeProcBuilder().getProcedureSystems('proc-001');
+    expect(url).toBe('https://example.com/collections/iot/procedures/proc-001/systems');
+  });
+
+  it('getProcedureSystems returns correct URL with pagination', () => {
+    const url = makeProcBuilder().getProcedureSystems('proc-001', { limit: 5, offset: 10 });
+    expect(url).toBe('https://example.com/collections/iot/procedures/proc-001/systems?limit=5&offset=10');
+  });
+
+  it('getProcedureDataStreams returns correct URL', () => {
+    const url = makeProcBuilder().getProcedureDataStreams('proc-001');
+    expect(url).toBe('https://example.com/collections/iot/procedures/proc-001/datastreams');
+  });
+
+  it('getProcedureDataStreams returns correct URL with options', () => {
+    const url = makeProcBuilder().getProcedureDataStreams('proc-001', { limit: 10 });
+    expect(url).toBe('https://example.com/collections/iot/procedures/proc-001/datastreams?limit=10');
+  });
+});
+
+describe('getProcedureHistory', () => {
+  function makeProcBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:procedures', type: '', title: '', href: '/procedures' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makeProcBuilder().getProcedureHistory('proc-001');
+    expect(url).toBe('https://example.com/collections/iot/procedures/proc-001/history');
+  });
+
+  it('returns correct URL with limit', () => {
+    const url = makeProcBuilder().getProcedureHistory('proc-001', { limit: 5 });
+    expect(url).toBe('https://example.com/collections/iot/procedures/proc-001/history?limit=5');
+  });
+});
+
+describe('Procedure resource validation', () => {
+  it('throws EndpointError when procedures is unavailable', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        id: 'sensors',
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/sensors' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+    expect(() => builder.getProcedures()).toThrow(EndpointError);
+    expect(() => builder.getProcedure('x')).toThrow(EndpointError);
+    expect(() => builder.createProcedure()).toThrow(EndpointError);
+    expect(() => builder.updateProcedure('x')).toThrow(EndpointError);
+    expect(() => builder.deleteProcedure('x')).toThrow(EndpointError);
+    expect(() => builder.getProcedureSystems('x')).toThrow(EndpointError);
+    expect(() => builder.getProcedureDataStreams('x')).toThrow(EndpointError);
+    expect(() => builder.getProcedureHistory('x')).toThrow(EndpointError);
+  });
+});
