@@ -168,9 +168,14 @@ export type SamplingFeatureQueryOptions = QueryOptions;
 
 /**
  * Query options for Property list endpoints.
- * @see https://docs.ogc.org/is/23-001/23-001.html
+ * @see https://docs.ogc.org/is/23-001/23-001.html#_property_resources
  */
-export type PropertyQueryOptions = QueryOptions;
+export interface PropertyQueryOptions extends QueryOptions {
+  /** Filter by system ID — returns properties observed/actuated by this system. */
+  system?: string;
+  /** Filter by base property URI — returns properties derived from this base. */
+  baseProperty?: string;
+}
 
 /**
  * Query options for DataStream list endpoints.

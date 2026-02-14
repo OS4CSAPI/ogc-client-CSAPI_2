@@ -19,6 +19,7 @@ import type {
   CommandStatus,
   QueryOptions,
   SystemQueryOptions,
+  PropertyQueryOptions,
   FeatureCollection,
   ItemCollection,
 } from './model.js';
@@ -348,6 +349,18 @@ describe('Type compatibility - Query options', () => {
     };
     expect(opts.parent).toBe('sys-parent-001');
     expect(opts.recursive).toBe(true);
+  });
+
+  test('PropertyQueryOptions supports system and baseProperty parameters', () => {
+    const opts: PropertyQueryOptions = {
+      system: 'sys-001',
+      baseProperty: 'urn:qudt:Temperature',
+      limit: 20,
+      q: 'temperature',
+    };
+    expect(opts.system).toBe('sys-001');
+    expect(opts.baseProperty).toBe('urn:qudt:Temperature');
+    expect(opts.limit).toBe(20);
   });
 });
 

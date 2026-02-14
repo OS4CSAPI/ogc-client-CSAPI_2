@@ -335,6 +335,11 @@ describe('getSystems', () => {
     expect(url).toBe('https://example.com/collections/iot/systems?limit=10');
   });
 
+  it('returns correct URL with offset', () => {
+    const url = makeIotBuilder().getSystems({ offset: 25 });
+    expect(url).toBe('https://example.com/collections/iot/systems?offset=25');
+  });
+
   it('returns correct URL with datetime parameter', () => {
     const url = makeIotBuilder().getSystems({
       datetime: new Date('2024-06-01T00:00:00Z'),
@@ -1364,6 +1369,31 @@ describe('getProperties', () => {
   it('returns correct URL with multiple options', () => {
     const url = makePropBuilder().getProperties({ limit: 10, offset: 5, q: 'pressure' });
     expect(url).toBe('https://example.com/collections/iot/properties?limit=10&offset=5&q=pressure');
+  });
+
+  it('returns correct URL with offset', () => {
+    const url = makePropBuilder().getProperties({ offset: 20 });
+    expect(url).toBe('https://example.com/collections/iot/properties?offset=20');
+  });
+
+  it('returns correct URL with f (format) parameter', () => {
+    const url = makePropBuilder().getProperties({ f: 'application/json' });
+    expect(url).toBe('https://example.com/collections/iot/properties?f=application%2Fjson');
+  });
+
+  it('handles array id parameter', () => {
+    const url = makePropBuilder().getProperties({ id: ['temp-01', 'pressure-02'] });
+    expect(url).toBe('https://example.com/collections/iot/properties?id=temp-01%2Cpressure-02');
+  });
+
+  it('returns correct URL with system filter', () => {
+    const url = makePropBuilder().getProperties({ system: 'sys-001' });
+    expect(url).toBe('https://example.com/collections/iot/properties?system=sys-001');
+  });
+
+  it('returns correct URL with baseProperty filter', () => {
+    const url = makePropBuilder().getProperties({ baseProperty: 'urn:qudt:Temperature' });
+    expect(url).toBe('https://example.com/collections/iot/properties?baseProperty=urn%3Aqudt%3ATemperature');
   });
 });
 
