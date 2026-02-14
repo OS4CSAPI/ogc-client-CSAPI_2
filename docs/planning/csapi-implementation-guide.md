@@ -744,7 +744,7 @@ This section quantifies why helper methods in a single class provide massive cod
 | Cluster Type | Parameters | Used By | Validation Logic |
 |--------------|------------|---------|------------------|
 | **Universal** | limit, offset, f, id, uid, q | 9 resources | Same across all |
-| **Spatial** | bbox | Systems, Deployments, Procedures, SamplingFeatures | Same across all 4 |
+| **Spatial** | bbox | Systems, Deployments, SamplingFeatures | Same across all 3 |
 | **Temporal** | datetime, phenomenonTime, resultTime, executionTime, issueTime | 5+ resources | Same logic, different applicability |
 | **Relationship** | parent, procedure, foi, observedProperty, system, etc. | Varies by resource | Same encoding, different applicability |
 | **Format** | obsFormat, cmdFormat | Schema endpoints | Same logic |
@@ -1802,7 +1802,7 @@ The CSAPIQueryBuilder includes Control Streams resource methods to manage CSAPI 
 
 Omitting `cmdFormat` on the schema endpoint returns **400 Bad Request** ("Missing required parameter").
 
-**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Control Streams support: `system`, `controlledProperty`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`, `sortBy`, `sortOrder`.
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Control Streams support: `system`, `controlledProperty`, `datetime`, `executionTime`, `issueTime`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`, `sortBy`, `sortOrder`.
 
 **References:**
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for ControlStreams resources
