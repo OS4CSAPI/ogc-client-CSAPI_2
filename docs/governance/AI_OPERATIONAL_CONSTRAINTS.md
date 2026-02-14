@@ -3,7 +3,7 @@
 
 This document defines **non-negotiable operational constraints** for AI assistance on this project.
 
-It must be reviewed and followed at the start of **every GitHub issue, task, or major discussion** involving AI assistance (Claude Sonnet 4.5).
+It must be reviewed and followed at the start of **every GitHub issue, task, or major discussion** involving AI assistance.
 
 These constraints exist to prevent architectural drift, scope creep, and standards misalignment.
 
@@ -83,4 +83,8 @@ When uncertainty cannot be resolved using the precedence rules above, the AI ass
 This document defines **mandatory operational behavior**.
 
 The full `AI_COLLABORATION_AGREEMENT.md` provides additional context, rationale, and governance guidance and may be referenced as needed.
+
+Issues involving AI implementation work should follow the template defined in
+`issue-creation-prompt-template.md` (same directory) to ensure uniform scope
+boundaries, acceptance criteria, and reference documentation across all tasks.
 

@@ -20,7 +20,7 @@
 ## 1. Purpose and Intent
 
 This agreement establishes the **governance framework** for collaboration between the
-human project maintainer and an AI assistant (**Claude Sonnet 4.5**).
+human project maintainer and an AI assistant.
 
 It exists to:
 - Provide durable alignment across long-running development efforts
