@@ -361,6 +361,34 @@ The collections reader is existing code that fetches and parses the `/collection
 - [OGC API - Features](https://docs.ogc.org/is/17-069r4/17-069r4.html) - Collections endpoint patterns CSAPI extends
 - [Architecture Patterns Analysis](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/main/docs/research/upstream/architecture-patterns-analysis.md) - Collection capability determination patterns
 
+> **Design Requirement for Phase 3 Discovery: Properties Resource Not Advertised (F14)**
+>
+> Live smoke testing against two independent CSAPI implementations (OpenSensorHub and 52North) has confirmed that **the `/properties` endpoint is functional but not discoverable** through any standard link or collection convention. Both servers accept requests to `/properties` and return valid (empty) JSON responses, yet neither advertises the resource.
+>
+> **Evidence from smoke tests (Finding F14, post Phase 2.5):**
+>
+> | Discovery Convention | OSH | 52North | Result |
+> |---------------------|-----|---------|--------|
+> | Convention 1: Conformance class declares `req/property` | ❌ Not present | ❌ Not present | Not discoverable |
+> | Convention 2: Root document `links[]` contains `rel` for properties | ❌ No `properties` rel | ❌ No `properties` rel | Not discoverable |
+> | Convention 3: `/collections` includes a properties collection | ❌ 4 collections, none for properties | ❌ 5 collections, none for properties | Not discoverable |
+> | Direct request: `GET /properties` returns 200 | ✅ `{ items: [] }` | ✅ `{ items: [], links: [] }` | Works, but no way to know it exists |
+>
+> **Impact on Phase 3 implementation:**
+>
+> The `extractAvailableResources()` helper and the `csapiCollections` getter both rely on the root document and `/collections` to discover which resource types a server supports. If Properties is never advertised, these methods will never report it as available — even on servers that fully support it.
+>
+> **Required behavior for Phase 3 discovery logic:**
+>
+> 1. **Do not assume Properties is unavailable just because it's not advertised.** After checking conformance, links, and collections, optionally probe `/properties` directly with a lightweight `HEAD` or `GET ?limit=0` request as a fallback discovery mechanism.
+> 2. **Expose a `probed` or `fallback` flag** in the discovery result so callers can distinguish "server advertised this resource" from "we discovered it by probing." This mirrors the `supported` flag pattern used for nested endpoint graceful degradation (see §11).
+> 3. **Make probing opt-in or configurable** — some deployments may prefer strict discovery (only trust what's advertised) over permissive discovery (probe additional endpoints).
+> 4. **This may affect other resource types too** — if Properties is unadvertised, other resources could be as well on future server implementations. Design the fallback mechanism generically, not just for Properties.
+>
+> **Note:** This is not a client bug or a spec violation — the CSAPI spec does not mandate that servers advertise all implemented resource types through any specific convention. It is an interoperability gap that the client library should handle gracefully.
+>
+> See: [Smoke test post Phase 2.5](../implementation/live-server-smoke-test-post-phase-2.5.md) — F14.
+
 ---
 
 ### OgcApiEndpoint Integration: Extending Main Endpoint Class
