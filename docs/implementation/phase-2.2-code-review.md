@@ -1,8 +1,8 @@
-# Phase 2 Code Review Report
+# Phase 2.2 Code Review Report
 
 **Date:** February 14, 2026  
 **Reviewer:** AI (GitHub Copilot)  
-**Scope:** All Phase 2 deliverables (Issues #5, #6, #34, #35) plus reaffirmation of Phase 1 (Issues #1–#4)  
+**Scope:** Phase 2 work completed so far (Issues #5, #6, #34, #35) plus reaffirmation of Phase 1 (Issues #1–#4). This is an incremental mid-phase review — Phase 2 is not yet complete; Issues #7–#13 remain.  
 **Commits:** `1bb2230` (Issue #5), `6ed3e1f` (Issue #34), `87ea772` (Issue #35), `6942a59` (Issue #6)
 
 ---
@@ -136,7 +136,7 @@ The Phase 1 test suite (27 model + 30 helper + 6 integration = 63 tests) is unch
 
 ---
 
-## Phase 2 Findings — New
+## Phase 2.2 Findings — New
 
 ### [F1] DEAD CODE: `encodeArrayParameter` is no longer used
 
@@ -404,15 +404,51 @@ There's no test for `recursive: false`. If the design intent is that `false` sho
 
 ---
 
+## Root Cause Analysis — How These Issues Happened
+
+None of these findings are mysterious bugs. They're process gaps, and tracing each one back to how it was introduced reveals a clear pattern.
+
+### The dead code (F1 — `encodeArrayParameter`)
+
+When the Phase 1 double-encoding bug (P1-F5) was fixed, the *call site* in `buildQueryString` was changed to use `value.join(',')` instead of calling `encodeArrayParameter()`. But the function itself was never removed from `helpers.ts`. Classic "fix the symptom, leave the artifact" — the full dependency chain wasn't traced after the fix.
+
+### The DRY violation (F2 — duplicated link scanning)
+
+This is the most frustrating one because it happened *within the same session*. Issue #34 implemented the three link conventions in `extractAvailableResources()`. Then Issue #35, implemented immediately after, needed the same link scanning logic for `extractRootResourceUrls()`. Instead of extracting a shared helper from code that was *just written*, it was duplicated with a different return type. Each issue was treated as an isolated unit of work rather than stepping back and refactoring what had just been produced.
+
+### The test gaps (F4–F8 — weaker Deployments tests)
+
+This is the most telling pattern. When the 12 Systems methods were built (Issue #5), thorough tests were written — every `SystemQueryOptions` field got its own test, datetime used exact assertions, subsystems got a pagination test. Then when the 8 Deployments methods were built (Issue #6), *fewer* tests were written per method. `getDeployments` tests `systemId` but not `parent` or `recursive`. The datetime test uses `toContain` instead of `toBe`. `getDeploymentSubdeployments` skips the pagination test. The *pattern* was copied but not the *thoroughness*. The first resource type got careful attention; the second got "good enough."
+
+This will compound if not addressed. Issues #7–#9 (Procedures, SamplingFeatures, Properties) will be the third through fifth resources using this pattern, and the temptation to write even thinner tests grows each time.
+
+### The still-open P1-F4 (missing exports)
+
+The Phase 1 review explicitly said "fix before Phase 2." Phase 2 work then proceeded through four issues without ever going back to address it. The review identified it, it was documented, and then it sat there. Reviews are only useful if findings get tracked as work items.
+
+### The underlying process pattern
+
+Three things are happening:
+
+1. **Each issue is treated as disposable context.** Issues #34 and #35 were done back-to-back, but #34's output wasn't examined when writing #35. Each GitHub issue becomes a tunnel — get in, implement, test, commit, close, move on. There's no "step back and look at what we've built across the last 2–3 issues" moment.
+
+2. **Second-resource-type syndrome.** The first implementation of a pattern (Systems) gets full attention. The second (Deployments) gets "it follows the same pattern, so it's fine." But the tests didn't follow the same pattern — they followed a reduced version of it.
+
+3. **Review findings aren't tracked as work items.** Findings get documented but not converted into issues or blocking tasks. The review becomes a record rather than a forcing function.
+
+This review is specifically designed to catch these gaps *now*, at Phase 2.2, rather than at the end of Phase 2 when the debt would be much larger.
+
+---
+
 ## Overall Assessment
 
-**Phase 2 is solid and production-quality.** The architecture has matured significantly:
+**Phase 2.2 is solid — the code works correctly and the architecture has matured significantly.** The findings here are about process discipline, not functional defects:
 
-- The 12 Systems methods (Issue #5) and 8 Deployments methods (Issue #6) are **consistent, well-documented, and thoroughly tested**
+- The 12 Systems methods (Issue #5) and 8 Deployments methods (Issue #6) are **consistent, well-documented, and functionally correct**
 - The F1 fix (three link conventions) makes the builder **spec-tolerant** — verified against a live OpenSensorHub server
 - The F2 fix (top-level URLs) makes the builder **scope-aware** — verified backward-compatible with collection-scoped paths
 - All existing Phase 1 infrastructure (types, helpers, integration) remains **unchanged and stable**
 - The **5 test gaps** found are all low-severity (the code works correctly — it's the tests that need strengthening)
 - The **DRY violation** in link scanning is the most significant design concern but is well-contained (2 files, same behavior)
 
-The codebase is ready for Issues #7–#9 (Procedures, SamplingFeatures, Properties) which follow the same proven pattern as Deployments.
+The purpose of this incremental review is to catch and correct these gaps before they compound across Issues #7–#13. The findings are small individually (~30 minutes of total remediation work), but left unaddressed they would accumulate into a larger problem by the end of Phase 2.
