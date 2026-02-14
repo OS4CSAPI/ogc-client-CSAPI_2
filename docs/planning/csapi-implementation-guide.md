@@ -2830,9 +2830,8 @@ export interface DataRecord {
 }
 
 export interface DataField {
-  name: string;
-  label?: string;
-  component: SWEDataComponent;  // Recursive structure
+  name: string;                 // Required, pattern: ^[A-Za-z][A-Za-z0-9_\-]*$
+  component: SWEDataComponent;  // Recursive structure (label lives on the component, not the field)
 }
 
 export interface DataArray {
