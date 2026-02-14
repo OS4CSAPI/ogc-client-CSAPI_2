@@ -3014,12 +3014,12 @@ The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](ht
 - **Outputs**: Data outputs, actuated properties, status indicators (using SWE Common 3.0 DataComponent definitions)
 - **Parameters**: Configuration settings, calibration parameters, operational modes (using SWE Common 3.0 DataComponent definitions)
 - **Modes**: Operating modes with associated configurations and state transitions
-- **Components** (PhysicalSystem only): Array of component systems with roles and connections
-- **Connections** (PhysicalSystem only): Data flow and physical connections between components
+- **Components** (AggregateProcess and PhysicalSystem): Array of component systems with roles and connections
+- **Connections** (AggregateProcess and PhysicalSystem): Data flow and physical connections between components
 - **Position**: Location and orientation using GeoJSON Point or more complex positioning models
 
 **Parsing Capabilities:**
-- **Recursive component parsing**: Nested PhysicalSystems with full component hierarchy
+- **Recursive component parsing**: Nested AggregateProcesses and PhysicalSystems with full component hierarchy
 - **SWE Common 3.0 DataComponent integration**: Complete parsing of all DataComponent types
 - **Unit of measure parsing**: UCUM code support ([UCUM codes](http://unitsofmeasure.org/))
 - **Reference resolution**: External link dereferencing for procedures, datasheets, feature definitions
