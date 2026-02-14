@@ -1,5 +1,6 @@
 import type { OgcApiCollectionInfo } from '../model.js';
 import type { QueryOptions, SystemQueryOptions } from './model.js';
+import { CSAPIResourceTypes } from './model.js';
 import { EndpointError } from '../../shared/errors.js';
 import {
   encodeResourceId,
@@ -31,7 +32,8 @@ export default class CSAPIQueryBuilder {
   /**
    * @param collection_ - The OGC API collection metadata object.
    *   Must contain a `links` array; CSAPI resource availability is
-   *   discovered from link relations matching `ogc-cs:{resourceType}`.
+   *   discovered from link relations matching `ogc-cs:{resourceType}`,
+   *   plain resource names, or `items` links with resource hrefs.
    */
   constructor(private collection_: OgcApiCollectionInfo) {
     this.baseUrl = this.extractBaseUrl();
@@ -68,8 +70,20 @@ export default class CSAPIQueryBuilder {
 
   /**
    * Discovers available CSAPI resource types from collection link relations.
-   * Parses links whose `rel` matches `ogc-cs:{resourceType}`.
+   *
+   * Recognizes three link relation conventions, in priority order:
+   *
+   * 1. **`ogc-cs:` prefixed** — `rel: "ogc-cs:systems"` → resource `"systems"`
+   * 2. **Plain resource name** — `rel: "systems"` where the value is a known
+   *    {@link CSAPIResourceTypes} member → resource `"systems"`
+   * 3. **`items` with resource href** — `rel: "items"` where the `href` path
+   *    ends with a known resource type name → resource extracted from href
+   *
+   * All three conventions populate the same Set. Duplicate entries are
+   * deduplicated automatically.
+   *
    * @returns Set of available resource type names (e.g., 'systems', 'datastreams').
+   * @see https://docs.ogc.org/is/23-001/23-001.html
    */
   private extractAvailableResources(): Set<string> {
     const resources = new Set<string>();
@@ -79,12 +93,34 @@ export default class CSAPIQueryBuilder {
       return resources;
     }
 
+    const knownTypes: ReadonlySet<string> = new Set(CSAPIResourceTypes);
+
     for (const link of links) {
       const rel = (link as { rel?: string }).rel;
-      if (typeof rel === 'string') {
-        const match = rel.match(/^ogc-cs:(.+)$/);
-        if (match) {
-          resources.add(match[1]);
+      if (typeof rel !== 'string') continue;
+
+      // Convention 1: ogc-cs: prefixed (e.g., rel: "ogc-cs:systems")
+      const match = rel.match(/^ogc-cs:(.+)$/);
+      if (match) {
+        resources.add(match[1]);
+        continue;
+      }
+
+      // Convention 2: plain resource name (e.g., rel: "systems")
+      if (knownTypes.has(rel)) {
+        resources.add(rel);
+        continue;
+      }
+
+      // Convention 3: rel: "items" with resource type in href
+      if (rel === 'items') {
+        const href = (link as { href?: string }).href;
+        if (typeof href === 'string') {
+          // Extract the last path segment from the href
+          const segment = href.replace(/\/+$/, '').split('/').pop();
+          if (segment && knownTypes.has(segment)) {
+            resources.add(segment);
+          }
         }
       }
     }

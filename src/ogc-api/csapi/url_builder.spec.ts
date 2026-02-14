@@ -69,6 +69,79 @@ describe('CSAPIQueryBuilder constructor', () => {
     const builder = new CSAPIQueryBuilder(makeCollection({ links: [] }));
     expect(builder.availableResources.size).toBe(0);
   });
+
+  it('discovers resources from plain rel matching known resource types', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/api' },
+          { rel: 'systems', type: '', title: '', href: '/api/systems' },
+          { rel: 'datastreams', type: '', title: '', href: '/api/datastreams' },
+        ],
+      })
+    );
+    expect(builder.availableResources).toEqual(
+      new Set(['systems', 'datastreams'])
+    );
+  });
+
+  it('discovers resources from rel:"items" when href ends with a known resource type', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'items', type: '', title: '', href: '/collections/iot/systems' },
+          { rel: 'items', type: '', title: '', href: '/collections/iot/deployments' },
+        ],
+      })
+    );
+    expect(builder.availableResources).toEqual(
+      new Set(['systems', 'deployments'])
+    );
+  });
+
+  it('discovers resources from mixed conventions in same collection', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/api' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+          { rel: 'datastreams', type: '', title: '', href: '/api/datastreams' },
+          { rel: 'items', type: '', title: '', href: '/collections/iot/deployments' },
+        ],
+      })
+    );
+    expect(builder.availableResources).toEqual(
+      new Set(['systems', 'datastreams', 'deployments'])
+    );
+  });
+
+  it('ignores plain rel values that are not known resource types', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/api' },
+          { rel: 'alternate', type: '', title: '', href: '/alt' },
+          { rel: 'describedby', type: '', title: '', href: '/schema' },
+          { rel: 'systems', type: '', title: '', href: '/api/systems' },
+        ],
+      })
+    );
+    expect(builder.availableResources).toEqual(new Set(['systems']));
+  });
+
+  it('ignores rel:"items" when href does not end with a known resource type', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'items', type: '', title: '', href: '/collections/iot/items' },
+          { rel: 'items', type: '', title: '', href: '/collections/iot/unknown' },
+        ],
+      })
+    );
+    expect(builder.availableResources.size).toBe(0);
+  });
 });
 
 // ========================================
