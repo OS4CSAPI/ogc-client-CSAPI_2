@@ -2094,7 +2094,7 @@ src/ogc-api/csapi/
 │   │   │
 │   │   ├── simple-process.ts   (~150-200 lines) - SimpleProcess parser
 │   │   ├── aggregate-process.ts(~200-250 lines) - AggregateProcess parser
-│   │   └── physical-system.ts  (~200-250 lines) - PhysicalSystem parser
+│   │   └── physical-system.ts  (~200-250 lines) - PhysicalSystem & PhysicalComponent parsers
 │   │
 │   └── swecommon/              (~1,600-2,250 lines)
 │       ├── index.ts            (~50-100 lines) - SWE exports

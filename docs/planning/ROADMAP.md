@@ -424,21 +424,22 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
      - Test connection handling
      - Test nested component parsing
 
-8. **SensorML Physical System Parser** (~2-3 hours, Medium-High complexity)
+8. **SensorML Physical Process Parsers** (~2-3 hours, Medium-High complexity)
    - Create `formats/sensorml/physical-system.ts` (~200-250 lines)
-   - Implement parser for PhysicalSystem descriptors
-   - Handle position, components, capabilities, characteristics
-   - **Write JSDoc:** Document parser function with examples
-   - **Test immediately:** Add Physical System parser tests (~150-200 lines tests)
+   - Implement parsers for PhysicalSystem and PhysicalComponent descriptors
+   - Handle position, components (PhysicalSystem), method (PhysicalComponent), capabilities, characteristics
+   - **Write JSDoc:** Document parser functions with examples
+   - **Test immediately:** Add physical process parser tests (~150-200 lines tests)
      - Test parsing with spec example fixtures
      - Test position/location parsing
-     - Test component hierarchy parsing
+     - Test component hierarchy parsing (PhysicalSystem)
+     - Test method parsing (PhysicalComponent)
 
 9. **SensorML Main Parser** (~2-3 hours, High complexity)
    - Create `formats/sensorml/parser.ts` (~600-800 lines)
    - Main SensorML 3.0 parser with recursive component parsing
    - Capability/characteristic parsing with SWE Common integration
-   - Type discrimination (SimpleProcess vs AggregateProcess vs PhysicalSystem)
+   - Type discrimination (SimpleProcess vs AggregateProcess vs PhysicalComponent vs PhysicalSystem)
    - Delegate to sub-parsers from Tasks 6-8
    - **Write JSDoc:** Document main parser with workflow examples
    - **Test immediately:** Add main parser tests (~150-200 lines tests)
