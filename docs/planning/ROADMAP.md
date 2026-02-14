@@ -594,10 +594,10 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - **Test:** Documentation build validation
 
 **Phase 4 Deliverables:**
-- ✅ Complete integration tests (~500-800 lines tests)
+- ✅ Complete integration tests (~900-1,150 lines tests)
 - ✅ Complete unit test coverage (~300-450 lines tests)
 - ✅ API documentation complete with examples
-- ✅ >80% total test coverage achieved (~4,200-6,000 lines total tests)
+- ✅ >80% total test coverage achieved (~4,800-6,650 lines total tests)
 - ✅ All JSDoc documentation complete and verified
 
 **Dependencies:** Phase 1-3 (complete implementation for testing)
@@ -611,12 +611,12 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 | **Phase 1** | 12-16 hrs | Low | Types, integration, stub builder, helpers (4 tasks) | ~500-600 + ~400-550 tests |
 | **Phase 2** | 20-28 hrs | Medium | Complete QueryBuilder - 9 resource types (9 tasks) | ~700-800 + ~800-1,000 tests |
 | **Phase 3** | 16-28 hrs | High | Format parsers + extensions (17 tasks with incremental testing) | ~3,600-5,050 + ~2,400-3,500 tests |
-| **Phase 4** | 9-12 hrs | Medium | Tests and documentation (3 tasks) | ~800-1,250 tests |
-| **TOTAL** | **57-84 hrs** | **Mixed** | **Complete CSAPI implementation (33 tasks)** | **~4,800-6,450 + ~4,200-6,000 tests** |
+| **Phase 4** | 9-12 hrs | Medium | Tests and documentation (3 tasks) | ~1,200-1,600 tests |
+| **TOTAL** | **57-84 hrs** | **Mixed** | **Complete CSAPI implementation (33 tasks)** | **~4,800-6,450 + ~4,800-6,650 tests** |
 
 **Total Development Time:** 57-84 hours (average: 71 hours)  
 **Calendar Time:** 8-11 weeks (assuming 6-8 hours/week development pace)  
-**Total Code:** ~9,000-12,450 lines (implementation + tests)
+**Total Code:** ~9,600-13,100 lines (implementation + tests)
 
 **Key Success Factors:**
 - ✅ Write JSDoc documentation AS YOU CODE (don't defer)
