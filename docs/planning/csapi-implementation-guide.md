@@ -3657,6 +3657,74 @@ try {
 }
 ```
 
+**Nested Endpoint Graceful Degradation (Server-Side 400/404):**
+
+> **Design Requirement for Phase 3 Response Parsing**
+>
+> Live smoke testing against two independent CSAPI implementations (OpenSensorHub and 52North) has proven that **nested sub-resource endpoints are inconsistently supported across servers**. This is not a client bug — it is an expected interoperability condition that the response layer must handle as a first-class concern, not an exceptional one.
+
+**Evidence from smoke tests (Findings F6–F9, F12):**
+
+| Endpoint Pattern | OSH | 52North | Conclusion |
+|-----------------|-----|---------|-----------|
+| `systems/{id}/deployments` | ❌ 400 | ✅ 200 | Server-selective support |
+| `systems/{id}/procedures` | ❌ 400 | ❌ 400 | Neither implements |
+| `systems/{id}/datastreams` | ✅ 200 | ❌ 500 | Server-selective support |
+| `systems/{id}/history` | ✅ 200 | ❌ 400 | Server-selective support |
+| `samplingFeatures/{id}/systems` | ❌ 400 | N/A | OSH rejects |
+| `samplingFeatures/{id}/history` | ❌ 400 | N/A | OSH rejects |
+| `samplingFeatures/{id}/observations` | ✅ 200 | N/A | OSH accepts |
+
+The same URL pattern works on one server and fails on another — proving the URLs are correct and the variability is purely server-side. Phase 3 response-layer methods **must** treat 400/404 from nested sub-resource endpoints as an expected condition, not an error.
+
+**Required behavior for Phase 3 nested-endpoint methods:**
+
+```typescript
+// Phase 3 response-layer method (conceptual design)
+async function getSystemDeployments(
+  systemId: string, 
+  params?: CSAPIQueryParams
+): Promise<CSAPICollectionResult<Deployment>> {
+  const url = builder.getSystemDeployments(systemId, params);
+  const response = await fetch(url);
+  
+  // 400/404 from a nested endpoint = server doesn't support this route
+  // Return empty result with metadata, NOT an unhandled exception
+  if (response.status === 400 || response.status === 404) {
+    return {
+      items: [],
+      links: [],
+      supported: false,  // Caller can distinguish "empty" from "unsupported"
+      statusCode: response.status,
+    };
+  }
+  
+  if (!response.ok) {
+    // 500, 503, etc. = genuine server error — throw
+    throw new EndpointError(
+      `Server error fetching deployments for system '${systemId}': ` +
+      `HTTP ${response.status}`,
+      { statusCode: response.status }
+    );
+  }
+  
+  const data = await response.json();
+  return parseCollectionResponse<Deployment>(data);
+}
+```
+
+**Design rules:**
+
+1. **400/404 on nested sub-resource endpoints → return empty result with `supported: false`** — never throw. The server is telling us "I don't implement this route," which is valid per the spec (nested endpoints are optional).
+2. **5xx on nested sub-resource endpoints → throw** — these are genuine server errors that the caller should handle.
+3. **400/404 on top-level endpoints → throw** — if `/systems` itself returns 404, that's a real problem (the server advertised a resource it can't serve). Only nested sub-resource routes get graceful degradation.
+4. **Expose `supported` flag** — callers need to distinguish "the server returned zero results" from "the server doesn't implement this route at all." UI code may want to hide a tab vs. show "No deployments found."
+5. **Log at `debug` level, not `warn`** — unsupported nested routes are normal, not concerning. Don't pollute the console.
+
+> **Rationale:** The CSAPI spec (OGC API — Connected Systems) defines nested sub-resource endpoints as part of the full capability set, but real-world servers implement them selectively. Our Phase 2 smoke tests confirmed that no single server implements all nested routes. The client library must interoperate with all compliant servers, including those that only partially implement the spec.
+>
+> See: [Smoke test post Phase 2.4](../implementation/live-server-smoke-test-post-phase-2.4.md) — F6, F7, F8, F9, F12.
+
 **Best Practices:**
 
 1. ✅ **Check conformance first:** `endpoint.hasConnectedSystems`
@@ -3665,6 +3733,7 @@ try {
 4. ✅ **Handle specific error types:** `EndpointError`, `SensorMLParseError`, etc.
 5. ✅ **Use TypeScript:** Catch type errors at compile time
 6. ✅ **Log clear errors:** Include context (collection ID, resource type)
+7. ✅ **Expect partial server support:** Nested sub-resource endpoints may return 400/404 — handle gracefully per the degradation rules above
 
 ---
 
