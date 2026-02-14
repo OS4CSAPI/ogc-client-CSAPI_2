@@ -413,7 +413,7 @@ public async csapi(collection_id: string): Promise<CSAPIQueryBuilder> {
 import {
   checkHasConnectedSystems,  // Add this line
   // ... existing imports
-} from './shared/info.js';
+} from './info.js';
 ```
 
 #### info.ts Changes (+12 lines)

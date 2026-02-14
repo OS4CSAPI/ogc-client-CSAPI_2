@@ -108,7 +108,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
      - Add `csapiCollections` getter (6 lines)
      - Add `hasConnectedSystems` getter (6 lines)
      - Add `csapi(collectionId)` factory method (17 lines)
-   - Modify `src/ogc-api/shared/info.ts` (+12 lines)
+   - Modify `src/ogc-api/info.ts` (+12 lines)
      - Add `checkHasConnectedSystems()` function
      - Check for CSAPI Part 1 Core and Part 2 Dynamic Data conformance classes
    - Modify `src/ogc-api/index.ts` (+17 lines)
