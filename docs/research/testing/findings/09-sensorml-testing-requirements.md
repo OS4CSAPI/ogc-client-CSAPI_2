@@ -892,7 +892,7 @@ fixtures/sensorml/
 
 | Aspect | Implementation Guide | This Test Plan | Status |
 |--------|---------------------|----------------|--------|
-| **Parser Scope** | Parse System, PhysicalComponent, PhysicalSystem, SystemConfiguration | Test PhysicalSystem, PhysicalComponent, SimpleProcess, AggregateProcess | ✅ Aligned |
+| **Parser Scope** | Parse SimpleProcess, AggregateProcess, PhysicalComponent, PhysicalSystem | Test PhysicalSystem, PhysicalComponent, SimpleProcess, AggregateProcess | ✅ Aligned |
 | **SensorML Elements** | Identification, classification, characteristics, capabilities, contacts, documentation, featuresOfInterest, inputs, outputs, parameters, modes, components, connections, position | All covered in property matrices | ✅ Aligned |
 | **Recursive Parsing** | Nested PhysicalSystems with full component hierarchy | Test 1-3 levels of nesting | ✅ Aligned |
 | **SWE Common Integration** | Complete parsing of all DataComponent types | Integration tests with Section 10 | ✅ Aligned |

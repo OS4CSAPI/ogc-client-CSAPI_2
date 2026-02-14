@@ -2989,13 +2989,15 @@ Resource-specific properties:
 
 ### SensorML Handler: Building New Format Parser
 
-The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](https://docs.ogc.org/is/23-000/23-000.html) format documents that describe sensor systems, components, and processes in detail. SensorML 3.0 is the latest version of the JSON-native format from the Sensor Web Enablement (SWE) standards family, published in 2024, that provides rich metadata about sensors, actuators, and processing chains. CSAPI servers return SensorML 3.0 documents when describing Systems or Procedures, providing detailed technical specifications beyond what GeoJSON can express. We will build a parser that handles SensorML 3.0 system models (System, PhysicalComponent, PhysicalSystem, SystemConfiguration), component descriptions, capability specifications, input/output specifications, configuration parameters, operational modes, component connections, and temporal validity periods. The parser must convert SensorML 3.0 JSON documents into TypeScript objects that the library can work with.
+The SensorML handler is new code we need to build to parse [OGC SensorML 3.0](https://docs.ogc.org/is/23-000/23-000.html) format documents that describe sensor systems, components, and processes in detail. SensorML 3.0 is the latest version of the JSON-native format from the Sensor Web Enablement (SWE) standards family, published in 2024, that provides rich metadata about sensors, actuators, and processing chains. CSAPI servers return SensorML 3.0 documents when describing Systems or Procedures, providing detailed technical specifications beyond what GeoJSON can express. We will build a parser that handles all four SensorML 3.0 concrete process types (SimpleProcess, AggregateProcess, PhysicalComponent, PhysicalSystem), component descriptions, capability specifications, input/output specifications, configuration parameters, operational modes, component connections, and temporal validity periods. The parser must convert SensorML 3.0 JSON documents into TypeScript objects that the library can work with.
 
-**SensorML 3.0 Document Types to Parse:**
-- **System**: Abstract system description with common properties (identification, classification, characteristics, capabilities, contacts)
-- **PhysicalComponent**: Single physical sensor or actuator with detailed specifications, position, and operating characteristics
-- **PhysicalSystem**: Composite system made of multiple components with spatial/functional connections and aggregation properties
-- **SystemConfiguration**: Reusable configuration profiles with parameter settings and mode definitions
+**SensorML 3.0 Process Types to Parse (per Part 1 `procedure-2`/`system-2` oneOf):**
+- **SimpleProcess**: Non-physical single process with method description (extends AbstractProcess)
+- **AggregateProcess**: Non-physical composite process with sub-process components and connections (extends AbstractProcess)
+- **PhysicalComponent**: Single physical sensor or actuator with position, method, and operating characteristics (extends AbstractPhysicalProcess)
+- **PhysicalSystem**: Composite physical system made of multiple components with spatial/functional connections (extends AbstractPhysicalProcess)
+
+> **Note:** Configuration profiles and mode definitions are modeled as `Settings` and `Mode` properties within `AbstractProcess`, not as standalone document types. The abstract bases `DescribedObject`, `AbstractProcess`, and `AbstractPhysicalProcess` are not directly instantiated — the four types above are the only concrete process types in the OGC Part 1 spec.
 
 **SensorML 3.0 Elements to Extract:**
 - **Identification**: `uid` (unique identifier), `label`, `description`, `identifiers` (array of alternate identifiers)

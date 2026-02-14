@@ -103,7 +103,7 @@ The latest Sensor Model Language standard providing rich XML-free JSON-native me
 **Key Relevance:**
 - Format we must parse for detailed System and Procedure descriptions
 - Media type: `application/sml+json`
-- Defines PhysicalSystem, PhysicalComponent, System, SystemConfiguration models
+- Defines four concrete process types: SimpleProcess, AggregateProcess, PhysicalComponent, PhysicalSystem (plus abstract bases DescribedObject, AbstractProcess, AbstractPhysicalProcess)
 - Integrates deeply with SWE Common 3.0 for capabilities, characteristics, parameters
 - Supports recursive component hierarchies we need to parse
 - Alternative to GeoJSON for Systems/Procedures when detailed technical metadata needed
