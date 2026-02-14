@@ -1384,7 +1384,7 @@ The CSAPIQueryBuilder includes Systems resource methods to manage CSAPI System r
 - Navigate system-datastream associations (Part 2)
 - Navigate system-controlstream associations (Part 2)
 
-**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Systems support: `bbox`, `datetime`, `recursive`, `parent`, `deployment`, `procedure`, `foi`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Systems support: `bbox`, `datetime`, `recursive`, `parent`, `deployment`, `procedure`, `foi`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`, `sortBy`, `sortOrder`.
 
 **References:**
 - [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative specification for Systems resources and CRUD operations
@@ -1430,7 +1430,7 @@ The CSAPIQueryBuilder includes Deployments resource methods to manage CSAPI Depl
 - Extract temporal extent (deployment period)
 - Validate validTime periods
 
-**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Deployments support: `bbox`, `datetime`, `recursive`, `system`, `parent`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Deployments support: `bbox`, `datetime`, `recursive`, `system`, `parent`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`, `sortBy`, `sortOrder`.
 
 **References:**
 - [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative specification for Deployments resources
@@ -1479,7 +1479,7 @@ The CSAPIQueryBuilder includes Procedures resource methods to manage CSAPI Proce
 - Parse SensorML method descriptions
 - Extract parameter definitions
 
-**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Procedures support: `system`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Procedures support: `system`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`, `sortBy`, `sortOrder`.
 
 **References:**
 - [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative specification for Procedures resources and methodologies
@@ -1529,7 +1529,7 @@ The CSAPIQueryBuilder includes Sampling Features resource methods to manage CSAP
 - Related sampling features (hierarchical relationships)
 - Observations at this sampling feature (Part 2)
 
-**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Sampling Features support: `bbox`, `system`, `foi`, `relatedSamplingFeature`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Sampling Features support: `bbox`, `system`, `foi`, `relatedSamplingFeature`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`, `sortBy`, `sortOrder`.
 
 **References:**
 - [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative specification for Sampling Features resources
@@ -1569,7 +1569,7 @@ The CSAPIQueryBuilder includes Properties resource methods to manage CSAPI Prope
 - ControlStreams controlling this property (Part 2)
 - Property hierarchies (baseProperty/subProperty relationships)
 
-**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Properties support: `system`, `baseProperty`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Properties support: `system`, `baseProperty`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`, `sortBy`, `sortOrder`.
 
 **References:**
 - [OGC API - Connected Systems Part 1](https://docs.ogc.org/is/23-001/23-001.html): Normative specification for Properties resources
@@ -1645,7 +1645,7 @@ The CSAPIQueryBuilder includes DataStreams resource methods to manage CSAPI Data
 
 Omitting `obsFormat` on the schema endpoint returns **400 Bad Request** ("Missing required parameter").
 
-**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). DataStreams support: `system`, `observedProperty`, `foi`, `samplingFeature`, `procedure`, `datetime`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). DataStreams support: `system`, `observedProperty`, `foi`, `samplingFeature`, `procedure`, `datetime`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`, `sortBy`, `sortOrder`.
 
 **References:**
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for DataStreams resources and schema operations
@@ -1727,7 +1727,7 @@ The CSAPIQueryBuilder includes Observations resource methods to manage CSAPI Obs
 - Memory-efficient handling of large result sets
 - Caching of DataStream schemas
 
-**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Observations support: `phenomenonTime`, `resultTime`, `foi`, `id`, `limit`, `offset`, `cursor`, `f`, `obsFormat`.
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Observations support: `phenomenonTime`, `resultTime`, `foi`, `id`, `limit`, `offset`, `cursor`, `f`, `obsFormat`, `sortBy`, `sortOrder`.
 
 **References:**
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for Observations resources and temporal queries
@@ -1796,7 +1796,7 @@ The CSAPIQueryBuilder includes Control Streams resource methods to manage CSAPI 
 
 Omitting `cmdFormat` on the schema endpoint returns **400 Bad Request** ("Missing required parameter").
 
-**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Control Streams support: `system`, `controlledProperty`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`.
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Control Streams support: `system`, `controlledProperty`, `id`, `uid`, `q`, property filters, `limit`, `offset`, `f`, `sortBy`, `sortOrder`.
 
 **References:**
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for ControlStreams resources
@@ -1907,7 +1907,7 @@ EXECUTING → CANCELED    (canceled during execution)
 - **Synchronous** (rare): POST returns `200 OK` with `COMPLETED` status and inline result
 - **Asynchronous** (typical): POST returns `201 Created` with `Location` header; status starts at `PENDING`; client polls `GET /commands/{id}` until terminal state
 
-**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Commands support: `issueTime`, `executionTime`, `status`, `controlstream`, `id`, `limit`, `offset`, `cursor`, `f`, `cmdFormat`.
+**Query Parameters:** See [Complete Query Parameter Support](#complete-query-parameter-support). Commands support: `issueTime`, `executionTime`, `status`, `controlstream`, `id`, `limit`, `offset`, `cursor`, `f`, `cmdFormat`, `sortBy`, `sortOrder`.
 
 **References:**
 - [OGC API - Connected Systems Part 2](https://docs.ogc.org/is/23-002/23-002.html): Normative specification for Commands resources and lifecycle management
