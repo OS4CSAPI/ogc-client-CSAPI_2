@@ -67,3 +67,56 @@ On 52North, our discovery finds `systems`, `datastreams`, `procedures`, `deploym
 ### Verdict
 
 Our URL builder is interoperable across both implementations. Our discovery layer has two latent bugs that should be fixed before Phase 3 response parsing work begins.
+
+---
+
+## 4. Recommendations
+
+### Fix Now (Before Phase 2.4)
+
+**1. Strip query parameters in Convention 3 parser** — One-line fix in `scanCsapiLinks()`. Change:
+```js
+const segment = href.replace(/\/+$/, '').split('/').pop();
+```
+to:
+```js
+const segment = href.split('?')[0].replace(/\/+$/, '').split('/').pop();
+```
+Low risk, high value. Prevents a real failure mode that we're currently surviving by accident (link ordering). Add a test case with `?f=application/json` in the href.
+
+**2. Add `featuresOfInterest` as a Convention 3 alias** — `CSAPIResourceTypes` stays as `samplingFeatures` (that's the spec name and the actual endpoint path). But the Convention 3 matcher should normalize `featuresOfInterest` → `samplingFeatures` when scanning collection links. This is a 3-line addition to `scanCsapiLinks`, plus a test.
+
+Both fixes are inside `scanCsapiLinks()` in `helpers.ts` — a function we wrote from scratch. No upstream files are touched.
+
+### Track for Phase 3 Design (Response Parsing)
+
+**3. Response envelope normalization** — OpenSensorHub uses `{ items: [...] }`, 52North uses `{ type: "FeatureCollection", features: [...] }`. When we build response parsing, we need a normalizer that checks for `features` first (spec-compliant), then falls back to `items`. This should be a design decision documented before Phase 3 starts.
+
+**4. Multi-strategy server detection** — Don't rely solely on conformance classes. Our current approach (conformance check + root link scan + collection link scan) is already the right architecture. 52North proves that conformance alone would miss real CSAPI servers. Document this as an explicit design principle.
+
+### Don't Fix (Upstream Issues)
+
+**5. 52North's broken endpoints** (datastreams 500, controlstreams 404) — Not our problem. Don't add workarounds.
+
+**6. 52North's missing conformance classes** — Not our problem. Our multi-strategy detection handles it.
+
+**7. OpenSensorHub's non-standard `items` envelope** — Their deviation, but we must handle it in Phase 3 (see #3).
+
+### Process
+
+**8. Test against both servers going forward** — Every phase-end smoke test should hit both OpenSensorHub and 52North. Single-server testing missed both F1 and F2 across three previous smoke tests. The bugs only surfaced when we added the second implementation.
+
+---
+
+## 5. Upstream Impact Assessment
+
+| Fix | File | Who Created It? | Upstream Impact |
+|-----|------|----------------|-----------------|
+| Strip query params | `src/ogc-api/csapi/helpers.ts` → `scanCsapiLinks()` | We created this function in Phase 2.2 (Issue #34) | **Zero.** This file is 100% our code. |
+| `featuresOfInterest` alias | Same function, same file | Same | **Zero.** Same file. |
+
+Both fixes are inside `scanCsapiLinks()` in `helpers.ts` — a function we wrote from scratch. We are not modifying any upstream file, upstream pattern, upstream naming, or upstream behavior. The contribution goal doc states "Zero-breaking-change integration with existing library functionality" — these changes don't touch existing library functionality at all.
+
+The "Don't Fix" items (#5–#7) are explicitly about leaving upstream/server behaviors alone.
+
+**Caveat:** Recommendation #3 (response envelope normalization) is a Phase 3 concern that *will* eventually touch how we parse responses. Whether that crosses the upstream boundary depends on where response parsing lives — a design decision for later, not something proposed now.
