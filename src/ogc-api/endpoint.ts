@@ -1,4 +1,5 @@
 import {
+  checkHasConnectedSystems,
   checkHasEnvironmentalDataRetrieval,
   checkHasFeatures,
   checkHasRecords,
@@ -48,6 +49,7 @@ import {
 } from '../shared/mime-type.js';
 import { getBaseUrl, getChildPath } from '../shared/url-utils.js';
 import EDRQueryBuilder from './edr/url_builder.js';
+import CSAPIQueryBuilder from './csapi/url_builder.js';
 
 /**
  * Represents an OGC API endpoint advertising various collections and services.
@@ -61,6 +63,8 @@ export default class OgcApiEndpoint {
   private tileMatrixSetsFull_: Promise<TileMatrixSet[]>;
   private styles_: Promise<OgcApiStylesDocument>;
   private collection_id_to_edr_builder_: Map<string, EDRQueryBuilder> =
+    new Map();
+  private collection_id_to_csapi_builder_: Map<string, CSAPIQueryBuilder> =
     new Map();
 
   private get root(): Promise<OgcApiDocument> {
@@ -209,6 +213,19 @@ ${e.message}`);
   }
 
   /**
+   * A Promise which resolves to an array of Connected Systems collection identifiers as strings.
+   */
+  get csapiCollections(): Promise<string[]> {
+    return Promise.all([this.data, this.hasConnectedSystems])
+      .then(([data, hasCSAPI]) => (hasCSAPI ? data : { collections: [] }))
+      .then(parseCollections)
+      .then((collections) =>
+        collections.filter((c) => c.hasConnectedSystems)
+      )
+      .then((collections) => collections.map((collection) => collection.name));
+  }
+
+  /**
    * A Promise which resolves to an array of vector tile collection identifiers as strings.
    */
   get vectorTileCollections(): Promise<string[]> {
@@ -277,6 +294,15 @@ ${e.message}`);
     );
   }
 
+  /**
+   * A Promise which resolves to a boolean indicating whether the endpoint offers Connected Systems (CSAPI) resources.
+   */
+  get hasConnectedSystems(): Promise<boolean> {
+    return Promise.all([this.conformanceClasses]).then(
+      checkHasConnectedSystems
+    );
+  }
+
   /*
    * A Promise which resolves to a class for constructing EDR queries
    */
@@ -291,6 +317,32 @@ ${e.message}`);
     const collection = await this.getCollectionInfo(collection_id);
     const result = new EDRQueryBuilder(collection);
     cache.set(collection_id, result);
+    return result;
+  }
+
+  /**
+   * A Promise which resolves to a CSAPIQueryBuilder for constructing Connected Systems queries.
+   * @param collectionId - The collection identifier to create a builder for.
+   * @throws {EndpointError} If the endpoint does not support Connected Systems.
+   */
+  public async csapi(collectionId: string): Promise<CSAPIQueryBuilder> {
+    if (!(await this.hasConnectedSystems)) {
+      throw new EndpointError(
+        'Endpoint does not support Connected Systems'
+      );
+    }
+    const cache = this.collection_id_to_csapi_builder_;
+    if (cache.has(collectionId)) {
+      return cache.get(collectionId);
+    }
+    // Use getCollectionDocument (raw doc) instead of getCollectionInfo
+    // because parseBaseCollectionInfo strips the links array, and
+    // CSAPIQueryBuilder needs ogc-cs:* link relations to discover resources.
+    const collectionDoc = await this.getCollectionDocument(collectionId);
+    const result = new CSAPIQueryBuilder(
+      collectionDoc as unknown as OgcApiCollectionInfo
+    );
+    cache.set(collectionId, result);
     return result;
   }
 
