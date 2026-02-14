@@ -3138,7 +3138,9 @@ The validator is existing code that checks whether parsed documents conform to f
 
 ## Worker Components
 
-### Background Processing: Extending Existing Web Worker Pattern
+> **🚫 OUT OF SCOPE** — Worker extensions have been **removed from the CSAPI contribution scope**. Analysis of the upstream codebase found that no JSON-based API (EDR, STAC, TMS, OGC API) uses the Web Worker infrastructure — only XML-based APIs (WMS, WFS, WMTS) offload parsing to workers because XML DOM traversal is CPU-intensive. CSAPI operations use `response.json()` which is fast and does not benefit from worker offloading. All 9 proposed message types below had zero upstream precedent. Worker offloading could be revisited as a future optimization if profiling demonstrates a need. Binary SWE parsing remains in scope at the parser level (Phase 3 Task 3.13); only worker offloading is excluded.
+
+### Background Processing: Extending Existing Web Worker Pattern (DEFERRED)
 
 The background processing component extends the existing Web Worker infrastructure in the Camptocamp OGC Client Library (`src/worker/worker.ts`, `src/worker/utils.ts`, `src/worker/index.ts`) to move heavy parsing and validation work off the main thread, keeping browser UIs responsive. The upstream library currently uses this worker pattern to parse XML capabilities documents for WMS, WFS, and WMTS services, offloading computationally expensive XML parsing and processing to a Web Worker that runs in parallel and returns results asynchronously via message passing. The library provides a fallback mechanism for non-worker environments like Node.js or older browsers, where the same code runs synchronously on the main thread. For CSAPI, we will extend this proven worker pattern by adding new CSAPI-specific message types to handle: SensorML 3.0 parsing (complex hierarchical JSON document traversal), SWE Common 3.0 parsing (especially binary encoding decoding), large observation result set processing (thousands of observations with schema validation), bulk command validation, and schema validation operations.
 
@@ -3186,7 +3188,7 @@ The background processing component extends the existing Web Worker infrastructu
 
 **Implementation Type:** EXTENDING EXISTING CODE (adding CSAPI message handlers to existing worker)
 
-> **⏱️ Phasing Note:** Worker extensions are **Phase 4 only**. All CSAPI parsing and validation must work synchronously on the main thread first (Phases 1-3). Worker offloading is a performance optimization added after core functionality is complete and tested.
+> **🚫 Scope Decision:** Worker extensions have been removed from the CSAPI contribution scope entirely. The content above is retained for reference only. All CSAPI parsing and validation runs on the main thread following the upstream EDR pattern. See ROADMAP v3.1 for rationale.
 
 **References:**
 - [pr114-analysis.md](../research/upstream/pr114-analysis.md): Worker patterns for EDR implementation
@@ -4388,7 +4390,7 @@ Every component described above aligns with these core project goals:
 3. **Upstream Integration:** Extensions follow established patterns in the camptocamp/ogc-client repository (100% consistency validated through research)
 4. **Complete Spec Coverage:** All CSAPI Part 1 and Part 2 resources with full CRUD support
 5. **Production Ready:** Comprehensive validation, error handling, testing (>80% coverage), and documentation
-6. **Performance Aware:** Web Worker support for heavy operations, efficient pagination, streaming support
+6. **Performance Aware:** Efficient pagination, streaming support, main-thread parsing following the upstream EDR pattern (no worker offloading — see §8 scope note)
 7. **Developer Experience:** Resource validation (fail-fast with clear errors), type safety, helper methods for code reuse
 8. **Type Safety:** Complete TypeScript type system (1,750-2,400 lines) with three-tier hierarchy and full IntelliSense
 9. **Implementation Readiness:** Complete roadmap with phases, tasks, time estimates, and complexity ratings

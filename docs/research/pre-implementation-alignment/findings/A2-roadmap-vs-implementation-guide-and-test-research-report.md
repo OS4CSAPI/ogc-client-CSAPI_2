@@ -6,6 +6,8 @@
 **Checks Executed:** 12 of 12  
 **Status:** ✅ Complete
 
+> **📝 Post-Audit Update (February 2026):** After this report was completed, ROADMAP was updated from v3.0 to v3.1 — removing worker extensions (Phase 4 Task 4.1) from scope. Key numbers changed: 34→33 tasks, 60-88→57-84 hours, 4,400-6,300→4,200-6,000 test lines. Check 8 (Scope Boundaries) has been updated to reflect this decision. Other checks retain their original v3.0 figures for audit integrity — the findings remain valid as the changes only reduce scope (no new gaps introduced).
+
 ---
 
 ## Executive Summary
@@ -180,7 +182,8 @@ The 5 missing files in the ROADMAP are: `url_builder-base.spec.ts`, `test-utils.
 | Performance testing | Doc 33, Guide §9 | ❌ Not in ROADMAP | ✅ Correctly excluded |
 | Real-world server testing | Doc 32 (AP2), Guide §9 | ❌ Not in ROADMAP | ✅ Correctly excluded |
 | Migration testing | Not defined | ❌ Not in ROADMAP | ✅ Correctly excluded |
-| `PARSE_SWE_BINARY` worker offloading | Guide §8, Phase 2D | ✅ Phase 4 Task 4.1 | ✅ Correctly deferred to Phase 4 |
+| Worker extensions (9 CSAPI message types) | Guide §8 (now marked OUT OF SCOPE) | ❌ Removed from ROADMAP v3.1 | ✅ Correctly removed — no upstream JSON API uses workers |
+| `PARSE_SWE_BINARY` worker offloading | Guide §8, Phase 2D | ❌ Removed from ROADMAP v3.1 | ✅ Removed — binary parsing remains in scope at parser level (Task 3.13), only worker offloading excluded |
 
 **IN SCOPE items requiring ROADMAP coverage:**
 
@@ -194,7 +197,7 @@ The 5 missing files in the ROADMAP are: `url_builder-base.spec.ts`, `test-utils.
 
 | ID | Severity | Finding | Recommended Resolution |
 |----|----------|---------|----------------------|
-| A2-F8.1 | **Info** | Scope boundaries are clean. ROADMAP correctly excludes performance testing, real-world server testing, and migration testing. `PARSE_SWE_BINARY` correctly deferred to Phase 4 worker while binary SWE parsing is in scope at parser level (Task 3.13). All IN SCOPE items from test research have corresponding ROADMAP tasks. | No action needed |
+| A2-F8.1 | **Info** | Scope boundaries are clean. ROADMAP correctly excludes performance testing, real-world server testing, migration testing, and worker extensions (9 CSAPI message types removed in ROADMAP v3.1 — no upstream JSON API uses workers). Binary SWE parsing remains in scope at parser level (Task 3.13). All IN SCOPE items from test research have corresponding ROADMAP tasks. | No action needed |
 | A2-F8.2 | **Low** | ROADMAP does not include an explicit "Scope Exclusions" section. Guide §9 has "Test Scope Exclusions" listing performance testing and real-world server testing with rationale. A brief exclusions note in the ROADMAP would prevent scope creep during implementation. | Add 3-5 line "Scope Exclusions" note to ROADMAP listing what is explicitly OUT OF SCOPE for this contribution. |
 
 ---
@@ -218,7 +221,7 @@ The 5 missing files in the ROADMAP are: `url_builder-base.spec.ts`, `test-utils.
 - **Phase 1** (4 tasks): All clean. Test descriptions focus on type validation, helper functions, constructor validation, conformance detection — all client code. ✅
 - **Phase 2** (9 tasks): 8 clean, 1 ambiguous. URL construction context makes all test descriptions inherently client-oriented ("Test getSystems with pagination, filtering, bbox" = URL construction). One ambiguous phrase in Task 2.7. ✅
 - **Phase 3** (17 tasks): 15 clean, 2 ambiguous. Parser/type context is client-oriented ("Test parsing with spec example fixtures" = green flag). Two ambiguous phrases in Tasks 3.1 and 3.3 involving "validation rules." ✅
-- **Phase 4** (4 tasks): All clean. Worker tests, integration workflows, unit test completion — all client code. ✅
+- **Phase 4** (3 tasks): All clean. Integration workflows, unit test completion, documentation — all client code. ✅
 
 **Ambiguous Phrases Flagged:**
 

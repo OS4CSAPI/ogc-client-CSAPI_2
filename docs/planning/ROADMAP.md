@@ -1,13 +1,13 @@
 # CSAPI Implementation Roadmap
 
 **Last Updated:** February 5, 2026  
-**Version:** 3.0 (Phase 3 Restructure - Incremental Testing + Dependency Fix)
+**Version:** 3.1 (Worker Extensions Removed from Scope)
 
 ---
 
 ## Executive Summary
 
-This roadmap outlines the complete implementation plan for adding Connected Systems API (CSAPI) support to the Camptocamp OGC Client Library. The work is organized into four sequential phases spanning **60-88 hours of development time** (8-12 weeks calendar time).
+This roadmap outlines the complete implementation plan for adding Connected Systems API (CSAPI) support to the Camptocamp OGC Client Library. The work is organized into four sequential phases spanning **57-84 hours of development time** (8-11 weeks calendar time).
 
 > **📋 FULL CONTEXT**
 >
@@ -25,12 +25,12 @@ This roadmap outlines the complete implementation plan for adding Connected Syst
 - **Phase 1: Core Structure (12-16 hours)** - Foundation: types, integration points, stub QueryBuilder, helper utilities (4 tasks)
 - **Phase 2: QueryBuilder (20-28 hours)** - Complete URL building for all 70-80 CSAPI methods across 9 resource types (9 tasks)
 - **Phase 3: Format Handling (16-28 hours)** - SensorML/SWE parsers + GeoJSON/Format Detector/Validator extensions (15 tasks with incremental testing)
-- **Phase 4: Worker & Tests (12-16 hours)** - Worker extensions, integration tests, documentation completion (4 tasks)
+- **Phase 4: Tests & Documentation (9-12 hours)** - Integration tests, unit test completion, documentation (3 tasks)
 
 **Total Scope:**
-- **Implementation:** ~4,850-6,500 lines across 24 files
-- **Tests:** ~4,400-6,300 lines across 17 test files
-- **Total Code:** ~9,250-12,800 lines
+- **Implementation:** ~4,800-6,450 lines across 24 files
+- **Tests:** ~4,200-6,000 lines across 17 test files
+- **Total Code:** ~9,000-12,450 lines
 
 **Key Dependencies:**
 - Phase 1 → Phase 2 (types required for QueryBuilder)
@@ -532,35 +532,17 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 
 ---
 
-### Phase 4: Worker Extensions and Tests (Medium-High Complexity)
+### Phase 4: Tests and Documentation (Medium Complexity)
 
-**Estimated Time:** 12-16 hours (1.5-2 weeks calendar time)
+**Estimated Time:** 9-12 hours (1-1.5 weeks calendar time)
 
-**Goal:** Extend Web Worker for CSAPI operations, add comprehensive tests, complete documentation.
+**Goal:** Add comprehensive tests and complete documentation.
+
+> **📋 Scope Note:** Worker extensions (9 CSAPI message types) were evaluated and **removed from scope**. Analysis found that no upstream JSON-based API (EDR, STAC, TMS, OGC API) uses the Web Worker infrastructure — only XML-based APIs (WMS, WFS, WMTS) offload parsing to workers because XML DOM traversal is CPU-intensive. CSAPI operations use `response.json()` which is fast and does not benefit from worker offloading. All CSAPI parsing runs on the main thread, consistent with the EDR pattern. Worker offloading could be revisited as a future optimization if profiling demonstrates a need.
 
 **Tasks:**
 
-1. **Worker Extensions** (~3-4 hours, Medium complexity)
-   - Extend existing Web Worker in `src/worker/`
-   - Add 9 new CSAPI message types:
-     - `PARSE_SENSORML_3` - SensorML 3.0 parsing
-     - `PARSE_SWE_RESULT` - SWE Common result parsing (JSON/Text/Binary)
-     - `PARSE_SWE_BINARY` - Binary decoding
-     - `VALIDATE_OBSERVATIONS` - Observation schema validation
-     - `VALIDATE_COMMANDS` - Command parameter validation
-     - `PARSE_OBSERVATION_ARRAY` - Large observation arrays
-     - `TRAVERSE_HIERARCHY` - Recursive system traversal
-     - `FILTER_SPATIAL` - Bbox filtering
-     - `FILTER_TEMPORAL` - Temporal filtering
-   - Integrate SensorML and SWE Common parsers
-   - Add fallback for non-worker environments
-   - **Write JSDoc:** Document message types, payload structures, performance characteristics
-   - **Test immediately:** Add worker tests (~200-300 lines tests)
-     - Test each message type
-     - Test parser integration
-     - Test fallback behavior
-
-2. **Integration Tests** (~4-6 hours, Medium complexity)
+1. **Integration Tests** (~4-6 hours, Medium complexity)
    - Create end-to-end workflow tests (~500-800 lines)
    - Discovery workflow: connect → check conformance → list collections → retrieve resources
    - Observation workflow: systems → datastreams → observations → pagination → parsing
@@ -572,7 +554,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - **Write JSDoc:** Document test scenarios and expected behavior
    - **Test:** All integration tests (~500-800 lines)
 
-3. **Unit Tests Completion** (~3-4 hours, Medium complexity)
+2. **Unit Tests Completion** (~3-4 hours, Medium complexity)
    - Complete coverage for all QueryBuilder methods (~200-300 additional lines)
    - Complete coverage for all helper functions (~100-150 lines)
    - Edge case tests: empty collections, minimal resources, boundary conditions
@@ -582,7 +564,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - **Write JSDoc:** Document test cases and coverage goals
    - **Test:** All unit tests (~300-450 lines)
 
-4. **API Documentation** (~2-3 hours, Low complexity)
+3. **API Documentation** (~2-3 hours, Low complexity)
    - Extend TypeDoc configuration for CSAPI types
    - Verify all JSDoc comments complete and accurate
    - Add usage examples to main classes (OgcApiEndpoint, CSAPIQueryBuilder)
@@ -593,11 +575,10 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - **Test:** Documentation build validation
 
 **Phase 4 Deliverables:**
-- ✅ Worker extensions with 9 CSAPI message types (~50 lines)
 - ✅ Complete integration tests (~500-800 lines tests)
 - ✅ Complete unit test coverage (~300-450 lines tests)
 - ✅ API documentation complete with examples
-- ✅ >80% total test coverage achieved (~4,500-6,000 lines total tests)
+- ✅ >80% total test coverage achieved (~4,200-6,000 lines total tests)
 - ✅ All JSDoc documentation complete and verified
 
 **Dependencies:** Phase 1-3 (complete implementation for testing)
@@ -611,12 +592,12 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 | **Phase 1** | 12-16 hrs | Low | Types, integration, stub builder, helpers (4 tasks) | ~500-600 + ~400-550 tests |
 | **Phase 2** | 20-28 hrs | Medium | Complete QueryBuilder - 9 resource types (9 tasks) | ~700-800 + ~800-1,000 tests |
 | **Phase 3** | 16-28 hrs | High | Format parsers + extensions (17 tasks with incremental testing) | ~3,600-5,050 + ~2,400-3,500 tests |
-| **Phase 4** | 12-16 hrs | Medium-High | Worker, tests, documentation (4 tasks) | ~50 + ~800-1,250 tests |
-| **TOTAL** | **60-88 hrs** | **Mixed** | **Complete CSAPI implementation (34 tasks)** | **~4,850-6,500 + ~4,400-6,300 tests** |
+| **Phase 4** | 9-12 hrs | Medium | Tests and documentation (3 tasks) | ~800-1,250 tests |
+| **TOTAL** | **57-84 hrs** | **Mixed** | **Complete CSAPI implementation (33 tasks)** | **~4,800-6,450 + ~4,200-6,000 tests** |
 
-**Total Development Time:** 60-88 hours (average: 74 hours)  
-**Calendar Time:** 8-12 weeks (assuming 6-8 hours/week development pace)  
-**Total Code:** ~9,250-12,800 lines (implementation + tests)
+**Total Development Time:** 57-84 hours (average: 71 hours)  
+**Calendar Time:** 8-11 weeks (assuming 6-8 hours/week development pace)  
+**Total Code:** ~9,000-12,450 lines (implementation + tests)
 
 **Key Success Factors:**
 - ✅ Write JSDoc documentation AS YOU CODE (don't defer)
@@ -683,9 +664,17 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 ## Version History
 
 **Document:** CSAPI Implementation Roadmap (Standalone)  
-**Version:** 3.0 (Phase 3 Restructure - Incremental Testing + Dependency Fix)  
+**Version:** 3.1 (Worker Extensions Removed from Scope)  
 **Date:** February 5, 2026  
 **Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete with incremental testing and correct dependencies
+
+**Version 3.1 - Worker Extensions Removed from Scope (February 5, 2026):**
+- Removed Phase 4 Task 4.1 (Worker Extensions — 9 CSAPI message types, ~3-4 hours)
+- **Rationale:** No upstream JSON-based API (EDR, STAC, TMS, OGC API) uses the Web Worker infrastructure. Only XML-based APIs (WMS, WFS, WMTS) offload parsing to workers. CSAPI is JSON-based following the EDR pattern — `response.json()` does not benefit from worker offloading. All 9 proposed message types had zero upstream precedent.
+- Phase 4 reduced from 4 tasks (12-16 hrs) to 3 tasks (9-12 hrs)
+- Total tasks reduced from 34 to 33
+- Phase 4 renamed from "Worker Extensions and Tests" to "Tests and Documentation"
+- Binary SWE parsing remains in scope at parser level (Phase 3 Task 3.13); only worker offloading is removed
 
 **Version 3.0 - Phase 3 Restructure (February 5, 2026):**
 - Restructured Phase 3 from 7 tasks (2 massive 5-10 hour tasks) into **17 granular subtasks**
