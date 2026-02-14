@@ -3125,9 +3125,9 @@ The validator is existing code that checks whether parsed documents conform to f
 
 **Part 1 Resource Validation:**
 - Systems: `uid` (required URI), `featureType` (required, from `SystemTypeUris`), `name` (required string)
-- Deployments: `uid` (required URI), `featureType` (required, from `DeploymentTypeUris`), `validTime` (required timePeriod), spatial extent (required)
-- Procedures: `uid` (required URI), `featureType` (required, from `ProcedureTypeUris`)
-- Sampling Features: `uid` (required URI), `sampledFeature@link` (required link), geometry (required)
+- Deployments: `uid` (required URI), `featureType` (required, from `DeploymentTypeUris`), `name` (required string), `validTime` (required timePeriod)
+- Procedures: `uid` (required URI), `featureType` (required, from `ProcedureTypeUris`), `name` (required string); geometry constrained to `null`
+- Sampling Features: `uid` (required URI), `featureType` (required), `name` (required string), `sampledFeature@link` (required link)
 - Properties: `uniqueId` (required URI), `label` (required string), `baseProperty` (required URI)
 
 **Part 2 Resource Validation:**
