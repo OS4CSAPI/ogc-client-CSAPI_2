@@ -2657,97 +2657,132 @@ This section details the format-specific types that enable full IntelliSense and
 
 **Key Interfaces:**
 
+> **Note:** The interfaces below are illustrative examples showing key structures.
+> The full implementation (~800-1,200 lines) must derive property names, types,
+> and required/optional status from the OGC Part 1 OpenAPI spec schemas
+> (`DescribedObject`, `AbstractProcess`, `AbstractPhysicalProcess`, etc.).
+> Do not treat these examples as exhaustive — many inherited properties from
+> the `DescribedObject → AbstractProcess → AbstractPhysicalProcess` chain
+> are omitted here for brevity.
+
 ```typescript
 // formats/sensorml/types.ts
-// Based on OGC 23-001: https://docs.ogc.org/is/23-001/23-001.html
+// Based on OGC SensorML 3.0 (23-000): https://docs.ogc.org/is/23-000/23-000.html
+// Schemas embedded in OGC API - Connected Systems Part 1 (23-001) OpenAPI spec
 
-import type { SWEDataComponent } from '../swecommon/types.js';
+import type { SWEDataComponent, AnySimpleComponent } from '../swecommon/types.js';
 
-// Process base types
+// Process discriminated union (matches procedure-2 and system-2 oneOf in Part 1 spec)
 export type SensorMLProcess = 
-  | PhysicalSystem 
-  | PhysicalComponent 
   | SimpleProcess 
-  | AggregateProcess;
+  | AggregateProcess 
+  | PhysicalComponent 
+  | PhysicalSystem;
 
+// --- Concrete Process Types ---
+// Inheritance: DescribedObject → AbstractProcess → SimpleProcess
+export interface SimpleProcess {
+  type: 'SimpleProcess';
+  // ... DescribedObject properties (id, uniqueId, label, description, etc.)
+  // ... AbstractProcess properties (definition, inputs, outputs, parameters, modes, etc.)
+  method?: ProcessMethod;  // Key distinguishing property
+}
+
+// Inheritance: DescribedObject → AbstractProcess → AggregateProcess
+export interface AggregateProcess {
+  type: 'AggregateProcess';
+  // ... DescribedObject + AbstractProcess properties
+  components?: ComponentList;   // Sub-processes
+  connections?: ConnectionList;  // Data flow between components
+}
+
+// Inheritance: DescribedObject → AbstractProcess → AbstractPhysicalProcess → PhysicalComponent
+export interface PhysicalComponent {
+  type: 'PhysicalComponent';
+  // ... DescribedObject + AbstractProcess + AbstractPhysicalProcess properties
+  method?: ProcessMethod;  // Key distinguishing property (same as SimpleProcess)
+  position?: Position;     // Location/orientation
+}
+
+// Inheritance: DescribedObject → AbstractProcess → AbstractPhysicalProcess → PhysicalSystem
 export interface PhysicalSystem {
   type: 'PhysicalSystem';
   id: string;
+  uniqueId?: string;             // Globally unique identifier URI
+  label?: string;                // Human-readable label
   description?: string;
-  identifier?: string;
-  classification?: Classification[];
+  identifiers?: Term[];          // Alternate identifiers
+  classifiers?: Term[];          // Classifications
   validTime?: TimeInterval;
-  capabilities?: CapabilityList[];
-  characteristics?: CharacteristicList[];
-  contacts?: Contact[];
-  documentation?: Documentation[];
+  capabilities?: CapabilityList[];   // Operating capabilities
+  characteristics?: CharacteristicList[]; // Physical characteristics
+  contacts?: ResponsibleParty[];     // Contacts (not "Contact")
+  documents?: Document[];            // Documentation (not "Documentation")
   history?: Event[];
-  components?: ComponentList[];  // Nested systems
-  connections?: ConnectionList[]; // Component connections
-  modes?: ModeList[];            // Operating modes
+  // AbstractProcess properties
+  definition?: string;           // URI defining the process type
+  inputs?: InputList;            // I/O specifications
+  outputs?: OutputList;
+  parameters?: ParameterList;
+  modes?: Mode[];                // Operating modes (not "ModeList")
+  // AbstractPhysicalProcess properties
   position?: Position;           // Location/orientation
+  // PhysicalSystem-specific properties
+  components?: ComponentList;    // Nested systems
+  connections?: ConnectionList;  // Component connections
 }
 
-export interface PhysicalComponent {
-  type: 'PhysicalComponent';
-  id: string;
-  description?: string;
-  identifier?: string;
-  classification?: Classification[];
-  validTime?: TimeInterval;
-  capabilities?: CapabilityList[];
-  characteristics?: CharacteristicList[];
-  position?: Position;
-}
-
-// Capability/Characteristic structures
+// --- Capability/Characteristic structures (per Part 1 spec) ---
+// Extends AbstractSweIdentifiable; items are AnyProperty, not custom Capability type
 export interface CapabilityList {
-  name: string;
-  label?: string;
-  capabilities: Capability[];
-}
-
-export interface Capability {
-  name: string;
   label?: string;
   description?: string;
-  definition?: string;
-  value: SWEDataComponent;  // Links to SWE Common types
+  definition?: string;                  // URI: semantic link to capability group definition
+  conditions?: AnySimpleComponent[];    // Conditions under which capabilities apply
+  capabilities: AnyProperty[];          // SWE Common property values
 }
 
 export interface CharacteristicList {
-  name: string;
-  label?: string;
-  characteristics: Characteristic[];
-}
-
-export interface Characteristic {
-  name: string;
   label?: string;
   description?: string;
-  definition?: string;
-  value: SWEDataComponent;  // Links to SWE Common types
+  definition?: string;                  // URI: semantic link to characteristic group definition
+  conditions?: AnySimpleComponent[];    // Conditions under which characteristics apply
+  characteristics: AnyProperty[];       // SWE Common property values
 }
 
-// Component structures
-export interface ComponentList {
-  name: string;
+// AnyProperty: SWE Common types usable as capability/characteristic values
+export type AnyProperty = AnySimpleComponent | Vector | DataArray | Matrix;
+
+// --- Component/Connection structures (per Part 1 spec) ---
+// ComponentList is a flat array of named entries (SoftNamedProperty + oneOf process/link)
+export type ComponentList = ComponentEntry[];
+
+export interface ComponentEntry {
+  name: string;                         // From SoftNamedProperty wrapper
   label?: string;
-  components: Component[];
+  // oneOf: inline process definition OR external link
+  process?: SensorMLProcess;            // Inline component
+  href?: string;                        // External link reference
 }
 
-export interface Component {
-  name: string;
-  label?: string;
-  href?: string;  // Reference to external component
-  role?: string;
-  process?: SensorMLProcess;  // Inline component definition
+// ConnectionList is a flat array of source→destination path pairs
+export type ConnectionList = Connection[];
+
+export interface Connection {
+  source: string;   // PathRef: e.g., "components/sensor1/outputs/temperature"
+  destination: string; // PathRef: e.g., "outputs/temperature"
+}
+
+export interface ProcessMethod {
+  algorithm?: unknown;  // Machine-readable algorithm (inline or by reference)
+  description?: string; // Natural language description
 }
 
 // ... 30+ more interfaces for complete SensorML schema
-// (Classification, TimeInterval, Contact, Documentation, Event,
-//  ConnectionList, ModeList, Position, InputList, OutputList, 
-//  ParameterList, ProcessMethod, etc.)
+// (Term, TimeInterval, ResponsibleParty, Document, Event, Mode, Settings,
+//  Position, SpatialFrame, TemporalFrame, InputList, OutputList,
+//  ParameterList, IOComponentChoice, ObservableProperty, LegalConstraint,
+//  SoftNamedProperty, FeatureList, Vector, DataArray, Matrix, etc.)
 ```
 
 **Why These Types Matter:**
