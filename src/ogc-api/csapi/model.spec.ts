@@ -326,6 +326,18 @@ describe('Type compatibility - Query options', () => {
     expect(opts.bbox).toHaveLength(4);
   });
 
+  test('QueryOptions supports uid parameter', () => {
+    const opts: QueryOptions = {
+      uid: 'urn:example:sensor:001',
+    };
+    expect(opts.uid).toBe('urn:example:sensor:001');
+
+    const optsArray: QueryOptions = {
+      uid: ['urn:example:sensor:001', 'urn:example:sensor:002'],
+    };
+    expect(optsArray.uid).toHaveLength(2);
+  });
+
   test('SystemQueryOptions extends QueryOptions', () => {
     const opts: SystemQueryOptions = {
       limit: 50,

@@ -406,6 +406,13 @@ describe('getSystems', () => {
       'https://example.com/collections/iot/systems?recursive=true'
     );
   });
+
+  it('returns correct URL with cursor parameter', () => {
+    const url = makeIotBuilder().getSystems({ cursor: 'abc123token' });
+    expect(url).toBe(
+      'https://example.com/collections/iot/systems?cursor=abc123token'
+    );
+  });
 });
 
 // ========================================
@@ -748,12 +755,39 @@ describe('getDeployments', () => {
     const url = makeDepBuilder().getDeployments({
       datetime: { start: new Date('2025-01-01T00:00:00Z'), end: new Date('2025-12-31T23:59:59Z') },
     });
-    expect(url).toContain('datetime=');
+    expect(url).toBe(
+      'https://example.com/collections/iot/deployments?datetime=2025-01-01T00%3A00%3A00.000Z%2F2025-12-31T23%3A59%3A59.000Z'
+    );
   });
 
   it('returns correct URL with systemId filter', () => {
     const url = makeDepBuilder().getDeployments({ systemId: 'sys-001' });
     expect(url).toBe('https://example.com/collections/iot/deployments?systemId=sys-001');
+  });
+
+  it('returns correct URL with parent parameter', () => {
+    const url = makeDepBuilder().getDeployments({ parent: 'dep-parent-001' });
+    expect(url).toBe('https://example.com/collections/iot/deployments?parent=dep-parent-001');
+  });
+
+  it('returns correct URL with recursive parameter', () => {
+    const url = makeDepBuilder().getDeployments({ recursive: true });
+    expect(url).toBe('https://example.com/collections/iot/deployments?recursive=true');
+  });
+
+  it('returns correct URL with q parameter', () => {
+    const url = makeDepBuilder().getDeployments({ q: 'field' });
+    expect(url).toBe('https://example.com/collections/iot/deployments?q=field');
+  });
+
+  it('returns correct URL with offset', () => {
+    const url = makeDepBuilder().getDeployments({ offset: 20 });
+    expect(url).toBe('https://example.com/collections/iot/deployments?offset=20');
+  });
+
+  it('returns correct URL with f (format) parameter', () => {
+    const url = makeDepBuilder().getDeployments({ f: 'application/json' });
+    expect(url).toBe('https://example.com/collections/iot/deployments?f=application%2Fjson');
   });
 });
 
@@ -833,6 +867,13 @@ describe('getDeploymentSubdeployments', () => {
       'https://example.com/collections/iot/deployments/dep-001/subdeployments?recursive=true'
     );
   });
+
+  it('returns correct URL with pagination and filtering', () => {
+    const url = makeDepBuilder().getDeploymentSubdeployments('dep-001', { limit: 5, offset: 10 });
+    expect(url).toBe(
+      'https://example.com/collections/iot/deployments/dep-001/subdeployments?limit=5&offset=10'
+    );
+  });
 });
 
 describe('Deployment association and history', () => {
@@ -888,6 +929,13 @@ describe('Deployment resource validation', () => {
       })
     );
     expect(() => builder.getDeployments()).toThrow(EndpointError);
+    expect(() => builder.getDeployment('x')).toThrow(EndpointError);
+    expect(() => builder.createDeployment()).toThrow(EndpointError);
+    expect(() => builder.updateDeployment('x')).toThrow(EndpointError);
+    expect(() => builder.deleteDeployment('x')).toThrow(EndpointError);
+    expect(() => builder.getDeploymentSubdeployments('x')).toThrow(EndpointError);
+    expect(() => builder.getDeploymentSystems('x')).toThrow(EndpointError);
+    expect(() => builder.getDeploymentHistory('x')).toThrow(EndpointError);
   });
 });
 

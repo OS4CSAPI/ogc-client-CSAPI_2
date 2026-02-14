@@ -114,6 +114,8 @@ export interface QueryOptions {
   q?: string;
   /** Filter by local resource ID(s). */
   id?: string | string[];
+  /** Filter by globally unique identifier URI(s). */
+  uid?: string | string[];
   /** Response format. */
   f?: MimeType;
   /** Coordinate reference system for response geometries. */

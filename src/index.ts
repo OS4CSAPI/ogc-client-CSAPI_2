@@ -42,6 +42,11 @@ export type {
 export { default as OgcApiEndpoint } from './ogc-api/endpoint.js';
 export * from './ogc-api/model.js';
 export { default as CSAPIQueryBuilder } from './ogc-api/csapi/url_builder.js';
+export {
+  CSAPIResourceTypes,
+  CommandStatusCodes,
+  SystemTypeUris,
+} from './ogc-api/csapi/model.js';
 export type {
   CSAPIResourceType,
   CommandStatusCode,
@@ -51,6 +56,9 @@ export type {
   QueryOptions as CSAPIQueryOptions,
   SystemQueryOptions,
   DeploymentQueryOptions,
+  ProcedureQueryOptions,
+  SamplingFeatureQueryOptions,
+  PropertyQueryOptions,
   DatastreamQueryOptions,
   ObservationQueryOptions,
   ControlStreamQueryOptions,
@@ -65,6 +73,18 @@ export type {
   ControlStream,
   Command,
   CommandStatus,
+  FeatureCollection,
+  ItemCollection,
+  SystemCollection,
+  DeploymentCollection,
+  ProcedureCollection,
+  SamplingFeatureCollection,
+  PropertyCollection,
+  DatastreamCollection,
+  ObservationCollection,
+  ControlStreamCollection,
+  CommandCollection,
+  CommandStatusCollection,
 } from './ogc-api/csapi/model.js';
 export { default as TmsEndpoint } from './tms/endpoint.js';
 export * from './tms/model.js';

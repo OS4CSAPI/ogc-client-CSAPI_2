@@ -155,6 +155,16 @@ export default class CSAPIQueryBuilder {
    * @param options - Query parameter object.
    * @returns Query string with leading '?', or empty string if no params.
    */
+  /**
+   * Temporal parameter keys that require ISO 8601 date/interval formatting.
+   * Used by `buildQueryString` to detect parameters needing `formatDateTimeParameter`.
+   * @see https://docs.ogc.org/is/23-001/23-001.html
+   * @see https://docs.ogc.org/is/23-002/23-002.html
+   */
+  private static readonly TEMPORAL_KEYS: ReadonlySet<string> = new Set([
+    'datetime', 'phenomenonTime', 'resultTime', 'issueTime', 'executionTime',
+  ]);
+
   private buildQueryString(options?: QueryOptions): string {
     if (!options) return '';
     const params = new URLSearchParams();
@@ -167,7 +177,7 @@ export default class CSAPIQueryBuilder {
       if (key === 'bbox') {
         validateBbox(value);
         params.append(key, value.join(','));
-      } else if (key === 'datetime' || key === 'phenomenonTime' || key === 'resultTime' || key === 'issueTime' || key === 'executionTime') {
+      } else if (CSAPIQueryBuilder.TEMPORAL_KEYS.has(key)) {
         params.append(key, formatDateTimeParameter(value));
       } else if (key === 'limit') {
         validateLimit(value);
