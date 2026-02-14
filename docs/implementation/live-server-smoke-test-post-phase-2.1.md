@@ -1,9 +1,12 @@
-# Live Server Smoke Test Report
+# Live Server Smoke Test — Post Phase 2.1
 
 **Date:** February 14, 2026
+**Milestone:** After completing Phase 1 (Issues #1–#4) + Phase 2.1 (Issue #5)
 **Server:** OpenSensorHub demo instance (`http://45.55.99.236:8080/sensorhub/api`)
 **Auth:** Basic auth required (credentials not stored in repo)
 **Purpose:** Validate Phase 1 + 2.1 code against a real CSAPI implementation before building further
+
+> This is the first in a series of live server smoke tests performed at key milestones in our implementation. Each test validates our code against a real server to catch discrepancies between our interpretation of the spec and how implementors actually build their servers. Future smoke tests will follow the same naming pattern: `live-server-smoke-test-post-phase-{X}.md`.
 
 ---
 
@@ -137,6 +140,27 @@ The server encodes time intervals as a two-element string array, where:
 **Impact:** Consuming code that relies on these fields for pagination UI would get `undefined`. The `links` array does include pagination links (`next`, `prev`), so link-based pagination works.
 
 **Severity:** Low — optional fields in our types, and link-based pagination is the primary mechanism.
+
+---
+
+## Interpreting These Findings
+
+It's important to understand what these findings are and what they aren't.
+
+**Nothing is broken.** All 100 CSAPI unit tests pass. ESLint is clean. TypeScript is clean. Every piece of code does exactly what it was designed to do. Phase 1 and Phase 2.1 are complete by their own acceptance criteria.
+
+What the smoke test revealed is that our code was designed against our *reading of the spec*. The reference implementation (OpenSensorHub) interprets some parts of the spec differently than we did:
+
+- We assumed collections would advertise resources with `ogc-cs:systems` link relations — a reasonable reading of the spec. The real server uses plain `rel: "items"` and `rel: "systems"` instead.
+- We assumed resources would be scoped under collections (`/collections/iot/systems`). The real server puts them at the API root (`/api/systems`).
+
+These are **design assumptions**, not bugs. Our fixture data (which we wrote ourselves) reflects our interpretation, and the unit tests prove our code works perfectly against that interpretation.
+
+The analogy: imagine building a perfectly working USB-A plug, tested thoroughly against a USB-A port you built yourself. Then you try plugging it into someone else's device and discover they built a USB-C port. Your plug isn't broken — it just handles one connector shape when the real world has two.
+
+**What actually needs to happen:** We need to support *both* patterns — our existing collection-scoped pattern (which other servers may use) AND the top-level pattern (which the reference implementation uses). It's additive, not corrective. None of the existing code or tests need to change — we'd be adding a second resource discovery path.
+
+This is exactly why we did the smoke test. Without it, we'd have kept building more methods on a single pattern and discovered the gap much later, when it would have been more painful to fix.
 
 ---
 
