@@ -1,5 +1,5 @@
 import type { OgcApiCollectionInfo } from '../model.js';
-import type { QueryOptions, SystemQueryOptions, DeploymentQueryOptions, ProcedureQueryOptions } from './model.js';
+import type { QueryOptions, SystemQueryOptions, DeploymentQueryOptions, ProcedureQueryOptions, SamplingFeatureQueryOptions } from './model.js';
 import { CSAPIResourceTypes } from './model.js';
 import { EndpointError } from '../../shared/errors.js';
 import {
@@ -788,5 +788,177 @@ export default class CSAPIQueryBuilder {
   getProcedureHistory(id: string, options?: QueryOptions): string {
     this.assertResourceAvailable('procedures');
     return this.buildResourceUrl('procedures', id, 'history', options);
+  }
+
+  // ========================================
+  // SAMPLING FEATURES METHODS
+  // ========================================
+
+  /**
+   * Returns the URL for listing sampling features.
+   *
+   * @param options - Optional query parameters for filtering sampling features.
+   *   Sampling features support: `id`, `uid`, `q`, `bbox`, `datetime`, `limit`, `offset`, `f`.
+   *   Sampling features do NOT support `parent`, `recursive`, or cursor-based pagination.
+   * @returns URL string for the sampling features list endpoint.
+   * @throws {EndpointError} If 'samplingFeatures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getSamplingFeatures({ bbox: [-180, -90, 180, 90], limit: 20 });
+   * // => "https://example.com/collections/iot/samplingFeatures?bbox=-180%2C-90%2C180%2C90&limit=20"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_sampling_feature_resources
+   */
+  getSamplingFeatures(options?: SamplingFeatureQueryOptions): string {
+    this.assertResourceAvailable('samplingFeatures');
+    return this.buildResourceUrl('samplingFeatures', undefined, undefined, options);
+  }
+
+  /**
+   * Returns the URL for retrieving a single sampling feature by ID.
+   *
+   * @param id - The sampling feature resource identifier.
+   * @param options - Optional query parameters.
+   * @returns URL string for the individual sampling feature endpoint.
+   * @throws {EndpointError} If 'samplingFeatures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getSamplingFeature('sf-001');
+   * // => "https://example.com/collections/iot/samplingFeatures/sf-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_sampling_feature_resources
+   */
+  getSamplingFeature(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('samplingFeatures');
+    return this.buildResourceUrl('samplingFeatures', id, undefined, options);
+  }
+
+  /**
+   * Returns the URL for creating a new sampling feature (POST target).
+   *
+   * @returns URL string for the sampling features collection endpoint.
+   * @throws {EndpointError} If 'samplingFeatures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.createSamplingFeature();
+   * // POST to => "https://example.com/collections/iot/samplingFeatures"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_sampling_feature_resources
+   */
+  createSamplingFeature(): string {
+    this.assertResourceAvailable('samplingFeatures');
+    return this.buildResourceUrl('samplingFeatures');
+  }
+
+  /**
+   * Returns the URL for updating an existing sampling feature (PUT target).
+   *
+   * @param id - The sampling feature resource identifier to update.
+   * @returns URL string for the individual sampling feature endpoint.
+   * @throws {EndpointError} If 'samplingFeatures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.updateSamplingFeature('sf-001');
+   * // PUT to => "https://example.com/collections/iot/samplingFeatures/sf-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_sampling_feature_resources
+   */
+  updateSamplingFeature(id: string): string {
+    this.assertResourceAvailable('samplingFeatures');
+    return this.buildResourceUrl('samplingFeatures', id);
+  }
+
+  /**
+   * Returns the URL for deleting a sampling feature (DELETE target).
+   *
+   * @param id - The sampling feature resource identifier to delete.
+   * @returns URL string for the individual sampling feature endpoint.
+   * @throws {EndpointError} If 'samplingFeatures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.deleteSamplingFeature('sf-001');
+   * // DELETE to => "https://example.com/collections/iot/samplingFeatures/sf-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_sampling_feature_resources
+   */
+  deleteSamplingFeature(id: string): string {
+    this.assertResourceAvailable('samplingFeatures');
+    return this.buildResourceUrl('samplingFeatures', id);
+  }
+
+  /**
+   * Returns the URL for listing systems associated with a sampling feature.
+   *
+   * @param id - The sampling feature resource identifier.
+   * @param options - Optional query parameters for filtering systems.
+   * @returns URL string for the sampling feature's systems endpoint.
+   * @throws {EndpointError} If 'samplingFeatures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getSamplingFeatureSystems('sf-001', { limit: 5 });
+   * // => "https://example.com/collections/iot/samplingFeatures/sf-001/systems?limit=5"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_sampling_feature_resources
+   */
+  getSamplingFeatureSystems(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('samplingFeatures');
+    return this.buildResourceUrl('samplingFeatures', id, 'systems', options);
+  }
+
+  /**
+   * Returns the URL for listing observations associated with a sampling feature.
+   *
+   * This is a Part 2 cross-reference endpoint linking Part 1 sampling features
+   * to Part 2 observation data.
+   *
+   * @param id - The sampling feature resource identifier.
+   * @param options - Optional query parameters for filtering observations.
+   * @returns URL string for the sampling feature's observations endpoint.
+   * @throws {EndpointError} If 'samplingFeatures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getSamplingFeatureObservations('sf-001');
+   * // => "https://example.com/collections/iot/samplingFeatures/sf-001/observations"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
+   */
+  getSamplingFeatureObservations(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('samplingFeatures');
+    return this.buildResourceUrl('samplingFeatures', id, 'observations', options);
+  }
+
+  /**
+   * Returns the URL for retrieving a sampling feature's version history.
+   *
+   * @param id - The sampling feature resource identifier.
+   * @param options - Optional query parameters for filtering history entries.
+   * @returns URL string for the sampling feature history endpoint.
+   * @throws {EndpointError} If 'samplingFeatures' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getSamplingFeatureHistory('sf-001', { limit: 5 });
+   * // => "https://example.com/collections/iot/samplingFeatures/sf-001/history?limit=5"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_sampling_feature_history
+   */
+  getSamplingFeatureHistory(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('samplingFeatures');
+    return this.buildResourceUrl('samplingFeatures', id, 'history', options);
   }
 }

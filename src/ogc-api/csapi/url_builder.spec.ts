@@ -1076,3 +1076,203 @@ describe('Procedure resource validation', () => {
     expect(() => builder.getProcedureHistory('x')).toThrow(EndpointError);
   });
 });
+
+// ========================================
+// Sampling Features Methods
+// ========================================
+
+describe('getSamplingFeatures', () => {
+  function makeSfBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:samplingFeatures', type: '', title: '', href: '/samplingFeatures' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makeSfBuilder().getSamplingFeatures();
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures');
+  });
+
+  it('returns correct URL with limit', () => {
+    const url = makeSfBuilder().getSamplingFeatures({ limit: 20 });
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures?limit=20');
+  });
+
+  it('returns correct URL with offset', () => {
+    const url = makeSfBuilder().getSamplingFeatures({ offset: 10 });
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures?offset=10');
+  });
+
+  it('returns correct URL with q parameter', () => {
+    const url = makeSfBuilder().getSamplingFeatures({ q: 'borehole' });
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures?q=borehole');
+  });
+
+  it('returns correct URL with id filter', () => {
+    const url = makeSfBuilder().getSamplingFeatures({ id: 'sf-001' });
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures?id=sf-001');
+  });
+
+  it('returns correct URL with array id filter', () => {
+    const url = makeSfBuilder().getSamplingFeatures({ id: ['sf-001', 'sf-002'] });
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures?id=sf-001%2Csf-002');
+  });
+
+  it('returns correct URL with bbox parameter', () => {
+    const url = makeSfBuilder().getSamplingFeatures({ bbox: [-120, 35, -110, 45] });
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures?bbox=-120%2C35%2C-110%2C45');
+  });
+
+  it('returns correct URL with datetime parameter', () => {
+    const url = makeSfBuilder().getSamplingFeatures({
+      datetime: { start: new Date('2024-01-01T00:00:00Z'), end: new Date('2024-12-31T23:59:59Z') },
+    });
+    expect(url).toBe(
+      'https://example.com/collections/iot/samplingFeatures?datetime=2024-01-01T00%3A00%3A00.000Z%2F2024-12-31T23%3A59%3A59.000Z'
+    );
+  });
+
+  it('returns correct URL with f (format) parameter', () => {
+    const url = makeSfBuilder().getSamplingFeatures({ f: 'application/geo+json' });
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures?f=application%2Fgeo%2Bjson');
+  });
+
+  it('returns correct URL with multiple options', () => {
+    const url = makeSfBuilder().getSamplingFeatures({ limit: 10, offset: 5, q: 'well' });
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures?limit=10&offset=5&q=well');
+  });
+});
+
+describe('getSamplingFeature', () => {
+  function makeSfBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:samplingFeatures', type: '', title: '', href: '/samplingFeatures' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with resource ID', () => {
+    const url = makeSfBuilder().getSamplingFeature('sf-001');
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures/sf-001');
+  });
+
+  it('encodes special characters in ID', () => {
+    const url = makeSfBuilder().getSamplingFeature('urn:example:sf:001');
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures/urn%3Aexample%3Asf%3A001');
+  });
+});
+
+describe('SamplingFeature CRUD operations', () => {
+  function makeSfBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:samplingFeatures', type: '', title: '', href: '/samplingFeatures' },
+        ],
+      })
+    );
+  }
+
+  it('createSamplingFeature returns correct URL', () => {
+    const url = makeSfBuilder().createSamplingFeature();
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures');
+  });
+
+  it('updateSamplingFeature returns correct URL', () => {
+    const url = makeSfBuilder().updateSamplingFeature('sf-001');
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures/sf-001');
+  });
+
+  it('deleteSamplingFeature returns correct URL', () => {
+    const url = makeSfBuilder().deleteSamplingFeature('sf-001');
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures/sf-001');
+  });
+});
+
+describe('SamplingFeature association methods', () => {
+  function makeSfBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:samplingFeatures', type: '', title: '', href: '/samplingFeatures' },
+        ],
+      })
+    );
+  }
+
+  it('getSamplingFeatureSystems returns correct URL', () => {
+    const url = makeSfBuilder().getSamplingFeatureSystems('sf-001');
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures/sf-001/systems');
+  });
+
+  it('getSamplingFeatureSystems returns correct URL with pagination', () => {
+    const url = makeSfBuilder().getSamplingFeatureSystems('sf-001', { limit: 5, offset: 10 });
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures/sf-001/systems?limit=5&offset=10');
+  });
+
+  it('getSamplingFeatureObservations returns correct URL', () => {
+    const url = makeSfBuilder().getSamplingFeatureObservations('sf-001');
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures/sf-001/observations');
+  });
+
+  it('getSamplingFeatureObservations returns correct URL with options', () => {
+    const url = makeSfBuilder().getSamplingFeatureObservations('sf-001', { limit: 10 });
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures/sf-001/observations?limit=10');
+  });
+});
+
+describe('getSamplingFeatureHistory', () => {
+  function makeSfBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:samplingFeatures', type: '', title: '', href: '/samplingFeatures' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makeSfBuilder().getSamplingFeatureHistory('sf-001');
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures/sf-001/history');
+  });
+
+  it('returns correct URL with limit', () => {
+    const url = makeSfBuilder().getSamplingFeatureHistory('sf-001', { limit: 5 });
+    expect(url).toBe('https://example.com/collections/iot/samplingFeatures/sf-001/history?limit=5');
+  });
+});
+
+describe('SamplingFeature resource validation', () => {
+  it('throws EndpointError when samplingFeatures is unavailable', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        id: 'sensors',
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/sensors' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+    expect(() => builder.getSamplingFeatures()).toThrow(EndpointError);
+    expect(() => builder.getSamplingFeature('x')).toThrow(EndpointError);
+    expect(() => builder.createSamplingFeature()).toThrow(EndpointError);
+    expect(() => builder.updateSamplingFeature('x')).toThrow(EndpointError);
+    expect(() => builder.deleteSamplingFeature('x')).toThrow(EndpointError);
+    expect(() => builder.getSamplingFeatureSystems('x')).toThrow(EndpointError);
+    expect(() => builder.getSamplingFeatureObservations('x')).toThrow(EndpointError);
+    expect(() => builder.getSamplingFeatureHistory('x')).toThrow(EndpointError);
+  });
+});
