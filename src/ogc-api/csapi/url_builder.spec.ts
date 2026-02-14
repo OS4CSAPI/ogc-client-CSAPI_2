@@ -201,6 +201,15 @@ describe('getSystems', () => {
       'https://example.com/collections/iot/systems?id=sys-001%2Csys-002'
     );
   });
+
+  it('does not double-encode special characters in array values', () => {
+    const url = makeIotBuilder().getSystems({ id: ['sys 001', 'sys:002'] });
+    // Spaces and colons should be encoded exactly once by URLSearchParams
+    // (not double-encoded as %2520 or %253A)
+    expect(url).toBe(
+      'https://example.com/collections/iot/systems?id=sys+001%2Csys%3A002'
+    );
+  });
 });
 
 // ========================================

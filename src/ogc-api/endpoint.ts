@@ -175,6 +175,7 @@ ${e.message}`);
       hasVectorTiles?: boolean;
       hasMapTiles?: boolean;
       hasDataQueries?: boolean;
+      hasConnectedSystems?: boolean;
     }[]
   > {
     return this.data.then((dataDocument) =>

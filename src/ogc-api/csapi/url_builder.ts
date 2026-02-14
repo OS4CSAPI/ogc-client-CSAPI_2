@@ -3,7 +3,6 @@ import type { QueryOptions, SystemQueryOptions } from './model.js';
 import { EndpointError } from '../../shared/errors.js';
 import {
   encodeResourceId,
-  encodeArrayParameter,
   formatDateTimeParameter,
   validateLimit,
   validateBbox,
@@ -139,7 +138,10 @@ export default class CSAPIQueryBuilder {
         validateLimit(value);
         params.append(key, String(value));
       } else if (Array.isArray(value)) {
-        params.append(key, encodeArrayParameter(value));
+        // Use plain join — URLSearchParams.append() handles percent-encoding.
+        // Previously used encodeArrayParameter() here, which pre-encoded values
+        // before URLSearchParams encoded them again (double-encoding bug F5).
+        params.append(key, value.join(','));
       } else {
         params.append(key, String(value));
       }
