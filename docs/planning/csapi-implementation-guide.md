@@ -2764,14 +2764,16 @@ export interface Component {
 
 ```typescript
 // formats/swecommon/types.ts
-// Based on OGC 23-002: https://docs.ogc.org/is/23-002/23-002.html
+// Based on OGC SWE Common 3.0 (24-014): https://docs.ogc.org/is/24-014/24-014.html
 
 // Data component base types
 export type SWEDataComponent =
   | DataRecord
   | DataArray
   | Vector
+  | Matrix
   | DataChoice
+  | Geometry
   | Quantity
   | Count
   | Boolean
@@ -2805,7 +2807,7 @@ export interface DataArray {
   description?: string;
   definition?: string;
   elementType: SWEDataComponent;
-  elementCount?: Count | QuantityRange;
+  elementCount?: ElementCount;
   values?: EncodedValues;
   encoding?: DataEncoding;
 }
