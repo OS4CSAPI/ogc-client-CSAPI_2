@@ -166,7 +166,7 @@ export default class CSAPIQueryBuilder {
   }
 
   // ========================================
-  // PUBLIC METHODS (proof-of-concept)
+  // SYSTEMS METHODS
   // ========================================
 
   /**
@@ -182,7 +182,7 @@ export default class CSAPIQueryBuilder {
    * // => "https://example.com/collections/iot/systems?limit=10"
    * ```
    *
-   * @see https://docs.ogc.org/is/23-001/23-001.html
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
    */
   getSystems(options?: SystemQueryOptions): string {
     this.assertResourceAvailable('systems');
@@ -203,10 +203,217 @@ export default class CSAPIQueryBuilder {
    * // => "https://example.com/collections/iot/systems/abc123"
    * ```
    *
-   * @see https://docs.ogc.org/is/23-001/23-001.html
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
    */
   getSystem(id: string, options?: QueryOptions): string {
     this.assertResourceAvailable('systems');
     return this.buildResourceUrl('systems', id, undefined, options);
+  }
+
+  /**
+   * Returns the URL for creating a new system (POST target).
+   *
+   * @returns URL string for the systems collection endpoint.
+   * @throws {EndpointError} If 'systems' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.createSystem();
+   * // POST to => "https://example.com/collections/iot/systems"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
+   */
+  createSystem(): string {
+    this.assertResourceAvailable('systems');
+    return this.buildResourceUrl('systems');
+  }
+
+  /**
+   * Returns the URL for updating an existing system (PUT target).
+   *
+   * @param id - The system resource identifier to update.
+   * @returns URL string for the individual system endpoint.
+   * @throws {EndpointError} If 'systems' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.updateSystem('abc123');
+   * // PUT to => "https://example.com/collections/iot/systems/abc123"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
+   */
+  updateSystem(id: string): string {
+    this.assertResourceAvailable('systems');
+    return this.buildResourceUrl('systems', id);
+  }
+
+  /**
+   * Returns the URL for deleting a system (DELETE target).
+   *
+   * @param id - The system resource identifier to delete.
+   * @returns URL string for the individual system endpoint.
+   * @throws {EndpointError} If 'systems' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.deleteSystem('abc123');
+   * // DELETE to => "https://example.com/collections/iot/systems/abc123"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
+   */
+  deleteSystem(id: string): string {
+    this.assertResourceAvailable('systems');
+    return this.buildResourceUrl('systems', id);
+  }
+
+  /**
+   * Returns the URL for retrieving a system's version history.
+   *
+   * @param id - The system resource identifier.
+   * @param options - Optional query parameters for filtering history entries.
+   * @returns URL string for the system history endpoint.
+   * @throws {EndpointError} If 'systems' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getSystemHistory('abc123', { limit: 5 });
+   * // => "https://example.com/collections/iot/systems/abc123/history?limit=5"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_system_history
+   */
+  getSystemHistory(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('systems');
+    return this.buildResourceUrl('systems', id, 'history', options);
+  }
+
+  /**
+   * Returns the URL for listing subsystems of a system.
+   *
+   * @param id - The parent system resource identifier.
+   * @param options - Optional query parameters. Supports `recursive` parameter
+   *   to include nested subsystems at all levels.
+   * @returns URL string for the system's subsystems endpoint.
+   * @throws {EndpointError} If 'systems' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getSystemSubsystems('abc123', { recursive: true });
+   * // => "https://example.com/collections/iot/systems/abc123/subsystems?recursive=true"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
+   */
+  getSystemSubsystems(id: string, options?: SystemQueryOptions): string {
+    this.assertResourceAvailable('systems');
+    return this.buildResourceUrl('systems', id, 'subsystems', options);
+  }
+
+  /**
+   * Returns the URL for listing datastreams associated with a system.
+   *
+   * @param id - The system resource identifier.
+   * @param options - Optional query parameters for filtering datastreams.
+   * @returns URL string for the system's datastreams endpoint.
+   * @throws {EndpointError} If 'systems' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getSystemDataStreams('abc123');
+   * // => "https://example.com/collections/iot/systems/abc123/datastreams"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
+   */
+  getSystemDataStreams(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('systems');
+    return this.buildResourceUrl('systems', id, 'datastreams', options);
+  }
+
+  /**
+   * Returns the URL for listing control streams associated with a system.
+   *
+   * @param id - The system resource identifier.
+   * @param options - Optional query parameters for filtering control streams.
+   * @returns URL string for the system's control streams endpoint.
+   * @throws {EndpointError} If 'systems' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getSystemControlStreams('abc123');
+   * // => "https://example.com/collections/iot/systems/abc123/controlstreams"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_controlstream_resources
+   */
+  getSystemControlStreams(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('systems');
+    return this.buildResourceUrl('systems', id, 'controlstreams', options);
+  }
+
+  /**
+   * Returns the URL for listing sampling features associated with a system.
+   *
+   * @param id - The system resource identifier.
+   * @param options - Optional query parameters for filtering sampling features.
+   * @returns URL string for the system's sampling features endpoint.
+   * @throws {EndpointError} If 'systems' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getSystemSamplingFeatures('abc123');
+   * // => "https://example.com/collections/iot/systems/abc123/samplingFeatures"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_sampling_feature_resources
+   */
+  getSystemSamplingFeatures(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('systems');
+    return this.buildResourceUrl('systems', id, 'samplingFeatures', options);
+  }
+
+  /**
+   * Returns the URL for listing deployments associated with a system.
+   *
+   * @param id - The system resource identifier.
+   * @param options - Optional query parameters for filtering deployments.
+   * @returns URL string for the system's deployments endpoint.
+   * @throws {EndpointError} If 'systems' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getSystemDeployments('abc123');
+   * // => "https://example.com/collections/iot/systems/abc123/deployments"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
+   */
+  getSystemDeployments(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('systems');
+    return this.buildResourceUrl('systems', id, 'deployments', options);
+  }
+
+  /**
+   * Returns the URL for listing procedures associated with a system.
+   *
+   * @param id - The system resource identifier.
+   * @param options - Optional query parameters for filtering procedures.
+   * @returns URL string for the system's procedures endpoint.
+   * @throws {EndpointError} If 'systems' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getSystemProcedures('abc123');
+   * // => "https://example.com/collections/iot/systems/abc123/procedures"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
+   */
+  getSystemProcedures(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('systems');
+    return this.buildResourceUrl('systems', id, 'procedures', options);
   }
 }
