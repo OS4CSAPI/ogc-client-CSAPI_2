@@ -357,7 +357,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 
 2. **Format Detector Extensions** (~1-2 hours, Low complexity)
    - Extend existing format detector
-   - Register 4 new media types: `application/sml+json`, `application/swe+json`, `application/swe+text`, `application/swe+binary`
+   - Register 5 new media types: `application/sml+json`, `application/swe+json`, `application/swe+text`, `application/swe+csv`, `application/swe+binary`
    - Add routing logic to format handlers (SensorML → SensorML parser, SWE Common → SWE Common parser)
    - Add Content-Type header parsing, structure-based fallback detection
    - **Write JSDoc:** Document media type detection patterns

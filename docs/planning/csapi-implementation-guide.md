@@ -3086,12 +3086,13 @@ The SWE Common handler is new code we need to build to parse [OGC SWE Common 3.0
 
 ### Format Detector: Extending Existing Content Negotiation
 
-The format detector is existing code that examines HTTP response headers (Content-Type) and document structure to determine what format a server returned. For CSAPI, we will extend this detector to recognize CSAPI media types. The extension will recognize new media types used by CSAPI servers: `application/sml+json` (SensorML-JSON encoding), `application/swe+json` (SWE Common JSON encoding), `application/swe+text` (SWE Common Text/CSV encoding), and `application/swe+binary` (SWE Common Binary encoding). The extension will add these media types to the library's format registry and route them to the appropriate new format handlers (SensorML handler, SWE Common handler). This follows the existing pattern where the detector checks Content-Type headers first, then falls back to document structure analysis if headers are missing or ambiguous.
+The format detector is existing code that examines HTTP response headers (Content-Type) and document structure to determine what format a server returned. For CSAPI, we will extend this detector to recognize CSAPI media types. The extension will recognize new media types used by CSAPI servers: `application/sml+json` (SensorML-JSON encoding), `application/swe+json` (SWE Common JSON encoding), `application/swe+text` (SWE Common Text encoding), `application/swe+csv` (SWE Common CSV encoding — a constrained variant of Text encoding with `tokenSeparator=","` and `blockSeparator="\n"`), and `application/swe+binary` (SWE Common Binary encoding). The extension will add these media types to the library's format registry and route them to the appropriate new format handlers (SensorML handler, SWE Common handler). This follows the existing pattern where the detector checks Content-Type headers first, then falls back to document structure analysis if headers are missing or ambiguous.
 
 **Media Type Recognition:**
 - `application/sml+json` → Route to SensorML Handler
 - `application/swe+json` → Route to SWE Common Handler (JSON encoding)
 - `application/swe+text` → Route to SWE Common Handler (Text encoding)
+- `application/swe+csv` → Route to SWE Common Handler (CSV encoding)
 - `application/swe+binary` → Route to SWE Common Handler (Binary encoding)
 - `application/geo+json` with CSAPI `featureType` → Route to GeoJSON Handler with CSAPI extensions
 
