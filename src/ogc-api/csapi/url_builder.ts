@@ -1,5 +1,5 @@
 import type { OgcApiCollectionInfo } from '../model.js';
-import type { QueryOptions, SystemQueryOptions } from './model.js';
+import type { QueryOptions, SystemQueryOptions, DeploymentQueryOptions } from './model.js';
 import { CSAPIResourceTypes } from './model.js';
 import { EndpointError } from '../../shared/errors.js';
 import {
@@ -483,5 +483,174 @@ export default class CSAPIQueryBuilder {
   getSystemProcedures(id: string, options?: QueryOptions): string {
     this.assertResourceAvailable('systems');
     return this.buildResourceUrl('systems', id, 'procedures', options);
+  }
+
+  // ========================================
+  // DEPLOYMENTS METHODS
+  // ========================================
+
+  /**
+   * Returns the URL for querying the deployments collection.
+   *
+   * @param options - Optional query parameters for filtering, pagination, bbox,
+   *   datetime, sorting, and deployment-specific filters.
+   * @returns URL string for the deployments collection endpoint.
+   * @throws {EndpointError} If 'deployments' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getDeployments({ limit: 10, bbox: [-180, -90, 180, 90] });
+   * // => "https://example.com/collections/iot/deployments?limit=10&bbox=-180%2C-90%2C180%2C90"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
+   */
+  getDeployments(options?: DeploymentQueryOptions): string {
+    this.assertResourceAvailable('deployments');
+    return this.buildResourceUrl('deployments', undefined, undefined, options);
+  }
+
+  /**
+   * Returns the URL for retrieving a single deployment by ID.
+   *
+   * @param id - The deployment resource identifier.
+   * @param options - Optional query parameters.
+   * @returns URL string for the individual deployment endpoint.
+   * @throws {EndpointError} If 'deployments' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getDeployment('dep-001');
+   * // => "https://example.com/collections/iot/deployments/dep-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
+   */
+  getDeployment(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('deployments');
+    return this.buildResourceUrl('deployments', id, undefined, options);
+  }
+
+  /**
+   * Returns the URL for creating a new deployment (POST target).
+   *
+   * @returns URL string for the deployments collection endpoint.
+   * @throws {EndpointError} If 'deployments' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.createDeployment();
+   * // POST to => "https://example.com/collections/iot/deployments"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
+   */
+  createDeployment(): string {
+    this.assertResourceAvailable('deployments');
+    return this.buildResourceUrl('deployments');
+  }
+
+  /**
+   * Returns the URL for updating an existing deployment (PUT target).
+   *
+   * @param id - The deployment resource identifier to update.
+   * @returns URL string for the individual deployment endpoint.
+   * @throws {EndpointError} If 'deployments' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.updateDeployment('dep-001');
+   * // PUT to => "https://example.com/collections/iot/deployments/dep-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
+   */
+  updateDeployment(id: string): string {
+    this.assertResourceAvailable('deployments');
+    return this.buildResourceUrl('deployments', id);
+  }
+
+  /**
+   * Returns the URL for deleting a deployment (DELETE target).
+   *
+   * @param id - The deployment resource identifier to delete.
+   * @returns URL string for the individual deployment endpoint.
+   * @throws {EndpointError} If 'deployments' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.deleteDeployment('dep-001');
+   * // DELETE to => "https://example.com/collections/iot/deployments/dep-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
+   */
+  deleteDeployment(id: string): string {
+    this.assertResourceAvailable('deployments');
+    return this.buildResourceUrl('deployments', id);
+  }
+
+  /**
+   * Returns the URL for listing subdeployments of a deployment.
+   *
+   * @param id - The parent deployment resource identifier.
+   * @param options - Optional query parameters. Supports `recursive` parameter
+   *   to include nested subdeployments at all levels.
+   * @returns URL string for the deployment's subdeployments endpoint.
+   * @throws {EndpointError} If 'deployments' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getDeploymentSubdeployments('dep-001', { recursive: true });
+   * // => "https://example.com/collections/iot/deployments/dep-001/subdeployments?recursive=true"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
+   */
+  getDeploymentSubdeployments(id: string, options?: DeploymentQueryOptions): string {
+    this.assertResourceAvailable('deployments');
+    return this.buildResourceUrl('deployments', id, 'subdeployments', options);
+  }
+
+  /**
+   * Returns the URL for listing systems associated with a deployment.
+   *
+   * @param id - The deployment resource identifier.
+   * @param options - Optional query parameters for filtering systems.
+   * @returns URL string for the deployment's systems endpoint.
+   * @throws {EndpointError} If 'deployments' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getDeploymentSystems('dep-001');
+   * // => "https://example.com/collections/iot/deployments/dep-001/systems"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
+   */
+  getDeploymentSystems(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('deployments');
+    return this.buildResourceUrl('deployments', id, 'systems', options);
+  }
+
+  /**
+   * Returns the URL for retrieving a deployment's version history.
+   *
+   * @param id - The deployment resource identifier.
+   * @param options - Optional query parameters for filtering history entries.
+   * @returns URL string for the deployment history endpoint.
+   * @throws {EndpointError} If 'deployments' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getDeploymentHistory('dep-001', { limit: 5 });
+   * // => "https://example.com/collections/iot/deployments/dep-001/history?limit=5"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_history
+   */
+  getDeploymentHistory(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('deployments');
+    return this.buildResourceUrl('deployments', id, 'history', options);
   }
 }

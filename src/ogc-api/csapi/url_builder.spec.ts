@@ -715,3 +715,178 @@ describe('getSystemProcedures', () => {
     );
   });
 });
+
+// ========================================
+// Deployments Methods
+// ========================================
+
+describe('getDeployments', () => {
+  function makeDepBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:deployments', type: '', title: '', href: '/deployments' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makeDepBuilder().getDeployments();
+    expect(url).toBe('https://example.com/collections/iot/deployments');
+  });
+
+  it('returns correct URL with limit and bbox', () => {
+    const url = makeDepBuilder().getDeployments({ limit: 10, bbox: [-180, -90, 180, 90] });
+    expect(url).toBe(
+      'https://example.com/collections/iot/deployments?limit=10&bbox=-180%2C-90%2C180%2C90'
+    );
+  });
+
+  it('returns correct URL with datetime parameter', () => {
+    const url = makeDepBuilder().getDeployments({
+      datetime: { start: new Date('2025-01-01T00:00:00Z'), end: new Date('2025-12-31T23:59:59Z') },
+    });
+    expect(url).toContain('datetime=');
+  });
+
+  it('returns correct URL with systemId filter', () => {
+    const url = makeDepBuilder().getDeployments({ systemId: 'sys-001' });
+    expect(url).toBe('https://example.com/collections/iot/deployments?systemId=sys-001');
+  });
+});
+
+describe('getDeployment', () => {
+  function makeDepBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:deployments', type: '', title: '', href: '/deployments' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with resource ID', () => {
+    const url = makeDepBuilder().getDeployment('dep-001');
+    expect(url).toBe('https://example.com/collections/iot/deployments/dep-001');
+  });
+
+  it('encodes special characters in ID', () => {
+    const url = makeDepBuilder().getDeployment('dep/001');
+    expect(url).toBe('https://example.com/collections/iot/deployments/dep%2F001');
+  });
+});
+
+describe('Deployment CRUD operations', () => {
+  function makeDepBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:deployments', type: '', title: '', href: '/deployments' },
+        ],
+      })
+    );
+  }
+
+  it('createDeployment returns correct URL', () => {
+    const url = makeDepBuilder().createDeployment();
+    expect(url).toBe('https://example.com/collections/iot/deployments');
+  });
+
+  it('updateDeployment returns correct URL', () => {
+    const url = makeDepBuilder().updateDeployment('dep-001');
+    expect(url).toBe('https://example.com/collections/iot/deployments/dep-001');
+  });
+
+  it('deleteDeployment returns correct URL', () => {
+    const url = makeDepBuilder().deleteDeployment('dep-001');
+    expect(url).toBe('https://example.com/collections/iot/deployments/dep-001');
+  });
+});
+
+describe('getDeploymentSubdeployments', () => {
+  function makeDepBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:deployments', type: '', title: '', href: '/deployments' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makeDepBuilder().getDeploymentSubdeployments('dep-001');
+    expect(url).toBe(
+      'https://example.com/collections/iot/deployments/dep-001/subdeployments'
+    );
+  });
+
+  it('returns correct URL with recursive=true', () => {
+    const url = makeDepBuilder().getDeploymentSubdeployments('dep-001', { recursive: true });
+    expect(url).toBe(
+      'https://example.com/collections/iot/deployments/dep-001/subdeployments?recursive=true'
+    );
+  });
+});
+
+describe('Deployment association and history', () => {
+  function makeDepBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:deployments', type: '', title: '', href: '/deployments' },
+        ],
+      })
+    );
+  }
+
+  it('getDeploymentSystems returns correct URL', () => {
+    const url = makeDepBuilder().getDeploymentSystems('dep-001');
+    expect(url).toBe(
+      'https://example.com/collections/iot/deployments/dep-001/systems'
+    );
+  });
+
+  it('getDeploymentSystems returns correct URL with options', () => {
+    const url = makeDepBuilder().getDeploymentSystems('dep-001', { limit: 5 });
+    expect(url).toBe(
+      'https://example.com/collections/iot/deployments/dep-001/systems?limit=5'
+    );
+  });
+
+  it('getDeploymentHistory returns correct URL', () => {
+    const url = makeDepBuilder().getDeploymentHistory('dep-001');
+    expect(url).toBe(
+      'https://example.com/collections/iot/deployments/dep-001/history'
+    );
+  });
+
+  it('getDeploymentHistory returns correct URL with limit', () => {
+    const url = makeDepBuilder().getDeploymentHistory('dep-001', { limit: 10 });
+    expect(url).toBe(
+      'https://example.com/collections/iot/deployments/dep-001/history?limit=10'
+    );
+  });
+});
+
+describe('Deployment resource validation', () => {
+  it('throws EndpointError when deployments is unavailable', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        id: 'sensors',
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/sensors' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+    expect(() => builder.getDeployments()).toThrow(EndpointError);
+  });
+});
