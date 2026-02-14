@@ -23,19 +23,27 @@ This roadmap outlines the complete implementation plan for adding Connected Syst
 **Roadmap Overview:**
 
 - **Phase 1: Core Structure (12-16 hours)** - Foundation: types, integration points, stub QueryBuilder, helper utilities (4 tasks)
-- **Phase 2: QueryBuilder (20-28 hours)** - Complete URL building for all 70-80 CSAPI methods across 9 resource types (9 tasks)
-- **Phase 3: Format Handling (16-28 hours)** - SensorML/SWE parsers + GeoJSON/Format Detector/Validator extensions (15 tasks with incremental testing)
+- **Phase 2: QueryBuilder (20-28 hours)** - Complete URL building for all 80 CSAPI methods across 9 resource types (9 tasks)
+- **Phase 3: Format Handling (16-28 hours)** - SensorML/SWE parsers + GeoJSON/Format Detector/Validator extensions (17 tasks with incremental testing)
 - **Phase 4: Tests & Documentation (9-12 hours)** - Integration tests, unit test completion, documentation (3 tasks)
 
 **Total Scope:**
 - **Implementation:** ~4,800-6,450 lines across 24 files
-- **Tests:** ~4,200-6,000 lines across 17 test files
+- **Tests:** ~4,200-6,000 lines across 22 test files
 - **Total Code:** ~9,000-12,450 lines
 
 **Key Dependencies:**
 - Phase 1 → Phase 2 (types required for QueryBuilder)
 - Phase 2 → Phase 3 (QueryBuilder required for format integration tests)
 - Phases 1-3 → Phase 4 (complete implementation required for full testing)
+
+**Fixture Convention:** Test fixtures in `fixtures/csapi/sample-server/` following the URL-path-mirroring convention (directory structure matches API endpoint paths). Estimated ~80-100 fixture files. See Guide §9 for full fixture strategy.
+
+**Scope Exclusions:** The following are explicitly OUT OF SCOPE for this contribution:
+- Performance testing (no `expect(duration)` assertions — upstream has zero performance tests)
+- Real-world server testing (all tests use local fixtures, never live servers — see AP2)
+- Migration testing (no existing CSAPI users to migrate)
+- Worker extensions (no upstream JSON API uses Web Workers — see ROADMAP v3.1)
 
 **Success Factors:**
 - Write JSDoc documentation as you code (don't defer)
@@ -68,6 +76,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - Import GeoJSON types from `geojson` package
    - **Write JSDoc:** Document all interfaces with property descriptions, required vs optional fields, examples
    - **Test:** Create `model.spec.ts` for type validation tests (~200-300 lines)
+   - **Note:** This task estimates 4-5 hours including tests. Write types incrementally — aim for a mid-task test checkpoint around the 2.5-3 hour mark (e.g., after Part 1 interfaces, before Part 2 interfaces).
 
 2. **Create Helper Utilities** (~3-4 hours, Low complexity)
    - Create `src/ogc-api/csapi/helpers.ts` (~50-80 lines)
@@ -120,7 +129,9 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 
 **Estimated Time:** 20-28 hours (3-4 weeks calendar time)
 
-**Goal:** Implement all 70-80 QueryBuilder methods for all 9 CSAPI resource types, with incremental testing after each resource type.
+**Goal:** Implement all 80 QueryBuilder methods for all 9 CSAPI resource types, with incremental testing after each resource type.
+
+**Complete Query Parameter Support:** All collection query methods support `sortBy` and `sortOrder` parameters for server-side result ordering, in addition to pagination (`limit`, `offset`/cursor), temporal (`datetime`, `phenomenonTime`, `resultTime`), and spatial (`bbox`) parameters. See Guide §6 for full parameter documentation.
 
 **Task Structure:** Each task implements methods for one resource type, then writes tests immediately before moving to the next resource type.
 
@@ -257,7 +268,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
      - Test temporal filtering
      - Test bulk creation
      - Test navigation to datastream/feature/system
-     - Test result format handling
+     - Test format query parameter encoding (e.g., `resultFormat: 'swe+json'` → correct URL parameter)
 
 8. **Control Streams Methods** (~1.5-2 hours implementation + ~0.5 hour testing, Medium-High complexity)
    - **Implement 8 Control Streams methods in `url_builder.ts`:**
@@ -299,7 +310,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
      - Test cancel operation
 
 **Phase 2 Deliverables:**
-- ✅ All 70-80 QueryBuilder methods implemented (9 resource types)
+- ✅ All 80 QueryBuilder methods implemented (9 resource types)
 - ✅ Complete query parameter support (spatial, temporal, pagination)
 - ✅ Resource validation in all methods (~2 lines per method)
 - ✅ Comprehensive test coverage (~800-1,000 lines tests)
@@ -329,7 +340,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 **Tasks:**
 
 1. **GeoJSON Handler Extensions** (~2-3 hours, Medium complexity)
-   - Extend existing GeoJSON parser in library
+   - Create `formats/geojson.ts` (~50-100 lines) extending existing GeoJSON parser
    - Add recognition for CSAPI `featureType` property (sosa:System, sosa:Deployment, etc.)
    - Extract CSAPI-specific properties (uniqueIdentifier, systemType, assetType, validTime, etc.)
    - Add validation for CSAPI GeoJSON requirements (uniqueIdentifier must be URI, systemType from SOSA vocabulary)
@@ -337,7 +348,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - **Test immediately:** Add tests for CSAPI GeoJSON parsing (~150-300 lines tests)
      - Test featureType recognition
      - Test property extraction
-     - Test validation rules
+     - Test validator correctly rejects invalid GeoJSON input (e.g., missing uniqueIdentifier, invalid systemType)
 
 2. **Format Detector Extensions** (~1-2 hours, Low complexity)
    - Extend existing format detector
@@ -357,9 +368,10 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - Add cross-reference validation (association links, hierarchical integrity, vocabulary references)
    - **Write JSDoc:** Document validation rules, error reporting patterns
    - **Test immediately:** Add validation tests (~200-400 lines tests)
-     - Test Part 1 validation rules
-     - Test Part 2 validation rules
-     - Test cross-reference validation
+     - Test Part 1 validator correctly rejects invalid input (missing required fields, malformed URIs, invalid temporal ranges)
+     - Test Part 2 validator correctly rejects invalid input (schema mismatches, invalid observation results)
+     - Test cross-reference validator detects broken associations (dangling system references, invalid hierarchy links)
+     - See Guide §7 Validator: "Tests should verify the validator correctly rejects invalid inputs, not that fixture data passes validation"
 
 4. **SWE Common Types** (~2-3 hours, Medium complexity)
    - Create `src/ogc-api/csapi/formats/swecommon/` directory
@@ -385,6 +397,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
      - Test type definitions compile without errors
      - Test SWE Common type integration works
      - Test interface constraints
+   - **Note:** The 800-1,200 lines are passive type definitions (interfaces only, no behavioral code). The 800 LOC testing cadence threshold applies to behavioral/implementation code, not type-only files. Type compilation tests verify correctness without requiring the same volume as behavioral code tests.
 
 6. **SensorML Simple Process Parser** (~2-3 hours, Medium-High complexity)
    - Create `formats/sensorml/simple-process.ts` (~150-200 lines)
@@ -602,7 +615,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 **Key Success Factors:**
 - ✅ Write JSDoc documentation AS YOU CODE (don't defer)
 - ✅ Write method signatures before implementation (design first)
-- ✅ **Write tests IMMEDIATELY after each subtask** (max 2-3 hrs between tests, not 5-10 hrs)
+- ✅ **Write tests IMMEDIATELY after each subtask** (see Testing Cadence in Development Standards below)
 - ✅ Validate against spec examples throughout
 - ✅ Use helper methods for code reuse (prevents duplication)
 - ✅ Follow three-tier type hierarchy (prevents circular dependencies)
@@ -627,6 +640,25 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 7. Add usage examples to JSDoc for common scenarios
 8. Validate against spec examples throughout
 9. Update documentation as you go - don't defer
+
+**Testing Cadence:**
+- **Maximum 2-3 hours between test checkpoints** (33 checkpoints across 33 tasks)
+- **Maximum ~800 lines of behavioral code without tests** (type-only files exempt; see Task 3.5 note)
+- Write tests while method details are fresh — never batch tests at end of phase
+- Aim for >80% coverage after each subtask
+
+**Testing Conventions:**
+- **HTTP Mocking:** Use `globalThis.fetch = vi.fn()` (Vitest) or `jest.fn()` for all HTTP mocking. Never use `nock`, `msw`, or other external mocking libraries. See Guide §9 for code examples.
+- **Meaningful vs Trivial Tests:** Every test should verify a meaningful behavior — not just that code runs without throwing. Test that URL parameters are correctly encoded, that validators reject invalid input, that parsers extract the right properties. See [Doc 06](../research/testing/findings/06-meaningful-vs-trivial-testing.md) for the full standard.
+- **Anti-Pattern Catalog (AP1-AP5):** Avoid these testing anti-patterns documented in Guide §16 and [Phase 0 review](../research/testing/review/phase-0-scope-assessment.md):
+
+| Anti-Pattern | Rule | Example Violation |
+|-------------|------|-------------------|
+| AP1: Testing Response Content | Don't assert fixture data values as "correct" | `expect(system.name).toBe('Weather Station')` |
+| AP2: Live Server Dependencies | Never call real servers in tests | `fetch('https://api.example.com/...')` |
+| AP3: Server Conformance Testing | Don't test OGC requirement IDs | `it('meets /req/core/root-success')` |
+| AP4: Asserting Data Shape | Don't assert fixture structure as specification | `expect(response).toHaveProperty('links')` |
+| AP5: Graceful Skipping | Don't skip tests conditionally by server capability | `if (!hasCSAPI) return` |
 
 **Code Quality Standards:**
 - TypeScript strict mode enabled
