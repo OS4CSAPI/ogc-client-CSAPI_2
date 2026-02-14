@@ -562,7 +562,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 **Tasks:**
 
 1. **Integration Tests** (~4-6 hours, Medium complexity)
-   - Create end-to-end workflow tests (~500-800 lines)
+   - Create end-to-end workflow tests (~900-1,150 lines across 4 files)
    - Discovery workflow: connect → check conformance → list collections → retrieve resources
    - Observation workflow: systems → datastreams → observations → pagination → parsing
    - Command workflow: systems → control streams → feasibility → submit → status → result
@@ -571,7 +571,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - Hierarchical queries: recursive traversal with large hierarchies
    - Error handling: server errors, validation errors, network errors, malformed responses
    - **Write JSDoc:** Document test scenarios and expected behavior
-   - **Test:** All integration tests (~500-800 lines)
+   - **Test:** All integration tests (~900-1,150 lines)
 
 2. **Unit Tests Completion** (~3-4 hours, Medium complexity)
    - Complete coverage for all QueryBuilder methods (~200-300 additional lines)
