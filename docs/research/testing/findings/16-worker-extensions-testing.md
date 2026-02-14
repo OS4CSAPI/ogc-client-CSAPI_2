@@ -1,5 +1,13 @@
 # Worker Extensions Testing Strategy
 
+> **🚫 OUT OF SCOPE (February 2026)**
+>
+> Worker extensions have been **removed from the CSAPI contribution scope entirely**. Analysis of the upstream codebase found that no JSON-based API (EDR, STAC, TMS, OGC API) uses the Web Worker infrastructure — only XML-based APIs (WMS, WFS, WMTS) offload parsing to workers for CPU-intensive XML DOM traversal. CSAPI operations use `response.json()` which does not benefit from worker offloading. All 9 proposed message types had zero upstream precedent. See ROADMAP v3.1 and Guide §8 for the full rationale.
+>
+> **Binary SWE parsing remains in scope** at the parser level (Phase 3 Task 3.13, Doc 10). Only worker offloading is excluded.
+>
+> This document is retained as reference material only — do not implement any worker message types or tests.
+
 > **⚠️ Phase 2F Review Notice (February 2026)**
 >
 > This document was reviewed in [Phase 2F: Integration & Workflow Category Deep Dive](../review/phase-2f-integration-workflow-category.md). Three high-priority issues were identified:

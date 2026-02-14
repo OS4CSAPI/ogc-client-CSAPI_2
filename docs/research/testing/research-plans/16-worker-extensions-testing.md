@@ -1,5 +1,7 @@
 # Section 16: Worker Extensions Testing Strategy - Research Plan
 
+> **🚫 OUT OF SCOPE (February 2026):** Worker extensions have been removed from the CSAPI contribution scope entirely. No upstream JSON-based API uses Web Workers. This research plan is retained as reference material only. See ROADMAP v3.1 and Guide §8.
+
 **Status:** ✅ COMPLETE  
 **Last Updated:** February 6, 2026  
 **Research Time:** 2.5 hours (Estimated: 3-4 hours)  
