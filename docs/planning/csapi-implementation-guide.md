@@ -1907,7 +1907,7 @@ EXECUTING → CANCELED    (canceled during execution)
 - Submit command: `POST /controlstreams/{id}/commands`
 - Get command with status: `GET /commands/{id}` (status field reflects current state)
 - Get command result: `GET /commands/{id}/result` (available when `COMPLETED`)
-- Cancel command: `DELETE /commands/{id}` (only non-terminal states)
+- Cancel command: `POST /commands/{id}/cancel` (only non-terminal states)
 
 **Synchronous vs Asynchronous Execution:**
 - **Synchronous** (rare): POST returns `200 OK` with `COMPLETED` status and inline result
