@@ -1563,6 +1563,26 @@ describe('getDataStreams', () => {
     const url = makeDsBuilder().getDataStreams({ q: 'weather' });
     expect(url).toBe('https://example.com/collections/iot/datastreams?q=weather');
   });
+
+  it('returns correct URL with offset', () => {
+    const url = makeDsBuilder().getDataStreams({ offset: 20 });
+    expect(url).toBe('https://example.com/collections/iot/datastreams?offset=20');
+  });
+
+  it('returns correct URL with id filter', () => {
+    const url = makeDsBuilder().getDataStreams({ id: 'ds-001' });
+    expect(url).toBe('https://example.com/collections/iot/datastreams?id=ds-001');
+  });
+
+  it('handles array id parameter', () => {
+    const url = makeDsBuilder().getDataStreams({ id: ['ds-001', 'ds-002'] });
+    expect(url).toBe('https://example.com/collections/iot/datastreams?id=ds-001%2Cds-002');
+  });
+
+  it('returns correct URL with f (format) parameter', () => {
+    const url = makeDsBuilder().getDataStreams({ f: 'application/json' });
+    expect(url).toBe('https://example.com/collections/iot/datastreams?f=application%2Fjson');
+  });
 });
 
 describe('getDataStream', () => {
