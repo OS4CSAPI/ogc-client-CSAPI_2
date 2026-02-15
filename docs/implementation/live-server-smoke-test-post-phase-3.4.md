@@ -405,8 +405,9 @@ This is a new dimension — inventorying the SensorML `type` discriminator value
 - Phase 3.3: 3 systems, 1 deployment, 1 procedure
 - Phase 3.4: 0 systems, 0 deployments, 0 procedures
 - All collection endpoints return `200` with empty `{ type: "FeatureCollection", features: [], links: [] }`
-- DataStreams (500), Observations (500), ControlStreams (404) — unchanged errors
-- Root endpoint still responds (200, 7 links)
+- DataStreams (500 Internal Server Error), Observations (500 Internal Server Error), ControlStreams (404) — unchanged errors
+- Root endpoint still responds (200, 7 links) — API structure intact (`connected-systems-pygeoapi`)
+- **Re-verified independently** on the same date: confirmed all 6 resource collection endpoints (`/systems`, `/deployments`, `/procedures`, `/datastreams`, `/observations`, `/controlstreams`) — the server is responding correctly with valid JSON but every collection is genuinely empty. The 500 errors on DataStreams/Observations are likely a consequence of having no parent systems to associate with. This is consistent with a database reset or redeployment on 52North's demo infrastructure.
 
 **Impact:** 52North was the only server providing Deployment and Procedure data, and the only source of CURIE-format featureType values (`sosa:Sensor`, `sosa:Platform`). With no 52N data:
 - F41 (null featureType) cannot be re-verified
@@ -415,7 +416,7 @@ This is a new dimension — inventorying the SensorML `type` discriminator value
 - Deployment extraction cannot be live-tested
 - The smoke test series drops to **single-server validation** until 52N data is restored
 
-**Status:** Upstream — monitor for data restoration in future smoke tests
+**Status:** Upstream — confirmed not a transient issue; monitor for data restoration in future smoke tests
 
 ### F58 (Positive): SensorML type definitions structurally align with real OSH server data
 
