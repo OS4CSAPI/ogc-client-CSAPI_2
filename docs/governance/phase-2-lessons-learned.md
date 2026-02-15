@@ -1,8 +1,8 @@
 # Phase 2 Implementation Lessons Learned
 
-**Purpose:** Actionable lessons extracted from Phase 1–2.3 code reviews, smoke tests, and fix reports. Every remaining Phase 2 issue (Issues #7–#13) **must** be read alongside this document. These are not suggestions — they are guardrails derived from mistakes we actually made and documented.
+**Purpose:** Actionable lessons extracted from Phase 1–2.8 code reviews, smoke tests, and fix reports. Every remaining Phase 2 issue (Issues #7–#13) **must** be read alongside this document. These are not suggestions — they are guardrails derived from mistakes we actually made and documented. Six consecutive defect-free phases (2.3–2.8) validate that these lessons work as intended.
 
-**Version:** 1.1  
+**Version:** 1.2  
 **Date:** February 14, 2026  
 **Source documents:**
 - `docs/implementation/phase-1-code-review.md` (Findings F1–F9)
@@ -12,6 +12,18 @@
 - `docs/implementation/live-server-smoke-test-post-phase-2.2.md` (Validation of fixes)
 - `docs/implementation/live-server-smoke-test-52north.md` (52North comparative test)
 - `docs/implementation/cross-server-interoperability-analysis.md` (Cross-server analysis)
+- `docs/implementation/phase-2.3-code-review.md` (Procedures — zero defects)
+- `docs/implementation/live-server-smoke-test-post-phase-2.3.md` (Procedures smoke test)
+- `docs/implementation/phase-2.4-code-review.md` (SamplingFeatures — zero defects)
+- `docs/implementation/live-server-smoke-test-post-phase-2.4.md` (SamplingFeatures smoke test)
+- `docs/implementation/phase-2.5-code-review.md` (Properties — zero defects)
+- `docs/implementation/live-server-smoke-test-post-phase-2.5.md` (Properties smoke test)
+- `docs/implementation/phase-2.6-code-review.md` (DataStreams — zero defects)
+- `docs/implementation/live-server-smoke-test-post-phase-2.6.md` (DataStreams smoke test)
+- `docs/implementation/phase-2.7-code-review.md` (Observations — zero defects)
+- `docs/implementation/live-server-smoke-test-post-phase-2.7.md` (Observations smoke test)
+- `docs/implementation/phase-2.8-code-review.md` (ControlStreams — zero defects)
+- `docs/implementation/live-server-smoke-test-post-phase-2.8.md` (ControlStreams smoke test)
 
 ---
 
