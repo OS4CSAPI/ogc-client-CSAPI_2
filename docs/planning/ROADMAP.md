@@ -1,7 +1,7 @@
 # CSAPI Implementation Roadmap
 
-**Last Updated:** February 14, 2026  
-**Version:** 3.3 (Smoke Test Findings F34-F39 Integrated)
+**Last Updated:** February 15, 2026  
+**Version:** 3.4 (Phase 3.1 Smoke Test Findings F40-F46 Integrated)
 
 ---
 
@@ -358,6 +358,9 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
      > - **F34 (Issue #47):** Commands require fallback routing — top-level `/commands` returns 400 on OSH. The response handler built in this phase must implement dual-path resolution: try top-level first, fall back to nested `/controlstreams/{csId}/commands` path on 400. See Issue #47 for full design.
      > - **F38:** Command status responses use `command@id` cross-reference and `executionTime` as a 2-element array (time range). Add `command@id` to the `@id` cross-reference registry alongside `system@id`, `datastream@id`, `controlstream@id`, `foi@id`.
      > - **F39:** Commands use the same `{ items: [...], links: [...] }` envelope as all other resources — no special-casing needed. A single `parseCollectionResponse()` function can handle all 9 resource types.
+   - > **📋 Smoke Test Notes (Phase 3.1 — F40, F43):**
+     > - **F40 (Issue #49):** OSH SamplingFeatures use `http://www.opengis.net/sensorml/2.0#Feature` — a non-SOSA vocabulary. Extend handler vocabulary sets to recognize SensorML namespace. See Issue #49 for full design.
+     > - **F43:** 52North `/procedures` endpoint returns `featureType: "sosa:Sensor"` (a System-type URI). The handler's System > Procedure classification priority correctly handles this, but the endpoint context and featureType disagree. Future response parser may use endpoint context as a tiebreaker.
 
 2. **Format Detector Extensions** (~1-2 hours, Low complexity)
    - Extend existing format detector
@@ -369,6 +372,10 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
      - Test media type registration
      - Test routing logic
      - Test fallback detection
+   - > **📋 Smoke Test Notes (Phase 3.1 — F41, F45, F46):**
+     > - **F41 (Issue #50):** 52North systems return `featureType: null` in GeoJSON but `definition: "sosa:Sensor"` in SensorML. The response parser / format detector must implement endpoint-context fallback classification when `getCSAPIResourceType()` returns null. See Issue #50 for design options.
+     > - **F45:** Response envelope varies by server AND format — OSH always uses `{ items: [...] }`, 52North GeoJSON uses `{ type: "FeatureCollection", features: [...] }`, 52North SensorML uses `{ items: [...] }`. The format detector / response parser must handle both envelope types.
+     > - **F46:** OSH ignores `Accept: application/sml+json` and returns GeoJSON anyway. SensorML parser testing will be limited to 52North only.
 
 3. **Validator Extensions** (~3-4 hours, Medium complexity)
    - Extend existing validation framework
@@ -716,9 +723,16 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 ## Version History
 
 **Document:** CSAPI Implementation Roadmap (Standalone)  
-**Version:** 3.3 (Smoke Test Findings F34-F39 Integrated)  
-**Date:** February 14, 2026  
-**Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete with incremental testing, correct dependencies, and Phase 2.9 smoke test findings integrated
+**Version:** 3.4 (Phase 3.1 Smoke Test Findings F40-F46 Integrated)  
+**Date:** February 15, 2026  
+**Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete with incremental testing, correct dependencies, and Phase 3.1 smoke test findings integrated
+
+**Version 3.4 - Phase 3.1 Smoke Test Findings F40-F46 Integrated (February 15, 2026):**
+- Added smoke test notes to Phase 3 Task 1 (GeoJSON Handler): F40 non-SOSA vocabulary (Issue #49), F43 procedure misclassification
+- Added smoke test notes to Phase 3 Task 2 (Format Detector): F41 null featureType fallback (Issue #50), F45 envelope variation, F46 OSH ignores SensorML Accept header
+- Created Issue #49 for F40 (Critical): Extend GeoJSON handler vocabulary for SensorML SamplingFeature
+- Created Issue #50 for F41 (Critical): Deferred to response parser — endpoint-context fallback for null featureType
+- Version bumped to 3.4
 
 **Version 3.3 - Smoke Test Findings F34-F39 Integrated (February 14, 2026):**
 - Added smoke test notes to Phase 3 Task 1 (GeoJSON Handler): F34 fallback routing, F38 `command@id` cross-reference, F39 `items` envelope confirmation
