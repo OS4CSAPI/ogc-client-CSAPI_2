@@ -359,21 +359,56 @@ Resource inventory: {{table}}
 
 Then commit the report, push, and confirm the file is at the expected path.
 
-If any new findings are classified as "Ours — Needs fix", create a GitHub
-issue for each using `docs/governance/issue-creation-prompt-template.md`.
+**STOP.** Do NOT create GitHub issues automatically. Instead, present
+all new findings to the user in a structured summary (see Step 10 below)
+and wait for discussion before taking any further action.
 ```
 
 ---
 
 ## Post-Smoke-Test Workflow
 
-After the smoke test report is generated:
+After the smoke test report is committed and pushed:
 
-1. **Review new findings** — decide which are "fix now" vs "defer"
-2. **Create GitHub issues** for "Ours — Needs fix" findings using `docs/governance/issue-creation-prompt-template.md`
-3. **Complete fix issues** before proceeding to the next Phase 3 task
-4. **The next smoke test will re-verify** all prior findings — nothing is forgotten
-5. **Update vocabulary inventory** if new featureType values were discovered
+### Step 10: Present Findings to User
+
+**This step is mandatory and must happen before any issue creation.**
+
+Present ALL new findings in a structured summary with recommendations:
+
+```
+### New Findings Summary
+
+| # | Finding | Severity | Category | Ownership | Recommendation |
+|---|---------|----------|----------|-----------|----------------|
+| F{{N}} | {{Title}} | {{Sev}} | {{Cat}} | {{Own}} | {{Your recommendation: create issue / defer / informational only}} |
+
+For each finding where you recommend creating an issue:
+- State what the issue would contain (1-2 sentences)
+- State which existing ROADMAP task or Phase 3 issue it relates to
+- State whether it blocks the next task or can be addressed later
+```
+
+Then **STOP and wait for the user to respond**. The user will:
+- Approve, modify, or reject each recommendation
+- Decide which findings warrant GitHub issues
+- Provide additional context or priorities
+- Potentially ask follow-up questions about specific findings
+
+### Step 11: Create Issues (Only After User Approval)
+
+**Only after the user explicitly approves issue creation:**
+
+1. Use `docs/governance/issue-creation-prompt-template.md` to draft each approved issue
+2. Present the draft issue body to the user for review before creating
+3. Create the issue on GitHub only after user confirms the content
+4. If the user wants changes, revise and re-present before creating
+
+### Step 12: Post-Issue Workflow
+
+1. **Complete fix issues** before proceeding to the next Phase 3 task
+2. **The next smoke test will re-verify** all prior findings — nothing is forgotten
+3. **Update vocabulary inventory** if new featureType values were discovered
 
 ---
 
@@ -389,6 +424,7 @@ These rules carry forward from Phase 2 (Lessons 8 and 10) with Phase 3 additions
 - [ ] **New findings get ownership classification** — Every new finding must be classified as "Ours", "Upstream", or "Shared".
 - [ ] **Raw data preserved** — When a handler function produces unexpected output, include the raw server JSON (or a representative sample) in the finding so the fix author has the actual input that caused the problem.
 - [ ] **Vocabulary inventory updated** — Every smoke test must compile a complete featureType inventory. This is cumulative — new values add to the record, nothing is removed.
+- [ ] **No automatic issue creation** — NEVER create GitHub issues during or immediately after the smoke test. Always present findings with recommendations first and wait for explicit user approval before creating any issues. Issues must follow `docs/governance/issue-creation-prompt-template.md` and the user must review the draft before it is posted to GitHub.
 
 ---
 
