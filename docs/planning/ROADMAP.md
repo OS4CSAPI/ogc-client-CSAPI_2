@@ -361,6 +361,8 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - > **📋 Smoke Test Notes (Phase 3.1 — F40, F43):**
      > - **F40 (Issue #49):** OSH SamplingFeatures use `http://www.opengis.net/sensorml/2.0#Feature` — a non-SOSA vocabulary. Extend handler vocabulary sets to recognize SensorML namespace. See Issue #49 for full design.
      > - **F43:** 52North `/procedures` endpoint returns `featureType: "sosa:Sensor"` (a System-type URI). The handler's System > Procedure classification priority correctly handles this, but the endpoint context and featureType disagree. Future response parser may use endpoint context as a tiebreaker.
+   - > **📋 Smoke Test Notes (Phase 3.2 — F49) — Design Decision:**
+     > - **F49 (Issue #52):** `extractCSAPIFeature()` uses `validateCSAPIFeature()` as a hard gate — any validation error blocks extraction entirely. This conflicts with upstream ogc-client patterns (tolerant extraction) and Postel's Law. **Design decision: decouple validation from extraction.** Extraction succeeds for any recognized feature; validation is opt-in diagnostics. See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
 
 2. **Format Detector Extensions** (~1-2 hours, Low complexity)
    - Extend existing format detector
@@ -382,6 +384,8 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - Add CSAPI Part 1 validation rules (required properties, URI formats, temporal validity, spatial constraints)
    - Add CSAPI Part 2 validation rules (schema conformance for Observations/Commands, result validation)
    - Add cross-reference validation (association links, hierarchical integrity, vocabulary references)
+   - > **📋 Design Decision — Validation Is Opt-In Diagnostics (Issue #52):**
+     > Validators are standalone diagnostic tools. They are **never** used as extraction gates. `extractCSAPIFeature()` does not call `validateCSAPIFeature()`. Callers who want validation invoke it themselves and decide how to handle errors. This follows the upstream ogc-client tolerant extraction pattern and Postel's Law. See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
    - **Write JSDoc:** Document validation rules, error reporting patterns
    - **Test immediately:** Add validation tests (~200-400 lines tests)
      - Test Part 1 validator correctly rejects invalid input (missing required fields, malformed URIs, invalid temporal ranges)
@@ -723,9 +727,16 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 ## Version History
 
 **Document:** CSAPI Implementation Roadmap (Standalone)  
-**Version:** 3.4 (Phase 3.1 Smoke Test Findings F40-F46 Integrated)  
+**Version:** 3.5 (Phase 3.2 Smoke Test Finding F49 — Validation/Extraction Decoupling Design Decision)  
 **Date:** February 15, 2026  
-**Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete with incremental testing, correct dependencies, and Phase 3.1 smoke test findings integrated
+**Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete with incremental testing, correct dependencies, and Phase 3.2 smoke test findings integrated
+
+**Version 3.5 - Phase 3.2 Smoke Test Finding F49 — Validation/Extraction Decoupling (February 15, 2026):**
+- Added smoke test note to Phase 3 Task 1 (GeoJSON Handler): F49 validation-as-gate blocks extraction of recognized features (Issue #52)
+- Added design decision reminder to Phase 3 Task 3 (Validator Extensions): validation is opt-in diagnostics, never an extraction gate
+- Design notes document: `docs/implementation/design-notes-validation-extraction-decoupling.md`
+- Created Issue #52: Decouple validation from extraction in `extractCSAPIFeature`
+- Version bumped to 3.5
 
 **Version 3.4 - Phase 3.1 Smoke Test Findings F40-F46 Integrated (February 15, 2026):**
 - Added smoke test notes to Phase 3 Task 1 (GeoJSON Handler): F40 non-SOSA vocabulary (Issue #49), F43 procedure misclassification

@@ -2987,6 +2987,9 @@ export interface Capability {
 
 The GeoJSON handler is existing code in the library that parses GeoJSON Feature and FeatureCollection documents, supporting all seven geometry types (Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, GeometryCollection). For CSAPI, we will extend this handler with recognition and extraction of CSAPI-specific properties. The extension will recognize CSAPI-specific feature types through the `featureType` property and extract CSAPI resource properties from the feature `properties` object. CSAPI Part 1 resources (Systems, Deployments, Procedures, Sampling Features) are encoded as GeoJSON features with additional semantic properties like `featureType` (type discriminator), `uid` (globally unique identifier), `assetType`, `validTime`, and `@link` association properties. The extension will add type checking for these CSAPI properties and validation rules specific to each CSAPI feature type, while maintaining compatibility with generic GeoJSON handling for other OGC API standards.
 
+> **📋 Design Decision — Validation/Extraction Decoupling (Issue #52):**
+> The GeoJSON handler provides three independent operations: **recognition** (`getCSAPIResourceType`), **extraction** (`extractCSAPIFeature`), and **validation** (`validateCSAPIFeature`). Extraction depends only on recognition — it succeeds for any recognized feature regardless of validation status. Validation is an opt-in diagnostic tool that callers invoke separately when needed. This follows the upstream ogc-client tolerant extraction pattern and Postel's Law (be liberal in what you accept). See `docs/implementation/design-notes-validation-extraction-decoupling.md` for full rationale.
+
 **CSAPI GeoJSON Properties (per OGC Part 1 OpenAPI schema):**
 
 All GeoJSON resources inherit from the base `feature` schema with required properties:
@@ -3193,6 +3196,9 @@ The format detector is existing code that examines HTTP response headers (Conten
 The validator is existing code that checks whether parsed documents conform to format specifications and semantic constraints. For CSAPI, we will extend this validator with validation of CSAPI requirements. The extension will check CSAPI-specific requirements: required properties for each resource type, valid enumeration values, URI format validation, temporal validity constraints, spatial constraint validation, association integrity, and schema conformance for Part 2 resources (Observation results must match DataStream schema, Command parameters must match ControlStream schema). The extension will add CSAPI validation rules to the existing validation pipeline, reporting errors and warnings through the same error handling mechanism used for other formats.
 
 > **⚠️ Clarification — Client-Side Validation Only:** The validation rules below are **implementation specifications for client-side input validation** (Responsibility 5: Validate). They define what the client checks before sending requests or after parsing responses. They are **NOT test criteria for verifying server data correctness** — testing whether a server returns valid data is AP3 (Server Conformance Testing). Tests should verify that the validator correctly rejects invalid inputs (e.g., missing required fields, malformed URIs), not that fixture data passes validation.
+
+> **📋 Design Decision — Validation Is Opt-In Diagnostics (Issue #52):**
+> Validators are **never** used as extraction gates. `extractCSAPIFeature()` does not call `validateCSAPIFeature()`. Extraction succeeds for any recognized feature. Callers who want validation invoke it themselves and decide how to handle errors. This follows Postel's Law (be liberal in what you accept from servers) and matches the upstream ogc-client pattern where no existing handler calls a validator as a precondition to extraction. See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
 
 **CSAPI Validation Rules:**
 
@@ -3627,6 +3633,30 @@ observations.features.forEach((obs) => {
 ---
 
 ### Error Handling Patterns
+
+**Extraction vs Validation — Separate Concerns (Issue #52):**
+
+```typescript
+import { extractCSAPIFeature, validateCSAPIFeature } from '@camptocamp/ogc-client/csapi/formats';
+
+// Pattern 1: Extract only (tolerant — recommended for most use cases)
+const resource = extractCSAPIFeature(rawFeature);
+// Succeeds for any recognized feature, even if partially non-conformant
+
+// Pattern 2: Extract + validate (opt-in diagnostics)
+const resource = extractCSAPIFeature(rawFeature);
+const errors = validateCSAPIFeature(rawFeature);
+if (errors.length > 0) {
+  console.warn('Resource has validation issues:', errors.map(e => e.message));
+  // Caller decides: log warning, show UI indicator, reject, etc.
+}
+
+// Pattern 3: Validate only (conformance checking, developer tools)
+const errors = validateCSAPIFeature(rawFeature);
+// Useful for debugging, conformance reports, server quality dashboards
+```
+
+> **Design principle:** Extraction and validation are independent operations. Extraction succeeds for any recognized feature (Postel's Law). Validation is an opt-in diagnostic that callers invoke when needed. See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
 
 **Resource Validation Errors:**
 
@@ -4636,10 +4666,17 @@ See the [Phase 0 Test-Research Report](../research/testing/review/phase-0-lesson
 
 ## Version History
 
-**Document Version:** 7.0 (Complete with Query Parameters Reference)  
-**Date:** February 5, 2026  
+**Document Version:** 7.1 (Validation/Extraction Decoupling Design Decision Integrated)  
+**Date:** February 15, 2026  
 **Research Foundation:** 14 completed research plans with ⭐⭐⭐⭐⭐ confidence (98-100%)  
 **Status:** ✅ **ARCHITECTURE VALIDATED** with real-world scenarios and quantitative evidence
+
+**Version 7.1 - Validation/Extraction Decoupling Design Decision (February 15, 2026):**
+- Added design decision note to §7 GeoJSON Handler: extraction depends only on recognition, not validation
+- Added design decision note to §7 Validator: validators are opt-in diagnostics, never extraction gates
+- Added extraction vs validation usage patterns to §11 Error Handling Patterns
+- Design notes: `docs/implementation/design-notes-validation-extraction-decoupling.md`
+- Related: Issue #52, Phase 3.2 smoke test finding F49
 
 **Version 7.0 - Query Parameters Restoration (February 5, 2026):**
 - Restored "Complete Query Parameter Support" section accidentally removed in v3
