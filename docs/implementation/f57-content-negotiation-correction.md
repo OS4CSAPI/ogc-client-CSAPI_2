@@ -204,3 +204,35 @@ This is actually a valuable interoperability finding. The same server serves dif
 This was a process failure on the AI's part. The AI changed the request pattern between smoke tests without tracking it, filed a confident finding based on the wrong data, "verified" it using the same wrong method, and initially dismissed the human's correct observation as browser caching. The finding survived because re-verification was performed in the same context that produced the error.
 
 The detection path — the human noticing the HTML viewer had data, doing a hard refresh to rule out cache, and pushing the investigation — is exactly the kind of human oversight that keeps AI-assisted work honest. L13 captures this going forward.
+
+---
+
+## Prior Art: This Was Already Known
+
+After the correction was complete, a review of [OS4CSAPI Discussion #2 — Sprint Goal #2 Feedback](https://github.com/orgs/OS4CSAPI/discussions/2) (October 2025, Code Sprint 26) revealed that this exact content negotiation behavior was **already documented four months before our smoke test encountered it**.
+
+SpeckiJ (Jan Speckamp, 52North implementer) wrote on October 27, 2025:
+
+> *"Sorry for the confusion, i forgot to explain that I actually tested it using the url: `https://csa.demo.52north.org/?f=application/geo%2Bjson` — Which hardcodes the feature-type to geojson - this bypasses the Content-Type parsing of pygeoapi which does not really handle our mimetypes well. **Specifically our implementation does not really deal well with the `Accept` Header containing multiple different keys in the case that they are all valid, but content is only available in some types.**"*
+
+That last sentence describes exactly what we discovered: 52North has content available in `application/sml+json` but not in `application/json`, and the `Accept` header routes to different providers.
+
+### Corroborating Evidence from the Discussion
+
+| Discussion observation (Oct 2025) | Our F57 experience (Feb 2026) |
+|---|---|
+| QGIS expects `application/json` / GeoJSON FeatureCollection | Our Phase 3.4 smoke test used `Accept: application/json` |
+| QGIS saw empty or broken collections | We saw empty FeatureCollections |
+| SpeckiJ workaround: `?f=application/geo%2Bjson` bypasses content negotiation | We found `Accept: application/sml+json` bypasses the empty GeoJSON provider |
+| "content is only available in some types" | Exactly — SML provider has data, GeoJSON provider is empty |
+| The example deployment shown is "Messtonne 1 - 2025 Test" | That's the same deployment we found when we tested with `application/sml+json` |
+
+The discussion also reveals additional context:
+- **All responses from the API are expected as `json` and `GeoJSON FeatureCollection`** by generic OGC API Features clients like QGIS
+- **QGIS does not do handling/setting of response formats** (via `f` parameter), just assumes valid response types
+- This is a **known limitation of 52North's pygeoapi integration**, not a server reset or database wipe
+- SpeckiJ noted he would "try to develop a fix during this week" — but as of February 2026, the dual-backend behavior persists
+
+### What This Means
+
+If the AI had checked the organization's own discussion forum before attributing empty responses to "data loss," F57 would never have been filed. The information was available and documented by the server implementer himself. This reinforces L13 further — the AI didn't just drift on HTTP headers, it also failed to consult available context about known server behavior before reaching for the most dramatic explanation ("the database was wiped").
