@@ -86,6 +86,16 @@ export type {
   CommandCollection,
   CommandStatusCollection,
 } from './ogc-api/csapi/model.js';
+export {
+  SOSA_NS,
+  isCSAPIFeature,
+  getCSAPIResourceType,
+  parseValidTime,
+  isValidUri,
+  validateCSAPIFeature,
+  extractCSAPIFeature,
+} from './ogc-api/csapi/formats/index.js';
+export type { CSAPIResourceTypeName } from './ogc-api/csapi/formats/index.js';
 export { default as TmsEndpoint } from './tms/endpoint.js';
 export * from './tms/model.js';
 export { default as StacEndpoint } from './stac/endpoint.js';
