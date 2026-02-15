@@ -61,22 +61,29 @@ Please perform a code review of the work completed since the last review.
 
 ### Review Instructions
 
-1. **Run verification gates first** — execute all four and record results:
+1. **Review Phase 3 Lessons Learned** — read `docs/governance/phase-3-lessons-learned.md` before evaluating code. Key checks:
+   - Lesson 1: Does any new code introduce an architectural layer without upstream precedent?
+   - Lesson 2: Does extraction depend on validation? (It must not.)
+   - Lesson 4: Are there parallel systems doing the same thing?
+   - Lesson 10: Do type names collide with JS/TS built-ins?
+   - Lesson 12: Is the code technically correct but should not exist in a client library?
+
+2. **Run verification gates** — execute all four and record results:
    - `npx tsc --noEmit` (must be clean)
    - `npx jest "src/ogc-api/csapi"` (record pass count — must include ALL prior tests + new tests)
    - `npx jest "src/ogc-api/endpoint.spec"` (record pass count, note pre-existing failures)
    - `npx jest "src/ogc-api/csapi/formats"` (record pass count for format-specific tests only)
 
-2. **Read all changed files** — identify every file modified since the last review commit. For each file, note:
+3. **Read all changed files** — identify every file modified since the last review commit. For each file, note:
    - What changed (lines added/modified/removed)
    - Whether the change follows the established pattern for its component type (see Pattern References below)
 
-3. **Reaffirm ALL prior findings** — read the previous review doc and check each open finding:
+4. **Reaffirm ALL prior findings** — read the previous review doc and check each open finding:
    - For each RESOLVED finding: confirm it's still resolved, cite evidence
    - For each STILL OPEN finding: check if it was addressed, update status
    - For each UNCHANGED finding (not-our-code): reaffirm unchanged status
 
-4. **Evaluate new code against these quality dimensions:**
+5. **Evaluate new code against these quality dimensions:**
 
    - **Correctness:** Does the function produce the correct typed output from valid input? Does it handle the spec-defined variants (e.g., compact CURIE vs full URI, array vs object format)?
 
@@ -140,7 +147,7 @@ Please perform a code review of the work completed since the last review.
    - **Exports:** Are new types/functions exported from the appropriate barrel file (`formats/index.ts`, `src/index.ts`)?
    - **Input validation:** Does every public function guard against null/undefined/wrong-type input before processing?
 
-5. **Classify every finding** using these severity labels:
+6. **Classify every finding** using these severity labels:
    - **BUG** — incorrect behavior, wrong output, runtime error
    - **DESIGN** — architectural concern, DRY violation, type safety issue
    - **GAP** — missing test coverage, missing export, incomplete implementation
@@ -148,7 +155,7 @@ Please perform a code review of the work completed since the last review.
    - **INFORMATIONAL** — worth noting but no action needed
    - **CONSISTENCY** — follows or deviates from established patterns
 
-6. **Generate the test quality heatmap** — update the table showing coverage across ALL Phase 3 components (not just new ones), using these dimensions:
+7. **Generate the test quality heatmap** — update the table showing coverage across ALL Phase 3 components (not just new ones), using these dimensions:
 
    **For utility/extension modules (Category A):**
 
@@ -174,14 +181,14 @@ Please perform a code review of the work completed since the last review.
    | Encoding variants | JSON, Text, Binary (if applicable) |
    | Error messages actionable | Error text identifies what went wrong and where |
 
-7. **Include a root cause analysis** if there are new defects — explain HOW and WHY each issue was introduced, following the pattern from Phase 2.2 review
+8. **Include a root cause analysis** if there are new defects — explain HOW and WHY each issue was introduced, following the pattern from Phase 2.2 review
 
-8. **Write prioritized recommendations** in three tiers:
+9. **Write prioritized recommendations** in three tiers:
    - **Fix Now** (before next coding issue)
    - **Fix Before Phase 4** (before integration testing begins)
    - **Defer** (low priority, no current impact)
 
-9. **Check smoke test finding integration** — for each Phase 3 task, verify that relevant smoke test findings have been addressed:
+10. **Check smoke test finding integration** — for each Phase 3 task, verify that relevant smoke test findings have been addressed:
 
    | Finding | Relevant Phase 3 Task | What to Check |
    |---------|----------------------|---------------|
@@ -345,7 +352,8 @@ When performing a Phase 3 code review, the reviewer should have access to:
 
 | Document | Location | Purpose |
 |----------|----------|---------|
-| Phase 2 Lessons Learned | `docs/governance/phase-2-lessons-learned.md` | General guardrails (still valid) |
+| Phase 3 Lessons Learned | `docs/governance/phase-3-lessons-learned.md` | Phase 3 guardrails: upstream audit, Postel's Law, type naming, content negotiation, layered architecture |
+| Phase 2 Lessons Learned | `docs/governance/phase-2-lessons-learned.md` | General guardrails — Lessons 6-10 still active in Phase 3 |
 | Phase 2 Review Template | `docs/governance/code-review-prompt-template.md` | Reference for Phase 2 heatmap dimensions |
 | Previous Review | `docs/implementation/phase-{prev}-code-review.md` | Prior findings to reaffirm |
 | Implementation Guide | `docs/planning/csapi-implementation-guide.md` | Spec compliance, Phase 3 component specs (§7) |

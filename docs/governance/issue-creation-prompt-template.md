@@ -83,6 +83,10 @@
 ## Operational Constraints
 
 > **⚠️ MANDATORY:** Before starting work on this issue, review [`docs/governance/AI_OPERATIONAL_CONSTRAINTS.md`](../AI_OPERATIONAL_CONSTRAINTS.md).
+>
+> **For Phase 3 issues:** Also review [`docs/governance/phase-3-lessons-learned.md`](../governance/phase-3-lessons-learned.md) — these are guardrails derived from real mistakes in Phase 3 (validator removal, upstream audit failures, real-world data divergence). Lessons 1-2 (audit upstream, Postel's Law) are especially critical.
+>
+> **For Phase 2 issues:** Also review [`docs/governance/phase-2-lessons-learned.md`](../governance/phase-2-lessons-learned.md) — test checklist (Lesson 1) and query options table (Lesson 2) are mandatory.
 
 Key constraints for this task:
 - **Precedence:** OGC specifications → AI Collaboration Agreement → This issue description → Existing code → Conversational context
@@ -90,6 +94,7 @@ Key constraints for this task:
 - **No refactoring:** Do not rename, restructure, or "improve" code outside this issue's scope
 - **Minimal diffs:** Prefer the smallest change that satisfies the acceptance criteria
 - **Ask when unclear:** If intent is ambiguous, stop and ask for clarification
+- **Audit upstream first (Phase 3):** Before building any new architectural layer, verify that at least one upstream handler uses the same pattern (Lesson 1)
 
 ---
 
