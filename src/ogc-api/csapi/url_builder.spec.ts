@@ -1853,6 +1853,31 @@ describe('getObservations', () => {
     const url = makeObsBuilder().getObservations({ f: 'application/swe+json' });
     expect(url).toBe('https://example.com/collections/iot/observations?f=application%2Fswe%2Bjson');
   });
+
+  it('returns correct URL with offset', () => {
+    const url = makeObsBuilder().getObservations({ offset: 20 });
+    expect(url).toBe('https://example.com/collections/iot/observations?offset=20');
+  });
+
+  it('returns correct URL with q parameter', () => {
+    const url = makeObsBuilder().getObservations({ q: 'temperature' });
+    expect(url).toBe('https://example.com/collections/iot/observations?q=temperature');
+  });
+
+  it('returns correct URL with id filter', () => {
+    const url = makeObsBuilder().getObservations({ id: 'obs-001' });
+    expect(url).toBe('https://example.com/collections/iot/observations?id=obs-001');
+  });
+
+  it('handles array id parameter', () => {
+    const url = makeObsBuilder().getObservations({ id: ['obs-001', 'obs-002'] });
+    expect(url).toBe('https://example.com/collections/iot/observations?id=obs-001%2Cobs-002');
+  });
+
+  it('returns correct URL with multiple options', () => {
+    const url = makeObsBuilder().getObservations({ limit: 10, offset: 5, q: 'temperature' });
+    expect(url).toBe('https://example.com/collections/iot/observations?limit=10&offset=5&q=temperature');
+  });
 });
 
 describe('getObservation', () => {
