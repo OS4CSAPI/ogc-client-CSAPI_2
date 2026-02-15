@@ -143,19 +143,9 @@ Record results in a table:
 | Server | Resource Type | Feature ID | featureType Value | isCSAPIFeature | getCSAPIResourceType | Match? |
 |--------|--------------|------------|-------------------|----------------|---------------------|--------|
 
-**3c. Test validation on each feature:**
+**3c. ~~Test validation on each feature~~ — REMOVED**
 
-```
-validateCSAPIFeature(feature)    → expected: empty array (no errors)
-```
-
-If errors are returned, record every error message. Classify each as:
-- **Handler bug** — our validation is too strict for real data
-- **Server issue** — the server is sending non-compliant data
-- **Spec ambiguity** — the spec allows this but our handler doesn't
-
-| Server | Resource Type | Feature ID | Validation Errors | Classification |
-|--------|--------------|------------|-------------------|----------------|
+> **Note (2026-02-15):** Step 3c previously called `validateCSAPIFeature()`. That function and all 13 per-type validators were removed in Issue #52 (Phase 3.3) after F49 revealed that validation-gated extraction blocked 100% of OSH SamplingFeatures. The design decision (documented in `docs/implementation/design-notes-validation-extraction-decoupling.md`) concluded that feature-level validators don't align with upstream ogc-client architecture — no other handler (WMS, WFS, WMTS, TMS, STAC) has separate `validate*()` functions. Extraction now gates on recognition only (Postel's Law). This step is retained as a placeholder to preserve step numbering.
 
 **3d. Test extraction on each feature:**
 
@@ -296,11 +286,9 @@ Resource inventory: {{table}}
 |--------|--------------|-----------------|-----------------|----------|
 | ... | ... | ... | ✅/❌ | ... |
 
-### GeoJSON Handler — Validation
+### ~~GeoJSON Handler — Validation~~ — N/A
 
-| Server | Resource Type | Features Tested | All Valid? | Errors |
-|--------|--------------|-----------------|------------|--------|
-| ... | ... | ... | ✅/❌ | ... |
+> Removed in Issue #52 (Phase 3.3). See Step 3c note above. `validateCSAPIFeature` no longer exists.
 
 ### GeoJSON Handler — Extraction
 
@@ -444,7 +432,7 @@ As Phase 3 progresses, more components become testable. Use this matrix to deter
 |-----------|--------------|---------------|---------------------|
 | GeoJSON handler | Step 3 | Now (Issue #14 complete) | `application/geo+json` or `application/json` |
 | Format detector | Step 3 (adapted) | After Issue #15 | Any — tests content-type detection |
-| Validator extensions | Step 3c (extended) | After Issue #16 | `application/geo+json` |
+| ~~Validator extensions~~ | ~~Step 3c~~ | N/A — removed in Issue #52 | — |
 | SWE Common types | N/A (types only) | — | — |
 | SensorML types | N/A (types only) | — | — |
 | SensorML parsers | New Step 10 | After Issues #19–#22 | `application/sml+json` |
