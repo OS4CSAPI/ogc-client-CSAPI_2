@@ -1,5 +1,5 @@
 import type { OgcApiCollectionInfo } from '../model.js';
-import type { QueryOptions, SystemQueryOptions, DeploymentQueryOptions, ProcedureQueryOptions, SamplingFeatureQueryOptions, PropertyQueryOptions, DatastreamQueryOptions, ObservationQueryOptions } from './model.js';
+import type { QueryOptions, SystemQueryOptions, DeploymentQueryOptions, ProcedureQueryOptions, SamplingFeatureQueryOptions, PropertyQueryOptions, DatastreamQueryOptions, ObservationQueryOptions, ControlStreamQueryOptions, CommandQueryOptions } from './model.js';
 import { CSAPIResourceTypes } from './model.js';
 import { EndpointError } from '../../shared/errors.js';
 import {
@@ -1549,5 +1549,192 @@ export default class CSAPIQueryBuilder {
   getObservationHistory(id: string, options?: QueryOptions): string {
     this.assertResourceAvailable('observations');
     return this.buildResourceUrl('observations', id, 'history', options);
+  }
+
+  // ── CONTROL STREAMS ──
+
+  /**
+   * Returns the URL for querying all control streams.
+   *
+   * ControlStreams represent command interfaces for controlling actuators
+   * and systems. They mirror DataStreams architecturally but for
+   * control/actuation rather than observation/sensing.
+   *
+   * @param options - Optional query parameters including `systemId`,
+   *   `controlledPropertyId`, plus standard pagination and filtering.
+   * @returns URL string for the control streams collection endpoint.
+   * @throws {EndpointError} If 'controlStreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getControlStreams({ limit: 10, systemId: 'sys-001' });
+   * // => "https://example.com/collections/iot/controlstreams?limit=10&systemId=sys-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_controlstream_resources
+   */
+  getControlStreams(options?: ControlStreamQueryOptions): string {
+    this.assertResourceAvailable('controlStreams');
+    return this.buildResourceUrl('controlStreams', undefined, undefined, options);
+  }
+
+  /**
+   * Returns the URL for retrieving a single control stream by ID.
+   *
+   * @param id - The control stream resource identifier.
+   * @param options - Optional query parameters (e.g., format selection).
+   * @returns URL string for the single control stream endpoint.
+   * @throws {EndpointError} If 'controlStreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getControlStream('cs-001');
+   * // => "https://example.com/collections/iot/controlstreams/cs-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_controlstream_resources
+   */
+  getControlStream(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('controlStreams');
+    return this.buildResourceUrl('controlStreams', id, undefined, options);
+  }
+
+  /**
+   * Returns the URL for creating a new control stream.
+   *
+   * The request body (not part of the URL) must include the parameter schema,
+   * controlled properties, and system association.
+   *
+   * @returns URL string for the control streams creation endpoint (POST).
+   * @throws {EndpointError} If 'controlStreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.createControlStream();
+   * // => "https://example.com/collections/iot/controlstreams"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_controlstream_resources
+   */
+  createControlStream(): string {
+    this.assertResourceAvailable('controlStreams');
+    return this.buildResourceUrl('controlStreams');
+  }
+
+  /**
+   * Returns the URL for updating an existing control stream.
+   *
+   * Caution: schema changes may affect pending commands.
+   *
+   * @param id - The control stream resource identifier.
+   * @returns URL string for the control stream update endpoint (PUT).
+   * @throws {EndpointError} If 'controlStreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.updateControlStream('cs-001');
+   * // => "https://example.com/collections/iot/controlstreams/cs-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_controlstream_resources
+   */
+  updateControlStream(id: string): string {
+    this.assertResourceAvailable('controlStreams');
+    return this.buildResourceUrl('controlStreams', id);
+  }
+
+  /**
+   * Returns the URL for deleting a control stream.
+   *
+   * @param id - The control stream resource identifier.
+   * @returns URL string for the control stream deletion endpoint (DELETE).
+   * @throws {EndpointError} If 'controlStreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.deleteControlStream('cs-001');
+   * // => "https://example.com/collections/iot/controlstreams/cs-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_controlstream_resources
+   */
+  deleteControlStream(id: string): string {
+    this.assertResourceAvailable('controlStreams');
+    return this.buildResourceUrl('controlStreams', id);
+  }
+
+  /**
+   * Returns the URL for retrieving a control stream's parameter schema.
+   *
+   * The `cmdFormat` query parameter is **required** per Part 2, Req 25.
+   * Omitting it causes the server to return 400 Bad Request.
+   * Pass it via the `f` option (e.g., `{ f: 'application/swe+json' }`).
+   *
+   * @param id - The control stream resource identifier.
+   * @param options - Optional query parameters. Should include `f` set to the
+   *   desired command format (e.g., `application/swe+json`).
+   * @returns URL string for the control stream schema endpoint.
+   * @throws {EndpointError} If 'controlStreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getControlStreamSchema('cs-001', { f: 'application/swe+json' });
+   * // => "https://example.com/collections/iot/controlstreams/cs-001/schema?f=application%2Fswe%2Bjson"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#req_controlstream_schema
+   */
+  getControlStreamSchema(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('controlStreams');
+    return this.buildResourceUrl('controlStreams', id, 'schema', options);
+  }
+
+  /**
+   * Returns the URL for listing commands within a control stream.
+   *
+   * Supports temporal filtering via `issueTime` and `executionTime`,
+   * and cursor-based pagination via the `cursor` parameter.
+   *
+   * @param id - The control stream resource identifier.
+   * @param options - Optional query parameters including `issueTime`,
+   *   `executionTime`, `currentStatus`, plus standard pagination and filtering.
+   * @returns URL string for the control stream's commands endpoint.
+   * @throws {EndpointError} If 'controlStreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getControlStreamCommands('cs-001', { limit: 50 });
+   * // => "https://example.com/collections/iot/controlstreams/cs-001/commands?limit=50"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+   */
+  getControlStreamCommands(id: string, options?: CommandQueryOptions): string {
+    this.assertResourceAvailable('controlStreams');
+    return this.buildResourceUrl('controlStreams', id, 'commands', options);
+  }
+
+  /**
+   * Returns the URL for checking command feasibility on a control stream.
+   *
+   * Feasibility checking allows testing whether a command can be executed
+   * before actually submitting it. The request body (not part of the URL)
+   * must contain the command parameters to validate.
+   *
+   * @param controlStreamId - The control stream resource identifier.
+   * @returns URL string for the feasibility checking endpoint (POST).
+   * @throws {EndpointError} If 'controlStreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.checkCommandFeasibility('cs-001');
+   * // => "https://example.com/collections/iot/controlstreams/cs-001/feasibility"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_controlstream_resources
+   */
+  checkCommandFeasibility(controlStreamId: string): string {
+    this.assertResourceAvailable('controlStreams');
+    return this.buildResourceUrl('controlStreams', controlStreamId, 'feasibility');
   }
 }
