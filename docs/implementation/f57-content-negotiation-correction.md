@@ -173,3 +173,34 @@ This incident demonstrated the value of human oversight in AI-assisted developme
 3. **The AI's confidence was inversely correlated with correctness.** F57 was one of the most thoroughly-documented findings in the smoke test series. It had more evidence bullets, more impact analysis, and more dependent findings than any other finding. But it was wrong from the first observation.
 
 4. **Known lessons are not automatically applied.** L9 (Content Negotiation Cannot Be Assumed) existed before F57 was written. The AI wrote L9, reviewed code against it, and then violated it. Awareness of a principle does not guarantee its application, especially when the AI is operating in a different mode (smoke testing vs code review).
+
+---
+
+## What This Means — Plain-Language Summary
+
+### For the 52North Server
+
+52North is **fine** — nothing was ever lost. What we discovered is that it runs a **dual-backend architecture**:
+
+- **`application/sml+json`** (default) → Routes to the SensorML data store → **3 systems, 1 deployment, 1 procedure** — all present, never changed
+- **`application/json`** → Routes to a separate pygeoapi GeoJSON provider → **empty** (no features loaded into this provider)
+
+This is actually a valuable interoperability finding. The same server serves different data (and different response envelope shapes — `items` vs `features`) depending on the `Accept` header. It's not a bug per se, but it means clients that hard-code `Accept: application/json` will see an empty server even though data exists.
+
+### For Our Work
+
+**Good news:**
+- **52North dual-server testing is restored.** We're back to two live servers for validation (OSH + 52North). The 10 findings that were marked "cannot verify" because of F57 are all potentially re-verifiable now.
+- **No code was affected.** F57 was a documentation-only finding — it never caused code changes. The parser, type system, and tests are all clean.
+- **Our SensorML parser already handles `application/sml+json`.** The `SimpleProcess` parser and format detection we built in Issue #19 target exactly the format that 52North's data-bearing provider returns.
+
+**Important forward-looking considerations:**
+- **Future smoke tests must document which `Accept` header was used** for every request. Header choice should never change silently between test runs.
+- **The response parser will need to handle both envelope shapes** — `{ items: [...] }` from SML responses and `{ type: "FeatureCollection", features: [...] }` from GeoJSON responses — even from the same server.
+- **Content negotiation (L9) is now proven critical for both code and testing methodology.** We wrote L9 as a parser concern, but this incident shows it's equally important for how we observe server behavior.
+
+### For AI-Human Collaboration
+
+This was a process failure on the AI's part. The AI changed the request pattern between smoke tests without tracking it, filed a confident finding based on the wrong data, "verified" it using the same wrong method, and initially dismissed the human's correct observation as browser caching. The finding survived because re-verification was performed in the same context that produced the error.
+
+The detection path — the human noticing the HTML viewer had data, doing a hard refresh to rule out cache, and pushing the investigation — is exactly the kind of human oversight that keeps AI-assisted work honest. L13 captures this going forward.

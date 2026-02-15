@@ -90,10 +90,17 @@ We test against TWO servers. Both must be tested in every smoke test.
   ```powershell
   Invoke-RestMethod -Uri "https://csa.demo.52north.org/" -SkipCertificateCheck
   ```
+- **⚠️ CONTENT NEGOTIATION WARNING (L13):** 52North runs a **dual-backend architecture**. The `Accept` header determines which data provider handles the request:
+  - `Accept: application/sml+json` (or no `Accept` header — server default) → SensorML data store → **has data** (3 systems, 1 deployment, 1 procedure). Envelope: `{ items: [...], links: [...] }`
+  - `Accept: application/json` → pygeoapi GeoJSON provider → **empty**. Envelope: `{ type: "FeatureCollection", features: [] }`
+  - These are **different backends with different data and different response shapes** on the same server
+  - If a request returns empty collections, verify you are using the correct `Accept` header before concluding data is absent
+  - See `docs/implementation/f57-content-negotiation-correction.md` for the full investigation
 - **Known response characteristics:**
-  - Envelope: `{ type: "FeatureCollection", features: [...] }` (standard GeoJSON)
+  - Default content type: `application/sml+json` (SensorML format)
+  - SML envelope: `{ items: [...], links: [...] }` (non-standard — same shape as OSH)
+  - GeoJSON envelope: `{ type: "FeatureCollection", features: [...] }` (standard GeoJSON — but currently empty)
   - featureType values: May use different vocabularies than OSH
-  - Most collections may be empty — handler correctness may only be testable on non-empty types
   - Some endpoints may return 500 or 404 (server bugs, not our code)
 
 ### Test Instructions
@@ -121,7 +128,7 @@ This step ensures we have test data before proceeding to handler validation.
 
 For EACH server, for EACH resource type with data (Systems, Deployments, Procedures, SamplingFeatures):
 
-**3a. Fetch the collection** — GET the resource collection with `Accept: application/geo+json` (or the server's default). Save the raw JSON response.
+**3a. Fetch the collection** — GET the resource collection. **Record the exact `Accept` header used** (or note if none was set). The `Accept` header determines the response format and potentially which data backend responds (see 52North content negotiation warning above). If testing GeoJSON handling, use `Accept: application/geo+json`. If testing SensorML handling, use `Accept: application/sml+json`. If a collection returns empty, re-test with the server's default content type (no `Accept` header) before filing a finding. Save the raw JSON response.
 
 **3b. Test recognition on each feature:**
 
@@ -420,6 +427,7 @@ These rules carry forward from Phase 2 (Lessons 8 and 10) with Phase 3 additions
 - [ ] **Both servers tested** — Every smoke test MUST hit both OpenSensorHub AND 52North. Single-server testing missed real interoperability issues in Phase 2.
 - [ ] **OSH credentials not in repo** — The OpenSensorHub username and password are NEVER committed to the repository, NEVER written into any file, and NEVER included in the report. If you don't have them, ask the user.
 - [ ] **52North needs `-SkipCertificateCheck`** — Every PowerShell command to the 52North server MUST include this flag.
+- [ ] **Accept headers documented (L13)** — Every HTTP request in the smoke test MUST record which `Accept` header was used. If no `Accept` header is set, record "none (server default)". The `Accept` header MUST NOT change silently between smoke tests — any change must be deliberate and documented. Before attributing empty responses to "data loss" or "server reset", re-test with at least: (1) no `Accept` header, (2) `Accept: application/json`, and (3) `Accept: application/sml+json`. See `docs/implementation/f57-content-negotiation-correction.md`.
 - [ ] **All prior findings re-checked** — The regression check section must cover EVERY finding from EVERY prior smoke test.
 - [ ] **New findings get ownership classification** — Every new finding must be classified as "Ours", "Upstream", or "Shared".
 - [ ] **Raw data preserved** — When a handler function produces unexpected output, include the raw server JSON (or a representative sample) in the finding so the fix author has the actual input that caused the problem.
@@ -479,7 +487,10 @@ The Phase 3 smoke tests continue the numbering sequence from Phase 2. They appea
 | URL | `http://45.55.99.236:8080/sensorhub/api` | `https://csa.demo.52north.org/` |
 | Auth | Basic (⚠️ ask user for credentials) | None |
 | SSL | HTTP (no SSL issues) | HTTPS (expired cert — use `-SkipCertificateCheck`) |
-| Response envelope | `{ items: [...] }` | `{ type: "FeatureCollection", features: [...] }` |
+| Content negotiation | Single backend | ⚠️ **Dual backend** — `Accept` header routes to different providers (L13) |
+| Default content type | `application/json` | `application/sml+json` |
+| SML envelope (`application/sml+json`) | `{ items: [...] }` | `{ items: [...] }` — **has data** |
+| GeoJSON envelope (`application/json`) | `{ items: [...] }` | `{ type: "FeatureCollection", features: [...] }` — **empty** |
 | featureType vocabulary | SOSA (`sosa:Sensor`, etc.) | May differ |
 | validTime format | Array `["ISO", "now"]` | Unknown until tested |
-| Data availability | Rich (systems, datastreams, etc.) | Mostly empty |
+| Data availability | Rich (systems, datastreams, etc.) | Rich via SML; empty via GeoJSON |
