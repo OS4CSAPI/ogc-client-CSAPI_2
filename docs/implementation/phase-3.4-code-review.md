@@ -229,7 +229,9 @@ The `Document` interface (line ~148) conflicts with the TypeScript DOM global `D
 
 **Recommendation:** Accept as-is for now. If a collision is ever reported in consumer code, rename to `SmlDocument`. Document this decision.
 
-**Severity:** DESIGN (low)
+**Decision (2026-02-15):** ACCEPTED-BY-DESIGN — The OAS schema uses `Document`, module imports eliminate ambient collision, and the rename cost is near-zero if a consumer ever reports an issue. No action needed.
+
+**Severity:** DESIGN (low) — **ACCEPTED-BY-DESIGN**
 
 ---
 
@@ -561,7 +563,7 @@ None. The module is clean.
 
 ### Fix Before Phase 4
 
-1. **[F3] Consider renaming `Document` to `SmlDocument`** — Only if consumer code reports collisions with DOM `Document`. Currently low risk since SensorML types are server-side only. Monitor during parser development.
+1. ~~**[F3] Consider renaming `Document` to `SmlDocument`**~~ — **ACCEPTED-BY-DESIGN (2026-02-15).** OAS schema uses `Document`, module imports eliminate ambient collision, rename cost is near-zero if a consumer ever reports an issue.
 
 2. **[F14/3.1-F7] Replace `as` casts with `satisfies` in `extractCSAPIFeature`** — Carried forward. Recommend fixing when extraction function is next modified.
 
@@ -604,7 +606,7 @@ Phase 3.4 is the **eleventh consecutive phase** with zero new defects. The strea
 **Cumulative project quality:**
 - **11 consecutive phases** with zero defects (Phase 2.3 → Phase 3.4)
 - **0 open bug or gap findings**
-- **1 new low-severity design finding** (F3: `Document` name) + **1 carried forward** (F14: `as` casts)
+- **1 new low-severity design finding** (F3: `Document` name — ACCEPTED-BY-DESIGN) + **1 carried forward** (F14: `as` casts)
 - **423 CSAPI tests** + 31 mime-type tests = **454 total**, all passing
 - **~9,000 lines** of production + test code
 - **Phase 2:** 79 public methods, 9 resource types, 314 tests — **complete**
