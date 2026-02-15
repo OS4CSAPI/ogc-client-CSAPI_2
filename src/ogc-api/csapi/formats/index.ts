@@ -10,6 +10,7 @@
 
 export {
   SOSA_NS,
+  SENSORML_NS,
   isCSAPIFeature,
   getCSAPIResourceType,
   parseValidTime,

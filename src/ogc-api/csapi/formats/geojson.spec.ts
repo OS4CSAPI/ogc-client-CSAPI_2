@@ -6,6 +6,7 @@ import {
   validateCSAPIFeature,
   extractCSAPIFeature,
   SOSA_NS,
+  SENSORML_NS,
 } from './geojson.js';
 
 // ========================================
@@ -113,6 +114,18 @@ describe('isCSAPIFeature', () => {
   it('returns false for unrecognized SOSA local name', () => {
     expect(isCSAPIFeature(makeFeature('sosa:UnknownType'))).toBe(false);
   });
+
+  it('returns true for SensorML Feature featureType', () => {
+    expect(
+      isCSAPIFeature(makeFeature(`${SENSORML_NS}Feature`))
+    ).toBe(true);
+  });
+
+  it('returns false for unrecognized SensorML local name', () => {
+    expect(
+      isCSAPIFeature(makeFeature(`${SENSORML_NS}UnknownThing`))
+    ).toBe(false);
+  });
 });
 
 // ========================================
@@ -192,6 +205,18 @@ describe('getCSAPIResourceType', () => {
     // classification gives System priority.
     expect(getCSAPIResourceType(makeFeature('sosa:Sensor'))).toBe('System');
     expect(getCSAPIResourceType(makeFeature('sosa:Platform'))).toBe('System');
+  });
+
+  it('classifies SensorML Feature as SamplingFeature', () => {
+    expect(
+      getCSAPIResourceType(makeFeature(`${SENSORML_NS}Feature`))
+    ).toBe('SamplingFeature');
+  });
+
+  it('returns null for unrecognized SensorML local name', () => {
+    expect(
+      getCSAPIResourceType(makeFeature(`${SENSORML_NS}UnknownThing`))
+    ).toBe(null);
   });
 });
 
@@ -336,6 +361,11 @@ describe('validateCSAPIFeature', () => {
 
   it('returns empty array for valid SamplingFeature', () => {
     const feature = makeFeature('sosa:SamplingFeature');
+    expect(validateCSAPIFeature(feature)).toEqual([]);
+  });
+
+  it('returns empty array for valid SensorML SamplingFeature', () => {
+    const feature = makeFeature(`${SENSORML_NS}Feature`);
     expect(validateCSAPIFeature(feature)).toEqual([]);
   });
 
@@ -513,6 +543,22 @@ describe('extractCSAPIFeature', () => {
     delete (raw as any).links;
     const result = extractCSAPIFeature(raw);
     expect(result.links).toEqual([]);
+  });
+
+  it('extracts a SamplingFeature from SensorML vocabulary', () => {
+    const raw = makeFeature(`${SENSORML_NS}Feature`, {
+      geometry: { type: 'Point', coordinates: [10.5, 50.2] },
+    });
+    const result = extractCSAPIFeature(raw);
+    expect(result.properties.featureType).toBe(
+      `${SENSORML_NS}Feature`
+    );
+    expect(result.properties.uid).toBe('urn:x-test:feature:1');
+    expect(result.properties.name).toBe('Test Feature');
+    expect(result.geometry).toEqual({
+      type: 'Point',
+      coordinates: [10.5, 50.2],
+    });
   });
 
   it('throws for invalid feature', () => {

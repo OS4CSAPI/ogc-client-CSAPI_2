@@ -88,6 +88,7 @@ export type {
 } from './ogc-api/csapi/model.js';
 export {
   SOSA_NS,
+  SENSORML_NS,
   isCSAPIFeature,
   getCSAPIResourceType,
   parseValidTime,

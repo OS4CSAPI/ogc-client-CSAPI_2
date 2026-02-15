@@ -28,6 +28,12 @@ export const SOSA_NS = 'http://www.w3.org/ns/sosa/';
 /** SOSA compact prefix. */
 const SOSA_PREFIX = 'sosa:';
 
+/**
+ * OGC SensorML 2.0 namespace URI.
+ * @see https://docs.ogc.org/is/12-000r2/12-000r2.html
+ */
+export const SENSORML_NS = 'http://www.opengis.net/sensorml/2.0#';
+
 /** CSAPI resource type discriminator names. */
 export type CSAPIResourceTypeName =
   | 'System'
@@ -63,16 +69,21 @@ const PROCEDURE_LOCAL_NAMES: ReadonlySet<string> = new Set([
   'ActuatingProcedure',
 ]);
 
-/**
- * SOSA local names that map to the SamplingFeature resource type.
- *
- * Note: Real CSAPI servers may use non-SOSA vocabularies (e.g., OGC-OM)
- * for sampling feature featureType values. This recognition covers the
- * SOSA vocabulary only.
- */
+/** SOSA local names that map to the SamplingFeature resource type. */
 const SAMPLING_FEATURE_LOCAL_NAMES: ReadonlySet<string> = new Set([
   'SamplingFeature',
   'Sample',
+]);
+
+/**
+ * SensorML local names that map to the SamplingFeature resource type.
+ *
+ * OSH servers use `http://www.opengis.net/sensorml/2.0#Feature` as the
+ * featureType for sampling features. The SensorML `Feature` local name
+ * maps to the CSAPI `SamplingFeature` resource type.
+ */
+const SENSORML_SAMPLING_FEATURE_LOCAL_NAMES: ReadonlySet<string> = new Set([
+  'Feature',
 ]);
 
 // ========================================
@@ -118,6 +129,21 @@ function toSosaLocalName(featureType: string): string | undefined {
   return undefined;
 }
 
+/**
+ * Extracts the SensorML local name from a featureType URI.
+ *
+ * Handles full URI form:
+ * - `http://www.opengis.net/sensorml/2.0#Feature` → `Feature`
+ *
+ * Returns `undefined` if the value does not use the SensorML namespace.
+ */
+function toSensormlLocalName(featureType: string): string | undefined {
+  if (featureType.startsWith(SENSORML_NS)) {
+    return featureType.slice(SENSORML_NS.length);
+  }
+  return undefined;
+}
+
 // ========================================
 // Recognition
 // ========================================
@@ -125,12 +151,10 @@ function toSosaLocalName(featureType: string): string | undefined {
 /**
  * Tests whether a GeoJSON Feature has a CSAPI-recognized `featureType`.
  *
- * Recognition is based on the SOSA vocabulary. Features whose `featureType`
- * uses a non-SOSA vocabulary (e.g., OGC-OM for sampling features) will
- * not be recognized by this function.
+ * Recognition covers the SOSA and SensorML vocabularies.
  *
  * @param feature - A candidate GeoJSON Feature object.
- * @returns `true` if the feature has a recognized SOSA featureType.
+ * @returns `true` if the feature has a recognized featureType.
  */
 export function isCSAPIFeature(feature: unknown): boolean {
   return getCSAPIResourceType(feature) !== null;
@@ -139,7 +163,8 @@ export function isCSAPIFeature(feature: unknown): boolean {
 /**
  * Classifies a GeoJSON Feature into a CSAPI resource type by its `featureType`.
  *
- * Classification priority: System > Deployment > Procedure > SamplingFeature.
+ * Checks the SOSA vocabulary first, then the SensorML vocabulary.
+ * Classification priority within SOSA: System > Deployment > Procedure > SamplingFeature.
  * This ordering ensures that featureType values shared between System and
  * Procedure schemas (per OGC spec) resolve as System.
  *
@@ -152,13 +177,23 @@ export function getCSAPIResourceType(
   const ft = getFeatureType(feature);
   if (ft === undefined) return null;
 
-  const localName = toSosaLocalName(ft);
-  if (localName === undefined) return null;
+  // Try SOSA vocabulary first
+  const sosaLocal = toSosaLocalName(ft);
+  if (sosaLocal !== undefined) {
+    if (SYSTEM_LOCAL_NAMES.has(sosaLocal)) return 'System';
+    if (DEPLOYMENT_LOCAL_NAMES.has(sosaLocal)) return 'Deployment';
+    if (PROCEDURE_LOCAL_NAMES.has(sosaLocal)) return 'Procedure';
+    if (SAMPLING_FEATURE_LOCAL_NAMES.has(sosaLocal)) return 'SamplingFeature';
+    return null;
+  }
 
-  if (SYSTEM_LOCAL_NAMES.has(localName)) return 'System';
-  if (DEPLOYMENT_LOCAL_NAMES.has(localName)) return 'Deployment';
-  if (PROCEDURE_LOCAL_NAMES.has(localName)) return 'Procedure';
-  if (SAMPLING_FEATURE_LOCAL_NAMES.has(localName)) return 'SamplingFeature';
+  // Try SensorML vocabulary
+  const smlLocal = toSensormlLocalName(ft);
+  if (smlLocal !== undefined) {
+    if (SENSORML_SAMPLING_FEATURE_LOCAL_NAMES.has(smlLocal))
+      return 'SamplingFeature';
+    return null;
+  }
 
   return null;
 }
