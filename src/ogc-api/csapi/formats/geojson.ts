@@ -17,6 +17,13 @@ import type {
   SamplingFeature,
   TimeInterval,
 } from '../model.js';
+import type { ValidationError } from '../helpers.js';
+import {
+  validateSystem,
+  validateDeployment,
+  validateProcedure,
+  validateSamplingFeature,
+} from '../helpers.js';
 
 // ========================================
 // Constants
@@ -290,79 +297,115 @@ export function isValidUri(value: unknown): boolean {
 // ========================================
 
 /**
- * Validates a GeoJSON Feature against CSAPI base requirements.
+ * Validates a GeoJSON Feature against CSAPI requirements.
  *
- * Checks:
- * - Required properties: `featureType`, `uid`, `name`
- * - `uid` must be a valid URI
- * - `featureType` must be a recognized SOSA vocabulary term
- * - `validTime` (if present) must be parseable
- * - Deployment `validTime` is required
- * - Procedure geometry must be `null`
+ * Delegates to the per-type validators in `helpers.ts` based on
+ * {@link getCSAPIResourceType} classification. Returns structured
+ * {@link ValidationError} objects with severity, path, and message.
  *
  * @param feature - A candidate GeoJSON Feature object.
- * @returns An array of validation error messages (empty if valid).
+ * @returns An array of validation errors (empty if valid).
+ * @see https://docs.ogc.org/is/23-001/23-001.html
  */
-export function validateCSAPIFeature(feature: unknown): string[] {
-  const errors: string[] = [];
-
+export function validateCSAPIFeature(feature: unknown): ValidationError[] {
   if (typeof feature !== 'object' || feature === null) {
-    errors.push('Feature must be a non-null object');
-    return errors;
+    return [
+      {
+        severity: 'error',
+        path: 'Feature',
+        message: 'Feature must be a non-null object',
+      },
+    ];
   }
 
   const f = feature as Record<string, unknown>;
-  const props = f.properties;
-
-  if (typeof props !== 'object' || props === null) {
-    errors.push('Feature must have a properties object');
-    return errors;
+  if (typeof f.properties !== 'object' || f.properties === null) {
+    return [
+      {
+        severity: 'error',
+        path: 'Feature.properties',
+        message: 'Feature must have a properties object',
+      },
+    ];
   }
 
-  const p = props as Record<string, unknown>;
-
-  // Required: featureType
-  if (typeof p.featureType !== 'string' || p.featureType.length === 0) {
-    errors.push('Missing required property: featureType');
-  } else if (getCSAPIResourceType(feature) === null) {
-    errors.push(`Unrecognized featureType vocabulary: ${p.featureType}`);
-  }
-
-  // Required: uid
-  if (typeof p.uid !== 'string' || p.uid.length === 0) {
-    errors.push('Missing required property: uid');
-  } else if (!isValidUri(p.uid)) {
-    errors.push(`uid is not a valid URI: ${p.uid}`);
-  }
-
-  // Required: name
-  if (typeof p.name !== 'string' || p.name.length === 0) {
-    errors.push('Missing required property: name');
-  }
-
-  // Optional: validTime (if present, must be parseable)
-  if (p.validTime !== undefined && p.validTime !== null) {
-    if (parseValidTime(p.validTime) === undefined) {
-      errors.push('validTime is not a valid time period');
-    }
-  }
-
-  // Deployment: validTime is required
   const resourceType = getCSAPIResourceType(feature);
-  if (resourceType === 'Deployment') {
-    if (p.validTime === undefined || p.validTime === null) {
-      errors.push('Deployment requires validTime');
-    }
+  if (resourceType === null) {
+    const ft = (f.properties as Record<string, unknown>).featureType;
+    return [
+      {
+        severity: 'error',
+        path: 'Feature.properties.featureType',
+        message:
+          typeof ft === 'string' && ft.length > 0
+            ? `Unrecognized featureType vocabulary: ${ft}`
+            : 'Required: featureType (non-empty string)',
+      },
+    ];
   }
 
-  // Procedure: geometry must be null
-  if (resourceType === 'Procedure') {
-    if (f.geometry !== null && f.geometry !== undefined) {
-      errors.push('Procedure geometry must be null');
-    }
+  switch (resourceType) {
+    case 'System':
+      return [
+        ...validateSystem(feature),
+        ...validateValidTimeIfPresent(f),
+      ];
+    case 'Deployment':
+      return validateDeployment(feature);
+    case 'Procedure':
+      return [
+        ...validateProcedure(feature),
+        ...validateProcedureGeometry(f),
+        ...validateValidTimeIfPresent(f),
+      ];
+    case 'SamplingFeature':
+      return [
+        ...validateSamplingFeature(feature),
+        ...validateValidTimeIfPresent(f),
+      ];
   }
+}
 
-  return errors;
+/**
+ * @internal GeoJSON-encoding check: Procedure geometry must be `null`.
+ */
+function validateProcedureGeometry(
+  f: Record<string, unknown>
+): ValidationError[] {
+  if (f.geometry !== null && f.geometry !== undefined) {
+    return [
+      {
+        severity: 'error',
+        path: 'Procedure.geometry',
+        message: 'Procedure geometry must be null',
+      },
+    ];
+  }
+  return [];
+}
+
+/**
+ * @internal GeoJSON-encoding check: if `validTime` is present, it must be
+ * parseable by {@link parseValidTime}.
+ */
+function validateValidTimeIfPresent(
+  f: Record<string, unknown>
+): ValidationError[] {
+  const props = f.properties as Record<string, unknown>;
+  if (
+    props.validTime !== undefined &&
+    props.validTime !== null &&
+    parseValidTime(props.validTime) === undefined
+  ) {
+    return [
+      {
+        severity: 'error',
+        path: 'Feature.properties.validTime',
+        message: 'validTime is not a valid time period',
+      },
+    ];
+  }
+  return [];
 }
 
 // ========================================
@@ -384,7 +427,9 @@ export function extractCSAPIFeature(
 ): System | Deployment | Procedure | SamplingFeature {
   const errors = validateCSAPIFeature(feature);
   if (errors.length > 0) {
-    throw new Error(`Invalid CSAPI feature: ${errors.join('; ')}`);
+    throw new Error(
+      `Invalid CSAPI feature: ${errors.map((e) => e.message).join('; ')}`
+    );
   }
 
   const f = feature as Record<string, unknown>;
