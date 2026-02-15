@@ -241,7 +241,9 @@ This is consistent with the deferral pattern documented for IOComponentChoice �
 
 **Recommendation:** Add a brief JSDoc comment to `parseSettings()` noting that field-level parsing is deferred to Issues #24-#28, consistent with the `parseIOComponentChoice()` documentation.
 
-**Severity:** DESIGN (low)
+**Resolution:** Fixed — deferral JSDoc added in post-review commit.
+
+**Severity:** DESIGN (low) → **RESOLVED**
 
 ---
 
@@ -406,7 +408,7 @@ No changes from Phase 3.4 heatmap. All entries unchanged.
 | Phase 3.3 findings unchanged | **13** | F1–F13 (all re-confirmed) |
 | Phase 3.4 findings unchanged | **14** | F1–F14 (all re-confirmed) |
 | **New — positive findings** | **9** | F1 (Postel's Law), F2 (passthrough), F3 (error messages), F4 (IOComponentChoice deferral), F6 (Mode validation), F7 (Link parsing), F8 (fixtures), F9 (edge cases), F10 (JSDoc) |
-| **New — design** | **1** | F5 (parseSettings no JSDoc deferral comment) |
+| **New — design (resolved)** | **1** | F5 (parseSettings JSDoc — fixed in post-review commit) |
 | **New — informational** | **2** | F11 (exports deferred), F12 (InputList casts) |
 | **New — carried forward** | **1** | F13 (`as` casts — from Phase 3.1 F7) |
 | **New bugs** | **0** | — |
@@ -436,7 +438,7 @@ None. The module is clean.
 
 ### Fix Before Phase 4
 
-1. **[F5] Add deferral JSDoc to `parseSettings()`** — One-line comment noting field-level parsing is deferred to Issues #24-#28, for consistency with `parseIOComponentChoice()` documentation.
+1. ~~**[F5] Add deferral JSDoc to `parseSettings()`**~~ — **RESOLVED** (post-review commit). Deferral comment added.
 
 2. **[F13/3.1-F7] Replace `as` casts with `satisfies` in `extractCSAPIFeature`** — Carried forward. Recommend fixing when extraction function is next modified.
 

@@ -157,6 +157,10 @@ function parseIOList(
 /**
  * Parse a {@link Settings} object.
  *
+ * Currently performs a pass-through cast — field-level parsing of
+ * individual setting values is deferred to Issues #24-#28 (SWE Common
+ * sub-component parsing).
+ *
  * @param value - Raw JSON value
  * @returns Parsed Settings or `undefined`
  * @see OAS: Settings (L3307)
