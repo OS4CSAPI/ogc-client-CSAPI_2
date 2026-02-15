@@ -1,7 +1,7 @@
 # CSAPI Implementation Roadmap
 
-**Last Updated:** February 5, 2026  
-**Version:** 3.2 (A2 Alignment — Estimates & Test Ranges Reconciled)
+**Last Updated:** February 14, 2026  
+**Version:** 3.3 (Smoke Test Findings F34-F39 Integrated)
 
 ---
 
@@ -354,6 +354,10 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
      - Test featureType recognition
      - Test property extraction
      - Test validator correctly rejects invalid GeoJSON input (e.g., missing uid, invalid featureType)
+   - > **📋 Smoke Test Notes (Phase 2.9 — F34, F38, F39):**
+     > - **F34 (Issue #47):** Commands require fallback routing — top-level `/commands` returns 400 on OSH. The response handler built in this phase must implement dual-path resolution: try top-level first, fall back to nested `/controlstreams/{csId}/commands` path on 400. See Issue #47 for full design.
+     > - **F38:** Command status responses use `command@id` cross-reference and `executionTime` as a 2-element array (time range). Add `command@id` to the `@id` cross-reference registry alongside `system@id`, `datastream@id`, `controlstream@id`, `foi@id`.
+     > - **F39:** Commands use the same `{ items: [...], links: [...] }` envelope as all other resources — no special-casing needed. A single `parseCollectionResponse()` function can handle all 9 resource types.
 
 2. **Format Detector Extensions** (~1-2 hours, Low complexity)
    - Extend existing format detector
@@ -377,6 +381,10 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
      - Test Part 2 validator correctly rejects invalid input (schema mismatches, invalid observation results)
      - Test cross-reference validator detects broken associations (dangling system references, invalid hierarchy links)
      - See Guide §7 Validator: "Tests should verify the validator correctly rejects invalid inputs, not that fixture data passes validation"
+   - > **📋 Smoke Test Notes (Phase 2.9 — F35, F36, F37):**
+     > - **F35:** OSH rejects `/commands/{id}/cancel` (400 "Invalid resource name: 'cancel'"). Cancel is optional per spec. Handle 400 gracefully — return a clear error like "Command cancellation not supported by this server." Add to the error-handling matrix alongside F28 (feasibility) and F6-F9, F16-F18, F21-F24.
+     > - **F36:** OSH ignores `id` query parameter on nested command collections (accepted but no filtering effect). Document in JSDoc that `id` filtering may not apply to nested command collections on all servers — use `getCommand(id)` for single-entity retrieval.
+     > - **F37:** `/commands/{id}/result` returns 404 for result-less command types ("This type of command has no result"). Treat 404 on `/result` as a normal condition — return `null`/`undefined`, don't throw. Not all command types produce results (fire-and-forget actuators).
 
 4. **SWE Common Types** (~2-3 hours, Medium complexity)
    - Create `src/ogc-api/csapi/formats/swecommon/` directory
@@ -499,6 +507,8 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
       - Test encoding detection
       - Test schema validation
       - Test error handling
+    - > **📋 Smoke Test Note (Phase 2.8/2.9 — F33):**
+      > - **F33:** ControlStream schemas use `commandFormat` + `parametersSchema` where DataStream schemas use `observationFormat` + `resultSchema`. The SWE Common parser must handle both schema response variants. Both use the same SWE Common DataRecord structure internally.
 
 15. **SWE Common Index** (~0.5-1 hour, Low complexity)
     - Create `formats/swecommon/index.ts` (~50-100 lines)
@@ -572,6 +582,10 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - Error handling: server errors, validation errors, network errors, malformed responses
    - **Write JSDoc:** Document test scenarios and expected behavior
    - **Test:** All integration tests (~900-1,150 lines)
+   - > **📋 Smoke Test Notes (Phase 2.9 — F34-F39, cumulative server limitation matrix):**
+     > - **F34 (Issue #47):** Command workflow integration tests must cover the fallback routing path (top-level 400 → nested path). Test both: servers that support top-level `/commands` and servers that only support nested paths.
+     > - **F35/F37:** Include negative-path integration tests: cancel returns 400 (optional endpoint), result returns 404 (result-less command type). Both should be handled gracefully, not throw.
+     > - **Cumulative server limitation matrix for error-handling tests (15 known):** F6-F9 (Systems/SamplingFeatures nested), F16-F18 (DataStreams nested), F21-F24 (Observations nested), F28 (feasibility), F34 (top-level commands), F35 (cancel). All return 400 — validate the response handler returns `{ items: [], supported: false }` or equivalent for each.
 
 2. **Unit Tests Completion** (~3-4 hours, Medium complexity)
    - Complete coverage for all QueryBuilder methods (~200-300 additional lines)
@@ -702,9 +716,17 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 ## Version History
 
 **Document:** CSAPI Implementation Roadmap (Standalone)  
-**Version:** 3.2 (A2 Alignment — Estimates & Test Ranges Reconciled)  
-**Date:** February 5, 2026  
-**Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete with incremental testing and correct dependencies
+**Version:** 3.3 (Smoke Test Findings F34-F39 Integrated)  
+**Date:** February 14, 2026  
+**Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete with incremental testing, correct dependencies, and Phase 2.9 smoke test findings integrated
+
+**Version 3.3 - Smoke Test Findings F34-F39 Integrated (February 14, 2026):**
+- Added smoke test notes to Phase 3 Task 1 (GeoJSON Handler): F34 fallback routing, F38 `command@id` cross-reference, F39 `items` envelope confirmation
+- Added smoke test notes to Phase 3 Task 3 (Validator): F35 cancel limitation, F36 `id` filter quirk, F37 result-less commands
+- Added smoke test note to Phase 3 Task 14 (SWE Common Main Parser): F33 schema duality (`commandFormat`/`parametersSchema` vs `observationFormat`/`resultSchema`)
+- Added smoke test notes to Phase 4 Task 1 (Integration Tests): F34 fallback routing tests, F35/F37 negative-path tests, cumulative 15-entry server limitation matrix
+- Created Issue #47 for F34 (Critical): Phase 3 fallback routing for Commands
+- Version bumped to 3.3
 
 **Version 3.2 - A2 Alignment — Estimates & Test Ranges Reconciled (February 5, 2026):**
 - All 80 method references aligned (previously "70-80")
