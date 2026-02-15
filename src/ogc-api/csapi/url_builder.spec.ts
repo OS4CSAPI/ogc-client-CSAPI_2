@@ -2283,9 +2283,19 @@ describe('getCommands', () => {
     expect(url).toBe('https://example.com/collections/iot/commands?id=cmd-001%2Ccmd-002');
   });
 
+  it('returns correct URL with offset', () => {
+    const url = makeCmdBuilder().getCommands({ offset: 20 });
+    expect(url).toBe('https://example.com/collections/iot/commands?offset=20');
+  });
+
   it('returns correct URL with multiple options', () => {
     const url = makeCmdBuilder().getCommands({ limit: 10, currentStatus: 'PENDING', cursor: 'abc' });
     expect(url).toBe('https://example.com/collections/iot/commands?limit=10&currentStatus=PENDING&cursor=abc');
+  });
+
+  it('returns correct URL with multiple options including offset', () => {
+    const url = makeCmdBuilder().getCommands({ limit: 10, offset: 5, currentStatus: 'PENDING' });
+    expect(url).toBe('https://example.com/collections/iot/commands?limit=10&offset=5&currentStatus=PENDING');
   });
 });
 
@@ -2416,5 +2426,19 @@ describe('Command resource validation', () => {
     expect(() => builder.updateCommandStatus('x')).toThrow(EndpointError);
     expect(() => builder.getCommandResult('x')).toThrow(EndpointError);
     expect(() => builder.cancelCommand('x')).toThrow(EndpointError);
+  });
+
+  it('createCommand and createCommands throw when controlStreams is unavailable', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        id: 'commands-only',
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/commands-only' },
+          { rel: 'ogc-cs:commands', type: '', title: '', href: '/commands' },
+        ],
+      })
+    );
+    expect(() => builder.createCommand('x')).toThrow(EndpointError);
+    expect(() => builder.createCommands('x')).toThrow(EndpointError);
   });
 });
