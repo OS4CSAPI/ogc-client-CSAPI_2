@@ -362,7 +362,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
      > - **F40 (Issue #49):** OSH SamplingFeatures use `http://www.opengis.net/sensorml/2.0#Feature` — a non-SOSA vocabulary. Extend handler vocabulary sets to recognize SensorML namespace. See Issue #49 for full design.
      > - **F43:** 52North `/procedures` endpoint returns `featureType: "sosa:Sensor"` (a System-type URI). The handler's System > Procedure classification priority correctly handles this, but the endpoint context and featureType disagree. Future response parser may use endpoint context as a tiebreaker.
    - > **📋 Smoke Test Notes (Phase 3.2 — F49) — Design Decision:**
-     > - **F49 (Issue #52):** `extractCSAPIFeature()` uses `validateCSAPIFeature()` as a hard gate — any validation error blocks extraction entirely. This conflicts with upstream ogc-client patterns (tolerant extraction) and Postel's Law. **Design decision: decouple validation from extraction.** Extraction succeeds for any recognized feature; validation is opt-in diagnostics. See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
+     > - **F49 (Issue #52):** `extractCSAPIFeature()` uses `validateCSAPIFeature()` as a hard gate — any validation error blocks extraction entirely. This conflicts with upstream ogc-client patterns (tolerant extraction) and Postel's Law. **Design decision: remove all feature-level validators from scope.** No upstream handler has validation functions — zero precedent across WMS, WFS, WMTS, EDR, STAC, TMS. Extraction succeeds for any recognized feature. See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
 
 2. **Format Detector Extensions** (~1-2 hours, Low complexity)
    - Extend existing format detector
@@ -379,23 +379,11 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
      > - **F45:** Response envelope varies by server AND format — OSH always uses `{ items: [...] }`, 52North GeoJSON uses `{ type: "FeatureCollection", features: [...] }`, 52North SensorML uses `{ items: [...] }`. The format detector / response parser must handle both envelope types.
      > - **F46:** OSH ignores `Accept: application/sml+json` and returns GeoJSON anyway. SensorML parser testing will be limited to 52North only.
 
-3. **Validator Extensions** (~3-4 hours, Medium complexity)
-   - Extend existing validation framework
-   - Add CSAPI Part 1 validation rules (required properties, URI formats, temporal validity, spatial constraints)
-   - Add CSAPI Part 2 validation rules (schema conformance for Observations/Commands, result validation)
-   - Add cross-reference validation (association links, hierarchical integrity, vocabulary references)
-   - > **📋 Design Decision — Validation Is Opt-In Diagnostics (Issue #52):**
-     > Validators are standalone diagnostic tools. They are **never** used as extraction gates. `extractCSAPIFeature()` does not call `validateCSAPIFeature()`. Callers who want validation invoke it themselves and decide how to handle errors. This follows the upstream ogc-client tolerant extraction pattern and Postel's Law. See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
-   - **Write JSDoc:** Document validation rules, error reporting patterns
-   - **Test immediately:** Add validation tests (~200-400 lines tests)
-     - Test Part 1 validator correctly rejects invalid input (missing required fields, malformed URIs, invalid temporal ranges)
-     - Test Part 2 validator correctly rejects invalid input (schema mismatches, invalid observation results)
-     - Test cross-reference validator detects broken associations (dangling system references, invalid hierarchy links)
-     - See Guide §7 Validator: "Tests should verify the validator correctly rejects invalid inputs, not that fixture data passes validation"
-   - > **📋 Smoke Test Notes (Phase 2.9 — F35, F36, F37):**
-     > - **F35:** OSH rejects `/commands/{id}/cancel` (400 "Invalid resource name: 'cancel'"). Cancel is optional per spec. Handle 400 gracefully — return a clear error like "Command cancellation not supported by this server." Add to the error-handling matrix alongside F28 (feasibility) and F6-F9, F16-F18, F21-F24.
-     > - **F36:** OSH ignores `id` query parameter on nested command collections (accepted but no filtering effect). Document in JSDoc that `id` filtering may not apply to nested command collections on all servers — use `getCommand(id)` for single-entity retrieval.
-     > - **F37:** `/commands/{id}/result` returns 404 for result-less command types ("This type of command has no result"). Treat 404 on `/result` as a normal condition — return `null`/`undefined`, don't throw. Not all command types produce results (fire-and-forget actuators).
+3. **~~Validator Extensions~~ — REMOVED FROM SCOPE** (Issue #52)
+
+   > **🚫 OUT OF SCOPE** — Feature-level validators have been **removed from the CSAPI contribution scope**. Analysis of the upstream codebase found that **no format handler in the library includes validation functions** — zero precedent across WMS, WFS, WMTS, OGC API Features, EDR, STAC, and TMS. The upstream philosophy follows Postel's Law: client libraries accept what servers return and make it accessible, they don't enforce spec compliance. Adding ~500 lines of validators + tests for a feature with no upstream consumer would be seen as scope creep and maintenance burden. Existing validators in `helpers.ts` and `geojson.ts` will be removed. See `docs/implementation/design-notes-validation-extraction-decoupling.md` for full rationale.
+   >
+   > **Smoke test findings F35, F36, F37** (error handling for cancel, `id` filter, result-less commands) remain valid and belong to the response handler / error handling layer (Phase 4 Integration Tests), not to a validation framework.
 
 4. **SWE Common Types** (~2-3 hours, Medium complexity)
    - Create `src/ogc-api/csapi/formats/swecommon/` directory
@@ -549,7 +537,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 **Phase 3 Deliverables:**
 - ✅ GeoJSON CSAPI extensions (~150-300 lines)
 - ✅ Format Detector extensions (~50-100 lines)
-- ✅ Validator extensions (~200-400 lines)
+- 🚫 ~~Validator extensions~~ — **Removed from scope** (Issue #52, no upstream precedent)
 - ✅ SWE Common types (~600-800 lines) - **Created first for SensorML dependency**
 - ✅ SensorML types (~800-1,200 lines) - Links to SWE Common types
 - ✅ SensorML parsers complete (~1,150-1,450 lines across 4 files)
@@ -588,9 +576,8 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
    - Observation workflow: systems → datastreams → observations → pagination → parsing
    - Command workflow: systems → control streams → feasibility → submit → status → result
    - Cross-resource navigation: system → deployments → procedures → sampling features → datastreams → observations
-   - Format round-tripping: parse → validate → modify → serialize → parse
    - Hierarchical queries: recursive traversal with large hierarchies
-   - Error handling: server errors, validation errors, network errors, malformed responses
+   - Error handling: server errors, network errors, malformed responses
    - **Write JSDoc:** Document test scenarios and expected behavior
    - **Test:** All integration tests (~900-1,150 lines)
    - > **📋 Smoke Test Notes (Phase 2.9 — F34-F39, cumulative server limitation matrix):**
@@ -635,9 +622,9 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 |-------|------|------------|--------------|-------------|
 | **Phase 1** | 12-16 hrs | Low | Types, integration, stub builder, helpers (4 tasks) | ~500-600 + ~400-550 tests |
 | **Phase 2** | 20-28 hrs | Medium | Complete QueryBuilder - 9 resource types (9 tasks) | ~700-800 + ~800-1,000 tests |
-| **Phase 3** | 16-28 hrs | High | Format parsers + extensions (17 tasks with incremental testing) | ~3,600-5,050 + ~2,400-3,500 tests |
+| **Phase 3** | 13-24 hrs | High | Format parsers + extensions (16 tasks; validators removed from scope) | ~3,400-4,650 + ~2,200-3,100 tests |
 | **Phase 4** | 9-12 hrs | Medium | Tests and documentation (3 tasks) | ~1,200-1,600 tests |
-| **TOTAL** | **57-84 hrs** | **Mixed** | **Complete CSAPI implementation (33 tasks)** | **~4,800-6,450 + ~4,800-6,650 tests** |
+| **TOTAL** | **54-80 hrs** | **Mixed** | **Complete CSAPI implementation (32 tasks; validators removed)** | **~4,600-6,050 + ~4,600-6,250 tests** |
 
 **Total Development Time:** 57-84 hours (average: 71 hours)  
 **Calendar Time:** 8-11 weeks (assuming 6-8 hours/week development pace)  
@@ -727,9 +714,19 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 ## Version History
 
 **Document:** CSAPI Implementation Roadmap (Standalone)  
-**Version:** 3.5 (Phase 3.2 Smoke Test Finding F49 — Validation/Extraction Decoupling Design Decision)  
+**Version:** 3.6 (Feature-Level Validators Removed from Scope)  
 **Date:** February 15, 2026  
-**Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete with incremental testing, correct dependencies, and Phase 3.2 smoke test findings integrated
+**Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete with incremental testing, correct dependencies, and validator scope decision
+
+**Version 3.6 - Feature-Level Validators Removed from Scope (February 15, 2026):**
+- **Phase 3 Task 3 (Validator Extensions) removed from scope** — no upstream precedent for feature-level validation in any format handler (zero across WMS, WFS, WMTS, EDR, STAC, TMS)
+- Updated Phase 3 Task 1 smoke test note (F49): decision changed from "decouple" to "remove entirely"
+- Updated Phase 3 deliverables, summary table, and total estimates
+- Removed format round-tripping and validation error tests from Phase 4 Integration Tests
+- Task count reduced from 33 to 32; time estimate reduced by ~3-4 hours
+- Issue #52 updated to reflect full validator removal
+- Design notes document updated: `docs/implementation/design-notes-validation-extraction-decoupling.md`
+- Version bumped to 3.6
 
 **Version 3.5 - Phase 3.2 Smoke Test Finding F49 — Validation/Extraction Decoupling (February 15, 2026):**
 - Added smoke test note to Phase 3 Task 1 (GeoJSON Handler): F49 validation-as-gate blocks extraction of recognized features (Issue #52)

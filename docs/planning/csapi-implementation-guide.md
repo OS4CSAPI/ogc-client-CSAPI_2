@@ -2987,8 +2987,8 @@ export interface Capability {
 
 The GeoJSON handler is existing code in the library that parses GeoJSON Feature and FeatureCollection documents, supporting all seven geometry types (Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, GeometryCollection). For CSAPI, we will extend this handler with recognition and extraction of CSAPI-specific properties. The extension will recognize CSAPI-specific feature types through the `featureType` property and extract CSAPI resource properties from the feature `properties` object. CSAPI Part 1 resources (Systems, Deployments, Procedures, Sampling Features) are encoded as GeoJSON features with additional semantic properties like `featureType` (type discriminator), `uid` (globally unique identifier), `assetType`, `validTime`, and `@link` association properties. The extension will add type checking for these CSAPI properties and validation rules specific to each CSAPI feature type, while maintaining compatibility with generic GeoJSON handling for other OGC API standards.
 
-> **📋 Design Decision — Validation/Extraction Decoupling (Issue #52):**
-> The GeoJSON handler provides three independent operations: **recognition** (`getCSAPIResourceType`), **extraction** (`extractCSAPIFeature`), and **validation** (`validateCSAPIFeature`). Extraction depends only on recognition — it succeeds for any recognized feature regardless of validation status. Validation is an opt-in diagnostic tool that callers invoke separately when needed. This follows the upstream ogc-client tolerant extraction pattern and Postel's Law (be liberal in what you accept). See `docs/implementation/design-notes-validation-extraction-decoupling.md` for full rationale.
+> **📋 Design Decision — No Feature-Level Validators (Issue #52):**
+> The GeoJSON handler provides two operations: **recognition** (`getCSAPIResourceType`) and **extraction** (`extractCSAPIFeature`). Extraction depends only on recognition — it succeeds for any recognized feature. **There are no validation functions in the handler.** This matches the upstream ogc-client pattern: no format handler in the library (WMS, WFS, WMTS, EDR, STAC, TMS) includes validation. Validation is a server-side responsibility. See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
 
 **CSAPI GeoJSON Properties (per OGC Part 1 OpenAPI schema):**
 
@@ -3191,14 +3191,19 @@ The format detector is existing code that examines HTTP response headers (Conten
 
 ---
 
-### Validator: Extending Existing Validation Framework
+### ~~Validator: Extending Existing Validation Framework~~ — REMOVED FROM SCOPE
 
-The validator is existing code that checks whether parsed documents conform to format specifications and semantic constraints. For CSAPI, we will extend this validator with validation of CSAPI requirements. The extension will check CSAPI-specific requirements: required properties for each resource type, valid enumeration values, URI format validation, temporal validity constraints, spatial constraint validation, association integrity, and schema conformance for Part 2 resources (Observation results must match DataStream schema, Command parameters must match ControlStream schema). The extension will add CSAPI validation rules to the existing validation pipeline, reporting errors and warnings through the same error handling mechanism used for other formats.
+> **🚫 OUT OF SCOPE** — Feature-level validators (CSAPI resource validation) have been **removed from the CSAPI contribution scope**. Analysis of the upstream codebase found that **no format handler in the library includes validation functions** — zero precedent across WMS, WFS, WMTS, OGC API Features, EDR, STAC, and TMS. The upstream library philosophy follows Postel's Law: client libraries accept what servers return and make it accessible; they don't enforce spec compliance on behalf of the server.
+>
+> The originally-planned validators (`validateCSAPIFeature`, 13 per-type validators, `ValidationError` type) added ~500 lines of code + tests for a feature with no upstream consumer. The upstream reviewers would inherit maintenance burden for validation rules that must track spec changes, with no corresponding benefit to the library.
+>
+> **What remains:** Recognition (`getCSAPIResourceType`) and extraction (`extractCSAPIFeature`) handle all client-side parsing needs. TypeScript interfaces provide compile-time type safety. Applications that need validation can implement their own rules using the typed objects returned by extraction.
+>
+> See `docs/implementation/design-notes-validation-extraction-decoupling.md` for full design rationale including upstream pattern analysis.
 
-> **⚠️ Clarification — Client-Side Validation Only:** The validation rules below are **implementation specifications for client-side input validation** (Responsibility 5: Validate). They define what the client checks before sending requests or after parsing responses. They are **NOT test criteria for verifying server data correctness** — testing whether a server returns valid data is AP3 (Server Conformance Testing). Tests should verify that the validator correctly rejects invalid inputs (e.g., missing required fields, malformed URIs), not that fixture data passes validation.
+> **Note on smoke test findings F35, F36, F37:** These findings (cancel limitation, `id` filter quirk, result-less commands) relate to server error handling, not feature-level validation. They belong to the response handler / error handling layer and are tracked in Phase 4 Integration Tests.
 
-> **📋 Design Decision — Validation Is Opt-In Diagnostics (Issue #52):**
-> Validators are **never** used as extraction gates. `extractCSAPIFeature()` does not call `validateCSAPIFeature()`. Extraction succeeds for any recognized feature. Callers who want validation invoke it themselves and decide how to handle errors. This follows Postel's Law (be liberal in what you accept from servers) and matches the upstream ogc-client pattern where no existing handler calls a validator as a precondition to extraction. See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
+The validation rules documented below are retained as **reference material** for understanding OGC spec requirements. They are NOT implemented as client-side code.
 
 **CSAPI Validation Rules:**
 
@@ -3634,29 +3639,25 @@ observations.features.forEach((obs) => {
 
 ### Error Handling Patterns
 
-**Extraction vs Validation — Separate Concerns (Issue #52):**
+**Extraction — Tolerant by Design (Issue #52):**
 
 ```typescript
-import { extractCSAPIFeature, validateCSAPIFeature } from '@camptocamp/ogc-client/csapi/formats';
+import { extractCSAPIFeature, getCSAPIResourceType } from '@camptocamp/ogc-client/csapi/formats';
 
-// Pattern 1: Extract only (tolerant — recommended for most use cases)
+// Extraction succeeds for any recognized feature
+// No validation gate — follows upstream tolerant extraction pattern
 const resource = extractCSAPIFeature(rawFeature);
-// Succeeds for any recognized feature, even if partially non-conformant
+// Returns typed System | Deployment | Procedure | SamplingFeature
 
-// Pattern 2: Extract + validate (opt-in diagnostics)
-const resource = extractCSAPIFeature(rawFeature);
-const errors = validateCSAPIFeature(rawFeature);
-if (errors.length > 0) {
-  console.warn('Resource has validation issues:', errors.map(e => e.message));
-  // Caller decides: log warning, show UI indicator, reject, etc.
+// Only throws when the feature is unrecognized (getCSAPIResourceType returns null)
+try {
+  const resource = extractCSAPIFeature(unknownFeature);
+} catch (error) {
+  // "Cannot extract CSAPI feature: unrecognized or missing featureType"
 }
-
-// Pattern 3: Validate only (conformance checking, developer tools)
-const errors = validateCSAPIFeature(rawFeature);
-// Useful for debugging, conformance reports, server quality dashboards
 ```
 
-> **Design principle:** Extraction and validation are independent operations. Extraction succeeds for any recognized feature (Postel's Law). Validation is an opt-in diagnostic that callers invoke when needed. See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
+> **Design principle:** The client library follows Postel's Law — be liberal in what you accept from servers. Extraction succeeds for any recognized feature, regardless of whether the server data is fully spec-compliant. There are no feature-level validators in the library, consistent with every other format handler (WMS, WFS, WMTS, EDR, STAC, TMS). See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
 
 **Resource Validation Errors:**
 
@@ -4666,10 +4667,18 @@ See the [Phase 0 Test-Research Report](../research/testing/review/phase-0-lesson
 
 ## Version History
 
-**Document Version:** 7.1 (Validation/Extraction Decoupling Design Decision Integrated)  
+**Document Version:** 7.2 (Feature-Level Validators Removed from Scope)  
 **Date:** February 15, 2026  
 **Research Foundation:** 14 completed research plans with ⭐⭐⭐⭐⭐ confidence (98-100%)  
 **Status:** ✅ **ARCHITECTURE VALIDATED** with real-world scenarios and quantitative evidence
+
+**Version 7.2 - Feature-Level Validators Removed from Scope (February 15, 2026):**
+- **§7 Validator section marked OUT OF SCOPE** — no upstream handler has validation; zero precedent
+- Updated §7 GeoJSON Handler design decision: handler provides recognition + extraction only, no validation
+- Updated §11 Error Handling: removed validate patterns, extraction is tolerant by design
+- Validation rules retained as reference material, not implementation specifications
+- Design notes: `docs/implementation/design-notes-validation-extraction-decoupling.md`
+- Related: Issue #52, ROADMAP v3.6, Phase 3.2 smoke test finding F49
 
 **Version 7.1 - Validation/Extraction Decoupling Design Decision (February 15, 2026):**
 - Added design decision note to §7 GeoJSON Handler: extraction depends only on recognition, not validation
