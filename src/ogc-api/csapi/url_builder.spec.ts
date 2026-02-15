@@ -1812,3 +1812,174 @@ describe('DataStream resource validation', () => {
     expect(() => builder.getDataStreamHistory('x')).toThrow(EndpointError);
   });
 });
+
+// ── OBSERVATIONS ──
+
+describe('getObservations', () => {
+  function makeObsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:observations', type: '', title: '', href: '/observations' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makeObsBuilder().getObservations();
+    expect(url).toBe('https://example.com/collections/iot/observations');
+  });
+
+  it('returns correct URL with phenomenonTime interval', () => {
+    const url = makeObsBuilder().getObservations({
+      phenomenonTime: { start: new Date('2024-01-01T00:00:00Z'), end: new Date('2024-06-01T00:00:00Z') },
+    });
+    expect(url).toBe('https://example.com/collections/iot/observations?phenomenonTime=2024-01-01T00%3A00%3A00.000Z%2F2024-06-01T00%3A00%3A00.000Z');
+  });
+
+  it('returns correct URL with resultTime latest', () => {
+    const url = makeObsBuilder().getObservations({ resultTime: 'latest' });
+    expect(url).toBe('https://example.com/collections/iot/observations?resultTime=latest');
+  });
+
+  it('returns correct URL with cursor-based pagination', () => {
+    const url = makeObsBuilder().getObservations({ cursor: 'abc123', limit: 50 });
+    expect(url).toBe('https://example.com/collections/iot/observations?cursor=abc123&limit=50');
+  });
+
+  it('returns correct URL with obsFormat parameter', () => {
+    const url = makeObsBuilder().getObservations({ f: 'application/swe+json' });
+    expect(url).toBe('https://example.com/collections/iot/observations?f=application%2Fswe%2Bjson');
+  });
+});
+
+describe('getObservation', () => {
+  function makeObsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:observations', type: '', title: '', href: '/observations' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL for single observation', () => {
+    const url = makeObsBuilder().getObservation('obs-001');
+    expect(url).toBe('https://example.com/collections/iot/observations/obs-001');
+  });
+
+  it('returns correct URL with format option', () => {
+    const url = makeObsBuilder().getObservation('obs-001', { f: 'application/json' });
+    expect(url).toBe('https://example.com/collections/iot/observations/obs-001?f=application%2Fjson');
+  });
+});
+
+describe('Observation CRUD methods', () => {
+  function makeObsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:observations', type: '', title: '', href: '/observations' },
+        ],
+      })
+    );
+  }
+
+  it('updateObservation returns correct URL', () => {
+    const url = makeObsBuilder().updateObservation('obs-001');
+    expect(url).toBe('https://example.com/collections/iot/observations/obs-001');
+  });
+
+  it('deleteObservation returns correct URL', () => {
+    const url = makeObsBuilder().deleteObservation('obs-001');
+    expect(url).toBe('https://example.com/collections/iot/observations/obs-001');
+  });
+});
+
+describe('Observation association methods', () => {
+  function makeObsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:observations', type: '', title: '', href: '/observations' },
+        ],
+      })
+    );
+  }
+
+  it('getObservationDatastream returns correct URL', () => {
+    const url = makeObsBuilder().getObservationDatastream('obs-001');
+    expect(url).toBe('https://example.com/collections/iot/observations/obs-001/datastream');
+  });
+
+  it('getObservationSamplingFeature returns correct URL', () => {
+    const url = makeObsBuilder().getObservationSamplingFeature('obs-001');
+    expect(url).toBe('https://example.com/collections/iot/observations/obs-001/samplingFeature');
+  });
+
+  it('getObservationSamplingFeature returns correct URL with options', () => {
+    const url = makeObsBuilder().getObservationSamplingFeature('obs-001', { f: 'application/json' });
+    expect(url).toBe('https://example.com/collections/iot/observations/obs-001/samplingFeature?f=application%2Fjson');
+  });
+
+  it('getObservationSystem returns correct URL', () => {
+    const url = makeObsBuilder().getObservationSystem('obs-001');
+    expect(url).toBe('https://example.com/collections/iot/observations/obs-001/system');
+  });
+
+  it('getObservationSystem returns correct URL with options', () => {
+    const url = makeObsBuilder().getObservationSystem('obs-001', { limit: 1 });
+    expect(url).toBe('https://example.com/collections/iot/observations/obs-001/system?limit=1');
+  });
+});
+
+describe('getObservationHistory', () => {
+  function makeObsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:observations', type: '', title: '', href: '/observations' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makeObsBuilder().getObservationHistory('obs-001');
+    expect(url).toBe('https://example.com/collections/iot/observations/obs-001/history');
+  });
+
+  it('returns correct URL with limit', () => {
+    const url = makeObsBuilder().getObservationHistory('obs-001', { limit: 5 });
+    expect(url).toBe('https://example.com/collections/iot/observations/obs-001/history?limit=5');
+  });
+});
+
+describe('Observation resource validation', () => {
+  it('throws EndpointError when observations is unavailable', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        id: 'sensors',
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/sensors' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+    expect(() => builder.getObservations()).toThrow(EndpointError);
+    expect(() => builder.getObservation('x')).toThrow(EndpointError);
+    expect(() => builder.updateObservation('x')).toThrow(EndpointError);
+    expect(() => builder.deleteObservation('x')).toThrow(EndpointError);
+    expect(() => builder.getObservationDatastream('x')).toThrow(EndpointError);
+    expect(() => builder.getObservationSamplingFeature('x')).toThrow(EndpointError);
+    expect(() => builder.getObservationSystem('x')).toThrow(EndpointError);
+    expect(() => builder.getObservationHistory('x')).toThrow(EndpointError);
+  });
+});

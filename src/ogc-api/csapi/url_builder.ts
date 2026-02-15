@@ -1369,4 +1369,185 @@ export default class CSAPIQueryBuilder {
     this.assertResourceAvailable('datastreams');
     return this.buildResourceUrl('datastreams', id, 'history', options);
   }
+
+  // ── OBSERVATIONS ──
+
+  /**
+   * Returns the URL for querying all observations.
+   *
+   * Observations represent actual measurement data from systems. Supports
+   * temporal filtering via `phenomenonTime` and `resultTime` (including
+   * the special `'latest'` value), plus cursor-based pagination for
+   * efficient streaming of large time series.
+   *
+   * @param options - Optional query parameters including `phenomenonTime`,
+   *   `resultTime`, plus standard pagination and filtering.
+   * @returns URL string for the observations collection endpoint.
+   * @throws {EndpointError} If 'observations' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getObservations({ phenomenonTime: { start: new Date('2024-01-01') }, limit: 100 });
+   * // => "https://example.com/collections/iot/observations?phenomenonTime=2024-01-01T00%3A00%3A00.000Z%2F..&limit=100"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
+   */
+  getObservations(options?: ObservationQueryOptions): string {
+    this.assertResourceAvailable('observations');
+    return this.buildResourceUrl('observations', undefined, undefined, options);
+  }
+
+  /**
+   * Returns the URL for retrieving a single observation by ID.
+   *
+   * @param id - The observation resource identifier.
+   * @param options - Optional query parameters (e.g., format selection).
+   * @returns URL string for the observation resource endpoint.
+   * @throws {EndpointError} If 'observations' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getObservation('obs-001');
+   * // => "https://example.com/collections/iot/observations/obs-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
+   */
+  getObservation(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('observations');
+    return this.buildResourceUrl('observations', id, undefined, options);
+  }
+
+  /**
+   * Returns the URL for updating an existing observation.
+   *
+   * @param id - The observation resource identifier.
+   * @returns URL string for the observation update endpoint (PUT).
+   * @throws {EndpointError} If 'observations' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.updateObservation('obs-001');
+   * // => "https://example.com/collections/iot/observations/obs-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
+   */
+  updateObservation(id: string): string {
+    this.assertResourceAvailable('observations');
+    return this.buildResourceUrl('observations', id);
+  }
+
+  /**
+   * Returns the URL for deleting an observation.
+   *
+   * @param id - The observation resource identifier.
+   * @returns URL string for the observation deletion endpoint (DELETE).
+   * @throws {EndpointError} If 'observations' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.deleteObservation('obs-001');
+   * // => "https://example.com/collections/iot/observations/obs-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
+   */
+  deleteObservation(id: string): string {
+    this.assertResourceAvailable('observations');
+    return this.buildResourceUrl('observations', id);
+  }
+
+  /**
+   * Returns the URL for retrieving the parent datastream of an observation.
+   *
+   * Each observation belongs to exactly one datastream, so this endpoint
+   * returns a single resource (not a collection).
+   *
+   * @param id - The observation resource identifier.
+   * @returns URL string for the observation's parent datastream endpoint.
+   * @throws {EndpointError} If 'observations' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getObservationDatastream('obs-001');
+   * // => "https://example.com/collections/iot/observations/obs-001/datastream"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
+   */
+  getObservationDatastream(id: string): string {
+    this.assertResourceAvailable('observations');
+    return this.buildResourceUrl('observations', id, 'datastream');
+  }
+
+  /**
+   * Returns the URL for retrieving the sampling feature of an observation.
+   *
+   * Each observation targets at most one sampling feature, so this endpoint
+   * returns a single resource (not a collection).
+   *
+   * @param id - The observation resource identifier.
+   * @param options - Optional query parameters.
+   * @returns URL string for the observation's sampling feature endpoint.
+   * @throws {EndpointError} If 'observations' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getObservationSamplingFeature('obs-001');
+   * // => "https://example.com/collections/iot/observations/obs-001/samplingFeature"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
+   */
+  getObservationSamplingFeature(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('observations');
+    return this.buildResourceUrl('observations', id, 'samplingFeature', options);
+  }
+
+  /**
+   * Returns the URL for retrieving the observing system of an observation.
+   *
+   * Each observation is produced by exactly one system, so this endpoint
+   * returns a single resource (not a collection).
+   *
+   * @param id - The observation resource identifier.
+   * @param options - Optional query parameters.
+   * @returns URL string for the observation's observing system endpoint.
+   * @throws {EndpointError} If 'observations' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getObservationSystem('obs-001');
+   * // => "https://example.com/collections/iot/observations/obs-001/system"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
+   */
+  getObservationSystem(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('observations');
+    return this.buildResourceUrl('observations', id, 'system', options);
+  }
+
+  /**
+   * Returns the URL for retrieving an observation's version history.
+   *
+   * @param id - The observation resource identifier.
+   * @param options - Optional query parameters for filtering history entries.
+   * @returns URL string for the observation history endpoint.
+   * @throws {EndpointError} If 'observations' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getObservationHistory('obs-001', { limit: 5 });
+   * // => "https://example.com/collections/iot/observations/obs-001/history?limit=5"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
+   */
+  getObservationHistory(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('observations');
+    return this.buildResourceUrl('observations', id, 'history', options);
+  }
 }
