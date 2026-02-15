@@ -1,5 +1,5 @@
-import type { DateTimeParameter } from '../../shared/models.js';
 import type { BoundingBox } from '../../shared/models.js';
+import type { CsapiDateTimeParameter } from './model.js';
 import {
   formatDateTimeParameter,
   isValidResourceType,
@@ -46,10 +46,15 @@ describe('formatDateTimeParameter', () => {
     );
   });
 
+  it('passes through the "latest" keyword', () => {
+    const result = formatDateTimeParameter('latest');
+    expect(result).toBe('latest');
+  });
+
   it('throws for an invalid parameter', () => {
     expect(() =>
-      formatDateTimeParameter({} as DateTimeParameter)
-    ).toThrow('Invalid DateTimeParameter');
+      formatDateTimeParameter({} as CsapiDateTimeParameter)
+    ).toThrow('Invalid CsapiDateTimeParameter');
   });
 });
 

@@ -2,6 +2,18 @@ import type { BoundingBox, DateTimeParameter, CrsCode, MimeType } from '../../sh
 import type { OgcApiDocumentLink } from '../model.js';
 import type { Geometry } from 'geojson';
 
+/**
+ * Extends {@link DateTimeParameter} with the CSAPI Part 2 `'latest'` keyword.
+ *
+ * The `resultTime` parameter on DataStream and Observation endpoints supports
+ * the special value `'latest'` to retrieve the most recent result. This type
+ * alias keeps the `'latest'` keyword scoped to CSAPI without modifying the
+ * shared `DateTimeParameter` used by EDR and other OGC API modules.
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html
+ */
+export type CsapiDateTimeParameter = DateTimeParameter | 'latest';
+
 // ========================================
 // CSAPI Resource Type Constants
 // ========================================
@@ -188,8 +200,8 @@ export interface DatastreamQueryOptions extends QueryOptions {
   observedPropertyId?: string;
   /** Filter by phenomenon time interval. */
   phenomenonTime?: DateTimeParameter;
-  /** Filter by result time interval. */
-  resultTime?: DateTimeParameter;
+  /** Filter by result time interval or the special `'latest'` keyword. */
+  resultTime?: CsapiDateTimeParameter;
 }
 
 /**
@@ -199,8 +211,8 @@ export interface DatastreamQueryOptions extends QueryOptions {
 export interface ObservationQueryOptions extends QueryOptions {
   /** Filter by phenomenon time interval. */
   phenomenonTime?: DateTimeParameter;
-  /** Filter by result time interval. */
-  resultTime?: DateTimeParameter;
+  /** Filter by result time interval or the special `'latest'` keyword. */
+  resultTime?: CsapiDateTimeParameter;
 }
 
 /**

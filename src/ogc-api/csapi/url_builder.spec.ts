@@ -1554,6 +1554,11 @@ describe('getDataStreams', () => {
     expect(url).toBe('https://example.com/collections/iot/datastreams?resultTime=2024-06-01T00%3A00%3A00.000Z');
   });
 
+  it('returns correct URL with resultTime latest keyword', () => {
+    const url = makeDsBuilder().getDataStreams({ resultTime: 'latest' });
+    expect(url).toBe('https://example.com/collections/iot/datastreams?resultTime=latest');
+  });
+
   it('returns correct URL with multiple options', () => {
     const url = makeDsBuilder().getDataStreams({ limit: 10, offset: 5, systemId: 'sys-001' });
     expect(url).toBe('https://example.com/collections/iot/datastreams?limit=10&offset=5&systemId=sys-001');
@@ -1679,6 +1684,11 @@ describe('getDataStreamObservations', () => {
   it('returns correct URL with resultTime instant', () => {
     const url = makeDsBuilder().getDataStreamObservations('ds-001', { resultTime: new Date('2024-06-01T00:00:00Z') });
     expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/observations?resultTime=2024-06-01T00%3A00%3A00.000Z');
+  });
+
+  it('returns correct URL with resultTime latest keyword', () => {
+    const url = makeDsBuilder().getDataStreamObservations('ds-001', { resultTime: 'latest' });
+    expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/observations?resultTime=latest');
   });
 
   it('returns correct URL with phenomenonTime filter', () => {

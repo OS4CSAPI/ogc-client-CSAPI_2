@@ -805,20 +805,11 @@ Each temporal parameter uses the same ISO 8601 encoding logic but applies to dif
 **`latest` special value for `resultTime`:**
 The `resultTime` parameter supports a special value `latest` that returns observations or datastreams with the most recent result time. Example: `GET /observations?resultTime=latest`. This is defined in the CSAPI Part 2 specification. Note: `now` is NOT a supported special value in CSAPI.
 
-> **Implementation Gap: `latest` Not Representable in Current Type System**
+> **~~Implementation Gap~~ RESOLVED: `latest` Keyword Now Supported (Issue #43)**
 >
-> Discovered during Phase 2.6 (Issue #10, DataStreams Methods): the shared `DateTimeParameter` type in `src/shared/models.ts` only accepts `Date | { start: Date } | { end: Date } | { start: Date; end: Date }`. The CSAPI Part 2 `'latest'` keyword is a plain string, so it cannot be passed as `resultTime` through the current type system without a type assertion.
+> Fixed in Issue #43. The CSAPI-local type `CsapiDateTimeParameter = DateTimeParameter | 'latest'` was added to `model.ts`, keeping the `'latest'` keyword scoped to CSAPI without modifying the shared `DateTimeParameter` used by EDR. The `formatDateTimeParameter()` function in `helpers.ts` now passes through the `'latest'` string. The `resultTime` fields in `DatastreamQueryOptions` and `ObservationQueryOptions` use the extended type.
 >
-> The `buildQueryString()` helper routes all temporal keys (`datetime`, `phenomenonTime`, `resultTime`, `issueTime`, `executionTime`) through `formatDateTimeParameter()`, which calls `Date.toISOString()` — causing a runtime error if given a string.
->
-> **Required fix (before Phase 3 response-layer work):**
-> 1. Extend `DateTimeParameter` in `src/shared/models.ts` to include `| 'latest'` (or a broader `| string` with documentation), OR add a separate `ResultTimeParameter` type alias.
-> 2. Update `formatDateTimeParameter()` in `helpers.ts` to pass through the `'latest'` string without formatting.
-> 3. Add test coverage for `resultTime: 'latest'` on `getDataStreamObservations` and `getDataStreams`.
->
-> **Affected resources:** DataStreams (`resultTime`), Observations (`resultTime`) — both Part 2 resources.
->
-> See: [Issue #10 commit `dde3e5a`](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/commit/dde3e5a) — DataStreams implementation where this gap was identified.
+> Confirmed working against OSH (smoke test F19: `resultTime=latest` returns 200). 3 new tests added (245 total).
 
 **ISO 8601 format support:**
 

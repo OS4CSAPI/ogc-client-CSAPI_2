@@ -1,27 +1,31 @@
 import { CSAPIResourceTypes } from './model.js';
-import type { CSAPIResourceType } from './model.js';
-import type { BoundingBox, DateTimeParameter } from '../../shared/models.js';
+import type { CSAPIResourceType, CsapiDateTimeParameter } from './model.js';
+import type { BoundingBox } from '../../shared/models.js';
 
 // ========================================
 // Temporal Encoding
 // ========================================
 
 /**
- * Formats a {@link DateTimeParameter} as an ISO 8601 string suitable for
+ * Formats a {@link CsapiDateTimeParameter} as an ISO 8601 string suitable for
  * CSAPI temporal query parameters (`datetime`, `phenomenonTime`, `resultTime`,
  * `issueTime`, `executionTime`).
  *
+ * - `'latest'` → `"latest"` (CSAPI Part 2 special value for `resultTime`)
  * - Single `Date` → `"2024-01-01T00:00:00.000Z"`
  * - Start only → `"2024-01-01T00:00:00.000Z/.."`
  * - End only → `"../2024-12-31T23:59:59.000Z"`
  * - Start and end → `"2024-01-01T00:00:00.000Z/2024-12-31T23:59:59.000Z"`
  *
- * @param param - A date instant or interval.
- * @returns ISO 8601 date or interval string.
- * @throws {Error} If `param` is not a valid `DateTimeParameter`.
+ * @param param - A date instant, interval, or the `'latest'` keyword.
+ * @returns ISO 8601 date or interval string, or `'latest'`.
+ * @throws {Error} If `param` is not a valid `CsapiDateTimeParameter`.
  * @see https://docs.ogc.org/is/23-001/23-001.html
+ * @see https://docs.ogc.org/is/23-002/23-002.html
  */
-export function formatDateTimeParameter(param: DateTimeParameter): string {
+export function formatDateTimeParameter(param: CsapiDateTimeParameter): string {
+  if (param === 'latest') return 'latest';
+
   const format = (d: Date) => d.toISOString();
 
   if (param instanceof Date) {
@@ -40,7 +44,7 @@ export function formatDateTimeParameter(param: DateTimeParameter): string {
     return `../${format(param.end)}`;
   }
 
-  throw new Error('Invalid DateTimeParameter');
+  throw new Error('Invalid CsapiDateTimeParameter');
 }
 
 // ========================================
