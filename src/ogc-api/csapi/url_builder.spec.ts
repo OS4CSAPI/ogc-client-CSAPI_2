@@ -2042,6 +2042,31 @@ describe('getControlStreams', () => {
     const url = makeCsBuilder().getControlStreams({ limit: 10, offset: 20 });
     expect(url).toBe('https://example.com/collections/iot/controlStreams?limit=10&offset=20');
   });
+
+  it('returns correct URL with standalone offset', () => {
+    const url = makeCsBuilder().getControlStreams({ offset: 20 });
+    expect(url).toBe('https://example.com/collections/iot/controlStreams?offset=20');
+  });
+
+  it('returns correct URL with q parameter', () => {
+    const url = makeCsBuilder().getControlStreams({ q: 'valve' });
+    expect(url).toBe('https://example.com/collections/iot/controlStreams?q=valve');
+  });
+
+  it('returns correct URL with single id', () => {
+    const url = makeCsBuilder().getControlStreams({ id: 'cs-001' });
+    expect(url).toBe('https://example.com/collections/iot/controlStreams?id=cs-001');
+  });
+
+  it('returns correct URL with array of ids', () => {
+    const url = makeCsBuilder().getControlStreams({ id: ['cs-001', 'cs-002'] });
+    expect(url).toBe('https://example.com/collections/iot/controlStreams?id=cs-001%2Ccs-002');
+  });
+
+  it('returns correct URL with multiple shared options', () => {
+    const url = makeCsBuilder().getControlStreams({ limit: 10, offset: 5, q: 'valve' });
+    expect(url).toBe('https://example.com/collections/iot/controlStreams?limit=10&offset=5&q=valve');
+  });
 });
 
 describe('getControlStream', () => {
