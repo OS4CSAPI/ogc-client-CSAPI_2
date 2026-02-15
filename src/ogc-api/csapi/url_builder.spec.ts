@@ -2224,3 +2224,197 @@ describe('ControlStream resource validation', () => {
     expect(() => builder.checkCommandFeasibility('x')).toThrow(EndpointError);
   });
 });
+
+// ── COMMANDS ──
+
+describe('getCommands', () => {
+  function makeCmdBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:commands', type: '', title: '', href: '/commands' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makeCmdBuilder().getCommands();
+    expect(url).toBe('https://example.com/collections/iot/commands');
+  });
+
+  it('returns correct URL with issueTime interval', () => {
+    const url = makeCmdBuilder().getCommands({
+      issueTime: { start: new Date('2024-01-01T00:00:00Z'), end: new Date('2024-06-01T00:00:00Z') },
+    });
+    expect(url).toBe('https://example.com/collections/iot/commands?issueTime=2024-01-01T00%3A00%3A00.000Z%2F2024-06-01T00%3A00%3A00.000Z');
+  });
+
+  it('returns correct URL with executionTime open-end interval', () => {
+    const url = makeCmdBuilder().getCommands({
+      executionTime: { start: new Date('2024-03-01T00:00:00Z') },
+    });
+    expect(url).toBe('https://example.com/collections/iot/commands?executionTime=2024-03-01T00%3A00%3A00.000Z%2F..');
+  });
+
+  it('returns correct URL with cursor-based pagination', () => {
+    const url = makeCmdBuilder().getCommands({ cursor: 'next-page-token', limit: 50 });
+    expect(url).toBe('https://example.com/collections/iot/commands?cursor=next-page-token&limit=50');
+  });
+
+  it('returns correct URL with currentStatus filter', () => {
+    const url = makeCmdBuilder().getCommands({ currentStatus: 'EXECUTING' });
+    expect(url).toBe('https://example.com/collections/iot/commands?currentStatus=EXECUTING');
+  });
+
+  it('returns correct URL with f parameter', () => {
+    const url = makeCmdBuilder().getCommands({ f: 'application/swe+json' });
+    expect(url).toBe('https://example.com/collections/iot/commands?f=application%2Fswe%2Bjson');
+  });
+
+  it('returns correct URL with id filter', () => {
+    const url = makeCmdBuilder().getCommands({ id: 'cmd-001' });
+    expect(url).toBe('https://example.com/collections/iot/commands?id=cmd-001');
+  });
+
+  it('handles array id parameter', () => {
+    const url = makeCmdBuilder().getCommands({ id: ['cmd-001', 'cmd-002'] });
+    expect(url).toBe('https://example.com/collections/iot/commands?id=cmd-001%2Ccmd-002');
+  });
+
+  it('returns correct URL with multiple options', () => {
+    const url = makeCmdBuilder().getCommands({ limit: 10, currentStatus: 'PENDING', cursor: 'abc' });
+    expect(url).toBe('https://example.com/collections/iot/commands?limit=10&currentStatus=PENDING&cursor=abc');
+  });
+});
+
+describe('getCommand', () => {
+  function makeCmdBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:commands', type: '', title: '', href: '/commands' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL for single command', () => {
+    const url = makeCmdBuilder().getCommand('cmd-001');
+    expect(url).toBe('https://example.com/collections/iot/commands/cmd-001');
+  });
+
+  it('returns correct URL with format option', () => {
+    const url = makeCmdBuilder().getCommand('cmd-001', { f: 'application/json' });
+    expect(url).toBe('https://example.com/collections/iot/commands/cmd-001?f=application%2Fjson');
+  });
+});
+
+describe('Command CRUD methods', () => {
+  function makeCmdBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:commands', type: '', title: '', href: '/commands' },
+          { rel: 'ogc-cs:controlStreams', type: '', title: '', href: '/controlstreams' },
+        ],
+      })
+    );
+  }
+
+  it('createCommand returns correct URL via control stream', () => {
+    const url = makeCmdBuilder().createCommand('cs-001');
+    expect(url).toBe('https://example.com/collections/iot/controlStreams/cs-001/commands');
+  });
+
+  it('createCommands returns correct URL for bulk creation', () => {
+    const url = makeCmdBuilder().createCommands('cs-001');
+    expect(url).toBe('https://example.com/collections/iot/controlStreams/cs-001/commands');
+  });
+
+  it('updateCommand returns correct URL', () => {
+    const url = makeCmdBuilder().updateCommand('cmd-001');
+    expect(url).toBe('https://example.com/collections/iot/commands/cmd-001');
+  });
+
+  it('deleteCommand returns correct URL', () => {
+    const url = makeCmdBuilder().deleteCommand('cmd-001');
+    expect(url).toBe('https://example.com/collections/iot/commands/cmd-001');
+  });
+});
+
+describe('Command status and result methods', () => {
+  function makeCmdBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:commands', type: '', title: '', href: '/commands' },
+        ],
+      })
+    );
+  }
+
+  it('getCommandStatus returns correct URL', () => {
+    const url = makeCmdBuilder().getCommandStatus('cmd-001');
+    expect(url).toBe('https://example.com/collections/iot/commands/cmd-001/status');
+  });
+
+  it('updateCommandStatus returns correct URL', () => {
+    const url = makeCmdBuilder().updateCommandStatus('cmd-001');
+    expect(url).toBe('https://example.com/collections/iot/commands/cmd-001/status');
+  });
+
+  it('getCommandResult returns correct URL', () => {
+    const url = makeCmdBuilder().getCommandResult('cmd-001');
+    expect(url).toBe('https://example.com/collections/iot/commands/cmd-001/result');
+  });
+});
+
+describe('cancelCommand', () => {
+  function makeCmdBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:commands', type: '', title: '', href: '/commands' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL for command cancellation', () => {
+    const url = makeCmdBuilder().cancelCommand('cmd-001');
+    expect(url).toBe('https://example.com/collections/iot/commands/cmd-001/cancel');
+  });
+
+  it('encodes special characters in command ID', () => {
+    const url = makeCmdBuilder().cancelCommand('urn:example:cmd:001');
+    expect(url).toBe('https://example.com/collections/iot/commands/urn%3Aexample%3Acmd%3A001/cancel');
+  });
+});
+
+describe('Command resource validation', () => {
+  it('throws EndpointError when commands is unavailable', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        id: 'sensors',
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/sensors' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+    expect(() => builder.getCommands()).toThrow(EndpointError);
+    expect(() => builder.getCommand('x')).toThrow(EndpointError);
+    expect(() => builder.updateCommand('x')).toThrow(EndpointError);
+    expect(() => builder.deleteCommand('x')).toThrow(EndpointError);
+    expect(() => builder.getCommandStatus('x')).toThrow(EndpointError);
+    expect(() => builder.updateCommandStatus('x')).toThrow(EndpointError);
+    expect(() => builder.getCommandResult('x')).toThrow(EndpointError);
+    expect(() => builder.cancelCommand('x')).toThrow(EndpointError);
+  });
+});

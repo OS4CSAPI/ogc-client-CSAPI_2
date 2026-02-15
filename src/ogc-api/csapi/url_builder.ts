@@ -1737,4 +1737,231 @@ export default class CSAPIQueryBuilder {
     this.assertResourceAvailable('controlStreams');
     return this.buildResourceUrl('controlStreams', controlStreamId, 'feasibility');
   }
+
+  // ── COMMANDS ──
+
+  /**
+   * Returns the URL for querying all commands.
+   *
+   * Commands represent tasking requests sent to systems for actuation via
+   * control streams. They are the control equivalent of Observations —
+   * instructions that flow to systems rather than data that flows from them.
+   *
+   * @param options - Optional query parameters including `issueTime`,
+   *   `executionTime`, `currentStatus`, plus standard pagination and filtering.
+   * @returns URL string for the commands collection endpoint.
+   * @throws {EndpointError} If 'commands' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getCommands({ issueTime: { start: new Date('2024-01-01') }, limit: 100 });
+   * // => "https://example.com/collections/iot/commands?issueTime=2024-01-01T00%3A00%3A00.000Z%2F..&limit=100"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+   */
+  getCommands(options?: CommandQueryOptions): string {
+    this.assertResourceAvailable('commands');
+    return this.buildResourceUrl('commands', undefined, undefined, options);
+  }
+
+  /**
+   * Returns the URL for retrieving a single command by ID.
+   *
+   * @param id - The command resource identifier.
+   * @param options - Optional query parameters (e.g., format selection).
+   * @returns URL string for the single command endpoint.
+   * @throws {EndpointError} If 'commands' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getCommand('cmd-001');
+   * // => "https://example.com/collections/iot/commands/cmd-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+   */
+  getCommand(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('commands');
+    return this.buildResourceUrl('commands', id, undefined, options);
+  }
+
+  /**
+   * Returns the URL for creating a single command within a control stream.
+   *
+   * The request body (not part of the URL) must conform to the control stream's
+   * parameter schema.
+   *
+   * @param controlStreamId - The control stream resource identifier.
+   * @returns URL string for the command creation endpoint (POST).
+   * @throws {EndpointError} If 'controlStreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.createCommand('cs-001');
+   * // => "https://example.com/collections/iot/controlStreams/cs-001/commands"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+   */
+  createCommand(controlStreamId: string): string {
+    this.assertResourceAvailable('controlStreams');
+    return this.buildResourceUrl('controlStreams', controlStreamId, 'commands');
+  }
+
+  /**
+   * Returns the URL for bulk-creating commands within a control stream.
+   *
+   * The request body (not part of the URL) must contain an array of command
+   * objects, each conforming to the control stream's parameter schema.
+   *
+   * @param controlStreamId - The control stream resource identifier.
+   * @returns URL string for the bulk command creation endpoint (POST).
+   * @throws {EndpointError} If 'controlStreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.createCommands('cs-001');
+   * // => "https://example.com/collections/iot/controlStreams/cs-001/commands"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+   */
+  createCommands(controlStreamId: string): string {
+    this.assertResourceAvailable('controlStreams');
+    return this.buildResourceUrl('controlStreams', controlStreamId, 'commands');
+  }
+
+  /**
+   * Returns the URL for updating an existing command.
+   *
+   * @param id - The command resource identifier.
+   * @returns URL string for the command update endpoint (PUT).
+   * @throws {EndpointError} If 'commands' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.updateCommand('cmd-001');
+   * // => "https://example.com/collections/iot/commands/cmd-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+   */
+  updateCommand(id: string): string {
+    this.assertResourceAvailable('commands');
+    return this.buildResourceUrl('commands', id);
+  }
+
+  /**
+   * Returns the URL for deleting a command.
+   *
+   * @param id - The command resource identifier.
+   * @returns URL string for the command deletion endpoint (DELETE).
+   * @throws {EndpointError} If 'commands' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.deleteCommand('cmd-001');
+   * // => "https://example.com/collections/iot/commands/cmd-001"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+   */
+  deleteCommand(id: string): string {
+    this.assertResourceAvailable('commands');
+    return this.buildResourceUrl('commands', id);
+  }
+
+  /**
+   * Returns the URL for retrieving the status of a command.
+   *
+   * Command status tracks lifecycle state transitions: PENDING → ACCEPTED →
+   * EXECUTING → COMPLETED/FAILED/CANCELED.
+   *
+   * @param id - The command resource identifier.
+   * @returns URL string for the command status endpoint.
+   * @throws {EndpointError} If 'commands' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getCommandStatus('cmd-001');
+   * // => "https://example.com/collections/iot/commands/cmd-001/status"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+   */
+  getCommandStatus(id: string): string {
+    this.assertResourceAvailable('commands');
+    return this.buildResourceUrl('commands', id, 'status');
+  }
+
+  /**
+   * Returns the URL for updating the status of a command.
+   *
+   * Used for system-generated status updates as a command progresses
+   * through its lifecycle (e.g., from PENDING to EXECUTING).
+   *
+   * @param id - The command resource identifier.
+   * @returns URL string for the command status update endpoint (PATCH).
+   * @throws {EndpointError} If 'commands' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.updateCommandStatus('cmd-001');
+   * // => "https://example.com/collections/iot/commands/cmd-001/status"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+   */
+  updateCommandStatus(id: string): string {
+    this.assertResourceAvailable('commands');
+    return this.buildResourceUrl('commands', id, 'status');
+  }
+
+  /**
+   * Returns the URL for retrieving the result of a command.
+   *
+   * Command results contain execution output conforming to the control
+   * stream's result schema.
+   *
+   * @param id - The command resource identifier.
+   * @returns URL string for the command result endpoint.
+   * @throws {EndpointError} If 'commands' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getCommandResult('cmd-001');
+   * // => "https://example.com/collections/iot/commands/cmd-001/result"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+   */
+  getCommandResult(id: string): string {
+    this.assertResourceAvailable('commands');
+    return this.buildResourceUrl('commands', id, 'result');
+  }
+
+  /**
+   * Returns the URL for cancelling a command.
+   *
+   * Cancellation requests the system to abort a pending or executing command.
+   * The actual cancellation may be asynchronous — poll the command status
+   * to confirm transition to CANCELED.
+   *
+   * @param id - The command resource identifier.
+   * @returns URL string for the command cancellation endpoint (POST).
+   * @throws {EndpointError} If 'commands' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.cancelCommand('cmd-001');
+   * // => "https://example.com/collections/iot/commands/cmd-001/cancel"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+   */
+  cancelCommand(id: string): string {
+    this.assertResourceAvailable('commands');
+    return this.buildResourceUrl('commands', id, 'cancel');
+  }
 }
