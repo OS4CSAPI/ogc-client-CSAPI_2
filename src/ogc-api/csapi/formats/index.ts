@@ -15,7 +15,6 @@ export {
   getCSAPIResourceType,
   parseValidTime,
   isValidUri,
-  validateCSAPIFeature,
   extractCSAPIFeature,
 } from './geojson.js';
 

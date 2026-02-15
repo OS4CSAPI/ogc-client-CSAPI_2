@@ -1,8 +1,8 @@
 /**
  * GeoJSON handler extensions for OGC API — Connected Systems (CSAPI).
  *
- * Provides featureType recognition, CSAPI property extraction, and inline
- * validation for GeoJSON Feature resources returned by CSAPI endpoints.
+ * Provides featureType recognition and CSAPI property extraction
+ * for GeoJSON Feature resources returned by CSAPI endpoints.
  *
  * Supported resource types: System, Deployment, Procedure, SamplingFeature.
  *
@@ -17,13 +17,6 @@ import type {
   SamplingFeature,
   TimeInterval,
 } from '../model.js';
-import type { ValidationError } from '../helpers.js';
-import {
-  validateSystem,
-  validateDeployment,
-  validateProcedure,
-  validateSamplingFeature,
-} from '../helpers.js';
 
 // ========================================
 // Constants
@@ -293,148 +286,34 @@ export function isValidUri(value: unknown): boolean {
 }
 
 // ========================================
-// Validation
-// ========================================
-
-/**
- * Validates a GeoJSON Feature against CSAPI requirements.
- *
- * Delegates to the per-type validators in `helpers.ts` based on
- * {@link getCSAPIResourceType} classification. Returns structured
- * {@link ValidationError} objects with severity, path, and message.
- *
- * @param feature - A candidate GeoJSON Feature object.
- * @returns An array of validation errors (empty if valid).
- * @see https://docs.ogc.org/is/23-001/23-001.html
- */
-export function validateCSAPIFeature(feature: unknown): ValidationError[] {
-  if (typeof feature !== 'object' || feature === null) {
-    return [
-      {
-        severity: 'error',
-        path: 'Feature',
-        message: 'Feature must be a non-null object',
-      },
-    ];
-  }
-
-  const f = feature as Record<string, unknown>;
-  if (typeof f.properties !== 'object' || f.properties === null) {
-    return [
-      {
-        severity: 'error',
-        path: 'Feature.properties',
-        message: 'Feature must have a properties object',
-      },
-    ];
-  }
-
-  const resourceType = getCSAPIResourceType(feature);
-  if (resourceType === null) {
-    const ft = (f.properties as Record<string, unknown>).featureType;
-    return [
-      {
-        severity: 'error',
-        path: 'Feature.properties.featureType',
-        message:
-          typeof ft === 'string' && ft.length > 0
-            ? `Unrecognized featureType vocabulary: ${ft}`
-            : 'Required: featureType (non-empty string)',
-      },
-    ];
-  }
-
-  switch (resourceType) {
-    case 'System':
-      return [
-        ...validateSystem(feature),
-        ...validateValidTimeIfPresent(f),
-      ];
-    case 'Deployment':
-      return validateDeployment(feature);
-    case 'Procedure':
-      return [
-        ...validateProcedure(feature),
-        ...validateProcedureGeometry(f),
-        ...validateValidTimeIfPresent(f),
-      ];
-    case 'SamplingFeature':
-      return [
-        ...validateSamplingFeature(feature),
-        ...validateValidTimeIfPresent(f),
-      ];
-  }
-}
-
-/**
- * @internal GeoJSON-encoding check: Procedure geometry must be `null`.
- */
-function validateProcedureGeometry(
-  f: Record<string, unknown>
-): ValidationError[] {
-  if (f.geometry !== null && f.geometry !== undefined) {
-    return [
-      {
-        severity: 'error',
-        path: 'Procedure.geometry',
-        message: 'Procedure geometry must be null',
-      },
-    ];
-  }
-  return [];
-}
-
-/**
- * @internal GeoJSON-encoding check: if `validTime` is present, it must be
- * parseable by {@link parseValidTime}.
- */
-function validateValidTimeIfPresent(
-  f: Record<string, unknown>
-): ValidationError[] {
-  const props = f.properties as Record<string, unknown>;
-  if (
-    props.validTime !== undefined &&
-    props.validTime !== null &&
-    parseValidTime(props.validTime) === undefined
-  ) {
-    return [
-      {
-        severity: 'error',
-        path: 'Feature.properties.validTime',
-        message: 'validTime is not a valid time period',
-      },
-    ];
-  }
-  return [];
-}
-
-// ========================================
 // Extraction
 // ========================================
 
 /**
  * Extracts and converts a raw GeoJSON Feature into a typed CSAPI resource.
  *
- * Performs validation, parses `validTime` from server format to
- * {@link TimeInterval}, and returns the appropriately typed resource.
+ * Uses {@link getCSAPIResourceType} for recognition, then parses
+ * `validTime` from server format to {@link TimeInterval} and returns the
+ * appropriately typed resource. Follows Postel's Law — extraction succeeds
+ * for any recognized feature, regardless of missing optional or required
+ * spec fields.
  *
  * @param feature - A raw GeoJSON Feature from the server.
  * @returns The typed CSAPI resource.
- * @throws {Error} If the feature fails validation.
+ * @throws {Error} If the feature has an unrecognized or missing featureType.
  */
 export function extractCSAPIFeature(
   feature: unknown
 ): System | Deployment | Procedure | SamplingFeature {
-  const errors = validateCSAPIFeature(feature);
-  if (errors.length > 0) {
+  const resourceType = getCSAPIResourceType(feature);
+  if (resourceType === null) {
     throw new Error(
-      `Invalid CSAPI feature: ${errors.map((e) => e.message).join('; ')}`
+      'Cannot extract CSAPI feature: unrecognized or missing featureType'
     );
   }
 
   const f = feature as Record<string, unknown>;
   const p = f.properties as Record<string, unknown>;
-  const resourceType = getCSAPIResourceType(feature)!;
 
   // Parse validTime if present
   const validTime = parseValidTime(p.validTime);

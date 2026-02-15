@@ -2988,7 +2988,7 @@ export interface Capability {
 The GeoJSON handler is existing code in the library that parses GeoJSON Feature and FeatureCollection documents, supporting all seven geometry types (Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, GeometryCollection). For CSAPI, we will extend this handler with recognition and extraction of CSAPI-specific properties. The extension will recognize CSAPI-specific feature types through the `featureType` property and extract CSAPI resource properties from the feature `properties` object. CSAPI Part 1 resources (Systems, Deployments, Procedures, Sampling Features) are encoded as GeoJSON features with additional semantic properties like `featureType` (type discriminator), `uid` (globally unique identifier), `assetType`, `validTime`, and `@link` association properties. The extension will add type checking for these CSAPI properties and validation rules specific to each CSAPI feature type, while maintaining compatibility with generic GeoJSON handling for other OGC API standards.
 
 > **📋 Design Decision — No Feature-Level Validators (Issue #52):**
-> The GeoJSON handler provides two operations: **recognition** (`getCSAPIResourceType`) and **extraction** (`extractCSAPIFeature`). Extraction depends only on recognition — it succeeds for any recognized feature. **There are no validation functions in the handler.** This matches the upstream ogc-client pattern: no format handler in the library (WMS, WFS, WMTS, EDR, STAC, TMS) includes validation. Validation is a server-side responsibility. See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
+> The GeoJSON handler provides two operations: **recognition** (`getCSAPIResourceType`) and **extraction** (`extractCSAPIFeature`). Extraction depends only on recognition — it succeeds for any recognized feature. **There are no validation functions in the handler.** The mature upstream handlers (WMS, WFS, WMTS, TMS) have zero validation. The STAC handler has inline required-field checks, but no handler has a formal validation framework with separate `validate*()` functions. Validation is a server-side responsibility. See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
 
 **CSAPI GeoJSON Properties (per OGC Part 1 OpenAPI schema):**
 
@@ -3193,7 +3193,7 @@ The format detector is existing code that examines HTTP response headers (Conten
 
 ### ~~Validator: Extending Existing Validation Framework~~ — REMOVED FROM SCOPE
 
-> **🚫 OUT OF SCOPE** — Feature-level validators (CSAPI resource validation) have been **removed from the CSAPI contribution scope**. Analysis of the upstream codebase found that **no format handler in the library includes validation functions** — zero precedent across WMS, WFS, WMTS, OGC API Features, EDR, STAC, and TMS. The upstream library philosophy follows Postel's Law: client libraries accept what servers return and make it accessible; they don't enforce spec compliance on behalf of the server.
+> **🚫 OUT OF SCOPE** — Feature-level validators (CSAPI resource validation) have been **removed from the CSAPI contribution scope**. Analysis of the upstream codebase found that while the STAC handler has inline required-field checks (~20 ad-hoc `if/throw` patterns), **no handler has a formal validation framework** — no separate `validate*()` functions, no `ValidationError` types, no structured error arrays. The mature handlers (WMS, WFS, WMTS, TMS) have zero validation. The upstream philosophy follows Postel's Law.
 >
 > The originally-planned validators (`validateCSAPIFeature`, 13 per-type validators, `ValidationError` type) added ~500 lines of code + tests for a feature with no upstream consumer. The upstream reviewers would inherit maintenance burden for validation rules that must track spec changes, with no corresponding benefit to the library.
 >
@@ -3657,7 +3657,7 @@ try {
 }
 ```
 
-> **Design principle:** The client library follows Postel's Law — be liberal in what you accept from servers. Extraction succeeds for any recognized feature, regardless of whether the server data is fully spec-compliant. There are no feature-level validators in the library, consistent with every other format handler (WMS, WFS, WMTS, EDR, STAC, TMS). See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
+> **Design principle:** The client library follows Postel's Law — be liberal in what you accept from servers. Extraction succeeds for any recognized feature, regardless of whether the server data is fully spec-compliant. There are no feature-level validators in this handler, consistent with the dominant upstream pattern (WMS, WFS, WMTS, TMS have zero validation; STAC has inline checks but no formal framework). See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
 
 **Resource Validation Errors:**
 
@@ -4673,7 +4673,7 @@ See the [Phase 0 Test-Research Report](../research/testing/review/phase-0-lesson
 **Status:** ✅ **ARCHITECTURE VALIDATED** with real-world scenarios and quantitative evidence
 
 **Version 7.2 - Feature-Level Validators Removed from Scope (February 15, 2026):**
-- **§7 Validator section marked OUT OF SCOPE** — no upstream handler has validation; zero precedent
+- **§7 Validator section marked OUT OF SCOPE** — no formal validation framework in any upstream handler; STAC has inline checks, WMS/WFS/WMTS/TMS have zero
 - Updated §7 GeoJSON Handler design decision: handler provides recognition + extraction only, no validation
 - Updated §11 Error Handling: removed validate patterns, extraction is tolerant by design
 - Validation rules retained as reference material, not implementation specifications

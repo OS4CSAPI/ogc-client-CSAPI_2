@@ -93,7 +93,6 @@ export {
   getCSAPIResourceType,
   parseValidTime,
   isValidUri,
-  validateCSAPIFeature,
   extractCSAPIFeature,
 } from './ogc-api/csapi/formats/index.js';
 export type { CSAPIResourceTypeName } from './ogc-api/csapi/formats/index.js';

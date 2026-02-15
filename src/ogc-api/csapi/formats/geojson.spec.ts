@@ -3,12 +3,10 @@ import {
   getCSAPIResourceType,
   parseValidTime,
   isValidUri,
-  validateCSAPIFeature,
   extractCSAPIFeature,
   SOSA_NS,
   SENSORML_NS,
 } from './geojson.js';
-import type { ValidationError } from '../helpers.js';
 
 // ========================================
 // Test Fixtures
@@ -339,127 +337,6 @@ describe('isValidUri', () => {
 });
 
 // ========================================
-// validateCSAPIFeature
-// ========================================
-
-describe('validateCSAPIFeature', () => {
-  it('returns empty array for valid System feature', () => {
-    const feature = makeFeature('sosa:Sensor');
-    expect(validateCSAPIFeature(feature)).toEqual([]);
-  });
-
-  it('returns empty array for valid Deployment with validTime', () => {
-    const feature = makeFeature('sosa:Deployment', {
-      validTime: ['2026-01-01T00:00:00Z', 'now'],
-    });
-    expect(validateCSAPIFeature(feature)).toEqual([]);
-  });
-
-  it('returns empty array for valid Procedure with null geometry', () => {
-    const feature = makeFeature('sosa:Procedure', { geometry: null });
-    expect(validateCSAPIFeature(feature)).toEqual([]);
-  });
-
-  it('returns empty array for valid SamplingFeature', () => {
-    const feature = makeFeature('sosa:SamplingFeature', {
-      'sampledFeature@link': { href: 'http://example.com/feature/1' },
-    });
-    expect(validateCSAPIFeature(feature)).toEqual([]);
-  });
-
-  it('returns empty array for valid SensorML SamplingFeature', () => {
-    const feature = makeFeature(`${SENSORML_NS}Feature`, {
-      'sampledFeature@link': { href: 'http://example.com/feature/1' },
-    });
-    expect(validateCSAPIFeature(feature)).toEqual([]);
-  });
-
-  it('reports missing featureType', () => {
-    const feature = {
-      type: 'Feature',
-      properties: { uid: 'urn:x:1', name: 'Test' },
-    };
-    const errors = validateCSAPIFeature(feature);
-    expect(errors.some((e) => e.message.includes('featureType'))).toBe(true);
-  });
-
-  it('reports unrecognized featureType vocabulary', () => {
-    const feature = makeFeature('http://example.com/Unknown');
-    const errors = validateCSAPIFeature(feature);
-    expect(errors.some((e) => e.message.includes('Unrecognized featureType'))).toBe(
-      true
-    );
-  });
-
-  it('reports missing uid', () => {
-    const feature = makeFeature('sosa:Sensor', { uid: '' });
-    const errors = validateCSAPIFeature(feature);
-    expect(errors.some((e) => e.path.includes('uid'))).toBe(true);
-  });
-
-  it('reports invalid uid (not a URI)', () => {
-    const feature = makeFeature('sosa:Sensor', { uid: 'not-a-uri' });
-    const errors = validateCSAPIFeature(feature);
-    expect(errors.some((e) => e.message.includes('missing scheme'))).toBe(true);
-  });
-
-  it('reports missing name', () => {
-    const feature = makeFeature('sosa:Sensor', { name: '' });
-    const errors = validateCSAPIFeature(feature);
-    expect(errors.some((e) => e.path.includes('name'))).toBe(true);
-  });
-
-  it('reports invalid validTime', () => {
-    const feature = makeFeature('sosa:Sensor', { validTime: 'bad' });
-    const errors = validateCSAPIFeature(feature);
-    expect(errors.some((e) => e.path.includes('validTime'))).toBe(true);
-  });
-
-  it('reports Deployment missing validTime', () => {
-    const feature = makeFeature('sosa:Deployment');
-    const errors = validateCSAPIFeature(feature);
-    expect(errors.some((e) => e.path.includes('validTime'))).toBe(true);
-  });
-
-  it('reports Procedure with non-null geometry', () => {
-    const feature = makeFeature('sosa:Procedure', {
-      geometry: { type: 'Point', coordinates: [0, 0] },
-    });
-    const errors = validateCSAPIFeature(feature);
-    expect(errors.some((e) => e.message.includes('Procedure geometry must be null'))).toBe(
-      true
-    );
-  });
-
-  it('reports multiple errors at once', () => {
-    const feature = makeFeature('sosa:Sensor', { uid: '', name: '' });
-    const errors = validateCSAPIFeature(feature);
-    expect(errors.length).toBeGreaterThanOrEqual(2);
-  });
-
-  it('returns error for non-object input', () => {
-    expect(
-      validateCSAPIFeature(null).some(
-        (e) => e.message === 'Feature must be a non-null object'
-      )
-    ).toBe(true);
-    expect(
-      validateCSAPIFeature(42).some(
-        (e) => e.message === 'Feature must be a non-null object'
-      )
-    ).toBe(true);
-  });
-
-  it('returns error for missing properties object', () => {
-    expect(
-      validateCSAPIFeature({ type: 'Feature' }).some(
-        (e) => e.message === 'Feature must have a properties object'
-      )
-    ).toBe(true);
-  });
-});
-
-// ========================================
 // extractCSAPIFeature
 // ========================================
 
@@ -573,15 +450,49 @@ describe('extractCSAPIFeature', () => {
     });
   });
 
-  it('throws for invalid feature', () => {
-    expect(() => extractCSAPIFeature(null)).toThrow('Invalid CSAPI feature');
+  it('extracts SamplingFeature without sampledFeature@link (tolerant extraction)', () => {
+    const raw = makeFeature('sosa:SamplingFeature', {
+      geometry: { type: 'Point', coordinates: [10.5, 50.2] },
+    });
+    const result = extractCSAPIFeature(raw);
+    expect(result.properties.featureType).toBe('sosa:SamplingFeature');
+    expect(result.properties.uid).toBe('urn:x-test:feature:1');
+    expect(result.geometry).toEqual({ type: 'Point', coordinates: [10.5, 50.2] });
   });
 
-  it('throws with all validation errors in message', () => {
+  it('extracts Deployment without validTime (tolerant extraction)', () => {
+    const raw = makeFeature('sosa:Deployment');
+    const result = extractCSAPIFeature(raw);
+    expect(result.properties.featureType).toBe('sosa:Deployment');
+    expect(result.properties.uid).toBe('urn:x-test:feature:1');
+  });
+
+  it('extracts System with missing uid and name (tolerant extraction)', () => {
+    const raw = makeFeature('sosa:Sensor', { uid: '', name: '' });
+    const result = extractCSAPIFeature(raw);
+    expect(result.properties.featureType).toBe('sosa:Sensor');
+  });
+
+  it('throws for unrecognized featureType', () => {
+    const raw = makeFeature('http://example.com/Unknown');
+    expect(() => extractCSAPIFeature(raw)).toThrow(
+      'unrecognized or missing featureType'
+    );
+  });
+
+  it('throws for null input', () => {
+    expect(() => extractCSAPIFeature(null)).toThrow(
+      'unrecognized or missing featureType'
+    );
+  });
+
+  it('throws for missing featureType', () => {
     const raw = {
       type: 'Feature',
-      properties: { featureType: '', uid: '', name: '' },
+      properties: { uid: 'urn:x:1', name: 'Test' },
     };
-    expect(() => extractCSAPIFeature(raw)).toThrow('featureType');
+    expect(() => extractCSAPIFeature(raw)).toThrow(
+      'unrecognized or missing featureType'
+    );
   });
 });

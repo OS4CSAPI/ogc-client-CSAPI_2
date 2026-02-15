@@ -32,14 +32,60 @@ The initial response was to decouple validation from extraction — keep the val
 
 ## Upstream Pattern Analysis
 
-Looking at how the upstream ogc-client library (camptocamp) handles this across **every** existing format handler (WMS, WFS, WMTS, OGC API Features, EDR, STAC, TMS):
+A thorough audit of the upstream ogc-client library (camptocamp) across **every** existing format handler reveals a nuanced picture:
 
-- **They never validate-then-reject.** The upstream pattern is tolerant extraction — parse what you can, return what you get, let the caller decide what to do with incomplete data.
-- **No existing upstream handler calls a validator as a precondition to extraction.** Validation and extraction are separate concerns. The WMS capabilities parser, for example, will happily return a partially-parsed capabilities document even if some layers have malformed metadata.
-- **No existing upstream handler HAS a validator at all.** Zero format handlers in the entire library include validation functions. There is no `validateWMSCapabilities()`, no `validateWFSFeature()`, no `validateSTACItem()`. The library does not validate server responses.
-- **The upstream philosophy follows Postel's Law** (be conservative in what you send, be liberal in what you accept). A client library's job is to make server data accessible, not to enforce spec compliance on behalf of the server.
+### Handlers with Zero Validation (WMS, WFS, WMTS, TMS)
 
-Our CSAPI implementation is the only handler in the library that includes validation functions. This is a deviation, not an extension.
+The mature, established handlers perform **no validation** of server response data:
+
+- **WMS** (`src/wms/capabilities.ts`, `src/wms/endpoint.ts`) — Pure extraction from XML. Returns `null`/`undefined` for missing data. Has explicit TODO comments: `// TODO: check supported CRS`, `// TODO: check supported output formats`.
+- **WFS** (`src/wfs/capabilities.ts`, `src/wfs/featureprops.ts`) — Zero validation on capabilities parsing. One structural check: is this a GeoJSON `FeatureCollection`?
+- **WMTS** (`src/wmts/capabilities.ts`, `src/wmts/endpoint.ts`) — Zero validation. Returns `null` for missing data. Silent `NaN` fallback for bbox parsing.
+- **TMS** (`src/tms/link-utils.ts`) — Root element name checking only (is this a `<TileMapService>` or `<TileMap>` element?).
+
+### The STAC Exception — Inline Required-Field Validation
+
+The STAC handler (`src/stac/info.ts`) is a **notable exception**. It performs spec-level structural validation before allowing extraction:
+
+- `parseStacCatalog()` — checks 5 required fields (`stac_version`, `type`, `id`, `description`, `links`)
+- `parseStacCollection()` — checks 7 required fields (`stac_version`, `type`, `id`, `description`, `license`, `extent`, `links`), with the explicit comment: *"After validation, we know the document has the correct structure"*
+- `parseStacItem()` — checks 4 required fields (`type`, `id`, `properties`, `links`)
+- `parseEndpointInfo()` — checks 3 required fields (`id`, `description`, `stac_version`)
+
+This is validate-then-extract in the same function — if a required field is missing, `EndpointError` is thrown, the caller gets nothing.
+
+### How STAC Validation Differs from CSAPI Validation
+
+| Aspect | STAC validation | CSAPI validation |
+|--------|----------------|-----------------|
+| **Structure** | Inline `if/throw` in each parse function | Separate `validate*()` functions returning `ValidationError[]` |
+| **Granularity** | ~20 presence checks (truthy / is-array) | ~50+ checks including URI format, nested objects, cross-field |
+| **Error type** | Simple `EndpointError` (string message) | Structured `ValidationError` (severity, path, message) |
+| **Coupling** | Validation IS extraction (same function) | Validation separate, then gated extraction |
+| **Formality** | Ad-hoc | Formal validation framework |
+
+### EDR — Client-Side Input Validation Only
+
+The EDR handler (`src/ogc-api/edr/url_builder.ts`) validates **client input parameters** (does the collection support this query type? is this CRS valid?), not server response data. This is a different concern entirely and is analogous to our `validateLimit`/`validateBbox` functions (which we are keeping).
+
+### OGC API Core — Conformance Checks Only
+
+`src/ogc-api/link-utils.ts` and `src/ogc-api/info.ts` check landing page conformance links and document fetchability. This is endpoint-level discovery, not response data validation.
+
+### Corrected Assessment
+
+The earlier claim of "zero validation across all upstream handlers" was inaccurate. The honest framing:
+
+> The mature WMS, WFS, WMTS, and TMS handlers perform **zero validation** of server response data — they blindly extract values with no structural or spec-compliance checking. However, the **STAC handler is a notable exception** — it validates ~20 required fields per the STAC spec before allowing extraction. No handler has a **formal validation framework** with structured error objects, severity levels, and per-field paths like our CSAPI validators do. The STAC validation is ad-hoc `if/throw` patterns inline within parse functions.
+
+### Why We Still Remove (Not Adopt the STAC Pattern)
+
+The STAC handler demonstrates that upstream *has* used inline required-field checks. But adopting that pattern for CSAPI would reproduce the F49 problem:
+
+1. **STAC's pattern has the same fragility.** If a real STAC server omits `license` from a Collection response, `parseStacCollection()` throws and the caller gets nothing. That's F49 — validators blocking access to usable data.
+2. **Connected Systems servers are less mature than STAC servers.** OSH (OpenSensorHub) is an early implementation; its responses frequently omit spec-required fields like `sampledFeature@link`. STAC servers tend to be more compliant because STAC is a more mature ecosystem.
+3. **The dominant upstream pattern is tolerance.** The older, more established handlers (WMS, WFS, WMTS) all follow Postel's Law. The STAC inline validation is the exception, not the rule.
+4. **If upstream reviewers later want STAC-style guards** on truly fundamental fields (like `id`), that's a 10-line PR — not a 500-line validation framework.
 
 ---
 
@@ -57,19 +103,21 @@ After examining the upstream patterns, the conclusion is clear: **the feature-le
 
 ### Why Remove (Not Just Decouple)
 
-Initially, the plan was to decouple validation from extraction — keep the validators as opt-in diagnostics. But this still raises the question: **would the upstream accept 500+ lines of code (validators + tests) for a feature that no other handler has ever needed?**
+Initially, the plan was to decouple validation from extraction — keep the validators as opt-in diagnostics. But this still raises the question: **would the upstream accept 500+ lines of code (validators + tests) for a formal validation framework that no other handler has?**
 
-The answer is almost certainly no. Here's why:
+The STAC handler *does* have inline required-field checks, but those are ad-hoc `if/throw` patterns within parse functions — not a separate validation layer. Our validators are a qualitatively different thing: a formal framework with structured `ValidationError[]` objects, severity levels, property paths, per-type validator functions, and cross-field checks. Here's why that framework should be removed:
 
-1. **Zero precedent.** No format handler in the library includes validation. The upstream reviewers would ask "why does CSAPI need this when WMS, WFS, WMTS, EDR, STAC, and TMS don't?"
+1. **No precedent for a formal validation framework.** While STAC has inline required-field checks, no handler has separate `validate*()` functions, `ValidationError` types, or structured error arrays. The upstream reviewers would ask "why does CSAPI need a validation *framework* when STAC gets by with inline checks?"
 
 2. **No caller.** After decoupling from extraction, no code in the library calls the validators. They exist only for external callers who might want conformance checking — a use case the library does not serve for any other API.
 
 3. **Maintenance burden.** Validators must track spec changes. If OGC Part 1 changes `sampledFeature@link` from required to optional, someone has to update the validator. The upstream maintainers would inherit this burden for a feature they didn't ask for.
 
-4. **Scope creep.** A contribution that adds 500+ lines of code for a feature with no precedent and no consumer will be seen as scope creep, regardless of how well-implemented it is.
+4. **Scope creep.** A contribution that adds 500+ lines of code for a formal validation framework with no precedent and no consumer will be seen as scope creep, regardless of how well-implemented it is.
 
 5. **Wrong layer.** Validation is a server-side responsibility (validate inputs before persisting) or an application-side concern (the consuming app can implement its own validation rules). The client library sits between these layers — its job is transport and parsing, not enforcement.
+
+6. **STAC-style inline checks would reproduce F49.** If we simplified to STAC's pattern (`if (!field) throw`), we'd block all OSH SamplingFeatures that lack `sampledFeature@link`. The whole point of F49 is to be *more tolerant*, not to replicate a fragility pattern.
 
 ### What Stays
 
@@ -95,8 +143,8 @@ The validators were not wasted effort. Building them forced deep engagement with
 
 ## Design Principles Applied
 
-1. **Postel's Law** — Be liberal in what you accept from servers. Server-side responsibility for validation, client-side responsibility for access.
-2. **Upstream Consistency** — Match the patterns used by every other format handler in the ogc-client library. No handler validates. We shouldn't either.
+1. **Postel's Law** — Be liberal in what you accept from servers. Server-side responsibility for validation, client-side responsibility for access. The mature WMS/WFS/WMTS handlers follow this; STAC's inline checks are the exception.
+2. **Upstream Consistency** — Match the dominant upstream pattern: tolerant extraction without a formal validation framework. While the STAC handler has inline required-field checks, no handler has a separate `validate*()` layer. Our contribution should not introduce a new architectural pattern.
 3. **Minimal Contribution Surface** — A contribution should add what the library needs, not what might be nice to have. The upstream reviewers evaluate additions by necessity and precedent.
 4. **Data Accessibility** — A client library that blocks access to usable server data is failing its core purpose. Validators can only block, never enable.
 5. **Maintenance Stewardship** — Don't hand upstream maintainers code they'll need to maintain without clear benefit. Validators are maintenance debt for a feature with no upstream consumer.
@@ -120,4 +168,5 @@ The validators were not wasted effort. Building them forced deep engagement with
 - **Issue #51:** Unified validation surface refactoring — moved validators to helpers, which is how the tight coupling became visible
 - **Issue #52:** Remove validators entirely and update extraction to rely only on recognition
 - **Upstream patterns:** `src/ogc-api/endpoint.ts`, `src/wms/endpoint.ts`, `src/wfs/endpoint.ts` — all use tolerant extraction, none have validators
+- **STAC handler:** `src/stac/info.ts` — inline required-field checks (~20 checks), the one upstream exception; uses ad-hoc `if/throw`, not a formal framework
 - **OGC Part 1 spec (23-001):** SamplingFeature requires `sampledFeature@link` — the spec is correct; but enforcement belongs to servers, not client libraries

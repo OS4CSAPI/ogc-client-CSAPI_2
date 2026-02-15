@@ -362,7 +362,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
      > - **F40 (Issue #49):** OSH SamplingFeatures use `http://www.opengis.net/sensorml/2.0#Feature` — a non-SOSA vocabulary. Extend handler vocabulary sets to recognize SensorML namespace. See Issue #49 for full design.
      > - **F43:** 52North `/procedures` endpoint returns `featureType: "sosa:Sensor"` (a System-type URI). The handler's System > Procedure classification priority correctly handles this, but the endpoint context and featureType disagree. Future response parser may use endpoint context as a tiebreaker.
    - > **📋 Smoke Test Notes (Phase 3.2 — F49) — Design Decision:**
-     > - **F49 (Issue #52):** `extractCSAPIFeature()` uses `validateCSAPIFeature()` as a hard gate — any validation error blocks extraction entirely. This conflicts with upstream ogc-client patterns (tolerant extraction) and Postel's Law. **Design decision: remove all feature-level validators from scope.** No upstream handler has validation functions — zero precedent across WMS, WFS, WMTS, EDR, STAC, TMS. Extraction succeeds for any recognized feature. See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
+     > - **F49 (Issue #52):** `extractCSAPIFeature()` uses `validateCSAPIFeature()` as a hard gate — any validation error blocks extraction entirely. This conflicts with upstream ogc-client patterns (tolerant extraction) and Postel's Law. **Design decision: remove all feature-level validators from scope.** The mature upstream handlers (WMS, WFS, WMTS, TMS) have zero validation; the STAC handler has inline required-field checks but no formal validation framework. No handler has separate `validate*()` functions or `ValidationError` types. Extraction succeeds for any recognized feature. See `docs/implementation/design-notes-validation-extraction-decoupling.md`.
 
 2. **Format Detector Extensions** (~1-2 hours, Low complexity)
    - Extend existing format detector
@@ -381,7 +381,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 
 3. **~~Validator Extensions~~ — REMOVED FROM SCOPE** (Issue #52)
 
-   > **🚫 OUT OF SCOPE** — Feature-level validators have been **removed from the CSAPI contribution scope**. Analysis of the upstream codebase found that **no format handler in the library includes validation functions** — zero precedent across WMS, WFS, WMTS, OGC API Features, EDR, STAC, and TMS. The upstream philosophy follows Postel's Law: client libraries accept what servers return and make it accessible, they don't enforce spec compliance. Adding ~500 lines of validators + tests for a feature with no upstream consumer would be seen as scope creep and maintenance burden. Existing validators in `helpers.ts` and `geojson.ts` will be removed. See `docs/implementation/design-notes-validation-extraction-decoupling.md` for full rationale.
+   > **🚫 OUT OF SCOPE** — Feature-level validators have been **removed from the CSAPI contribution scope**. Analysis of the upstream codebase found that while the STAC handler has inline required-field checks (~20 ad-hoc `if/throw` patterns), **no handler has a formal validation framework** — no separate `validate*()` functions, no `ValidationError` types, no structured error arrays. The mature handlers (WMS, WFS, WMTS, TMS) have zero validation. The upstream philosophy follows Postel's Law: client libraries accept what servers return and make it accessible. Adding ~500 lines of formal validators + tests for a feature with no upstream consumer would be scope creep. See `docs/implementation/design-notes-validation-extraction-decoupling.md` for full rationale.
    >
    > **Smoke test findings F35, F36, F37** (error handling for cancel, `id` filter, result-less commands) remain valid and belong to the response handler / error handling layer (Phase 4 Integration Tests), not to a validation framework.
 
@@ -667,7 +667,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 
 **Testing Conventions:**
 - **HTTP Mocking:** Use `globalThis.fetch = vi.fn()` (Vitest) or `jest.fn()` for all HTTP mocking. Never use `nock`, `msw`, or other external mocking libraries. See Guide §9 for code examples.
-- **Meaningful vs Trivial Tests:** Every test should verify a meaningful behavior — not just that code runs without throwing. Test that URL parameters are correctly encoded, that validators reject invalid input, that parsers extract the right properties. See [Doc 06](../research/testing/findings/06-meaningful-vs-trivial-testing.md) for the full standard.
+- **Meaningful vs Trivial Tests:** Every test should verify a meaningful behavior — not just that code runs without throwing. Test that URL parameters are correctly encoded, that input validators reject invalid input, that parsers extract the right properties. See [Doc 06](../research/testing/findings/06-meaningful-vs-trivial-testing.md) for the full standard.
 - **Anti-Pattern Catalog (AP1-AP5):** Avoid these testing anti-patterns documented in Guide §16 and [Phase 0 review](../research/testing/review/phase-0-scope-assessment.md):
 
 | Anti-Pattern | Rule | Example Violation |
@@ -719,7 +719,7 @@ This roadmap breaks down the complete CSAPI implementation into four phases, ord
 **Status:** ✅ **IMPLEMENTATION READY** - Roadmap complete with incremental testing, correct dependencies, and validator scope decision
 
 **Version 3.6 - Feature-Level Validators Removed from Scope (February 15, 2026):**
-- **Phase 3 Task 3 (Validator Extensions) removed from scope** — no upstream precedent for feature-level validation in any format handler (zero across WMS, WFS, WMTS, EDR, STAC, TMS)
+- **Phase 3 Task 3 (Validator Extensions) removed from scope** — no upstream precedent for a formal validation framework (STAC has inline checks, but WMS/WFS/WMTS/TMS have zero; no handler has `validate*()` functions or `ValidationError` types)
 - Updated Phase 3 Task 1 smoke test note (F49): decision changed from "decouple" to "remove entirely"
 - Updated Phase 3 deliverables, summary table, and total estimates
 - Removed format round-tripping and validation error tests from Phase 4 Integration Tests
