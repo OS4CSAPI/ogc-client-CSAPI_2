@@ -260,6 +260,45 @@ This applies to all component types — parsers, validators, detectors, type sys
 
 ---
 
+## Lesson 13: AI Drift Can Fabricate Findings That Survive Re-Verification
+
+**What happened:** The Phase 3.4 smoke test reported that 52North's demo server had lost all its data (F57 — "52North server data has been completely removed"). The finding was classified as "Moderate," attributed to "Upstream" ownership, and characterized as "consistent with a database reset or redeployment." It was even "re-verified independently" on the same date, with all 6 resource collection endpoints confirmed empty. Five prior findings (F41, F42, F43, F44, F47) were marked as "cannot verify" and the smoke test series was declared to have dropped to "single-server validation."
+
+**None of this was true.** The data was always there.
+
+**Root cause:** Between the Phase 3.3 and Phase 3.4 smoke tests, the AI changed its HTTP request pattern. Phase 3.3 used no explicit `Accept` header, causing 52North to return its default `application/sml+json` — the content type that routes to the actual SensorML data store (3 systems, 1 deployment, 1 procedure). Phase 3.4 added `Accept: application/json` to its requests, which routes to 52North's separate, empty pygeoapi GeoJSON provider. The AI did not recognize the content-negotiation implications of this change. The "independent re-verification" repeated the same incorrect header and reached the same wrong conclusion — confirming a non-existent problem instead of challenging the original assumption.
+
+**Detection:** The human collaborator noticed that 52North's HTML viewer still showed deployment data. When asked to investigate, the AI initially dismissed this as browser caching. The human pushed back, noting the data survived a hard refresh (Ctrl+Shift+R). Closer investigation of the HTML source revealed a `<cs-viewer>` web component that fetches data client-side. Testing with `Accept: application/sml+json` returned all the data immediately.
+
+**52North's actual behavior:**
+
+| Accept Header | Content-Type Returned | Response Shape | Data? |
+|---|---|---|---|
+| *(none)* | `application/sml+json` | `{ items: [...] }` | **3 systems, 1 deployment, 1 procedure** |
+| `application/json` | `application/json` | `{ type: "FeatureCollection", features: [] }` | **Empty** |
+| `application/sml+json` | `application/sml+json` | `{ items: [...] }` | **3 systems, 1 deployment, 1 procedure** |
+
+**Why it matters:** This is the most dangerous type of AI error — a confident, well-documented, internally-consistent finding that is factually wrong. F57 had:
+- Evidence bullets
+- An "independent re-verification"
+- Impact analysis with specific dependent findings cited
+- A plausible narrative ("database reset or redeployment")
+- Upstream ownership attribution (blaming the server, not ourselves)
+
+All of these made the finding *look* thoroughly investigated. But none of them challenged the core assumption: "Did we change how we ask for data?" The AI treated its own prior output as evidence rather than questioning whether the observation method had changed.
+
+**Why re-verification failed:** The "independent re-verification" was not independent. It was the same agent, in the same session, using the same request pattern, confirming its own conclusion. True independence requires varying the observation method (different headers, different tools, different content types) — not repeating the same request and expecting a different result.
+
+**Specific L9 violation:** We already documented L9 ("Content Negotiation Cannot Be Assumed") as a lesson learned. The F57 error demonstrates that *knowing* a lesson and *applying* it are different. The AI wrote L9, cited it in code reviews, and then violated it in the exact scenario L9 was meant to prevent.
+
+**Action:**
+- When a smoke test shows a previously-working server returning no data, **vary the request method before concluding data loss.** Test with: no Accept header, `application/json`, `application/sml+json`, `application/geo+json`, and the `?f=` query parameter form.
+- **Never attribute a failure to "upstream" without first ruling out our own changes.** Diff the request patterns between the last-successful and first-failed smoke tests.
+- Treat "independent re-verification" as meaningful only if it uses a *different observation method*, not the same request repeated twice.
+- When a human collaborator reports evidence that contradicts a finding, treat that as a priority investigation — not a caching artifact.
+
+---
+
 ## Quick Reference: Phase 2 Lessons Still Active
 
 These Phase 2 lessons remain fully applicable during Phase 3:

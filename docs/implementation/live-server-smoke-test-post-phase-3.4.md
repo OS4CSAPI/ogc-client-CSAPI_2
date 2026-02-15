@@ -71,7 +71,9 @@ Fetched real responses from both servers using PowerShell `Invoke-WebRequest` / 
 | ControlStreams | `/controlstreams` | — | ❌ 404 | Unchanged |
 | Properties | `/properties` | 0 | ❌ Empty | Unchanged |
 
-**⚠️ 52North data loss:** All previously available data (3 systems, 1 deployment, 1 procedure) has been removed. The server responds correctly (200) but returns empty `FeatureCollection` for all collection endpoints. The server also now returns `Content-Type: application/json` for collection requests (previously defaulted to `application/sml+json`). This means **52North cannot be used for handler validation in this smoke test.** See [F57].
+~~**⚠️ 52North data loss:** All previously available data (3 systems, 1 deployment, 1 procedure) has been removed. The server responds correctly (200) but returns empty `FeatureCollection` for all collection endpoints. The server also now returns `Content-Type: application/json` for collection requests (previously defaulted to `application/sml+json`). This means **52North cannot be used for handler validation in this smoke test.** See [F57].~~
+
+> **⚠️ CORRECTION (2026-02-15):** The above was incorrect. The data was never lost — the smoke test changed from no explicit `Accept` header (which defaults to `application/sml+json` with data) to `Accept: application/json` (which returns empty GeoJSON from a separate provider). See corrected [F57] and [F57 correction report](f57-content-negotiation-correction.md).
 
 ---
 
@@ -140,7 +142,9 @@ All 56 findings from prior smoke tests re-evaluated:
 | F55 | F42 no longer blocking | Positive | ❓ **Cannot verify** | 52N deployment gone |
 | F56 | OSH schema endpoint returns `Content-Type: auto` | Informational | ✅ **Still present** | Schema endpoint still returns `Content-Type: auto` |
 
-**Summary:** 0 regressions. **F10, F11, F15, F50 status changed** — 52North server has been reset (all data removed). **F41, F42, F43, F44, F47, F55** cannot be re-verified due to empty 52N data. **F46 partially corrected** — OSH now returns `application/sml+json` on single-resource endpoints (was `application/json` for everything). **5 findings cannot be verified** due to 52N data loss — findings retained with current status.
+~~**Summary:** 0 regressions. **F10, F11, F15, F50 status changed** — 52North server has been reset (all data removed). **F41, F42, F43, F44, F47, F55** cannot be re-verified due to empty 52N data.~~ **F46 partially corrected** — OSH now returns `application/sml+json` on single-resource endpoints (was `application/json` for everything). ~~**5 findings cannot be verified** due to 52N data loss — findings retained with current status.~~
+
+> **CORRECTION (2026-02-15):** 52North data was NOT removed. The "cannot verify" status of F41, F42, F43, F44, F47, F55 was based on incorrect F57. These findings should be re-verifiable using `Accept: application/sml+json`. See [F57 correction report](f57-content-negotiation-correction.md).
 
 ---
 
@@ -395,28 +399,41 @@ This is a new dimension — inventorying the SensorML `type` discriminator value
 
 ## New Findings
 
-### F57 (Moderate): 52North server data has been completely removed
+### F57 ~~(Moderate): 52North server data has been completely removed~~ CORRECTED: Content negotiation error — data was never lost
 
-**Severity:** Moderate  
-**Category:** Server limitation  
-**Affects:** Interoperability testing coverage  
-**Ownership:** Upstream  
-**Evidence:**
-- Phase 3.3: 3 systems, 1 deployment, 1 procedure
-- Phase 3.4: 0 systems, 0 deployments, 0 procedures
-- All collection endpoints return `200` with empty `{ type: "FeatureCollection", features: [], links: [] }`
-- DataStreams (500 Internal Server Error), Observations (500 Internal Server Error), ControlStreams (404) — unchanged errors
-- Root endpoint still responds (200, 7 links) — API structure intact (`connected-systems-pygeoapi`)
-- **Re-verified independently** on the same date: confirmed all 6 resource collection endpoints (`/systems`, `/deployments`, `/procedures`, `/datastreams`, `/observations`, `/controlstreams`) — the server is responding correctly with valid JSON but every collection is genuinely empty. The 500 errors on DataStreams/Observations are likely a consequence of having no parent systems to associate with. This is consistent with a database reset or redeployment on 52North's demo infrastructure.
+~~**Severity:** Moderate~~  
+~~**Category:** Server limitation~~  
+~~**Affects:** Interoperability testing coverage~~  
+~~**Ownership:** Upstream~~  
+~~**Evidence:**~~
+- ~~Phase 3.3: 3 systems, 1 deployment, 1 procedure~~
+- ~~Phase 3.4: 0 systems, 0 deployments, 0 procedures~~
+- ~~All collection endpoints return `200` with empty `{ type: "FeatureCollection", features: [], links: [] }`~~
+- ~~DataStreams (500 Internal Server Error), Observations (500 Internal Server Error), ControlStreams (404) — unchanged errors~~
+- ~~Root endpoint still responds (200, 7 links) — API structure intact (`connected-systems-pygeoapi`)~~
+- ~~**Re-verified independently** on the same date: confirmed all 6 resource collection endpoints (`/systems`, `/deployments`, `/procedures`, `/datastreams`, `/observations`, `/controlstreams`) — the server is responding correctly with valid JSON but every collection is genuinely empty. The 500 errors on DataStreams/Observations are likely a consequence of having no parent systems to associate with. This is consistent with a database reset or redeployment on 52North's demo infrastructure.~~
 
-**Impact:** 52North was the only server providing Deployment and Procedure data, and the only source of CURIE-format featureType values (`sosa:Sensor`, `sosa:Platform`). With no 52N data:
-- F41 (null featureType) cannot be re-verified
-- F43 (Procedures misclassified) cannot be re-verified
-- CURIE vocabulary handling cannot be live-tested
-- Deployment extraction cannot be live-tested
-- The smoke test series drops to **single-server validation** until 52N data is restored
+~~**Impact:** 52North was the only server providing Deployment and Procedure data, and the only source of CURIE-format featureType values (`sosa:Sensor`, `sosa:Platform`). With no 52N data:~~
+- ~~F41 (null featureType) cannot be re-verified~~
+- ~~F43 (Procedures misclassified) cannot be re-verified~~
+- ~~CURIE vocabulary handling cannot be live-tested~~
+- ~~Deployment extraction cannot be live-tested~~
+- ~~The smoke test series drops to **single-server validation** until 52N data is restored~~
 
-**Status:** Upstream — confirmed not a transient issue; monitor for data restoration in future smoke tests
+~~**Status:** Upstream — confirmed not a transient issue; monitor for data restoration in future smoke tests~~
+
+> **⚠️ CORRECTION (2026-02-15):** F57 was incorrect. The 52North data was never lost. The Phase 3.4 smoke test used `Accept: application/json` in its HTTP requests, which routes to 52North's empty pygeoapi GeoJSON provider. The Phase 3.3 smoke test used no explicit Accept header, which defaults to `application/sml+json` — the provider that contains the real data (3 systems, 1 deployment, 1 procedure). The "independent re-verification" repeated the same incorrect header and reached the same wrong conclusion.
+>
+> **Root cause:** The AI changed the request pattern between smoke tests without recognizing the content-negotiation implications. 52North routes `application/json` and `application/sml+json` to completely separate data backends:
+> | Accept Header | Content-Type Returned | Data? |
+> |---|---|---|
+> | *(none)* | `application/sml+json` | **3 systems, 1 deployment, 1 procedure** |
+> | `application/json` | `application/json` | **Empty** |
+> | `application/sml+json` | `application/sml+json` | **3 systems, 1 deployment, 1 procedure** |
+>
+> **Corrected severity:** Not a finding — our error, not a server issue. See [F57 correction report](f57-content-negotiation-correction.md) and Lessons Learned L13.
+>
+> **Impact on dependent findings:** F10, F11, F15, F41, F42, F43, F44, F47, F50, F55 were all marked as "cannot verify" or "reversed" based on the incorrect F57 conclusion. These findings should be re-evaluated in the next smoke test using the correct `Accept: application/sml+json` header (or no Accept header).
 
 ### F58 (Positive): SensorML type definitions structurally align with real OSH server data
 
@@ -551,7 +568,7 @@ No changes from Phase 3.3:
 
 1. **SensorML types are correct.** The structural alignment against two OSH SensorML responses (27 field matches, 0 mismatches) confirms that our type definitions accurately model real server data. The `PhysicalSystem` hierarchy (DescribedObject → AbstractProcess → AbstractPhysicalProcess → PhysicalSystem) maps perfectly to OSH's response structure. The cross-module SWE Common integration works — `parameters` containing `DataRecord` with `Vector`, `Quantity`, `Boolean`, `Count` fields all resolve through the `ParameterList → IOComponentChoice → AnyComponent` type chain.
 
-2. **52North data loss is significant.** The server has been completely emptied — 3 systems, 1 deployment, and 1 procedure that were our only Deployment/Procedure test data and our only source of CURIE-format vocabulary values (`sosa:Sensor`, `sosa:Platform`) are gone. This drops the smoke test to single-server validation for the first time in the series. Five prior findings (F41, F42, F43, F44, F47) cannot be re-verified. This should be monitored — if 52N doesn't restore data, we may need a third server or synthetic test data.
+2. ~~**52North data loss is significant.** The server has been completely emptied — 3 systems, 1 deployment, and 1 procedure that were our only Deployment/Procedure test data and our only source of CURIE-format vocabulary values (`sosa:Sensor`, `sosa:Platform`) are gone. This drops the smoke test to single-server validation for the first time in the series. Five prior findings (F41, F42, F43, F44, F47) cannot be re-verified. This should be monitored — if 52N doesn't restore data, we may need a third server or synthetic test data.~~ **CORRECTION (2026-02-15):** 52North data is present and accessible via `Accept: application/sml+json`. The AI changed request headers between smoke tests, causing a false "data loss" conclusion. See [F57 correction report](f57-content-negotiation-correction.md).
 
 3. **GeoJSON handler is stable.** All 63 OSH features (12 systems + 51 sampling features) pass recognition and extraction. parseValidTime correctly handles all 12 validTime arrays. No regressions from Issue #18 changes (expected — types-only module with no runtime code).
 

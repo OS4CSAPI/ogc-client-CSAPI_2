@@ -385,6 +385,8 @@ No changes from Phase 3.4 heatmap. All entries unchanged.
 
 ## Smoke Test Findings Integration
 
+> **⚠️ CORRECTION (2026-02-15):** F57 ("52North data loss") in the Phase 3.4 smoke test was incorrect. The 52North data was never lost — the smoke test changed its `Accept` header from none (defaulting to `application/sml+json`, which returns real data) to `Accept: application/json` (which routes to 52North's empty pygeoapi GeoJSON provider). All findings below that referenced F57 or "52N data loss" were based on this incorrect conclusion. The 52North server still has 3 systems, 1 deployment, and 1 procedure accessible via `application/sml+json`. See [F57 correction report](f57-content-negotiation-correction.md) and Lessons Learned L13.
+
 | Finding | Status | Evidence |
 |---------|--------|----------|
 | F4 (validTime array format) | ✅ **Addressed** | `parseValidTime` in geojson.ts (unchanged) |
