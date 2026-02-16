@@ -302,3 +302,12 @@ export type {
 export { parseCollectionResponse } from './response.js';
 
 export type { CollectionResponse } from './response.js';
+
+// ========================================
+// Classification — Endpoint-Context Fallback
+// ========================================
+
+export {
+  inferResourceTypeFromPath,
+  classifyFeature,
+} from './classification.js';
