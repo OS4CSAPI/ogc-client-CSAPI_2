@@ -71,7 +71,7 @@ export type CommandStatusCode = (typeof CommandStatusCodes)[number];
 
 /**
  * Discriminator URIs for the `featureType` property on System resources.
- * @see https://docs.ogc.org/is/23-001/23-001.html
+ * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
  */
 export const SystemTypeUris = [
   'http://www.w3.org/ns/sosa/Sensor',
@@ -99,7 +99,7 @@ export interface TimeInterval {
 
 /**
  * HATEOAS link extended with CSAPI-relevant `rel` values.
- * @see https://docs.ogc.org/is/23-001/23-001.html
+ * @see https://docs.ogc.org/is/23-001/23-001.html#_link_relations
  */
 export type ResourceLink = OgcApiDocumentLink;
 
@@ -109,7 +109,12 @@ export type ResourceLink = OgcApiDocumentLink;
 
 /**
  * Base query options shared by all CSAPI resource list endpoints.
- * @see https://docs.ogc.org/is/23-001/23-001.html
+ *
+ * These parameters map to the standard OGC API query parameters for
+ * filtering, pagination, and format selection. All properties are optional;
+ * omitting them returns a default-paginated, unfiltered list.
+ *
+ * @see https://docs.ogc.org/is/23-001/23-001.html#_query_parameters
  */
 export interface QueryOptions {
   /** Maximum number of resources to return. */
@@ -136,7 +141,7 @@ export interface QueryOptions {
 
 /**
  * Query options for System list endpoints.
- * @see https://docs.ogc.org/is/23-001/23-001.html
+ * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
  */
 export interface SystemQueryOptions extends QueryOptions {
   /** Filter by parent system ID (for subsystem queries). */
@@ -155,7 +160,7 @@ export interface SystemQueryOptions extends QueryOptions {
 
 /**
  * Query options for Deployment list endpoints.
- * @see https://docs.ogc.org/is/23-001/23-001.html
+ * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
  */
 export interface DeploymentQueryOptions extends QueryOptions {
   /** Filter by parent deployment ID (for subdeployment queries). */
@@ -168,13 +173,13 @@ export interface DeploymentQueryOptions extends QueryOptions {
 
 /**
  * Query options for Procedure list endpoints.
- * @see https://docs.ogc.org/is/23-001/23-001.html
+ * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
  */
 export type ProcedureQueryOptions = QueryOptions;
 
 /**
  * Query options for SamplingFeature list endpoints.
- * @see https://docs.ogc.org/is/23-001/23-001.html
+ * @see https://docs.ogc.org/is/23-001/23-001.html#_samplingfeature_resources
  */
 export type SamplingFeatureQueryOptions = QueryOptions;
 
@@ -191,7 +196,7 @@ export interface PropertyQueryOptions extends QueryOptions {
 
 /**
  * Query options for DataStream list endpoints.
- * @see https://docs.ogc.org/is/23-002/23-002.html
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
  */
 export interface DatastreamQueryOptions extends QueryOptions {
   /** Filter by system ID. */
@@ -206,7 +211,7 @@ export interface DatastreamQueryOptions extends QueryOptions {
 
 /**
  * Query options for Observation list endpoints.
- * @see https://docs.ogc.org/is/23-002/23-002.html
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
  */
 export interface ObservationQueryOptions extends QueryOptions {
   /** Filter by phenomenon time interval. */
@@ -217,7 +222,7 @@ export interface ObservationQueryOptions extends QueryOptions {
 
 /**
  * Query options for ControlStream list endpoints.
- * @see https://docs.ogc.org/is/23-002/23-002.html
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_controlstream_resources
  */
 export interface ControlStreamQueryOptions extends QueryOptions {
   /** Filter by system ID. */
@@ -228,7 +233,7 @@ export interface ControlStreamQueryOptions extends QueryOptions {
 
 /**
  * Query options for Command list endpoints.
- * @see https://docs.ogc.org/is/23-002/23-002.html
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
  */
 export interface CommandQueryOptions extends QueryOptions {
   /** Filter by issue time interval. */
@@ -251,7 +256,7 @@ export interface CommandQueryOptions extends QueryOptions {
  *
  * Required properties: `featureType`, `uid`, `name` (per OGC spec).
  *
- * @see https://docs.ogc.org/is/23-001/23-001.html
+ * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
  */
 export interface System {
   /** Server-assigned local identifier (read-only). */
@@ -283,7 +288,7 @@ export interface System {
  *
  * Required properties: `featureType`, `uid`, `name`, `validTime` (per OGC spec).
  *
- * @see https://docs.ogc.org/is/23-001/23-001.html
+ * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
  */
 export interface Deployment {
   /** Server-assigned local identifier (read-only). */
@@ -313,7 +318,7 @@ export interface Deployment {
  *
  * Required properties: `featureType`, `uid`, `name` (per OGC spec).
  *
- * @see https://docs.ogc.org/is/23-001/23-001.html
+ * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
  */
 export interface Procedure {
   /** Server-assigned local identifier (read-only). */
@@ -343,7 +348,7 @@ export interface Procedure {
  * Required properties: `featureType`, `uid`, `name` (per OGC spec).
  * The `sampledFeature@link` link relation is also required.
  *
- * @see https://docs.ogc.org/is/23-001/23-001.html
+ * @see https://docs.ogc.org/is/23-001/23-001.html#_samplingfeature_resources
  */
 export interface SamplingFeature {
   /** Server-assigned local identifier (read-only). */
@@ -373,7 +378,7 @@ export interface SamplingFeature {
  *
  * Required properties: `label`, `uniqueId`, `baseProperty` (per OGC spec).
  *
- * @see https://docs.ogc.org/is/23-001/23-001.html
+ * @see https://docs.ogc.org/is/23-001/23-001.html#_property_resources
  */
 export interface Property {
   /** Server-assigned local identifier (read-only). */
@@ -406,7 +411,7 @@ export interface Property {
  * Required properties: `name`, `system@link`, `observedProperties`,
  * `phenomenonTime`, `resultTime`, `resultType`, `live` (per OGC spec).
  *
- * @see https://docs.ogc.org/is/23-002/23-002.html
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
  */
 export interface Datastream {
   /** Server-assigned local identifier (read-only). */
@@ -445,7 +450,7 @@ export interface Datastream {
  * Required properties: `resultTime` (per OGC spec).
  * Must have either `result` (inline) or a result link.
  *
- * @see https://docs.ogc.org/is/23-002/23-002.html
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
  */
 export interface Observation {
   /** Server-assigned local identifier (read-only). */
@@ -470,7 +475,7 @@ export interface Observation {
  * Required properties: `name`, `system@link`, `controlledProperties`,
  * `issueTime`, `executionTime`, `live`, `async` (per OGC spec).
  *
- * @see https://docs.ogc.org/is/23-002/23-002.html
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_controlstream_resources
  */
 export interface ControlStream {
   /** Server-assigned local identifier (read-only). */
@@ -506,7 +511,7 @@ export interface ControlStream {
  *
  * Required properties: `issueTime`, `parameters` (per OGC spec).
  *
- * @see https://docs.ogc.org/is/23-002/23-002.html
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
  */
 export interface Command {
   /** Server-assigned local identifier (read-only). */
@@ -531,7 +536,7 @@ export interface Command {
  *
  * Required properties: `reportTime`, `statusCode` (per OGC spec).
  *
- * @see https://docs.ogc.org/is/23-002/23-002.html
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
  */
 export interface CommandStatus {
   /** Server-assigned local identifier (read-only). */
@@ -555,7 +560,7 @@ export interface CommandStatus {
 
 /**
  * A GeoJSON FeatureCollection response for Part 1 resources.
- * @see https://docs.ogc.org/is/23-001/23-001.html
+ * @see https://docs.ogc.org/is/23-001/23-001.html#_response_schema
  */
 export interface FeatureCollection<T> {
   type: 'FeatureCollection';
@@ -568,7 +573,7 @@ export interface FeatureCollection<T> {
 
 /**
  * A collection response for Part 2 resources (not GeoJSON).
- * @see https://docs.ogc.org/is/23-002/23-002.html
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_response_schema
  */
 export interface ItemCollection<T> {
   items: T[];

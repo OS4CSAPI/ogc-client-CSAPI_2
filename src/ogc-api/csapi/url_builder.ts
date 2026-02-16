@@ -17,8 +17,74 @@ import {
  * resource types (Part 1: systems, deployments, procedures, samplingFeatures,
  * properties; Part 2: datastreams, observations, controlStreams, commands).
  *
- * @see https://docs.ogc.org/is/23-001/23-001.html
- * @see https://docs.ogc.org/is/23-002/23-002.html
+ * ## Resource Discovery
+ *
+ * Available resources are discovered automatically from the collection's link
+ * relations. Attempting to build a URL for an unavailable resource throws an
+ * {@link EndpointError}. Check `availableResources` to inspect what is available.
+ *
+ * ## Error Handling
+ *
+ * All URL-building methods throw {@link EndpointError} when the requested
+ * resource type is not available on the collection. Wrap calls in try/catch
+ * or check `builder.availableResources.has('systems')` before calling.
+ *
+ * ```ts
+ * try {
+ *   const url = builder.getSystems();
+ * } catch (e) {
+ *   if (e instanceof EndpointError) {
+ *     console.warn('Systems not available:', e.message);
+ *   }
+ * }
+ * ```
+ *
+ * ## Migration from Direct API Access
+ *
+ * Instead of manually constructing CSAPI URLs:
+ * ```ts
+ * // Before (manual URL construction):
+ * const url = `${baseUrl}/collections/${collectionId}/systems?limit=50&bbox=-180,-90,180,90`;
+ *
+ * // After (using CSAPIQueryBuilder):
+ * const endpoint = await new OgcApiEndpoint(baseUrl);
+ * const builder = await endpoint.csapi(collectionId);
+ * const url = builder.getSystems({ limit: 50, bbox: [-180, -90, 180, 90] });
+ * ```
+ *
+ * The builder handles URL encoding, parameter validation, resource
+ * availability checks, and supports both collection-scoped and
+ * root-level API resource URLs automatically.
+ *
+ * @example Complete workflow — list, filter, and navigate CSAPI resources:
+ * ```ts
+ * import { OgcApiEndpoint } from '@AugmentedGeo/ogc-client';
+ *
+ * const endpoint = await new OgcApiEndpoint('https://api.example.com');
+ * const builder = await endpoint.csapi('weather-stations');
+ *
+ * // List systems with spatial and text filters
+ * const systemsUrl = builder.getSystems({
+ *   bbox: [-105, 39, -104, 40],
+ *   q: 'temperature',
+ *   limit: 25,
+ * });
+ *
+ * // Get a specific system
+ * const systemUrl = builder.getSystem('sys-001');
+ *
+ * // List observations for a datastream with temporal filter
+ * const obsUrl = builder.getObservationsForDatastream('ds-001', {
+ *   phenomenonTime: { start: new Date('2024-01-01') },
+ *   limit: 100,
+ * });
+ *
+ * // Create a new system (returns the POST URL)
+ * const createUrl = builder.createSystem();
+ * ```
+ *
+ * @see https://docs.ogc.org/is/23-001/23-001.html — OGC API - Connected Systems Part 1
+ * @see https://docs.ogc.org/is/23-002/23-002.html — OGC API - Connected Systems Part 2
  */
 export default class CSAPIQueryBuilder {
   /**

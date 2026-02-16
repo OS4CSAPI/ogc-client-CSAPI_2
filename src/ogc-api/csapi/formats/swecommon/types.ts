@@ -279,11 +279,14 @@ export interface TypedDataField extends DataField {
 // ========================================
 // Scalar Components
 // ========================================
+// OGC SWE Common 3.0 §7.2 — Simple Components
+// @see https://docs.ogc.org/is/20-004/20-004.html#_simple_components
 
 /**
  * Boolean scalar component.
  *
  * @see Boolean.json
+ * @see https://docs.ogc.org/is/20-004/20-004.html#boolean_component
  */
 export interface SweBoolean extends AbstractSimpleComponent {
   type: 'Boolean';
@@ -425,11 +428,14 @@ export interface SweCategoryRange extends AbstractSimpleComponent {
 // ========================================
 // Aggregate Components
 // ========================================
+// OGC SWE Common 3.0 §7.4 — Record, Choice, and Vector Components
+// @see https://docs.ogc.org/is/20-004/20-004.html#record_components
 
 /**
  * Record (named tuple) — ordered sequence of named fields.
  *
  * @see DataRecord.json
+ * @see https://docs.ogc.org/is/20-004/20-004.html#datarecord_def
  */
 export interface DataRecord extends AbstractDataComponent {
   type: 'DataRecord';
@@ -506,11 +512,14 @@ export interface GeoJsonGeometry {
 // ========================================
 // Array Components
 // ========================================
+// OGC SWE Common 3.0 §7.5 — Array Components
+// @see https://docs.ogc.org/is/20-004/20-004.html#array_components
 
 /**
  * Homogeneous array of data components.
  *
  * @see DataArray.json
+ * @see https://docs.ogc.org/is/20-004/20-004.html#dataarray_def
  */
 export interface DataArray extends AbstractDataComponent {
   type: 'DataArray';
@@ -548,11 +557,14 @@ export interface Matrix extends AbstractDataComponent {
 // ========================================
 // Encoding Types
 // ========================================
+// OGC SWE Common 3.0 §8 — Data Encodings
+// @see https://docs.ogc.org/is/20-004/20-004.html#data_encoding_rules
 
 /**
  * Text encoding — delimited token/block format.
  *
  * @see TextEncoding in encodings.json
+ * @see https://docs.ogc.org/is/20-004/20-004.html#text_encoding_rules
  */
 export interface TextEncoding extends AbstractSWE {
   type: 'TextEncoding';

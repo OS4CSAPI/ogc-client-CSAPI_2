@@ -250,7 +250,7 @@ describe('Navigation — GeoJSON feature classification round-trip', () => {
     expect(resourceType).toBe('System');
 
     // Extract
-    const extracted = extractCSAPIFeature(SYSTEM_FEATURE) as Record<
+    const extracted = extractCSAPIFeature(SYSTEM_FEATURE) as unknown as Record<
       string,
       unknown
     >;

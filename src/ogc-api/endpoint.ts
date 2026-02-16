@@ -215,7 +215,21 @@ ${e.message}`);
   }
 
   /**
-   * A Promise which resolves to an array of Connected Systems collection identifiers as strings.
+   * A Promise which resolves to an array of Connected Systems collection
+   * identifiers as strings.
+   *
+   * Only collections whose links advertise CSAPI resource relations
+   * (e.g., `ogc-cs:systems`, `ogc-cs:datastreams`) are included.
+   *
+   * @example
+   * ```ts
+   * const endpoint = await new OgcApiEndpoint('https://api.example.com');
+   * const collections = await endpoint.csapiCollections;
+   * // => ['weather-stations', 'river-gauges']
+   * ```
+   *
+   * @see {@link hasConnectedSystems} to check feature support first
+   * @see https://docs.ogc.org/is/23-001/23-001.html
    */
   get csapiCollections(): Promise<string[]> {
     return Promise.all([this.data, this.hasConnectedSystems])
@@ -297,7 +311,24 @@ ${e.message}`);
   }
 
   /**
-   * A Promise which resolves to a boolean indicating whether the endpoint offers Connected Systems (CSAPI) resources.
+   * A Promise which resolves to a boolean indicating whether the endpoint
+   * offers Connected Systems (CSAPI) resources.
+   *
+   * Checks the endpoint's conformance classes for any of the CSAPI Part 1
+   * or Part 2 conformance URIs.
+   *
+   * @example
+   * ```ts
+   * const endpoint = await new OgcApiEndpoint('https://api.example.com');
+   * if (await endpoint.hasConnectedSystems) {
+   *   const builder = await endpoint.csapi('weather-stations');
+   *   // ... build CSAPI queries
+   * }
+   * ```
+   *
+   * @see {@link csapi} to create a query builder
+   * @see {@link csapiCollections} to list available collections
+   * @see https://docs.ogc.org/is/23-001/23-001.html
    */
   get hasConnectedSystems(): Promise<boolean> {
     return Promise.all([this.conformanceClasses]).then(
@@ -323,9 +354,33 @@ ${e.message}`);
   }
 
   /**
-   * A Promise which resolves to a CSAPIQueryBuilder for constructing Connected Systems queries.
+   * Creates a {@link CSAPIQueryBuilder} for constructing Connected Systems
+   * query URLs against the given collection.
+   *
+   * The builder discovers available resource types by inspecting the
+   * collection's link relations and the root API document. Builders are
+   * cached per collection ID so repeated calls return the same instance.
+   *
    * @param collectionId - The collection identifier to create a builder for.
+   * @returns A CSAPIQueryBuilder scoped to the specified collection.
    * @throws {EndpointError} If the endpoint does not support Connected Systems.
+   *
+   * @example
+   * ```ts
+   * const endpoint = await new OgcApiEndpoint('https://api.example.com');
+   * const builder = await endpoint.csapi('weather-stations');
+   *
+   * // List systems with a spatial filter
+   * const url = builder.getSystems({ bbox: [-180, -90, 180, 90], limit: 50 });
+   *
+   * // Get a specific datastream
+   * const dsUrl = builder.getDataStream('ds-001');
+   * ```
+   *
+   * @see {@link hasConnectedSystems} to check feature support first
+   * @see {@link CSAPIQueryBuilder} for all available query methods
+   * @see https://docs.ogc.org/is/23-001/23-001.html
+   * @see https://docs.ogc.org/is/23-002/23-002.html
    */
   public async csapi(collectionId: string): Promise<CSAPIQueryBuilder> {
     if (!(await this.hasConnectedSystems)) {
