@@ -23,10 +23,20 @@
  * @see parsePhysicalComponent
  * @see parseSimpleProcess
  * @see parseAggregateProcess
+ * @see parseSensorML30
  */
 export class SensorMLParseError extends Error {
-  constructor(message: string) {
+  /**
+   * Optional path indicating where in the document the error occurred.
+   *
+   * @example `'components[2].type'`
+   * @example `'capabilities[0].capabilities[1].name'`
+   */
+  path?: string;
+
+  constructor(message: string, path?: string) {
     super(message);
     this.name = 'SensorMLParseError';
+    if (path !== undefined) this.path = path;
   }
 }
