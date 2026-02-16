@@ -2442,3 +2442,548 @@ describe('Command resource validation', () => {
     expect(() => builder.createCommands('x')).toThrow(EndpointError);
   });
 });
+
+// ========================================
+// Edge Case Tests — Issue #33
+// ========================================
+
+// ----------------------------------------
+// extractBaseUrl edge cases
+// ----------------------------------------
+
+describe('extractBaseUrl edge cases', () => {
+  it('falls back to first link href when no self link exists', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'ogc-cs:systems', type: '', title: '', href: 'https://fallback.example.com/systems' },
+        ],
+      })
+    );
+    // baseUrl should be derived from the first link's href
+    const url = builder.getSystems();
+    expect(url).toContain('fallback.example.com');
+  });
+
+  it('returns empty baseUrl when collection has no links', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({ links: [] })
+    );
+    // With no links, availableResources is empty, so resource calls throw
+    expect(builder.availableResources.size).toBe(0);
+  });
+
+  it('strips trailing slash from self link href', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot/' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+    const url = builder.getSystems();
+    expect(url).toBe('https://example.com/collections/iot/systems');
+  });
+
+  it('strips trailing slash from fallback link href', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'ogc-cs:systems', type: '', title: '', href: 'https://example.com/api/' },
+        ],
+      })
+    );
+    // baseUrl should use first href, trailing slash stripped
+    const url = builder.getSystems();
+    expect(url).toContain('example.com/api');
+    expect(url).not.toContain('api//');
+  });
+});
+
+// ----------------------------------------
+// buildQueryString edge cases
+// ----------------------------------------
+
+describe('buildQueryString edge cases', () => {
+  function makeBuilder(): CSAPIQueryBuilder {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+  }
+
+  it('returns URL without query string when options is undefined', () => {
+    const url = makeBuilder().getSystems();
+    expect(url).toBe('https://example.com/collections/iot/systems');
+  });
+
+  it('returns URL without query string when options is empty object', () => {
+    const url = makeBuilder().getSystems({});
+    expect(url).toBe('https://example.com/collections/iot/systems');
+  });
+
+  it('skips null values in options', () => {
+    const url = makeBuilder().getSystems({ limit: 10, q: null as unknown as string });
+    expect(url).toBe('https://example.com/collections/iot/systems?limit=10');
+  });
+
+  it('skips undefined values in options', () => {
+    const url = makeBuilder().getSystems({ limit: 10, offset: undefined });
+    expect(url).toBe('https://example.com/collections/iot/systems?limit=10');
+  });
+
+  it('serializes boolean values as strings', () => {
+    const url = makeBuilder().getSystems({ recursive: true } as any);
+    expect(url).toBe('https://example.com/collections/iot/systems?recursive=true');
+  });
+
+  it('serializes numeric values as strings', () => {
+    const url = makeBuilder().getSystems({ offset: 0 } as any);
+    expect(url).toBe('https://example.com/collections/iot/systems?offset=0');
+  });
+
+  it('serializes array values as comma-separated', () => {
+    const url = makeBuilder().getSystems({ id: ['a', 'b', 'c'] } as any);
+    expect(url).toBe('https://example.com/collections/iot/systems?id=a%2Cb%2Cc');
+  });
+
+  it('serializes format (f) parameter correctly', () => {
+    const url = makeBuilder().getSystems({ f: 'application/json' } as any);
+    expect(url).toBe('https://example.com/collections/iot/systems?f=application%2Fjson');
+  });
+});
+
+// ----------------------------------------
+// Limit validation through builder
+// ----------------------------------------
+
+describe('Limit validation through builder', () => {
+  function makeBuilder(): CSAPIQueryBuilder {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+  }
+
+  it('accepts limit of 1', () => {
+    expect(() => makeBuilder().getSystems({ limit: 1 })).not.toThrow();
+  });
+
+  it('rejects limit of 0', () => {
+    expect(() => makeBuilder().getSystems({ limit: 0 })).toThrow('positive integer');
+  });
+
+  it('rejects negative limit', () => {
+    expect(() => makeBuilder().getSystems({ limit: -1 })).toThrow('positive integer');
+  });
+
+  it('rejects fractional limit', () => {
+    expect(() => makeBuilder().getSystems({ limit: 1.5 })).toThrow('positive integer');
+  });
+
+  it('rejects NaN limit', () => {
+    expect(() => makeBuilder().getSystems({ limit: NaN })).toThrow('positive integer');
+  });
+
+  it('rejects Infinity limit', () => {
+    expect(() => makeBuilder().getSystems({ limit: Infinity })).toThrow('positive integer');
+  });
+});
+
+// ----------------------------------------
+// Bbox validation through builder
+// ----------------------------------------
+
+describe('Bbox validation through builder', () => {
+  function makeBuilder(): CSAPIQueryBuilder {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+  }
+
+  it('accepts valid 4-element bbox', () => {
+    expect(() => makeBuilder().getSystems({ bbox: [-10, -10, 10, 10] })).not.toThrow();
+  });
+
+  it('rejects 3-element bbox', () => {
+    expect(() => makeBuilder().getSystems({ bbox: [0, 0, 10] as any })).toThrow('4 coordinates');
+  });
+
+  it('rejects 5-element bbox', () => {
+    expect(() => makeBuilder().getSystems({ bbox: [0, 0, 10, 10, 0] as any })).toThrow('4 coordinates');
+  });
+
+  it('rejects bbox with Infinity', () => {
+    expect(() => makeBuilder().getSystems({ bbox: [0, 0, Infinity, 10] as any })).toThrow('finite numbers');
+  });
+
+  it('rejects bbox with NaN', () => {
+    expect(() => makeBuilder().getSystems({ bbox: [NaN, 0, 10, 10] as any })).toThrow('finite numbers');
+  });
+
+  it('rejects inverted minx > maxx', () => {
+    expect(() => makeBuilder().getSystems({ bbox: [20, 0, 10, 10] })).toThrow('minx');
+  });
+
+  it('rejects inverted miny > maxy', () => {
+    expect(() => makeBuilder().getSystems({ bbox: [0, 20, 10, 10] })).toThrow('miny');
+  });
+});
+
+// ----------------------------------------
+// Temporal parameter edge cases through builder
+// ----------------------------------------
+
+describe('Temporal parameter edge cases through builder', () => {
+  function makeBuilder(): CSAPIQueryBuilder {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+          { rel: 'ogc-cs:datastreams', type: '', title: '', href: '/datastreams' },
+          { rel: 'ogc-cs:observations', type: '', title: '', href: '/observations' },
+        ],
+      })
+    );
+  }
+
+  it('serializes end-only datetime interval', () => {
+    const url = makeBuilder().getSystems({
+      datetime: { end: new Date('2025-06-01T00:00:00Z') },
+    });
+    expect(url).toContain('datetime=..%2F2025-06-01T00%3A00%3A00.000Z');
+  });
+
+  it('serializes start-only datetime interval', () => {
+    const url = makeBuilder().getSystems({
+      datetime: { start: new Date('2024-01-01T00:00:00Z') },
+    });
+    expect(url).toContain('datetime=2024-01-01T00%3A00%3A00.000Z%2F..');
+  });
+
+  it('serializes phenomenonTime temporal parameter', () => {
+    const url = makeBuilder().getObservations({
+      phenomenonTime: new Date('2024-03-15T12:00:00Z'),
+    } as any);
+    expect(url).toContain('phenomenonTime=2024-03-15T12%3A00%3A00.000Z');
+  });
+
+  it('serializes resultTime temporal parameter', () => {
+    const url = makeBuilder().getObservations({
+      resultTime: new Date('2024-03-15T12:00:00Z'),
+    } as any);
+    expect(url).toContain('resultTime=2024-03-15T12%3A00%3A00.000Z');
+  });
+
+  it('handles latest keyword for resultTime', () => {
+    const url = makeBuilder().getObservations({
+      resultTime: 'latest',
+    } as any);
+    expect(url).toContain('resultTime=latest');
+  });
+
+  it('serializes epoch date correctly', () => {
+    const url = makeBuilder().getSystems({
+      datetime: new Date('1970-01-01T00:00:00Z'),
+    });
+    expect(url).toContain('datetime=1970-01-01T00%3A00%3A00.000Z');
+  });
+
+  it('serializes combined datetime interval', () => {
+    const url = makeBuilder().getSystems({
+      datetime: {
+        start: new Date('2024-01-01T00:00:00Z'),
+        end: new Date('2024-12-31T23:59:59Z'),
+      },
+    });
+    expect(url).toContain(
+      'datetime=2024-01-01T00%3A00%3A00.000Z%2F2024-12-31T23%3A59%3A59.000Z'
+    );
+  });
+});
+
+// ----------------------------------------
+// Pagination edge cases
+// ----------------------------------------
+
+describe('Pagination edge cases', () => {
+  function makeBuilder(): CSAPIQueryBuilder {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+          { rel: 'ogc-cs:deployments', type: '', title: '', href: '/deployments' },
+        ],
+      })
+    );
+  }
+
+  it('serializes offset of 0', () => {
+    const url = makeBuilder().getSystems({ offset: 0 } as any);
+    expect(url).toBe('https://example.com/collections/iot/systems?offset=0');
+  });
+
+  it('serializes combined limit and offset', () => {
+    const url = makeBuilder().getSystems({ limit: 50, offset: 100 } as any);
+    expect(url).toBe('https://example.com/collections/iot/systems?limit=50&offset=100');
+  });
+
+  it('serializes large limit value', () => {
+    const url = makeBuilder().getSystems({ limit: 10000 });
+    expect(url).toBe('https://example.com/collections/iot/systems?limit=10000');
+  });
+
+  it('serializes large offset value', () => {
+    const url = makeBuilder().getSystems({ offset: 999999 } as any);
+    expect(url).toBe('https://example.com/collections/iot/systems?offset=999999');
+  });
+});
+
+// ----------------------------------------
+// Combined query parameter scenarios
+// ----------------------------------------
+
+describe('Combined query parameter scenarios', () => {
+  function makeBuilder(): CSAPIQueryBuilder {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+          { rel: 'ogc-cs:deployments', type: '', title: '', href: '/deployments' },
+        ],
+      })
+    );
+  }
+
+  it('serializes limit + bbox + datetime together', () => {
+    const url = makeBuilder().getSystems({
+      limit: 25,
+      bbox: [-10, -10, 10, 10],
+      datetime: new Date('2025-01-01T00:00:00Z'),
+    });
+    expect(url).toContain('limit=25');
+    expect(url).toContain('bbox=-10%2C-10%2C10%2C10');
+    expect(url).toContain('datetime=2025-01-01T00%3A00%3A00.000Z');
+  });
+
+  it('serializes limit + offset + q together', () => {
+    const url = makeBuilder().getSystems({ limit: 10, offset: 20, q: 'weather' } as any);
+    expect(url).toContain('limit=10');
+    expect(url).toContain('offset=20');
+    expect(url).toContain('q=weather');
+  });
+
+  it('serializes limit + bbox + datetime on deployments', () => {
+    const url = makeBuilder().getDeployments({
+      limit: 5,
+      bbox: [-180, -90, 180, 90],
+      datetime: { start: new Date('2024-01-01T00:00:00Z'), end: new Date('2025-01-01T00:00:00Z') },
+    });
+    expect(url).toContain('limit=5');
+    expect(url).toContain('bbox=-180%2C-90%2C180%2C90');
+    expect(url).toContain('datetime=2024-01-01T00%3A00%3A00.000Z%2F2025-01-01T00%3A00%3A00.000Z');
+  });
+});
+
+// ----------------------------------------
+// ID encoding edge cases
+// ----------------------------------------
+
+describe('ID encoding edge cases', () => {
+  function makeBuilder(): CSAPIQueryBuilder {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+  }
+
+  it('encodes URN-style IDs', () => {
+    const url = makeBuilder().getSystem('urn:ogc:object:sensor:001');
+    expect(url).toBe(
+      'https://example.com/collections/iot/systems/urn%3Aogc%3Aobject%3Asensor%3A001'
+    );
+  });
+
+  it('encodes IDs with spaces', () => {
+    const url = makeBuilder().getSystem('sensor 001');
+    expect(url).toBe(
+      'https://example.com/collections/iot/systems/sensor%20001'
+    );
+  });
+
+  it('encodes IDs with slashes', () => {
+    const url = makeBuilder().getSystem('path/to/resource');
+    expect(url).toBe(
+      'https://example.com/collections/iot/systems/path%2Fto%2Fresource'
+    );
+  });
+
+  it('encodes unicode characters in IDs', () => {
+    const url = makeBuilder().getSystem('sensor-ñ-日本');
+    expect(url).toContain('systems/');
+    expect(url).toBe(
+      `https://example.com/collections/iot/systems/${encodeURIComponent('sensor-ñ-日本')}`
+    );
+  });
+
+  it('handles already-encoded IDs (double-encodes)', () => {
+    const url = makeBuilder().getSystem('sensor%20001');
+    // encodeURIComponent will encode the % sign
+    expect(url).toBe(
+      'https://example.com/collections/iot/systems/sensor%2520001'
+    );
+  });
+});
+
+// ----------------------------------------
+// assertResourceAvailable error message format
+// ----------------------------------------
+
+describe('assertResourceAvailable error messages', () => {
+  it('includes collection ID in error message', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        id: 'my-sensors',
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/my-sensors' },
+        ],
+      })
+    );
+    expect(() => builder.getSystems()).toThrow("'my-sensors'");
+  });
+
+  it('includes requested resource type in error message', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        id: 'test',
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/test' },
+        ],
+      })
+    );
+    expect(() => builder.getSystems()).toThrow("'systems'");
+  });
+
+  it('lists available resources in error message', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        id: 'partial',
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/partial' },
+          { rel: 'ogc-cs:deployments', type: '', title: '', href: '/deployments' },
+          { rel: 'ogc-cs:procedures', type: '', title: '', href: '/procedures' },
+        ],
+      })
+    );
+    expect(() => builder.getSystems()).toThrow('deployments');
+    expect(() => builder.getSystems()).toThrow('procedures');
+  });
+
+  it('throws EndpointError instance', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        id: 'empty',
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/empty' },
+        ],
+      })
+    );
+    expect(() => builder.getSystems()).toThrow(EndpointError);
+  });
+});
+
+// ----------------------------------------
+// Top-level resource URL override
+// ----------------------------------------
+
+describe('Top-level resource URL override', () => {
+  it('uses resourceUrls map when provided', () => {
+    const resourceUrls = new Map([
+      ['systems', 'https://api.example.com/sensorhub/api/systems'],
+    ]);
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      }),
+      resourceUrls
+    );
+    const url = builder.getSystems();
+    expect(url).toBe('https://api.example.com/sensorhub/api/systems');
+  });
+
+  it('falls back to collection-scoped URL when resource not in map', () => {
+    const resourceUrls = new Map([
+      ['systems', 'https://api.example.com/sensorhub/api/systems'],
+    ]);
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+          { rel: 'ogc-cs:deployments', type: '', title: '', href: '/deployments' },
+        ],
+      }),
+      resourceUrls
+    );
+    const url = builder.getDeployments();
+    expect(url).toBe('https://example.com/collections/iot/deployments');
+  });
+
+  it('strips trailing slash from top-level resource URL', () => {
+    const resourceUrls = new Map([
+      ['systems', 'https://api.example.com/sensorhub/api/systems/'],
+    ]);
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      }),
+      resourceUrls
+    );
+    const url = builder.getSystem('sys-001');
+    expect(url).toBe('https://api.example.com/sensorhub/api/systems/sys-001');
+  });
+
+  it('appends query string to top-level resource URL', () => {
+    const resourceUrls = new Map([
+      ['systems', 'https://api.example.com/sensorhub/api/systems'],
+    ]);
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      }),
+      resourceUrls
+    );
+    const url = builder.getSystems({ limit: 10 });
+    expect(url).toBe('https://api.example.com/sensorhub/api/systems?limit=10');
+  });
+});

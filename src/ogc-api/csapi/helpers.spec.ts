@@ -311,3 +311,239 @@ describe('validateBbox', () => {
     );
   });
 });
+
+// ========================================
+// Edge Case Tests — Issue #33
+// ========================================
+
+// ----------------------------------------
+// formatDateTimeParameter edge cases
+// ----------------------------------------
+
+describe('formatDateTimeParameter edge cases', () => {
+  it('serializes epoch date (1970-01-01)', () => {
+    const result = formatDateTimeParameter(new Date('1970-01-01T00:00:00Z'));
+    expect(result).toBe('1970-01-01T00:00:00.000Z');
+  });
+
+  it('serializes far-future date', () => {
+    const result = formatDateTimeParameter(new Date('2099-12-31T23:59:59.999Z'));
+    expect(result).toBe('2099-12-31T23:59:59.999Z');
+  });
+
+  it('serializes date with millisecond precision', () => {
+    const result = formatDateTimeParameter(new Date('2024-06-15T10:30:45.123Z'));
+    expect(result).toBe('2024-06-15T10:30:45.123Z');
+  });
+
+  it('throws for invalid parameter type (plain object with no start/end)', () => {
+    expect(() =>
+      formatDateTimeParameter({} as CsapiDateTimeParameter)
+    ).toThrow('Invalid CsapiDateTimeParameter');
+  });
+
+  it('serializes end-only interval with epoch date', () => {
+    const result = formatDateTimeParameter({
+      end: new Date('1970-01-01T00:00:00Z'),
+    });
+    expect(result).toBe('../1970-01-01T00:00:00.000Z');
+  });
+
+  it('serializes start-only interval with far-future date', () => {
+    const result = formatDateTimeParameter({
+      start: new Date('2099-01-01T00:00:00Z'),
+    });
+    expect(result).toBe('2099-01-01T00:00:00.000Z/..');
+  });
+});
+
+// ----------------------------------------
+// isValidResourceType edge cases
+// ----------------------------------------
+
+describe('isValidResourceType edge cases', () => {
+  it('rejects empty string', () => {
+    expect(isValidResourceType('')).toBe(false);
+  });
+
+  it('rejects similar but invalid strings', () => {
+    expect(isValidResourceType('system')).toBe(false);
+    expect(isValidResourceType('Systems')).toBe(false);
+    expect(isValidResourceType('SYSTEMS')).toBe(false);
+  });
+
+  it('rejects strings with extra whitespace', () => {
+    expect(isValidResourceType(' systems')).toBe(false);
+    expect(isValidResourceType('systems ')).toBe(false);
+  });
+});
+
+// ----------------------------------------
+// assertValidResourceType edge cases
+// ----------------------------------------
+
+describe('assertValidResourceType edge cases', () => {
+  it('includes the invalid value in error message', () => {
+    expect(() => assertValidResourceType('foo')).toThrow('"foo"');
+  });
+
+  it('lists valid types in error message', () => {
+    expect(() => assertValidResourceType('invalid')).toThrow('systems');
+    expect(() => assertValidResourceType('invalid')).toThrow('deployments');
+  });
+
+  it('rejects empty string with descriptive error', () => {
+    expect(() => assertValidResourceType('')).toThrow('Invalid CSAPI resource type');
+  });
+});
+
+// ----------------------------------------
+// encodeResourceId edge cases
+// ----------------------------------------
+
+describe('encodeResourceId edge cases', () => {
+  it('returns empty string for empty input', () => {
+    expect(encodeResourceId('')).toBe('');
+  });
+
+  it('encodes unicode characters', () => {
+    const encoded = encodeResourceId('sensor-日本語');
+    expect(encoded).toBe(encodeURIComponent('sensor-日本語'));
+  });
+
+  it('double-encodes already-encoded strings', () => {
+    const encoded = encodeResourceId('hello%20world');
+    expect(encoded).toBe('hello%2520world');
+  });
+
+  it('encodes ampersand and equals sign', () => {
+    const encoded = encodeResourceId('key=value&foo=bar');
+    expect(encoded).toBe('key%3Dvalue%26foo%3Dbar');
+  });
+
+  it('preserves unreserved characters', () => {
+    const encoded = encodeResourceId('sensor-001_test.v2~draft');
+    expect(encoded).toBe('sensor-001_test.v2~draft');
+  });
+});
+
+// ----------------------------------------
+// scanCsapiLinks edge cases
+// ----------------------------------------
+
+describe('scanCsapiLinks edge cases', () => {
+  it('handles link with rel but missing href (defaults to empty string)', () => {
+    const links = [
+      { rel: 'ogc-cs:systems' } as any,
+    ];
+    const result = scanCsapiLinks(links);
+    // Convention 1 stores empty string when href is missing
+    expect(result.get('systems')).toBe('');
+  });
+
+  it('handles link with href undefined (defaults to empty string)', () => {
+    const links = [
+      { rel: 'ogc-cs:systems', href: undefined } as any,
+    ];
+    const result = scanCsapiLinks(links);
+    // Convention 1 stores empty string when href is undefined
+    expect(result.get('systems')).toBe('');
+  });
+
+  it('deduplicates resource types from multiple link conventions', () => {
+    const links = [
+      { rel: 'ogc-cs:systems', href: '/api/systems' },
+      { rel: 'systems', href: '/v2/systems' },
+      { rel: 'items', href: '/systems' },
+    ];
+    const result = scanCsapiLinks(links);
+    // All three refer to "systems" — should be in the map (last wins or first wins depending on impl)
+    expect(result.has('systems')).toBe(true);
+  });
+
+  it('handles mixed valid and invalid link relations', () => {
+    const links = [
+      { rel: 'ogc-cs:systems', href: '/systems' },
+      { rel: 'ogc-cs:unknown', href: '/unknown' },
+      { rel: 'unrelated', href: '/foo' },
+      { rel: 'ogc-cs:deployments', href: '/deployments' },
+    ];
+    const result = scanCsapiLinks(links);
+    expect(result.has('systems')).toBe(true);
+    expect(result.has('deployments')).toBe(true);
+    // ogc-cs: convention 1 stores ANY suffix, not just known types
+    expect(result.has('unknown')).toBe(true);
+    // Plain 'unrelated' is not a known type, so it's skipped
+    expect(result.has('unrelated')).toBe(false);
+  });
+
+  it('handles empty array', () => {
+    expect(scanCsapiLinks([]).size).toBe(0);
+  });
+});
+
+// ----------------------------------------
+// validateLimit edge cases
+// ----------------------------------------
+
+describe('validateLimit edge cases', () => {
+  it('rejects Infinity', () => {
+    expect(() => validateLimit(Infinity)).toThrow('positive integer');
+  });
+
+  it('rejects negative Infinity', () => {
+    expect(() => validateLimit(-Infinity)).toThrow('positive integer');
+  });
+
+  it('accepts MAX_SAFE_INTEGER', () => {
+    expect(() => validateLimit(Number.MAX_SAFE_INTEGER)).not.toThrow();
+  });
+
+  it('rejects very small fractional number', () => {
+    expect(() => validateLimit(0.001)).toThrow('positive integer');
+  });
+});
+
+// ----------------------------------------
+// validateBbox edge cases
+// ----------------------------------------
+
+describe('validateBbox edge cases', () => {
+  it('rejects 3-element array', () => {
+    expect(() => validateBbox([0, 0, 10] as unknown as BoundingBox)).toThrow(
+      '4 coordinates'
+    );
+  });
+
+  it('rejects 5-element array', () => {
+    expect(() => validateBbox([0, 0, 10, 10, 0] as unknown as BoundingBox)).toThrow(
+      '4 coordinates'
+    );
+  });
+
+  it('rejects 6-element array', () => {
+    expect(() => validateBbox([0, 0, 0, 10, 10, 10] as unknown as BoundingBox)).toThrow(
+      '4 coordinates'
+    );
+  });
+
+  it('rejects empty array', () => {
+    expect(() => validateBbox([] as unknown as BoundingBox)).toThrow(
+      '4 coordinates'
+    );
+  });
+
+  it('rejects negative Infinity coordinates', () => {
+    expect(() => validateBbox([-Infinity, 0, 10, 10] as BoundingBox)).toThrow(
+      'finite numbers'
+    );
+  });
+
+  it('accepts point bbox (equal min/max)', () => {
+    expect(() => validateBbox([0, 0, 0, 0])).not.toThrow();
+  });
+
+  it('accepts global extent bbox', () => {
+    expect(() => validateBbox([-180, -90, 180, 90])).not.toThrow();
+  });
+});
