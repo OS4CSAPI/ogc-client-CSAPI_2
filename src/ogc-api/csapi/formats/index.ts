@@ -294,3 +294,11 @@ export type {
   ValidationResult,
   ValidationError,
 } from './swecommon/index.js';
+
+// ========================================
+// Response — Collection Envelope Normalization
+// ========================================
+
+export { parseCollectionResponse } from './response.js';
+
+export type { CollectionResponse } from './response.js';
