@@ -15,8 +15,10 @@ import type {
   Deployment,
   Procedure,
   SamplingFeature,
+  ResourceLink,
   TimeInterval,
 } from '../model.js';
+import type { Geometry } from 'geojson';
 
 // ========================================
 // Constants
@@ -318,15 +320,21 @@ export function extractCSAPIFeature(
   // Parse validTime if present
   const validTime = parseValidTime(p.validTime);
 
-  // Build the base properties
-  const baseProperties = {
-    featureType: p.featureType as string,
-    uid: p.uid as string,
-    name: p.name as string,
+  // Build the base properties with explicit type so spreads carry string types
+  const baseProperties: {
+    featureType: string;
+    uid: string;
+    name: string;
+    description?: string;
+  } = {
+    featureType: String(p.featureType ?? ''),
+    uid: String(p.uid ?? ''),
+    name: String(p.name ?? ''),
     ...(typeof p.description === 'string' ? { description: p.description } : {}),
   };
 
-  const links = Array.isArray(f.links) ? f.links : [];
+  const links = (Array.isArray(f.links) ? f.links : []) as ResourceLink[];
+  const geometry = f.geometry as Geometry | undefined;
 
   switch (resourceType) {
     case 'System':
@@ -335,12 +343,12 @@ export function extractCSAPIFeature(
         type: 'Feature',
         properties: {
           ...baseProperties,
-          ...(p.assetType !== undefined ? { assetType: p.assetType } : {}),
+          ...(typeof p.assetType === 'string' ? { assetType: p.assetType as System['properties']['assetType'] } : {}),
           ...(validTime !== undefined ? { validTime } : {}),
         },
-        ...(f.geometry !== undefined ? { geometry: f.geometry } : {}),
+        ...(geometry !== undefined ? { geometry } : {}),
         links,
-      } as System;
+      } satisfies System;
 
     case 'Deployment':
       return {
@@ -350,9 +358,9 @@ export function extractCSAPIFeature(
           ...baseProperties,
           validTime: validTime!,
         },
-        ...(f.geometry !== undefined ? { geometry: f.geometry } : {}),
+        ...(geometry !== undefined ? { geometry } : {}),
         links,
-      } as Deployment;
+      } satisfies Deployment;
 
     case 'Procedure':
       return {
@@ -361,7 +369,7 @@ export function extractCSAPIFeature(
         properties: baseProperties,
         geometry: null,
         links,
-      } as Procedure;
+      } satisfies Procedure;
 
     case 'SamplingFeature':
       return {
@@ -371,8 +379,8 @@ export function extractCSAPIFeature(
           ...baseProperties,
           ...(validTime !== undefined ? { validTime } : {}),
         },
-        ...(f.geometry !== undefined ? { geometry: f.geometry } : {}),
+        ...(geometry !== undefined ? { geometry } : {}),
         links,
-      } as SamplingFeature;
+      } satisfies SamplingFeature;
   }
 }
