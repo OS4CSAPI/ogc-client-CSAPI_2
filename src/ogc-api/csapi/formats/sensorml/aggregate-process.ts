@@ -30,174 +30,23 @@ import type {
   ComponentEntry,
   ConnectionList,
   Connection,
-  IOComponentChoice,
-  Mode,
-  Settings,
-  Link,
-  FeatureList,
   InputList,
   OutputList,
   ParameterList,
 } from './types.js';
 import { SensorMLParseError } from './errors.js';
+import {
+  isRecord,
+  optionalString,
+  parseLink,
+  parseIOComponentChoice,
+  parseIOList,
+  parseSettings,
+  parseFeatureList,
+  parseModes,
+} from './_helpers.js';
 
 export { SensorMLParseError };
-
-// ========================================
-// Internal Helpers
-// ========================================
-
-/**
- * Type guard: checks whether `value` is a non-null object.
- */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-/**
- * Return `value` if it is a string, otherwise `undefined`.
- */
-function optionalString(value: unknown): string | undefined {
-  return typeof value === 'string' ? value : undefined;
-}
-
-/**
- * Parse a `link-2` object.
- *
- * @param value - Raw JSON value
- * @returns Parsed {@link Link} or `undefined` if not a valid link object
- */
-function parseLink(value: unknown): Link | undefined {
-  if (!isRecord(value)) return undefined;
-  if (typeof value.href !== 'string') return undefined;
-  const link: Link = { href: value.href };
-  if (typeof value.rel === 'string') link.rel = value.rel;
-  if (typeof value.type === 'string') link.type = value.type;
-  if (typeof value.hreflang === 'string') link.hreflang = value.hreflang;
-  if (typeof value.title === 'string') link.title = value.title;
-  if (typeof value.uid === 'string') link.uid = value.uid;
-  return link;
-}
-
-/**
- * Parse a single {@link IOComponentChoice} entry.
- *
- * Each entry must have a `name` (string) and either:
- * - A `type` property indicating a SWE Common component or `'ObservableProperty'`
- * - Other properties carried through as-is (the SWE Common parser is not yet available)
- *
- * @param value - Raw JSON value
- * @returns Parsed IOComponentChoice
- * @throws {SensorMLParseError} If the entry lacks a required `name` property
- * @see OAS: IOComponentChoice (L3662)
- */
-function parseIOComponentChoice(value: unknown): IOComponentChoice {
-  if (!isRecord(value)) {
-    throw new SensorMLParseError(
-      'IOComponentChoice entry must be an object'
-    );
-  }
-  if (typeof value.name !== 'string') {
-    throw new SensorMLParseError(
-      'IOComponentChoice entry must have a string "name" property'
-    );
-  }
-  return value as unknown as IOComponentChoice;
-}
-
-/**
- * Parse an array of {@link IOComponentChoice} entries.
- *
- * @param value - Raw JSON value (expected: array)
- * @param listName - Name for error messages (e.g. `'inputs'`)
- * @returns Parsed array, or `undefined` if `value` is `undefined`/`null`
- * @throws {SensorMLParseError} If `value` is present but is not an array,
- *   or if any entry is invalid
- */
-function parseIOList(
-  value: unknown,
-  listName: string
-): IOComponentChoice[] | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (!Array.isArray(value)) {
-    throw new SensorMLParseError(`"${listName}" must be an array`);
-  }
-  return value.map((item, i) => {
-    try {
-      return parseIOComponentChoice(item);
-    } catch (err) {
-      throw new SensorMLParseError(
-        `Invalid ${listName}[${i}]: ${(err as Error).message}`
-      );
-    }
-  });
-}
-
-/**
- * Parse a {@link Settings} object.
- *
- * Currently performs a pass-through cast — field-level parsing of
- * individual setting values is deferred to Issues #24-#28 (SWE Common
- * sub-component parsing).
- *
- * @param value - Raw JSON value
- * @returns Parsed Settings or `undefined`
- * @see OAS: Settings (L3307)
- */
-function parseSettings(value: unknown): Settings | undefined {
-  if (!isRecord(value)) return undefined;
-  return value as unknown as Settings;
-}
-
-/**
- * Parse a {@link FeatureList} (array of links).
- *
- * @param value - Raw JSON value
- * @returns Parsed FeatureList or `undefined`
- * @see OAS: FeatureList (L3579)
- */
-function parseFeatureList(value: unknown): FeatureList | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (!Array.isArray(value)) return undefined;
-  const links: Link[] = [];
-  for (const item of value) {
-    const link = parseLink(item);
-    if (link) links.push(link);
-  }
-  return links.length > 0 ? links : undefined;
-}
-
-/**
- * Parse a {@link Mode} object.
- *
- * @param value - Raw JSON value
- * @returns Parsed Mode or `undefined`
- * @see OAS: Mode (L3570)
- */
-function parseMode(value: unknown): Mode | undefined {
-  if (!isRecord(value)) return undefined;
-  if (typeof value.type !== 'string') return undefined;
-  if (typeof value.label !== 'string') return undefined;
-  if (typeof value.uniqueId !== 'string') return undefined;
-  return value as unknown as Mode;
-}
-
-/**
- * Parse an array of {@link Mode} objects.
- *
- * @param value - Raw JSON value
- * @returns Parsed array or `undefined`
- */
-function parseModes(value: unknown): Mode[] | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (!Array.isArray(value)) return undefined;
-  const modes: Mode[] = [];
-  for (const item of value) {
-    const mode = parseMode(item);
-    if (mode) modes.push(mode);
-  }
-  return modes.length > 0 ? modes : undefined;
-}
 
 // ========================================
 // AggregateProcess-specific Helpers
