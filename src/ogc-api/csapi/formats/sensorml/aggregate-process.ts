@@ -39,22 +39,9 @@ import type {
   OutputList,
   ParameterList,
 } from './types.js';
+import { SensorMLParseError } from './errors.js';
 
-// ========================================
-// Error Class
-// ========================================
-
-/**
- * Error thrown when SensorML AggregateProcess parsing fails.
- *
- * @see parseAggregateProcess
- */
-export class SensorMLParseError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'SensorMLParseError';
-  }
-}
+export { SensorMLParseError };
 
 // ========================================
 // Internal Helpers

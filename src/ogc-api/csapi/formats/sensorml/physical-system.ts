@@ -45,23 +45,9 @@ import type {
   GeoJsonPoint,
   Pose,
 } from './types.js';
+import { SensorMLParseError } from './errors.js';
 
-// ========================================
-// Error Class
-// ========================================
-
-/**
- * Error thrown when SensorML PhysicalSystem/PhysicalComponent parsing fails.
- *
- * @see parsePhysicalSystem
- * @see parsePhysicalComponent
- */
-export class SensorMLParseError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'SensorMLParseError';
-  }
-}
+export { SensorMLParseError };
 
 // ========================================
 // Internal Helpers — General
