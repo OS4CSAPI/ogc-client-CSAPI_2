@@ -45,6 +45,7 @@ import type {
 import { parseSimpleComponent, SweCommonParseError } from './components.js';
 import { parseDataRecord } from './data-record.js';
 import { parseDataArray, parseEncoding } from './data-array.js';
+import { isRecord, parseBaseProperties } from './_helpers.js';
 
 // ========================================
 // Validation Interfaces
@@ -78,28 +79,9 @@ export interface ValidationError {
 // Internal Helpers
 // ========================================
 
-/**
- * Type guard: checks whether `value` is a non-null, non-array object.
- */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-/**
- * Parse the shared AbstractDataComponent base properties from raw JSON.
- *
- * Extracts: `id`, `label`, `description`, `definition`, `updatable`, `optional`.
- */
-function parseBaseProperties(json: Record<string, unknown>): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  if (typeof json.id === 'string') result.id = json.id;
-  if (typeof json.label === 'string') result.label = json.label;
-  if (typeof json.description === 'string') result.description = json.description;
-  if (typeof json.definition === 'string') result.definition = json.definition;
-  if (typeof json.updatable === 'boolean') result.updatable = json.updatable;
-  if (typeof json.optional === 'boolean') result.optional = json.optional;
-  return result;
-}
+// ========================================
+// Simple Component Type Set
+// ========================================
 
 /**
  * Simple component type discriminators handled by {@link parseSimpleComponent}.

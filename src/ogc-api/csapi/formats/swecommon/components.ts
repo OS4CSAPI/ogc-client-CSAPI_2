@@ -47,6 +47,7 @@ import type {
   SweCategoryRange,
   AnySimpleComponent,
 } from './types.js';
+import { isRecord } from './_helpers.js';
 
 // ========================================
 // Error Class
@@ -68,17 +69,6 @@ export class SweCommonParseError extends Error {
     this.name = 'SweCommonParseError';
     if (path !== undefined) this.path = path;
   }
-}
-
-// ========================================
-// Internal Helpers
-// ========================================
-
-/**
- * Type guard: checks whether `value` is a non-null, non-array object.
- */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 // ========================================

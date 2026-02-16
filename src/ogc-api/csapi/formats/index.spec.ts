@@ -67,6 +67,11 @@ import {
   parseDataArray,
   parseEncoding,
   decodeValues,
+  // --- Response ---
+  parseCollectionResponse,
+  // --- Classification ---
+  classifyFeature,
+  inferResourceTypeFromPath,
 } from './index.js';
 
 // ========================================
@@ -220,6 +225,30 @@ describe('Format Index — SWE Common', () => {
     expect(typeof parseDataArray).toBe('function');
     expect(typeof parseEncoding).toBe('function');
     expect(typeof decodeValues).toBe('function');
+  });
+});
+
+// ========================================
+// Response — Export Accessibility
+// ========================================
+
+describe('Format Index — Response', () => {
+  it('exports parseCollectionResponse as a callable function', () => {
+    expect(typeof parseCollectionResponse).toBe('function');
+  });
+});
+
+// ========================================
+// Classification — Export Accessibility
+// ========================================
+
+describe('Format Index — Classification', () => {
+  it('exports classifyFeature as a callable function', () => {
+    expect(typeof classifyFeature).toBe('function');
+  });
+
+  it('exports inferResourceTypeFromPath as a callable function', () => {
+    expect(typeof inferResourceTypeFromPath).toBe('function');
   });
 });
 
