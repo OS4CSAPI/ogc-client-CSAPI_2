@@ -119,7 +119,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html
    */
   constructor(
-    private collection_: OgcApiCollectionInfo,
+    private collection_: Pick<OgcApiCollectionInfo, 'id' | 'title' | 'links'>,
     resourceUrls?: Map<string, string>
   ) {
     this.resourceUrls_ = resourceUrls ?? new Map();
