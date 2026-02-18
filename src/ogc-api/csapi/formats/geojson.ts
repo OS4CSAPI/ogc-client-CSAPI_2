@@ -163,15 +163,21 @@ export function isCSAPIFeature(feature: unknown): boolean {
 }
 
 /**
- * Classifies a GeoJSON Feature into a CSAPI resource type by its `featureType`.
+ * Determines the CSAPI resource type from a GeoJSON Feature's `featureType` property.
+ *
+ * Only Part 1 resource types are recognized: System, Deployment, Procedure,
+ * SamplingFeature. Part 2 resources (DataStreams, Observations, Control Streams,
+ * Commands) do not have a `featureType` property and will return `null`.
  *
  * Checks the SOSA vocabulary first, then the SensorML vocabulary.
  * Classification priority within SOSA: System > Deployment > Procedure > SamplingFeature.
  * This ordering ensures that featureType values shared between System and
  * Procedure schemas (per OGC spec) resolve as System.
  *
- * @param feature - A candidate GeoJSON Feature object.
- * @returns The resource type name, or `null` if unrecognized.
+ * @param feature - A candidate GeoJSON Feature object (or any unknown value).
+ * @returns The recognized Part 1 resource type name, or `null` if unrecognized.
+ *
+ * @see {@link https://www.w3.org/TR/vocab-ssn/ | SOSA/SSN Ontology} for featureType URIs
  */
 export function getCSAPIResourceType(
   feature: unknown
@@ -292,7 +298,25 @@ export function isValidUri(value: unknown): boolean {
 // ========================================
 
 /**
- * Extracts and converts a raw GeoJSON Feature into a typed CSAPI resource.
+ * Extracts a typed CSAPI resource from a GeoJSON Feature representation.
+ *
+ * **Important limitations:**
+ *
+ * - **Only supports Part 1 resources** — Systems, Deployments, Procedures,
+ *   and Sampling Features. Part 2 resources (DataStreams, Observations,
+ *   Control Streams, Commands) are not GeoJSON Features and cannot be
+ *   parsed by this function.
+ *
+ * - **Requires GeoJSON Feature format** — The input must be a GeoJSON
+ *   Feature object with `properties.featureType` set to a recognized
+ *   SOSA/SSN or SensorML type URI (e.g.,
+ *   `http://www.w3.org/ns/sosa/Platform`). Raw SensorML/XML payloads
+ *   will not parse correctly.
+ *
+ * - **Throws on unrecognized input** — If the `featureType` property is
+ *   missing or does not map to a known Part 1 resource type, an Error
+ *   is thrown with message "Cannot extract CSAPI feature: unrecognized
+ *   or missing featureType".
  *
  * Uses {@link getCSAPIResourceType} for recognition, then parses
  * `validTime` from server format to {@link TimeInterval} and returns the
@@ -300,9 +324,27 @@ export function isValidUri(value: unknown): boolean {
  * for any recognized feature, regardless of missing optional or required
  * spec fields.
  *
- * @param feature - A raw GeoJSON Feature from the server.
- * @returns The typed CSAPI resource.
- * @throws {Error} If the feature has an unrecognized or missing featureType.
+ * @param feature - A GeoJSON Feature object with CSAPI Part 1 properties.
+ *   Expected shape: `{ type: "Feature", properties: { featureType, uid, name,
+ *   ... }, geometry, links }`
+ * @returns A typed Part 1 resource: {@link System}, {@link Deployment},
+ *   {@link Procedure}, or {@link SamplingFeature}
+ * @throws {Error} If `featureType` is missing or not a recognized Part 1 type
+ *
+ * @example
+ * ```typescript
+ * // Works — GeoJSON Feature with SOSA featureType
+ * const system = extractCSAPIFeature(geoJsonFeature); // → System
+ *
+ * // Fails — Part 2 resource (not a GeoJSON Feature)
+ * extractCSAPIFeature(dataStreamObject); // → throws Error
+ *
+ * // Fails — SensorML XML response
+ * extractCSAPIFeature(smlResponse); // → throws Error
+ * ```
+ *
+ * @see {@link getCSAPIResourceType} for the type-detection logic
+ * @see OGC 23-001r1 for the GeoJSON encoding of Connected Systems feature resources
  */
 export function extractCSAPIFeature(
   feature: unknown
