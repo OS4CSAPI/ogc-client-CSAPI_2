@@ -58,6 +58,8 @@ export {
   UCUM_NS,
   CF_NS,
   AssetTypes,
+  CSAPI_CONTENT_TYPES,
+  getContentTypeForResource,
 } from './constants.js';
 
 export type {

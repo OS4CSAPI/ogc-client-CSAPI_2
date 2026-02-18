@@ -104,6 +104,8 @@ export {
   parseGeometry,
   detectEncoding,
   validateAgainstSchema,
+  CSAPI_CONTENT_TYPES,
+  getContentTypeForResource,
 } from './ogc-api/csapi/formats/index.js';
 export type { CSAPIResourceTypeName } from './ogc-api/csapi/formats/index.js';
 export type {
