@@ -1450,19 +1450,24 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for retrieving a datastream's result schema.
    *
-   * The `obsFormat` query parameter is **required** per Part 2, Req 11.
-   * Omitting it causes the server to return 400 Bad Request.
+   * Per OGC 23-002 §Req 11, the `obsFormat` query parameter specifies
+   * which observation encoding the schema describes. Note that `obsFormat`
+   * is distinct from the OGC API — Common `f` parameter (response format
+   * negotiation). Many servers return a valid default schema when
+   * `obsFormat` is omitted.
    *
    * @param id - The datastream resource identifier.
-   * @param options - Optional query parameters. Should include `f` set to the
-   *   desired observation format (e.g., `application/swe+json`).
+   * @param options - Optional query parameters. To request a specific
+   *   observation format schema, pass `obsFormat` (not `f`) as a key
+   *   (e.g., `{ obsFormat: 'application/swe+json' }`).
    * @returns URL string for the datastream schema endpoint.
    * @throws {EndpointError} If 'datastreams' is not available on this collection.
    *
    * @example
    * ```ts
-   * const url = builder.getDataStreamSchema('ds-001', { f: 'application/swe+json' });
-   * // => "https://example.com/collections/iot/datastreams/ds-001/schema?f=application%2Fswe%2Bjson"
+   * // Without obsFormat — server returns the default schema:
+   * const url = builder.getDataStreamSchema('ds-001');
+   * // => "https://example.com/collections/iot/datastreams/ds-001/schema"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#req_datastream_schema
@@ -1880,20 +1885,24 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for retrieving a control stream's parameter schema.
    *
-   * The `cmdFormat` query parameter is **required** per Part 2, Req 25.
-   * Omitting it causes the server to return 400 Bad Request.
-   * Pass it via the `f` option (e.g., `{ f: 'application/swe+json' }`).
+   * Per OGC 23-002 §Req 25, the `cmdFormat` query parameter specifies
+   * which command encoding the schema describes. Note that `cmdFormat`
+   * is distinct from the OGC API — Common `f` parameter (response format
+   * negotiation). Many servers return a valid default schema when
+   * `cmdFormat` is omitted.
    *
    * @param id - The control stream resource identifier.
-   * @param options - Optional query parameters. Should include `f` set to the
-   *   desired command format (e.g., `application/swe+json`).
+   * @param options - Optional query parameters. To request a specific
+   *   command format schema, pass `cmdFormat` (not `f`) as a key
+   *   (e.g., `{ cmdFormat: 'application/swe+json' }`).
    * @returns URL string for the control stream schema endpoint.
    * @throws {EndpointError} If 'controlStreams' is not available on this collection.
    *
    * @example
    * ```ts
-   * const url = builder.getControlStreamSchema('cs-001', { f: 'application/swe+json' });
-   * // => "https://example.com/collections/iot/controlstreams/cs-001/schema?f=application%2Fswe%2Bjson"
+   * // Without cmdFormat — server returns the default schema:
+   * const url = builder.getControlStreamSchema('cs-001');
+   * // => "https://example.com/collections/iot/controlStreams/cs-001/schema"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#req_controlstream_schema

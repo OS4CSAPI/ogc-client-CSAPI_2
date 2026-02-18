@@ -1802,7 +1802,7 @@ describe('getDataStreamSchema', () => {
     );
   }
 
-  it('returns correct URL with obsFormat parameter', () => {
+  it('returns correct URL with f query parameter', () => {
     const url = makeDsBuilder().getDataStreamSchema('ds-001', { f: 'application/swe+json' });
     expect(url).toBe('https://example.com/collections/iot/datastreams/ds-001/schema?f=application%2Fswe%2Bjson');
   });
@@ -2281,7 +2281,7 @@ describe('getControlStreamSchema', () => {
     );
   }
 
-  it('returns correct URL with cmdFormat parameter', () => {
+  it('returns correct URL with f query parameter', () => {
     const url = makeCsBuilder().getControlStreamSchema('cs-001', { f: 'application/swe+json' });
     expect(url).toBe('https://example.com/collections/iot/controlStreams/cs-001/schema?f=application%2Fswe%2Bjson');
   });
