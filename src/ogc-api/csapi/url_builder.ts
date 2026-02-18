@@ -89,7 +89,15 @@ import {
 export default class CSAPIQueryBuilder {
   /**
    * The set of CSAPI resource types available on this collection,
-   * discovered from the collection's link relations.
+   * discovered from the collection's link relations via
+   * {@link scanCsapiLinks}.
+   *
+   * This reflects link scanning results, **not** actual server capability.
+   * Resources may exist at standard well-known paths even if they are not
+   * listed here. Consumers who supply `resourceUrls` to the constructor
+   * will also see those keys appear in this set.
+   *
+   * @see {@link scanCsapiLinks} for the recognized link conventions
    */
   public readonly availableResources: Set<string>;
 
@@ -116,6 +124,28 @@ export default class CSAPIQueryBuilder {
    *   collection-scoped self link. This supports servers that expose
    *   CSAPI resources at the API root (e.g., `/api/systems`) rather than
    *   under a collection path (e.g., `/collections/{id}/systems`).
+   *
+   * @remarks
+   * Resource availability (`availableResources`) is populated by scanning
+   * link relations in the collection document via {@link scanCsapiLinks},
+   * **not** by probing the server with HTTP requests. Some servers
+   * (e.g., 52North CSA) do not advertise CSAPI resources via standard link
+   * relations, which results in an empty `availableResources` set and
+   * causes {@link assertResourceAvailable} to throw for every resource type.
+   *
+   * The `resourceUrls` parameter is the recommended workaround for such
+   * servers: when provided, its keys are merged into `availableResources`,
+   * and its values are used as endpoint base URLs.
+   *
+   * @example
+   * // For servers that don't advertise CSAPI links, provide explicit resource URLs:
+   * const resourceUrls = new Map(
+   *   CSAPIResourceTypes.map(t => [t, `${baseUrl}/${t}`])
+   * );
+   * const builder = new CSAPIQueryBuilder(collection, resourceUrls);
+   *
+   * @see {@link scanCsapiLinks} for the link conventions recognized during discovery
+   * @see {@link assertResourceAvailable} for the validation that guards every query method
    * @see https://docs.ogc.org/is/23-001/23-001.html
    */
   constructor(
@@ -266,6 +296,10 @@ export default class CSAPIQueryBuilder {
    * Validates that a resource type is available on this collection.
    * @param resourceType - The resource type to validate.
    * @throws {EndpointError} If the resource type is not available.
+   *
+   * @see The constructor's `resourceUrls` parameter for a workaround when
+   *   a resource type exists on the server but was not discovered via links.
+   * @see {@link scanCsapiLinks} for the link conventions used during discovery
    */
   private assertResourceAvailable(resourceType: string): void {
     if (!this.availableResources.has(resourceType)) {
