@@ -86,6 +86,16 @@ import {
  * @see https://docs.ogc.org/is/23-001/23-001.html — OGC API - Connected Systems Part 1
  * @see https://docs.ogc.org/is/23-002/23-002.html — OGC API - Connected Systems Part 2
  */
+
+/** Maps internal resource type keys to their OGC API URL path segments. */
+const RESOURCE_PATH_OVERRIDES: Readonly<Record<string, string>> = {
+  controlStreams: 'controlstreams',
+};
+
+function toUrlPathSegment(resourceType: string): string {
+  return RESOURCE_PATH_OVERRIDES[resourceType] ?? resourceType;
+}
+
 export default class CSAPIQueryBuilder {
   /**
    * The set of CSAPI resource types available on this collection,
@@ -237,7 +247,7 @@ export default class CSAPIQueryBuilder {
     const topLevelUrl = this.resourceUrls_.get(resourceType);
     const resourceBase = topLevelUrl
       ? topLevelUrl.replace(/\/+$/, '')
-      : `${this.baseUrl}/${resourceType}`;
+      : `${this.baseUrl}/${toUrlPathSegment(resourceType)}`;
     let url = resourceBase;
     if (id) url += `/${encodeResourceId(id)}`;
     if (subPath) url += `/${subPath}`;
