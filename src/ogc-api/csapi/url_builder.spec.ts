@@ -1,6 +1,11 @@
 import type { OgcApiCollectionInfo } from '../model.js';
 import { EndpointError } from '../../shared/errors.js';
 import CSAPIQueryBuilder from './url_builder.js';
+import { CSAPIResourceTypes } from './model.js';
+import {
+  CSAPI_CONTENT_TYPES,
+  getContentTypeForResource,
+} from './formats/constants.js';
 
 /**
  * Builds a minimal OgcApiCollectionInfo suitable for CSAPIQueryBuilder tests.
@@ -3129,5 +3134,46 @@ describe('Top-level resource URL override', () => {
     );
     const url = builder.getSystems({ limit: 10 });
     expect(url).toBe('https://api.example.com/sensorhub/api/systems?limit=10');
+  });
+});
+
+// ========================================
+// Content-Type Map (F-10)
+// ========================================
+
+describe('CSAPI_CONTENT_TYPES', () => {
+  it('maps all 5 Part 1 resources to application/geo+json', () => {
+    const part1Types = ['systems', 'deployments', 'procedures', 'samplingFeatures', 'properties'] as const;
+    for (const type of part1Types) {
+      expect(CSAPI_CONTENT_TYPES[type]).toBe('application/geo+json');
+    }
+  });
+
+  it('maps all 4 Part 2 resources to application/json', () => {
+    const part2Types = ['datastreams', 'observations', 'controlStreams', 'commands'] as const;
+    for (const type of part2Types) {
+      expect(CSAPI_CONTENT_TYPES[type]).toBe('application/json');
+    }
+  });
+
+  it('has an entry for every CSAPIResourceType', () => {
+    for (const type of CSAPIResourceTypes) {
+      expect(CSAPI_CONTENT_TYPES).toHaveProperty(type);
+    }
+    expect(Object.keys(CSAPI_CONTENT_TYPES)).toHaveLength(CSAPIResourceTypes.length);
+  });
+});
+
+describe('getContentTypeForResource', () => {
+  it('returns application/geo+json for a known Part 1 type', () => {
+    expect(getContentTypeForResource('systems')).toBe('application/geo+json');
+  });
+
+  it('returns application/json for a known Part 2 type', () => {
+    expect(getContentTypeForResource('datastreams')).toBe('application/json');
+  });
+
+  it('returns application/json fallback for an unrecognized type', () => {
+    expect(getContentTypeForResource('unknownType')).toBe('application/json');
   });
 });
