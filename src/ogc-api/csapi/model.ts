@@ -316,8 +316,16 @@ export interface Deployment {
  * Procedures describe methodologies for observation, actuation, or sampling.
  * In GeoJSON encoding, geometry is always null; detailed descriptions use SensorML.
  *
+ * When the same Procedure resource is requested with
+ * `Accept: application/sml+json`, the server returns it as one of four
+ * concrete SensorML 3.0 process types: {@link SimpleProcess},
+ * {@link AggregateProcess}, {@link PhysicalComponent}, or
+ * {@link PhysicalSystem} (collectively {@link SensorMLProcess}).
+ *
  * Required properties: `featureType`, `uid`, `name` (per OGC spec).
  *
+ * @see {@link SensorMLProcess} for the SensorML representation of this resource
+ * @see ../formats/sensorml/types.ts — SensorML 3.0 type definitions
  * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
  */
 export interface Procedure {
