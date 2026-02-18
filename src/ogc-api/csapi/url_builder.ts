@@ -424,6 +424,28 @@ export default class CSAPIQueryBuilder {
   }
 
   /**
+   * Returns the URL for creating a subsystem within a parent system.
+   *
+   * The request body (not part of the URL) must describe the new child system.
+   *
+   * @param parentId - The parent system resource identifier.
+   * @returns URL string for the subsystem creation endpoint (POST).
+   * @throws {EndpointError} If 'systems' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.createSubsystem('sys-parent');
+   * // => "https://example.com/collections/iot/systems/sys-parent/subsystems"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
+   */
+  createSubsystem(parentId: string): string {
+    this.assertResourceAvailable('systems');
+    return this.buildResourceUrl('systems', parentId, 'subsystems');
+  }
+
+  /**
    * Returns the URL for listing datastreams associated with a system.
    *
    * @param id - The system resource identifier.
@@ -442,6 +464,30 @@ export default class CSAPIQueryBuilder {
   getSystemDataStreams(id: string, options?: QueryOptions): string {
     this.assertResourceAvailable('systems');
     return this.buildResourceUrl('systems', id, 'datastreams', options);
+  }
+
+  /**
+   * Returns the URL for creating a datastream within a system.
+   *
+   * OGC 23-002r1 §7.2 requires datastreams to be created as nested
+   * sub-resources of a System. The request body (not part of the URL)
+   * must include the result schema, observed properties, and system association.
+   *
+   * @param systemId - The parent system resource identifier.
+   * @returns URL string for the nested datastream creation endpoint (POST).
+   * @throws {EndpointError} If 'systems' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.createDataStreamForSystem('sys-001');
+   * // => "https://example.com/collections/iot/systems/sys-001/datastreams"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
+   */
+  createDataStreamForSystem(systemId: string): string {
+    this.assertResourceAvailable('systems');
+    return this.buildResourceUrl('systems', systemId, 'datastreams');
   }
 
   /**
@@ -466,6 +512,29 @@ export default class CSAPIQueryBuilder {
   }
 
   /**
+   * Returns the URL for creating a control stream within a system.
+   *
+   * The request body (not part of the URL) must include the parameter schema
+   * and controlled properties.
+   *
+   * @param systemId - The parent system resource identifier.
+   * @returns URL string for the nested control stream creation endpoint (POST).
+   * @throws {EndpointError} If 'systems' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.createControlStreamForSystem('sys-001');
+   * // => "https://example.com/collections/iot/systems/sys-001/controlstreams"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_controlstream_resources
+   */
+  createControlStreamForSystem(systemId: string): string {
+    this.assertResourceAvailable('systems');
+    return this.buildResourceUrl('systems', systemId, 'controlstreams');
+  }
+
+  /**
    * Returns the URL for listing sampling features associated with a system.
    *
    * @param id - The system resource identifier.
@@ -484,6 +553,29 @@ export default class CSAPIQueryBuilder {
   getSystemSamplingFeatures(id: string, options?: QueryOptions): string {
     this.assertResourceAvailable('systems');
     return this.buildResourceUrl('systems', id, 'samplingFeatures', options);
+  }
+
+  /**
+   * Returns the URL for creating a sampling feature within a system.
+   *
+   * The request body (not part of the URL) must include the feature type,
+   * geometry, and sampled feature link relation.
+   *
+   * @param systemId - The parent system resource identifier.
+   * @returns URL string for the nested sampling feature creation endpoint (POST).
+   * @throws {EndpointError} If 'systems' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.createSamplingFeatureForSystem('sys-001');
+   * // => "https://example.com/collections/iot/systems/sys-001/samplingFeatures"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_sampling_feature_resources
+   */
+  createSamplingFeatureForSystem(systemId: string): string {
+    this.assertResourceAvailable('systems');
+    return this.buildResourceUrl('systems', systemId, 'samplingFeatures');
   }
 
   /**
@@ -653,6 +745,28 @@ export default class CSAPIQueryBuilder {
   getDeploymentSubdeployments(id: string, options?: DeploymentQueryOptions): string {
     this.assertResourceAvailable('deployments');
     return this.buildResourceUrl('deployments', id, 'subdeployments', options);
+  }
+
+  /**
+   * Returns the URL for creating a subdeployment within a parent deployment.
+   *
+   * The request body (not part of the URL) must describe the new child deployment.
+   *
+   * @param parentId - The parent deployment resource identifier.
+   * @returns URL string for the subdeployment creation endpoint (POST).
+   * @throws {EndpointError} If 'deployments' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.createSubdeployment('dep-parent');
+   * // => "https://example.com/collections/iot/deployments/dep-parent/subdeployments"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
+   */
+  createSubdeployment(parentId: string): string {
+    this.assertResourceAvailable('deployments');
+    return this.buildResourceUrl('deployments', parentId, 'subdeployments');
   }
 
   /**

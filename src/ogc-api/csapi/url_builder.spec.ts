@@ -681,6 +681,150 @@ describe('getSystemSamplingFeatures', () => {
   });
 });
 
+// ========================================
+// Nested Create Methods (F-1, F-2, F-83)
+// ========================================
+
+describe('createSubsystem', () => {
+  function makeIotBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL for subsystem creation', () => {
+    const url = makeIotBuilder().createSubsystem('sys-parent');
+    expect(url).toBe('https://example.com/collections/iot/systems/sys-parent/subsystems');
+  });
+
+  it('encodes special characters in parent ID', () => {
+    const url = makeIotBuilder().createSubsystem('urn:example:sys:001');
+    expect(url).toBe('https://example.com/collections/iot/systems/urn%3Aexample%3Asys%3A001/subsystems');
+  });
+
+  it('throws EndpointError when systems is unavailable', () => {
+    const builder = new CSAPIQueryBuilder(makeCollection({ id: 'empty' }));
+    expect(() => builder.createSubsystem('x')).toThrow(EndpointError);
+  });
+});
+
+describe('createDataStreamForSystem', () => {
+  function makeIotBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL for nested datastream creation', () => {
+    const url = makeIotBuilder().createDataStreamForSystem('sys-001');
+    expect(url).toBe('https://example.com/collections/iot/systems/sys-001/datastreams');
+  });
+
+  it('encodes special characters in system ID', () => {
+    const url = makeIotBuilder().createDataStreamForSystem('urn:example:sys:001');
+    expect(url).toBe('https://example.com/collections/iot/systems/urn%3Aexample%3Asys%3A001/datastreams');
+  });
+
+  it('throws EndpointError when systems is unavailable', () => {
+    const builder = new CSAPIQueryBuilder(makeCollection({ id: 'empty' }));
+    expect(() => builder.createDataStreamForSystem('x')).toThrow(EndpointError);
+  });
+});
+
+describe('createControlStreamForSystem', () => {
+  function makeIotBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL for nested control stream creation', () => {
+    const url = makeIotBuilder().createControlStreamForSystem('sys-001');
+    expect(url).toBe('https://example.com/collections/iot/systems/sys-001/controlstreams');
+  });
+
+  it('encodes special characters in system ID', () => {
+    const url = makeIotBuilder().createControlStreamForSystem('urn:example:sys:001');
+    expect(url).toBe('https://example.com/collections/iot/systems/urn%3Aexample%3Asys%3A001/controlstreams');
+  });
+
+  it('throws EndpointError when systems is unavailable', () => {
+    const builder = new CSAPIQueryBuilder(makeCollection({ id: 'empty' }));
+    expect(() => builder.createControlStreamForSystem('x')).toThrow(EndpointError);
+  });
+});
+
+describe('createSamplingFeatureForSystem', () => {
+  function makeIotBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL for nested sampling feature creation', () => {
+    const url = makeIotBuilder().createSamplingFeatureForSystem('sys-001');
+    expect(url).toBe('https://example.com/collections/iot/systems/sys-001/samplingFeatures');
+  });
+
+  it('encodes special characters in system ID', () => {
+    const url = makeIotBuilder().createSamplingFeatureForSystem('urn:example:sys:001');
+    expect(url).toBe('https://example.com/collections/iot/systems/urn%3Aexample%3Asys%3A001/samplingFeatures');
+  });
+
+  it('throws EndpointError when systems is unavailable', () => {
+    const builder = new CSAPIQueryBuilder(makeCollection({ id: 'empty' }));
+    expect(() => builder.createSamplingFeatureForSystem('x')).toThrow(EndpointError);
+  });
+});
+
+describe('createSubdeployment', () => {
+  function makeDepBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:deployments', type: '', title: '', href: '/deployments' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL for subdeployment creation', () => {
+    const url = makeDepBuilder().createSubdeployment('dep-parent');
+    expect(url).toBe('https://example.com/collections/iot/deployments/dep-parent/subdeployments');
+  });
+
+  it('encodes special characters in parent ID', () => {
+    const url = makeDepBuilder().createSubdeployment('urn:example:dep:001');
+    expect(url).toBe('https://example.com/collections/iot/deployments/urn%3Aexample%3Adep%3A001/subdeployments');
+  });
+
+  it('throws EndpointError when deployments is unavailable', () => {
+    const builder = new CSAPIQueryBuilder(makeCollection({ id: 'empty' }));
+    expect(() => builder.createSubdeployment('x')).toThrow(EndpointError);
+  });
+});
+
 describe('getSystemDeployments', () => {
   function makeIotBuilder() {
     return new CSAPIQueryBuilder(
