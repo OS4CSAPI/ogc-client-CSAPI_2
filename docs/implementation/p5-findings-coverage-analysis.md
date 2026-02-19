@@ -53,10 +53,10 @@ Six findings are **not covered** by the P5 ROADMAP:
 
 | Finding | Description | Why Not in P5 | Current Status (ST#19) | Recommended Target |
 |---------|-------------|---------------|------------------------|-------------------|
-| **P4-F2** | OSH PUT rejects uid changes | CRUD/write-path concern, not a parser gap | Moderate — new Phase 4 finding | Phase 4.2 |
+| **P4-F2** | OSH PUT rejects uid changes | CRUD/write-path concern, not a parser gap | Moderate — new Phase 4 finding | JSDoc issue ([#92](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/92)) |
 | **F82** | OSH items envelope sometimes omits `links` | Already mitigated — `parseCollectionResponse()` defaults to `[]` | Confirmed Low — no code change needed | None (resolved) |
 | **F5** | Missing pagination metadata | Pagination touches upstream `shared`/`ogc-api` code — out of scope | Deferred | None (out of scope) |
-| **P4-F1** | Command POST hangs (OSH holds connection open) | CRUD/write-path concern — needs timeout strategy or SSE-aware handler | Moderate — new Phase 4 finding | Phase 4.2 |
+| **P4-F1** | Command POST hangs (OSH holds connection open) | CRUD/write-path concern — needs timeout strategy or SSE-aware handler | Moderate — new Phase 4 finding | JSDoc issue ([#93](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/93)) |
 | **F84** | 52N procedure misclassification (`sosa:Sensor`) | Upstream server bug, reported, fallback already works — no remaining work | Deferred — still present | None (complete) |
 | **F14** | Properties not discoverable via links | Server-side gap — scanner is spec-correct, workaround exists, no remaining work | Deferred — still present | None (complete) |
 
@@ -65,7 +65,7 @@ Six findings are **not covered** by the P5 ROADMAP:
 | Category | Count | Findings |
 |----------|-------|----------|
 | **Covered by P5** | 5 | F27, F30, F31, F33, F38 |
-| **Phase 4.2 CRUD concerns** | 2 | P4-F1, P4-F2 |
+| **Phase 4 CRUD concerns (JSDoc issues)** | 2 | P4-F1, P4-F2 |
 | **Already mitigated (no action needed)** | 3 | F82, F84, F14 |
 | **Out of scope (upstream concern)** | 1 | F5 |
 | **Total** | **11** | |
@@ -76,7 +76,7 @@ Six findings are **not covered** by the P5 ROADMAP:
 
 1. **Phase 5 cleanly addresses the Part 2 data shape findings.** All 5 data shape findings (F27, F30, F31, F33, F38) map directly to parser tasks in the P5 ROADMAP. Once Phase 5 is complete, the library will have typed parse functions for every CSAPI resource shape observed in smoke testing.
 
-2. **The two Phase 4 findings (P4-F1, P4-F2) are CRUD concerns.** They were discovered during Smoke Test #19's first CRUD testing pass and are already targeted for Phase 4.2 in the ST#19 verdict. They are write-path issues, not read-path/parsing issues.
+2. **The two Phase 4 findings (P4-F1, P4-F2) are CRUD concerns.** They were discovered during Smoke Test #19's first CRUD testing pass. After scope assessment, both resolve to JSDoc documentation additions on existing `url_builder.ts` methods — not new code or architecture. The library is a URL builder and response parser; it doesn't perform HTTP fetches. Both findings are about what happens *outside* the library's boundary (server streaming behavior for P4-F1, request body content for P4-F2). Each has a dedicated GitHub issue. See [P4 CRUD Findings — Scope Assessment](p4-crud-findings-scope-assessment.md) for the full analysis.
 
 3. **F82 requires no further action.** The `parseCollectionResponse()` function already defaults `links` to an empty array when the key is absent. This was confirmed as "Low" severity in ST#19.
 
