@@ -31,6 +31,12 @@ import type {
   DataChoice,
   SweGeometry,
   SweCategory,
+  SweQuantity,
+  SweQuantityRange,
+  SweCount,
+  SweCountRange,
+  SweText,
+  SweCategoryRange,
   DataEncoding,
   DataArray,
   DataRecord,
@@ -256,10 +262,10 @@ export function parseVector(json: unknown): Vector {
     (coordJson, index) => parseField(coordJson, index, 'Vector')
   );
 
-  const result: Record<string, unknown> = {
+  const result: Vector = {
     ...parseBaseProperties(json),
-    type: 'Vector' as const,
-    referenceFrame: json.referenceFrame,
+    type: 'Vector',
+    referenceFrame: json.referenceFrame as string,
     coordinates,
   };
 
@@ -267,7 +273,7 @@ export function parseVector(json: unknown): Vector {
     result.localFrame = json.localFrame;
   }
 
-  return result as unknown as Vector;
+  return result;
 }
 
 // ========================================
@@ -350,18 +356,28 @@ export function parseMatrix(json: unknown): Matrix {
       if (Array.isArray(json.values)) {
         values = json.values;
       } else if (isRecord(json.values) && typeof (json.values as Record<string, unknown>).href === 'string') {
-        values = json.values as unknown as AssociationAttributeGroup;
+        const link = json.values as Record<string, unknown>;
+        const linkResult: AssociationAttributeGroup = { href: link.href as string };
+        if (typeof link.role === 'string') linkResult.role = link.role;
+        if (typeof link.title === 'string') linkResult.title = link.title;
+        if (typeof link.arcrole === 'string') linkResult.arcrole = link.arcrole;
+        values = linkResult;
       }
     } else if (Array.isArray(json.values)) {
       values = json.values;
     } else if (isRecord(json.values) && typeof (json.values as Record<string, unknown>).href === 'string') {
-      values = json.values as unknown as AssociationAttributeGroup;
+      const link = json.values as Record<string, unknown>;
+      const linkResult: AssociationAttributeGroup = { href: link.href as string };
+      if (typeof link.role === 'string') linkResult.role = link.role;
+      if (typeof link.title === 'string') linkResult.title = link.title;
+      if (typeof link.arcrole === 'string') linkResult.arcrole = link.arcrole;
+      values = linkResult;
     }
   }
 
-  const result: Record<string, unknown> = {
+  const result: Matrix = {
     ...parseBaseProperties(json),
-    type: 'Matrix' as const,
+    type: 'Matrix',
     elementType,
   };
 
@@ -371,7 +387,7 @@ export function parseMatrix(json: unknown): Matrix {
   if (typeof json.referenceFrame === 'string') result.referenceFrame = json.referenceFrame;
   if (typeof json.localFrame === 'string') result.localFrame = json.localFrame;
 
-  return result as unknown as Matrix;
+  return result;
 }
 
 /**
@@ -419,7 +435,7 @@ function parseElementType(json: unknown): DataField {
   }
 
   if (ALL_COMPONENT_TYPES.has(type)) {
-    return { name, component: parseSWEComponent(json) } as unknown as DataField;
+    return { name, component: parseSWEComponent(json) };
   }
 
   throw new SweCommonParseError(
@@ -446,11 +462,11 @@ function parseElementCount(
   }
 
   // Count component
-  const result: Record<string, unknown> = { type: 'ElementCount' };
+  const result: ElementCount = { type: 'ElementCount' };
   if (typeof json.value === 'number') result.value = json.value;
   if (typeof json.id === 'string') result.id = json.id;
   if (typeof json.label === 'string') result.label = json.label;
-  return result as unknown as ElementCount;
+  return result;
 }
 
 // ========================================
@@ -516,18 +532,18 @@ export function parseDataChoice(json: unknown): DataChoice {
     choiceValue = parseSimpleComponent({
       ...json.choiceValue,
       type: (json.choiceValue as Record<string, unknown>).type ?? 'Category',
-    }) as unknown as SweCategory;
+    }) as SweCategory;
   }
 
-  const result: Record<string, unknown> = {
+  const result: DataChoice = {
     ...parseBaseProperties(json),
-    type: 'DataChoice' as const,
+    type: 'DataChoice',
     items,
   };
 
   if (choiceValue !== undefined) result.choiceValue = choiceValue;
 
-  return result as unknown as DataChoice;
+  return result;
 }
 
 // ========================================
@@ -588,16 +604,15 @@ export function parseGeometry(json: unknown): SweGeometry {
     );
   }
 
-  const result: Record<string, unknown> = {
+  const result: SweGeometry = {
     ...parseBaseProperties(json),
-    type: 'Geometry' as const,
+    type: 'Geometry',
+    srs: '',
   };
 
   // srs — required by spec
   if (typeof json.srs === 'string') {
     result.srs = json.srs;
-  } else {
-    result.srs = '';
   }
 
   // constraint — optional (permitted geometry types)
@@ -619,16 +634,30 @@ export function parseGeometry(json: unknown): SweGeometry {
         isRecord(entry) && typeof (entry as Record<string, unknown>).reason === 'string'
     ).map((entry: Record<string, unknown>) => ({
       reason: entry.reason as string,
-      value: entry.value,
+      value: entry.value as string,
     }));
   }
 
   // value — optional GeoJSON geometry
   if (isRecord(json.value) && typeof (json.value as Record<string, unknown>).type === 'string') {
-    result.value = json.value as unknown as GeoJsonGeometry;
+    // GeoJsonGeometry has [key: string]: unknown index signature,
+    // so a Record<string, unknown> with a string 'type' satisfies it.
+    const geo = json.value as Record<string, unknown>;
+    const geoResult: GeoJsonGeometry = {
+      type: geo.type as string,
+    };
+    if (geo.coordinates !== undefined) geoResult.coordinates = geo.coordinates;
+    if (Array.isArray(geo.geometries)) geoResult.geometries = geo.geometries as GeoJsonGeometry[];
+    // Preserve any additional GeoJSON properties
+    for (const key of Object.keys(geo)) {
+      if (key !== 'type' && key !== 'coordinates' && key !== 'geometries') {
+        geoResult[key] = geo[key];
+      }
+    }
+    result.value = geoResult;
   }
 
-  return result as unknown as SweGeometry;
+  return result;
 }
 
 // ========================================
@@ -933,7 +962,7 @@ function validateComponent(
  */
 function validateNumeric(
   value: unknown,
-  schema: AnyComponent,
+  schema: SweQuantity | SweQuantityRange,
   path: string,
   errors: ValidationError[]
 ): void {
@@ -970,7 +999,7 @@ function validateNumeric(
   }
 
   // Range validation via AllowedValues constraint
-  const constraint = (schema as unknown as Record<string, unknown>).constraint;
+  const constraint = schema.constraint;
   if (isRecord(constraint)) {
     validateAllowedValues(value, constraint, path, errors);
   }
@@ -981,7 +1010,7 @@ function validateNumeric(
  */
 function validateInteger(
   value: unknown,
-  schema: AnyComponent,
+  schema: SweCount | SweCountRange,
   path: string,
   errors: ValidationError[]
 ): void {
@@ -1026,7 +1055,7 @@ function validateInteger(
     return;
   }
 
-  const constraint = (schema as unknown as Record<string, unknown>).constraint;
+  const constraint = schema.constraint;
   if (isRecord(constraint)) {
     validateAllowedValues(value, constraint, path, errors);
   }
@@ -1055,7 +1084,7 @@ function validateBoolean(
  */
 function validateString(
   value: unknown,
-  schema: AnyComponent,
+  schema: SweText | SweCategory | SweCategoryRange,
   path: string,
   errors: ValidationError[]
 ): void {
@@ -1092,7 +1121,7 @@ function validateString(
   }
 
   // Token validation via AllowedTokens constraint
-  const constraint = (schema as unknown as Record<string, unknown>).constraint;
+  const constraint = schema.constraint;
   if (isRecord(constraint)) {
     validateAllowedTokens(value, constraint, path, errors);
   }
@@ -1227,7 +1256,7 @@ function validateDataRecord(
     // Check for required fields (fields are required unless marked optional)
     const component = (field as TypedDataField).component;
     if (component) {
-      const isOptional = (component as unknown as Record<string, unknown>).optional === true;
+      const isOptional = component.optional === true;
       if (fieldValue === undefined && !isOptional) {
         errors.push({
           path: fieldPath,
