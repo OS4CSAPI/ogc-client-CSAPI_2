@@ -68,12 +68,16 @@ export function parseBaseProperties(
  *
  * Extracts: `href` (required), `role`, `title`, `arcrole` (all optional).
  *
+ * @throws {Error} If `href` is missing or not a string.
  * @see https://docs.ogc.org/is/24-014/24-014.html — OGC SWE Common 3.0 (xlink attributes)
  */
 export function parseAssociationAttributeGroup(
   json: Record<string, unknown>
 ): AssociationAttributeGroup {
-  const result: AssociationAttributeGroup = { href: json.href as string };
+  if (typeof json.href !== 'string') {
+    throw new Error('AssociationAttributeGroup requires a string "href"');
+  }
+  const result: AssociationAttributeGroup = { href: json.href };
   if (typeof json.role === 'string') result.role = json.role;
   if (typeof json.title === 'string') result.title = json.title;
   if (typeof json.arcrole === 'string') result.arcrole = json.arcrole;
