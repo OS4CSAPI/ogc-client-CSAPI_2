@@ -51,7 +51,7 @@ import type {
 import { parseSimpleComponent, SweCommonParseError } from './components.js';
 import { parseDataRecord } from './data-record.js';
 import { parseDataArray, parseEncoding } from './data-array.js';
-import { isRecord, parseBaseProperties } from './_helpers.js';
+import { isRecord, parseBaseProperties, parseAssociationAttributeGroup } from './_helpers.js';
 
 // ========================================
 // Validation Interfaces
@@ -356,22 +356,12 @@ export function parseMatrix(json: unknown): Matrix {
       if (Array.isArray(json.values)) {
         values = json.values;
       } else if (isRecord(json.values) && typeof (json.values as Record<string, unknown>).href === 'string') {
-        const link = json.values as Record<string, unknown>;
-        const linkResult: AssociationAttributeGroup = { href: link.href as string };
-        if (typeof link.role === 'string') linkResult.role = link.role;
-        if (typeof link.title === 'string') linkResult.title = link.title;
-        if (typeof link.arcrole === 'string') linkResult.arcrole = link.arcrole;
-        values = linkResult;
+        values = parseAssociationAttributeGroup(json.values as Record<string, unknown>);
       }
     } else if (Array.isArray(json.values)) {
       values = json.values;
     } else if (isRecord(json.values) && typeof (json.values as Record<string, unknown>).href === 'string') {
-      const link = json.values as Record<string, unknown>;
-      const linkResult: AssociationAttributeGroup = { href: link.href as string };
-      if (typeof link.role === 'string') linkResult.role = link.role;
-      if (typeof link.title === 'string') linkResult.title = link.title;
-      if (typeof link.arcrole === 'string') linkResult.arcrole = link.arcrole;
-      values = linkResult;
+      values = parseAssociationAttributeGroup(json.values as Record<string, unknown>);
     }
   }
 
@@ -455,10 +445,7 @@ function parseElementCount(
 
   // Link reference
   if (typeof json.href === 'string') {
-    const link: AssociationAttributeGroup = { href: json.href };
-    if (typeof json.role === 'string') link.role = json.role;
-    if (typeof json.title === 'string') link.title = json.title;
-    return link;
+    return parseAssociationAttributeGroup(json);
   }
 
   // Count component

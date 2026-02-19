@@ -16,7 +16,7 @@
  * @module
  */
 
-import type { AbstractDataComponent } from './types.js';
+import type { AbstractDataComponent, AssociationAttributeGroup } from './types.js';
 
 // ========================================
 // Primitive Helpers
@@ -56,5 +56,26 @@ export function parseBaseProperties(
   if (typeof json.definition === 'string') result.definition = json.definition;
   if (typeof json.updatable === 'boolean') result.updatable = json.updatable;
   if (typeof json.optional === 'boolean') result.optional = json.optional;
+  return result;
+}
+
+// ========================================
+// Association / Link Reference Extraction
+// ========================================
+
+/**
+ * Parse an AssociationAttributeGroup (XLink-style reference) from raw JSON.
+ *
+ * Extracts: `href` (required), `role`, `title`, `arcrole` (all optional).
+ *
+ * @see https://docs.ogc.org/is/24-014/24-014.html — OGC SWE Common 3.0 (xlink attributes)
+ */
+export function parseAssociationAttributeGroup(
+  json: Record<string, unknown>
+): AssociationAttributeGroup {
+  const result: AssociationAttributeGroup = { href: json.href as string };
+  if (typeof json.role === 'string') result.role = json.role;
+  if (typeof json.title === 'string') result.title = json.title;
+  if (typeof json.arcrole === 'string') result.arcrole = json.arcrole;
   return result;
 }
