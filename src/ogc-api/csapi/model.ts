@@ -286,7 +286,11 @@ export interface System {
  * Deployments represent the deployment of one or more systems at a location
  * for a specific time period.
  *
- * Required properties: `featureType`, `uid`, `name`, `validTime` (per OGC spec).
+ * Required properties per OGC 23-001 Table 10: `featureType`, `uid`, `name`,
+ * `validTime`.  However, §8.7 Requirement 3B explicitly handles the case where
+ * "the validTime attribute is null or not set", and some servers (e.g. OSH)
+ * omit it in practice.  `validTime` is therefore typed as **optional** here
+ * to follow Postel's Law — be liberal in what you accept.
  *
  * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
  */
@@ -303,8 +307,14 @@ export interface Deployment {
     name: string;
     /** Human-readable description. */
     description?: string;
-    /** Time period during which systems are deployed (required). */
-    validTime: TimeInterval;
+    /**
+     * Time period during which systems are deployed.
+     *
+     * OGC 23-001 Table 10 marks this as "Required", but §8.7 Req 3B
+     * explicitly handles missing/null validTime.  Typed optional to
+     * tolerate servers that omit it.
+     */
+    validTime?: TimeInterval;
   };
   geometry?: Geometry;
   links: ResourceLink[];

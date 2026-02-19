@@ -441,7 +441,7 @@ export function extractCSAPIFeature(
         type: 'Feature',
         properties: {
           ...baseProperties,
-          validTime: validTime!,
+          ...(validTime !== undefined ? { validTime } : {}),
         },
         ...(geometry !== undefined ? { geometry } : {}),
         links,
