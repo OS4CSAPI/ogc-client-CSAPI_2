@@ -155,7 +155,7 @@ The claim is that we support parsing all resources and formats within the suppor
 | `parseMatrix(json)` | `parser.ts` | `Matrix` |
 | `parseDataChoice(json)` | `parser.ts` | `DataChoice` |
 | `parseGeometry(json)` | `parser.ts` | `SweGeometry` |
-| `parseEncoding(json)` | `data-array.ts` | `DataEncoding` (JSON, Text, Binary, XML) |
+| `parseEncoding(json)` | `data-array.ts` | `DataEncoding` (JSON, Text, Binary; XML recognized as pass-through only — not in CSAPI spec) |
 | `validateAgainstSchema(value, schema)` | `parser.ts` | `ValidationResult` |
 | `parseUnitOfMeasure(json)` | `components.ts` | `UnitOfMeasure` |
 | `parseAllowedValues(json)` | `components.ts` | `AllowedValues` |
@@ -175,7 +175,7 @@ The claim is that we support parsing all resources and formats within the suppor
 | Part 1 GeoJSON Features | 4/4 types | System, Deployment, Procedure, SamplingFeature via `extractCSAPIFeature()` |
 | SensorML 3.0 | 4/4 process types | PhysicalSystem, PhysicalComponent, SimpleProcess, AggregateProcess |
 | SWE Common 3.0 | 16/16 component types | All simple components, records, arrays, vectors, matrices, choices, geometry |
-| SWE Common Encodings | 4/4 types | JSON, Text, Binary, XML |
+| SWE Common Encodings | 3/3 CSAPI-specified types | JSON, Text, Binary. XMLEncoding has a defensive pass-through only (not in OGC 24-014 scope). |
 | Collection Envelopes | Both shapes | `FeatureCollection` and `{items}` |
 | URL Building | All resource types | Including subsystems, subdeployments, recursive queries |
 
@@ -256,7 +256,7 @@ That assumption is incorrect because:
 | SensorML 3.0 process types | 4 | 0 | 100% |
 | SensorML recursive delegation | Partial | 2 fixes needed | ~50% |
 | SWE Common 3.0 components | 16 | 0 | 100% |
-| SWE Common encodings | 4 | 0 | 100% |
+| SWE Common encodings (CSAPI-specified) | 3 | 0 | 100% |
 | Collection envelopes | 2 shapes | 0 | 100% |
 | URL building | All types | 0 | 100% |
 
