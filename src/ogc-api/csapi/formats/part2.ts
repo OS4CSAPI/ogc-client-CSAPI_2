@@ -11,7 +11,12 @@
  * @module
  */
 
-import type { Datastream, ResourceLink, TimeInterval } from '../model.js';
+import type {
+  Datastream,
+  Observation,
+  ResourceLink,
+  TimeInterval,
+} from '../model.js';
 import { parseValidTime } from './geojson.js';
 
 // ========================================
@@ -151,4 +156,77 @@ export function parseDatastream(json: unknown): Datastream {
       ? (obj.links as ResourceLink[])
       : [],
   } satisfies Datastream;
+}
+
+// ========================================
+// parseObservation
+// ========================================
+
+/**
+ * Transforms a raw JSON object from the `/observations` endpoint into a typed
+ * {@link Observation} object using tolerant extraction (Postel's Law).
+ *
+ * Unlike Datastream/ControlStream, Observation time fields (`phenomenonTime`,
+ * `resultTime`) are single ISO 8601 instant strings, **not** time intervals.
+ * `parseValidTime()` is NOT used here.
+ *
+ * The `result` field is passed through as opaque `unknown` because its shape
+ * depends on the datastream's observation schema (scalar, record, vector,
+ * coverage, etc.). Consumers who need typed results should validate against
+ * the datastream's schema separately.
+ *
+ * Cross-reference fields (`datastream@id`, `samplingFeature@id`, `foi@id`)
+ * present in the raw JSON are intentionally ignored — they are not part of
+ * the `Observation` interface.
+ *
+ * @param json - Raw JSON object from the `/observations` items array.
+ * @returns A typed {@link Observation} object with extracted fields.
+ * @throws {Error} When `json` is not a non-null object.
+ *
+ * @example
+ * ```ts
+ * const raw = {
+ *   id: '0o1abc123',
+ *   'datastream@id': '0ocb',
+ *   phenomenonTime: '2026-02-19T14:22:03.12Z',
+ *   resultTime: '2026-02-19T14:22:03.12Z',
+ *   parameters: { quality: 'good' },
+ *   result: { temperature: 22.5, humidity: 65.3, pressure: 1013.25 },
+ * };
+ * const obs = parseObservation(raw);
+ * // obs.id === '0o1abc123'
+ * // obs.resultTime === '2026-02-19T14:22:03.12Z'
+ * // obs.result === { temperature: 22.5, humidity: 65.3, pressure: 1013.25 }
+ * ```
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
+ */
+export function parseObservation(json: unknown): Observation {
+  if (typeof json !== 'object' || json === null) {
+    throw new Error('parseObservation: input must be a non-null object');
+  }
+
+  const obj = json as Record<string, unknown>;
+
+  // parameters: pass through if non-null object, omit otherwise
+  const parametersValue = obj.parameters;
+  const hasParameters =
+    typeof parametersValue === 'object' &&
+    parametersValue !== null &&
+    !Array.isArray(parametersValue);
+
+  return {
+    id: typeof obj.id === 'string' ? obj.id : '',
+    ...(typeof obj.phenomenonTime === 'string'
+      ? { phenomenonTime: obj.phenomenonTime }
+      : {}),
+    resultTime: typeof obj.resultTime === 'string' ? obj.resultTime : '',
+    ...(hasParameters
+      ? { parameters: parametersValue as Record<string, unknown> }
+      : {}),
+    ...(obj.result !== undefined ? { result: obj.result } : {}),
+    ...(Array.isArray(obj.links)
+      ? { links: obj.links as ResourceLink[] }
+      : {}),
+  } satisfies Observation;
 }

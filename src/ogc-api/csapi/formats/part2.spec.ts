@@ -1,5 +1,5 @@
-import { parseDatastream } from './part2.js';
-import type { Datastream } from '../model.js';
+import { parseDatastream, parseObservation } from './part2.js';
+import type { Datastream, Observation } from '../model.js';
 
 /**
  * Tests for Part 2 parsers.
@@ -232,5 +232,153 @@ describe('parseDatastream', () => {
     expect(() => parseDatastream('string')).toThrow(
       'parseDatastream: input must be a non-null object'
     );
+  });
+});
+
+/**
+ * Tests for parseObservation().
+ *
+ * Observation fixtures are derived from real OSH response data (Smoke Test #8).
+ * Observation time fields are single ISO 8601 instant strings, not time intervals.
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
+ */
+describe('parseObservation', () => {
+  // Fixture derived from OSH Smoke Test #8 response — full Observation with all fields
+  const fullObservationFixture = {
+    id: '0o1abc123',
+    'datastream@id': '0ocb',
+    phenomenonTime: '2026-02-19T14:22:03.12Z',
+    resultTime: '2026-02-19T14:22:03.12Z',
+    parameters: { quality: 'good' },
+    result: {
+      temperature: 22.5,
+      humidity: 65.3,
+      pressure: 1013.25,
+    },
+    links: [
+      {
+        rel: 'self',
+        href: '/observations/0o1abc123',
+        type: 'application/json',
+      },
+    ],
+  };
+
+  it('extracts all fields from a full Observation (cross-refs excluded)', () => {
+    const result: Observation = parseObservation(fullObservationFixture);
+
+    expect(result.id).toBe('0o1abc123');
+    expect(result.phenomenonTime).toBe('2026-02-19T14:22:03.12Z');
+    expect(typeof result.phenomenonTime).toBe('string');
+    expect(result.resultTime).toBe('2026-02-19T14:22:03.12Z');
+    expect(typeof result.resultTime).toBe('string');
+    expect(result.parameters).toEqual({ quality: 'good' });
+    expect(result.result).toEqual({
+      temperature: 22.5,
+      humidity: 65.3,
+      pressure: 1013.25,
+    });
+    expect(result.links).toEqual([
+      {
+        rel: 'self',
+        href: '/observations/0o1abc123',
+        type: 'application/json',
+      },
+    ]);
+
+    // Cross-reference fields must NOT be in output
+    expect(result).not.toHaveProperty('datastream@id');
+  });
+
+  it('handles a minimal Observation with only required fields', () => {
+    const input = {
+      id: 'obs-minimal',
+      resultTime: '2026-02-19T14:22:03.12Z',
+    };
+
+    const result: Observation = parseObservation(input);
+
+    expect(result.id).toBe('obs-minimal');
+    expect(result.resultTime).toBe('2026-02-19T14:22:03.12Z');
+    expect(result.phenomenonTime).toBeUndefined();
+    expect(result.parameters).toBeUndefined();
+    expect(result.result).toBeUndefined();
+    expect(result.links).toBeUndefined();
+  });
+
+  it('passes through a complex result as opaque unknown', () => {
+    const complexResult = {
+      temperature: 22.5,
+      humidity: 65.3,
+      nested: { depth: 2 },
+    };
+    const input = {
+      id: 'obs-complex',
+      resultTime: '2026-02-19T14:22:03.12Z',
+      result: complexResult,
+    };
+
+    const result: Observation = parseObservation(input);
+
+    // result must be passed through exactly as-is (deep equality)
+    expect(result.result).toEqual(complexResult);
+  });
+
+  it('extracts parameters when present as an object', () => {
+    const input = {
+      id: 'obs-params',
+      resultTime: '2026-02-19T14:22:03.12Z',
+      parameters: { quality: 'good', source: 'sensor-a' },
+    };
+
+    const result: Observation = parseObservation(input);
+
+    expect(result.parameters).toEqual({
+      quality: 'good',
+      source: 'sensor-a',
+    });
+  });
+
+  it('omits phenomenonTime when absent (NOT empty string)', () => {
+    const input = {
+      id: 'obs-no-phenom',
+      resultTime: '2026-02-19T14:22:03.12Z',
+    };
+
+    const result: Observation = parseObservation(input);
+
+    expect(result.phenomenonTime).toBeUndefined();
+    expect(result).not.toHaveProperty('phenomenonTime');
+  });
+
+  it('throws on non-object input', () => {
+    expect(() => parseObservation(null)).toThrow(
+      'parseObservation: input must be a non-null object'
+    );
+    expect(() => parseObservation(42)).toThrow(
+      'parseObservation: input must be a non-null object'
+    );
+    expect(() => parseObservation('string')).toThrow(
+      'parseObservation: input must be a non-null object'
+    );
+  });
+
+  it('ignores all cross-reference fields', () => {
+    const input = {
+      id: 'obs-crossref',
+      resultTime: '2026-02-19T14:22:03.12Z',
+      'datastream@id': '0ocb',
+      'samplingFeature@id': 'xyz',
+      'foi@id': 'feat-001',
+    };
+
+    const result: Observation = parseObservation(input);
+
+    expect(result.id).toBe('obs-crossref');
+    expect(result.resultTime).toBe('2026-02-19T14:22:03.12Z');
+    expect(result).not.toHaveProperty('datastream@id');
+    expect(result).not.toHaveProperty('samplingFeature@id');
+    expect(result).not.toHaveProperty('foi@id');
   });
 });
