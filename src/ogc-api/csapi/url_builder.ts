@@ -87,7 +87,13 @@ import {
  * @see https://docs.ogc.org/is/23-002/23-002.html — OGC API - Connected Systems Part 2
  */
 
-/** Maps internal resource type keys to their OGC API URL path segments. */
+/**
+ * Maps internal resource type keys to their OGC API URL path segments.
+ *
+ * NOTE: The `controlStreams → controlstreams` mapping affects all `@example`
+ * JSDoc blocks that show `/controlstreams` in output URLs. If this map is
+ * updated, the corresponding `@example` outputs must be updated to match.
+ */
 const RESOURCE_PATH_OVERRIDES: Readonly<Record<string, string>> = {
   controlStreams: 'controlstreams',
 };

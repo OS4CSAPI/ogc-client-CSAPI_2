@@ -1187,7 +1187,11 @@ function validateAllowedTokens(
         });
       }
     } catch {
-      // Invalid regex pattern in schema — skip validation
+      errors.push({
+        path: path || 'value',
+        message: `Schema contains invalid regex pattern: "${constraint.pattern}"`,
+        code: 'SCHEMA_ERROR',
+      });
     }
   }
 }
@@ -1373,7 +1377,7 @@ function validateDataChoice(
  */
 function validateGeometry(
   value: unknown,
-  _schema: SweGeometry,
+  schema: SweGeometry,
   path: string,
   errors: ValidationError[]
 ): void {
@@ -1400,6 +1404,20 @@ function validateGeometry(
       path: path ? `${path}.type` : 'type',
       message: `Unrecognized geometry type: "${value.type}"`,
       code: 'TYPE_MISMATCH',
+    });
+    return;
+  }
+
+  // Validate against schema geomTypes constraint
+  if (
+    schema.constraint?.geomTypes != null &&
+    schema.constraint.geomTypes.length > 0 &&
+    !(schema.constraint.geomTypes as readonly string[]).includes(value.type)
+  ) {
+    errors.push({
+      path: path ? `${path}.type` : 'type',
+      message: `Geometry type "${value.type}" is not in the allowed types: ${schema.constraint.geomTypes.join(', ')}`,
+      code: 'CONSTRAINT_VIOLATION',
     });
   }
 }
