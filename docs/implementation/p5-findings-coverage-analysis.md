@@ -7,7 +7,9 @@
 - [Smoke Test #19 (Post Phase 4.1)](live-server-smoke-test-post-phase-4.1.md)
 - [Server Quirks Reference](server-quirks-reference.md)
 
-**See also:** [Deferred Findings — Final Disposition](deferred-findings-final-disposition.md) for definitive verdicts on all 6 findings not covered by P5.
+**See also:**
+- [Deferred Findings — Final Disposition](deferred-findings-final-disposition.md) for definitive verdicts on all 6 findings not covered by P5.
+- [P4 Findings: Code vs Documentation Reassessment](p4-findings-code-vs-docs-reassessment.md) for the analysis confirming documentation-only is the correct approach for P4-F1/P4-F2.
 
 ---
 
@@ -76,7 +78,7 @@ Six findings are **not covered** by the P5 ROADMAP:
 
 1. **Phase 5 cleanly addresses the Part 2 data shape findings.** All 5 data shape findings (F27, F30, F31, F33, F38) map directly to parser tasks in the P5 ROADMAP. Once Phase 5 is complete, the library will have typed parse functions for every CSAPI resource shape observed in smoke testing.
 
-2. **The two Phase 4 findings (P4-F1, P4-F2) are CRUD concerns.** They were discovered during Smoke Test #19's first CRUD testing pass. After scope assessment, both resolve to JSDoc documentation additions on existing `url_builder.ts` methods — not new code or architecture. The library is a URL builder and response parser; it doesn't perform HTTP fetches. Both findings are about what happens *outside* the library's boundary (server streaming behavior for P4-F1, request body content for P4-F2). Each has a dedicated GitHub issue. See [P4 CRUD Findings — Scope Assessment](p4-crud-findings-scope-assessment.md) for the full analysis.
+2. **The two Phase 4 findings (P4-F1, P4-F2) are CRUD concerns — confirmed as JSDoc-only after reassessment.** They were discovered during Smoke Test #19's first CRUD testing pass. After initial scope assessment, both resolved to JSDoc documentation additions. This conclusion was subsequently challenged and re-examined against the library's full architecture (which includes write-path helpers like `getContentTypeForResource()`, deep response parsers, and `fetchDocument()` integration — not just URL construction). The reassessment confirmed: P4-F2's uid check is trivial and belongs in consumer code, not a library validator; P4-F1's root cause is CSAPI Part 2 spec-correct streaming behavior, where the real fix would be a streaming response client — a standalone feature outside contribution scope. Both issues (#92, #93) remain correctly scoped as documentation-only. See [P4 Findings: Code vs Documentation Reassessment](p4-findings-code-vs-docs-reassessment.md) for the full analysis.
 
 3. **F82 requires no further action.** The `parseCollectionResponse()` function already defaults `links` to an empty array when the key is absent. This was confirmed as "Low" severity in ST#19.
 
