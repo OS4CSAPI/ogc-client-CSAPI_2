@@ -1,6 +1,6 @@
 # Phase 5: Parser Completion — Roadmap
 
-**Version:** 1.1  
+**Version:** 1.0  
 **Date:** February 19, 2026  
 **Status:** Draft — Pending Review  
 **Scope:** 9 parser gaps only (from [Parsing Coverage Audit](../../research/phase-5/parsing-coverage-audit.md))
@@ -9,9 +9,7 @@
 
 ## Executive Summary
 
-This roadmap covers the implementation of **9 parser gaps** identified by the Parsing Coverage Audit, organized into **9 tasks (14 execution units)** spanning an estimated **14–22 hours of development time** (2–3 weeks calendar time).
-
-Tasks 2, 5, 7, 8, and 9 are broken into subtasks to ensure each execution unit can be completed confidently in a single pass. Tasks 1, 3, 4, and 6 are simple enough to execute as single units.
+This roadmap covers the implementation of **9 parser gaps** identified by the Parsing Coverage Audit, organized into **9 tasks** spanning an estimated **14–22 hours of development time** (2–3 weeks calendar time).
 
 **What this covers:**
 - 6 resource parse functions (Property, Datastream, Observation, ControlStream, Command, CommandStatus)
@@ -30,25 +28,6 @@ Tasks 2, 5, 7, 8, and 9 are broken into subtasks to ensure each execution unit c
 - `parseValidTime()` already exists in `geojson.ts` and handles all time interval cases — reuse, don't reimplement
 - `parseSWEComponent()` already exists — schema response parsers delegate to it
 - Test suite baseline: 1,525 passed, 5 failed (pre-existing, non-CSAPI), 53 suites
-
-**Execution unit summary:**
-
-| # | Unit | Est. Time | Complexity |
-|---|------|-----------|------------|
-| 1 | Task 1: parseProperty + tests | ~1–1.5h | Low |
-| 2 | Task 2a: parseDatastream implementation | ~1–1.5h | Medium |
-| 3 | Task 2b: parseDatastream fixtures + tests | ~1–1.5h | Medium |
-| 4 | Task 3: parseObservation + tests | ~1.5–2h | Medium |
-| 5 | Task 4: parseControlStream + tests | ~1.5–2h | Medium |
-| 6 | Task 5a: normalizeStatusCode + parseCommand implementation | ~1–1.5h | Medium-High |
-| 7 | Task 5b: parseCommand fixtures + tests | ~0.5–1h | Medium |
-| 8 | Task 6: parseCommandStatus + tests | ~1–1.5h | Medium |
-| 9 | Task 7a: parseDatastreamSchemaResponse + interface + tests | ~1–1.5h | Medium |
-| 10 | Task 7b: parseControlStreamSchemaResponse + interface + tests | ~1–1.5h | Medium |
-| 11 | Task 8a: Recursive delegation code fix + regression run | ~0.5–1h | Medium-High |
-| 12 | Task 8b: Cross-type component test cases + fixtures | ~1–1.5h | Medium |
-| 13 | Task 9a: Wire parsers into QueryBuilder call sites | ~0.5–1h | Medium |
-| 14 | Task 9b: End-to-end pipeline tests | ~0.5–1h | Medium |
 
 **Success Factors:**
 - Write tests immediately after each parser (not batched at end)
@@ -72,8 +51,6 @@ Tasks are ordered by **complexity progression** and **dependency chain**:
 4. **Recursive delegation fix after all parsers** — Gap #9 modifies 2 existing files rather than creating new ones. It requires `parseSensorML30()` from `parser.ts`, introducing a circular import that must be verified against the test suite. Doing this last means all new parsers are stable and the test suite is a reliable regression baseline.
 
 5. **Integration wiring last** — Connecting the new parsers to the `parseCollectionResponse()` pipeline is glue code that depends on all parsers existing. It also serves as a natural end-to-end validation checkpoint.
-
-**Subtask rationale:** Tasks are split into subtasks when they involve multiple concerns that benefit from separate focus — e.g., creating a new file with implementation vs constructing fixtures and writing tests, or modifying existing code vs verifying the modification with new test cases. Each subtask is scoped to be completable in a single pass with high confidence.
 
 ---
 
@@ -100,49 +77,24 @@ Tasks are ordered by **complexity progression** and **dependency chain**:
 
 ---
 
-### Task 2: `parseDatastream()`
+### Task 2: `parseDatastream()` + Tests
 
+**Estimated Time:** ~2–3 hours  
+**Complexity:** Medium  
 **Gap:** #2 from Parsing Coverage Audit  
 **File:** `src/ogc-api/csapi/formats/part2.ts` (new)  
-**Test File:** `src/ogc-api/csapi/formats/part2.spec.ts` (new)  
-**Dependencies:** None (imports `parseValidTime()` from `geojson.ts`)
+**Test File:** `src/ogc-api/csapi/formats/part2.spec.ts` (new)
 
-#### Task 2a: `parseDatastream()` Implementation
-
-**Estimated Time:** ~1–1.5 hours  
-**Complexity:** Medium
-
-This is the first Part 2 parser and creates the `part2.ts` file. The primary risk is establishing the correct import pattern for `parseValidTime()` and handling 13+ fields with 3 time fields.
-
-- Create `src/ogc-api/csapi/formats/part2.ts`
-- Study `parseValidTime()` signature and return type in `geojson.ts` before writing any code
-- Study `Datastream` interface in `model.ts` to confirm all field names and types
 - Implement `parseDatastream(json: unknown): Datastream`
 - Input guard: throw if input is not a non-null object
 - Parse 3 time fields via `parseValidTime()`: `validTime`, `phenomenonTime`, `resultTime`
 - Extract: `id`, `name`, `description`, `formats`, `outputName`, `observedProperties`, `resultType`, `live`, `type`, `links`
 - Normalize `observedProperties`: handle both object array and string array forms
 - Cross-references (`system@id`, `system@link`) are NOT extracted — not in the `Datastream` interface
+- **Test:** 8 cases — full Datastream (OSH ST#7), minimal Datastream, all 3 time fields parsed, `observedProperties` as objects, `observedProperties` as strings, `phenomenonTime` null pass-through, missing optional fields, non-object input throws
+- **Fixtures:** Real OSH response data from Smoke Test #7
 - **JSDoc:** Document time field handling, `observedProperties` normalization
-- **Deliverable:** Compiling `parseDatastream()` function with all field extractions + JSDoc
-
-#### Task 2b: `parseDatastream()` Fixtures + Tests
-
-**Estimated Time:** ~1–1.5 hours  
-**Complexity:** Medium
-
-- Create `src/ogc-api/csapi/formats/part2.spec.ts`
-- Build Datastream fixtures from real OSH response data (Smoke Test #7)
-- **Test:** 8 cases:
-  1. Full Datastream — all fields from real OSH response
-  2. Minimal Datastream — only `id` (required per spec)
-  3. All 3 time fields parsed — verify `TimeInterval` output
-  4. `observedProperties` as objects — array of `{ definition, label }` objects
-  5. `observedProperties` as strings — array of URI strings
-  6. `phenomenonTime` null — passes through as null (not undefined)
-  7. Missing optional fields — undefined in output
-  8. Non-object input — throws Error
-- **Deliverable:** Passing test suite with >80% coverage on `parseDatastream()`
+- **Dependencies:** None (imports `parseValidTime()` from `geojson.ts`)
 
 ---
 
@@ -188,51 +140,27 @@ This is the first Part 2 parser and creates the `part2.ts` file. The primary ris
 
 ---
 
-### Task 5: `parseCommand()`
+### Task 5: `parseCommand()` + Tests
 
+**Estimated Time:** ~1.5–2 hours  
+**Complexity:** Medium-High  
 **Gap:** #5 from Parsing Coverage Audit  
 **File:** `src/ogc-api/csapi/formats/part2.ts`  
-**Test File:** `src/ogc-api/csapi/formats/part2.spec.ts`  
-**Dependencies:** Task 2 (shares file)
+**Test File:** `src/ogc-api/csapi/formats/part2.spec.ts`
 
-#### Task 5a: `normalizeStatusCode()` Utility + `parseCommand()` Implementation
-
-**Estimated Time:** ~1–1.5 hours  
-**Complexity:** Medium-High
-
-The key challenge is the `issueTime`/`executionTime` type asymmetry (instant vs period) and introducing the shared `normalizeStatusCode()` utility that Task 6 will also use.
-
-- Implement `normalizeStatusCode(value: unknown): CommandStatusCode | undefined`
-  - Validate string against `CommandStatusCodes` array from `model.ts`
-  - Return typed `CommandStatusCode` if recognized, `undefined` if not
-  - ~5 lines — small but must be correct since Task 6 depends on it
 - Implement `parseCommand(json: unknown): Command`
 - Input guard: throw if input is not a non-null object
 - `issueTime` is an ISO 8601 **instant** (string pass-through) — NOT `parseValidTime()`
 - `executionTime` is a time **period** (array of 2 strings) — parse with `parseValidTime()`
-- Validate `currentStatus` via `normalizeStatusCode()`; fall back to undefined if unrecognized
+- This asymmetry is the key complexity: two time fields, two different types
+- Validate `currentStatus` against `CommandStatusCodes` enum; fall back to undefined if unrecognized
 - Extract: `id`, `issueTime`, `executionTime`, `sender`, `currentStatus`, `parameters`, `links`
+- Introduce `normalizeStatusCode()` shared utility (validates string against `CommandStatusCodes` array)
 - Cross-reference (`controlstream@id`) is NOT extracted
-- **JSDoc:** Document `issueTime`/`executionTime` type asymmetry, status code normalization, `normalizeStatusCode()` utility
-- **Deliverable:** Compiling `normalizeStatusCode()` + `parseCommand()` with all field extractions + JSDoc
-
-#### Task 5b: `parseCommand()` Fixtures + Tests
-
-**Estimated Time:** ~0.5–1 hour  
-**Complexity:** Medium
-
-- Build Command fixtures from real OSH response data (Smoke Test #10, F31)
-- **Test:** 8 cases:
-  1. Full Command — all fields from real OSH response (F31)
-  2. Minimal Command — only `id`, `issueTime`, `parameters` (required per spec)
-  3. `currentStatus` valid — `"COMPLETED"` → `'COMPLETED'`
-  4. `currentStatus` invalid — unknown string → `undefined`
-  5. `executionTime` present — parsed to `TimeInterval`
-  6. `executionTime` absent — not in output
-  7. Complex nested parameters — deep object pass-through
-  8. Non-object input — throws Error
-- Also test `normalizeStatusCode()` directly: valid code, invalid code, non-string input, undefined input
-- **Deliverable:** Passing test suite with >80% coverage on `parseCommand()` and `normalizeStatusCode()`
+- **Test:** 8 cases — full Command (OSH ST#10 F31), minimal Command, `currentStatus` valid, `currentStatus` invalid → undefined, `executionTime` present → TimeInterval, `executionTime` absent, complex nested parameters, non-object input throws
+- **Fixtures:** Real OSH response data from Smoke Test #10 (F31)
+- **JSDoc:** Document `issueTime`/`executionTime` type asymmetry, status code normalization
+- **Dependencies:** Task 2 (shares file)
 
 ---
 
@@ -255,155 +183,73 @@ The key challenge is the `issueTime`/`executionTime` type asymmetry (instant vs 
 - **Test:** 7 cases — full CommandStatus (OSH ST#10 F38), minimal CommandStatus, `statusCode` valid, `statusCode` invalid → `'PENDING'` fallback, `percentCompletion` present, `executionTime` present → TimeInterval, non-object input throws
 - **Fixtures:** Real OSH response data from Smoke Test #10 (F38)
 - **JSDoc:** Document required `statusCode` vs optional `currentStatus` distinction
-- **Dependencies:** Task 5a (`normalizeStatusCode()` utility)
+- **Dependencies:** Task 5 (`normalizeStatusCode()` utility)
 
 ---
 
-### Task 7: Schema Response Parsers
+### Task 7: Schema Response Parsers + Tests
 
+**Estimated Time:** ~2–3 hours  
+**Complexity:** Medium  
 **Gap:** #7 and #8 from Parsing Coverage Audit  
 **File:** `src/ogc-api/csapi/formats/schema-response.ts` (new)  
-**Test File:** `src/ogc-api/csapi/formats/schema-response.spec.ts` (new)  
-**Cross-reference:** Issue #17 (demo app finding F-14) first identified this gap  
-**Dependencies:** None (delegates to existing SWE Common parsers)
+**Test File:** `src/ogc-api/csapi/formats/schema-response.spec.ts` (new)
 
-#### Task 7a: `parseDatastreamSchemaResponse()` + Interface + Tests
-
-**Estimated Time:** ~1–1.5 hours  
-**Complexity:** Medium
-
-This subtask does the hard work: creating the new file, establishing the delegation pattern to `parseSWEComponent()` and `parseEncoding()`, and handling the two format variants (JSON vs SWE Common). Study the `parseSWEComponent()` and `parseEncoding()` APIs in the SWE Common parser before writing code.
-
-- Define `DatastreamSchemaResponse` interface in `model.ts` (~10-15 lines):
-  - `obsFormat: string`
-  - `resultSchema?: SWEComponent` (JSON format)
-  - `recordSchema?: SWEComponent` (SWE Common format)
-  - `encoding?: DataEncoding` (SWE Common format)
-- Create `src/ogc-api/csapi/formats/schema-response.ts`
+- Define 2 new interfaces in `model.ts`:
+  - `DatastreamSchemaResponse` — `obsFormat`, `resultSchema?` (SWEComponent), `recordSchema?` (SWEComponent), `encoding?` (DataEncoding)
+  - `ControlStreamSchemaResponse` — `commandFormat`, `parametersSchema?` (SWEComponent), `encoding?` (DataEncoding)
 - Implement `parseDatastreamSchemaResponse(json: unknown): DatastreamSchemaResponse`
-  - Input guard: throw if input is not a non-null object
   - Extract `obsFormat` (fall back to empty string)
-  - Delegate `resultSchema` to `parseSWEComponent()` if present
-  - Delegate `recordSchema` to `parseSWEComponent()` if present
+  - Delegate `resultSchema` or `recordSchema` to existing `parseSWEComponent()` if present
   - Delegate `encoding` to `parseEncoding()` if present
-- Create `src/ogc-api/csapi/formats/schema-response.spec.ts`
-- **Test:** 5 cases:
-  1. JSON format response — `obsFormat` + `resultSchema` with DataRecord
-  2. SWE Common format response — `obsFormat` + `recordSchema` + `encoding`
-  3. Missing schema fields — only `obsFormat` present
-  4. Nested DataRecord — schema with multiple fields → full SWE parse tree
-  5. Non-object input — throws Error
-- **Fixtures:** Real OSH schema response data from Smoke Test #7
-- **JSDoc:** Document delegation to SWE Common parser, schema format variants
-- **Deliverable:** `DatastreamSchemaResponse` interface + compiling parser + passing tests
-
-#### Task 7b: `parseControlStreamSchemaResponse()` + Interface + Tests
-
-**Estimated Time:** ~1–1.5 hours  
-**Complexity:** Medium
-
-This subtask follows the pattern established by 7a. The delegation pattern is identical — only the field names differ (`commandFormat` instead of `obsFormat`, `parametersSchema` instead of `resultSchema`/`recordSchema`).
-
-- Define `ControlStreamSchemaResponse` interface in `model.ts` (~8-10 lines):
-  - `commandFormat: string`
-  - `parametersSchema?: SWEComponent`
-  - `encoding?: DataEncoding`
-- Implement `parseControlStreamSchemaResponse(json: unknown): ControlStreamSchemaResponse` in `schema-response.ts`
-  - Input guard: throw if input is not a non-null object
+  - Handle both JSON format (`resultSchema`) and SWE Common format (`recordSchema` + `encoding`)
+- Implement `parseControlStreamSchemaResponse(json: unknown): ControlStreamSchemaResponse`
   - Extract `commandFormat` (fall back to empty string)
-  - Delegate `parametersSchema` to `parseSWEComponent()` if present
+  - Delegate `parametersSchema` to existing `parseSWEComponent()` if present
   - Delegate `encoding` to `parseEncoding()` if present
-- **Test:** 4 cases:
-  1. JSON format response — `commandFormat` + `parametersSchema` with DataRecord
-  2. Missing parametersSchema — only `commandFormat` present
-  3. Nested DataRecord — full SWE parse tree verified
-  4. Non-object input — throws Error
-- **Fixtures:** Spec-derived for ControlStream schema (no real server fixture available for this specific endpoint)
-- **JSDoc:** Document parallel structure with Datastream schema parser
-- **Deliverable:** `ControlStreamSchemaResponse` interface + compiling parser + passing tests
+- **Test (Datastream):** 5 cases — JSON format response, SWE Common format response, missing schema fields, nested DataRecord with full SWE parse tree, non-object input throws
+- **Test (ControlStream):** 4 cases — JSON format response, missing parametersSchema, nested DataRecord, non-object input throws
+- **Fixtures:** Real OSH schema response data from Smoke Test #7; spec-derived for ControlStream schema
+- **JSDoc:** Document delegation to SWE Common parser, schema format variants
+- **Cross-reference:** Issue #17 (demo app finding F-14) first identified this gap
+- **Dependencies:** None (delegates to existing SWE Common parsers)
 
 ---
 
-### Task 8: Recursive Delegation Fix
+### Task 8: Recursive Delegation Fix + Tests
 
+**Estimated Time:** ~1.5–2 hours  
+**Complexity:** Medium-High  
 **Gap:** #9 from Parsing Coverage Audit  
 **Files Modified:** `src/ogc-api/csapi/formats/sensorml/physical-system.ts`, `src/ogc-api/csapi/formats/sensorml/aggregate-process.ts`  
-**Test Files Modified:** existing `physical-system.spec.ts`, `aggregate-process.spec.ts`  
-**Dependencies:** None (modifies existing files, no dependency on Tasks 1–7)
+**Test Files Modified:** existing `physical-system.spec.ts`, `aggregate-process.spec.ts`
 
-#### Task 8a: Code Fix + Circular Import Verification
-
-**Estimated Time:** ~0.5–1 hour  
-**Complexity:** Medium-High
-
-The code change is small (~10-15 lines per file) but introduces a circular import that must be verified. This subtask focuses solely on making the code change and confirming the existing test suite still passes.
-
-- Read both `parseComponentEntry()` functions to understand current behavior
-- Modify `physical-system.ts`:
-  - Add `import { parseSensorML30 } from './parser'`
-  - Replace type-specific check (`value.type === 'PhysicalSystem'`) with `knownTypes.includes(value.type)` for all 4 process types
-  - Delegate to `parseSensorML30(value)` instead of `parsePhysicalSystem(value)`
-  - Preserve external link / unknown type fallthrough
-- Apply identical transformation to `aggregate-process.ts`
-- Update JSDoc on both `parseComponentEntry()` functions to document full type dispatch
-- **Run existing test suite** — verify no regressions and no circular import issues at runtime
-- If circular import fails: implement fallback (pass `parseSensorML30` as callback parameter)
-- **Deliverable:** Both files modified, existing tests passing, circular import verified safe
-
-#### Task 8b: Cross-Type Component Test Cases + Fixtures
-
-**Estimated Time:** ~1–1.5 hours  
-**Complexity:** Medium
-
-The real work here is constructing accurate SensorML fixtures with inline components of different process types. Each fixture must have the correct SensorML process structure with `type`, `name`, and enough fields to verify parsing succeeded (not just that it didn't throw).
-
-- Build fixtures: PhysicalSystem containing inline children of each type, AggregateProcess containing inline children of each type
-- **Test (physical-system.spec.ts):** 5 new cases:
-  1. PhysicalSystem with SimpleProcess child — child is parsed (has `method` field)
-  2. PhysicalSystem with PhysicalComponent child — child is parsed (has `position`)
-  3. PhysicalSystem with AggregateProcess child — child is parsed (has `components`)
-  4. PhysicalSystem with PhysicalSystem child — still works (regression)
-  5. External link component — still passed through as-is
-- **Test (aggregate-process.spec.ts):** 5 new cases:
-  1. AggregateProcess with SimpleProcess child — child is parsed
-  2. AggregateProcess with PhysicalSystem child — child is parsed
-  3. AggregateProcess with PhysicalComponent child — child is parsed
-  4. AggregateProcess with AggregateProcess child — still works (regression)
-  5. Unknown type string — passed through (tolerant extraction)
-- **Deliverable:** 10 new test cases passing, verifying full cross-type recursive delegation
+- **Current behavior:** `parseComponentEntry()` in `physical-system.ts` only recursively parses inline `PhysicalSystem` children; `parseComponentEntry()` in `aggregate-process.ts` only recursively parses inline `AggregateProcess` children. All other inline process types (SimpleProcess, PhysicalComponent, and cross-type cases) are returned as raw unparsed JSON.
+- **Fix:** Replace the type-specific recursive call with delegation to `parseSensorML30()`, which already dispatches all 4 process types. Both files get the same transformation:
+  - Before: `if (value.type === 'PhysicalSystem') { parsePhysicalSystem(value) }` + fallthrough
+  - After: `if (knownTypes.includes(value.type)) { parseSensorML30(value) }` + fallthrough for external links and unknown types
+- **Circular import:** Adding `import { parseSensorML30 } from './parser'` creates a cycle (`parser.ts → physical-system.ts → parser.ts`). TypeScript ESM handles this via live bindings — `parseSensorML30` is resolved at call time, not import time, and is never called during module initialization. Verified safe. Fallback if needed: pass `parseSensorML30` as a callback parameter.
+- **Test (physical-system):** 5 cases — PhysicalSystem with SimpleProcess child (parsed), PhysicalSystem with PhysicalComponent child (parsed), PhysicalSystem with AggregateProcess child (parsed), PhysicalSystem with PhysicalSystem child (regression), external link component (passed through)
+- **Test (aggregate-process):** 5 cases — AggregateProcess with SimpleProcess child (parsed), AggregateProcess with PhysicalSystem child (parsed), AggregateProcess with PhysicalComponent child (parsed), AggregateProcess with AggregateProcess child (regression), unknown type string (passed through)
+- **JSDoc:** Update `parseComponentEntry()` JSDoc in both files to document full type dispatch
+- **Dependencies:** None (modifies existing files, no dependency on Tasks 1–7)
 
 ---
 
 ### Task 9: Integration Wiring
 
+**Estimated Time:** ~1–2 hours  
+**Complexity:** Medium  
 **Gap:** Integration of all new parsers into the response pipeline  
-**Files Modified:** QueryBuilder methods in `url_builder.ts` (or call site equivalent)  
-**Dependencies:** Tasks 1–8 (all parsers must exist)
+**Files Modified:** QueryBuilder methods in `url_builder.ts` (or call site equivalent)
 
-#### Task 9a: Wire Parsers into QueryBuilder Call Sites
-
-**Estimated Time:** ~0.5–1 hour  
-**Complexity:** Medium
-
-- Discover all QueryBuilder methods that return Part 2 resources or Property (read `url_builder.ts` call sites)
+- Connect new parsers to the `parseCollectionResponse()` pipeline
 - **Recommended approach (Option B from Implementation Guide §8.1):** Parse at the call site, not inside `parseCollectionResponse()`. The QueryBuilder methods (e.g., `getDataStreams()`) call `parseCollectionResponse()` for envelope extraction, then map items through the appropriate parser. This keeps `parseCollectionResponse()` generic.
-- Wire resource parsers: `parseProperty`, `parseDatastream`, `parseObservation`, `parseControlStream`, `parseCommand`, `parseCommandStatus` into their respective collection call sites
-- Wire schema parsers: `parseDatastreamSchemaResponse`, `parseControlStreamSchemaResponse` into direct call sites (these are single-object endpoints, not collections)
-- Add imports for all new parsers at call sites
-- **JSDoc:** Document integration pattern at call sites
-- **Deliverable:** All parsers wired into the response pipeline, code compiles
-
-#### Task 9b: End-to-End Pipeline Tests
-
-**Estimated Time:** ~0.5–1 hour  
-**Complexity:** Medium
-
+- Schema endpoints (`/datastreams/{id}/schema`, `/controlstreams/{id}/schema`) return single objects, not collections — call schema response parsers directly, not through `parseCollectionResponse()`
 - Verify end-to-end: raw JSON → envelope extraction → item parsing → typed output
-- **Test:** At minimum, 1 end-to-end test per parser category:
-  1. Resource parser pipeline: fixture JSON collection → `parseCollectionResponse()` → `parseDatastream()` → verify typed `Datastream` output with parsed `TimeInterval` fields
-  2. Schema parser pipeline: fixture JSON → `parseDatastreamSchemaResponse()` → verify `DatastreamSchemaResponse` output with parsed `SWEComponent` in `resultSchema`
-- Additional end-to-end tests for edge cases if time permits (e.g., Property pipeline with spec-derived fixture, Command pipeline verifying `issueTime`/`executionTime` asymmetry)
-- **Deliverable:** End-to-end tests passing, confirming full pipeline works from raw JSON to typed output
+- **Test:** End-to-end test for at least 1 resource type (e.g., Datastream) through the full pipeline: fixture JSON → `parseCollectionResponse()` → `parseDatastream()` → verify typed `Datastream` output with parsed `TimeInterval` fields
+- **JSDoc:** Document integration pattern at call sites
+- **Dependencies:** Tasks 1–8 (all parsers must exist)
 
 ---
 
@@ -466,23 +312,15 @@ Parser-relevant findings from the [Server Quirks Reference](../../implementation
 | # | Risk | Likelihood | Impact | Mitigation |
 |---|------|-----------|--------|------------|
 | 1 | No Property test data — both servers return 0 items | Certain | Medium | Build fixtures from OGC 23-001 spec. Document as known limitation. |
-| 2 | Circular import from Gap #9 fix | Low | High | TypeScript ESM live bindings handle it. Verify with test suite in Task 8a. Fallback: callback parameter. |
-| 3 | `observedProperties` shape variance | Medium | Low | Handle both object array and string array in `parseDatastream()`. Test both in Task 2b. |
+| 2 | Circular import from Gap #9 fix | Low | High | TypeScript ESM live bindings handle it. Verify with test suite. Fallback: callback parameter. |
+| 3 | `observedProperties` shape variance | Medium | Low | Handle both object array and string array in `parseDatastream()`. Test both. |
 | 4 | 52North Part 2 differences | Medium | Medium | Use OSH fixtures as primary. Tolerant extraction handles most variance. Add 52North fixtures when available. |
-| 5 | Schema response format variance | Medium | Low | Handle both `resultSchema` and `recordSchema` wrapper fields. Test both formats in Task 7a. |
+| 5 | Schema response format variance | Medium | Low | Handle both `resultSchema` and `recordSchema` wrapper fields. Test both formats. |
 | 6 | `CommandStatusCodes` enum drift | Low | Low | `normalizeStatusCode()` returns undefined for unrecognized values. |
 
 ---
 
 ## Version History
-
-**Version 1.1 (February 19, 2026):**
-- Tasks 2, 5, 7, 8, and 9 broken into subtasks for single-pass execution confidence
-- 9 tasks → 14 execution units (Tasks 1, 3, 4, 6 unchanged; 5 tasks split into 10 subtasks)
-- Added execution unit summary table to Executive Summary
-- Added subtask rationale to Task Ordering Rationale section
-- Risk register updated with subtask cross-references
-- v1.0 archived at [archive/P5-ROADMAP-v1.0.md](archive/P5-ROADMAP-v1.0.md)
 
 **Version 1.0 (February 19, 2026):**
 - Initial Phase 5 roadmap covering 9 parser gaps from the Parsing Coverage Audit
