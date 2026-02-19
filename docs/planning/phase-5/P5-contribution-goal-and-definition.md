@@ -35,7 +35,26 @@ Implementation of the 9 missing parse functions identified by the Parsing Covera
 - Currently, `parseComponentEntry()` in `physical-system.ts` only recursively parses inline components that are themselves `PhysicalSystem` instances. `parseComponentEntry()` in `aggregate-process.ts` only recurses for `AggregateProcess` instances. All other inline component types (e.g., a SimpleProcess sensor embedded within a PhysicalSystem platform) are returned as raw unparsed JSON.
 - This means subsystem hierarchies involving mixed process types — which are common in real-world deployments (a PhysicalSystem weather station containing SimpleProcess temperature sensors and PhysicalComponent wind vanes) — are only partially parsed.
 - **Fix:** Update both `parseComponentEntry()` functions to delegate to `parseSensorML30()`, which already dispatches all 4 process types. This makes subsystem parsing complete regardless of the component's process type.
-- **Note:** Subdeployments are not affected — they are navigated via URL path (`/deployments/{id}/subdeployments`), not embedded in JSON, and are already fully parsed as individual GeoJSON Features by `extractCSAPIFeature()`.
+**Why Subdeployments Are Not in Scope**
+
+Subsystems require this fix because SensorML 3.0 provides an inline embedding mechanism: a PhysicalSystem's `components` field can contain child processes directly within the parent's JSON response body. Only Systems and Procedures have SensorML representations — they are the only CSAPI resource types that can be requested as `application/sml+json`. The recursive delegation fix applies exclusively to this inline embedding path.
+
+Subdeployments have no equivalent parser gap because:
+- A Deployment describes *when and where* a System was deployed, not what a System *is* — it is temporal/spatial metadata, not a process description
+- The CSAPI spec defines only GeoJSON encoding for Deployments; there is no SensorML representation of a Deployment
+- GeoJSON Features are flat — there is no mechanism for nesting features inside features
+- The Deployment schema has no `components` field or any equivalent inline-children structure
+- Subdeployments are accessed exclusively via URL navigation (`/deployments/{id}/subdeployments`), and each one arrives as a standard GeoJSON Feature already fully parsed by `extractCSAPIFeature()`
+
+| Resource | GeoJSON? | SensorML? | Inline children possible? |
+|----------|----------|-----------|--------------------------|
+| System | Yes | Yes | Yes — SensorML `components` embeds subsystems inline |
+| Procedure | Yes | Yes | Yes — AggregateProcess has `components` |
+| Deployment | Yes | No | No — GeoJSON only; no inline nesting mechanism |
+| SamplingFeature | Yes | No | No |
+| Property | No (flat JSON) | No | No |
+
+In short: subsystems need a parser fix because SensorML uniquely allows inline embedding. Subdeployments don't need one because Deployments only exist as flat GeoJSON Features with no inline child structure.
 
 **Quality Standards**
 - Unit tests for each new parse function with fixtures derived from real server responses
