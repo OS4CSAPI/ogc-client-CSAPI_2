@@ -1,12 +1,15 @@
-import { parseDatastream, parseObservation } from './part2.js';
-import type { Datastream, Observation } from '../model.js';
+import {
+  parseControlStream,
+  parseDatastream,
+  parseObservation,
+} from './part2.js';
+import type { ControlStream, Datastream, Observation } from '../model.js';
 
 /**
  * Tests for Part 2 parsers.
  *
  * This file houses tests for all Part 2 resource parsers. Subsequent tasks
- * will add `describe` blocks for parseObservation, parseControlStream,
- * parseCommand, and parseCommandStatus.
+ * will add `describe` blocks for parseCommand and parseCommandStatus.
  *
  * Datastream fixtures are derived from real OSH response data (Smoke Test #7).
  *
@@ -380,5 +383,246 @@ describe('parseObservation', () => {
     expect(result).not.toHaveProperty('datastream@id');
     expect(result).not.toHaveProperty('samplingFeature@id');
     expect(result).not.toHaveProperty('foi@id');
+  });
+});
+
+/**
+ * Tests for parseControlStream().
+ *
+ * ControlStream is structurally parallel to Datastream — same time field
+ * parsing, analogous fields. Fixtures derived from real OSH response data
+ * (Smoke Test #9, Finding F30).
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_controlstream_resources
+ */
+describe('parseControlStream', () => {
+  // Fixture derived from OSH Smoke Test #9 F30 response — full ControlStream with all fields
+  const fullControlStreamFixture = {
+    id: '0o10',
+    name: 'FCU Field Drone CubePilot - Location Control',
+    description: 'Control stream for MAVLink navigation commands',
+    'system@id': '0o30',
+    'system@link': {
+      href: 'http://45.55.99.236:8080/sensorhub/api/systems/0o30?f=json',
+      uid: 'urn:osh:driver:mavsdk:cube',
+      type: 'application/geo+json',
+    },
+    inputName: 'mavControl',
+    validTime: ['2026-01-14T04:49:19.134Z', 'now'],
+    issueTime: [
+      '2026-01-14T12:42:21.910351Z',
+      '2026-01-14T13:11:31.196096Z',
+    ],
+    executionTime: [
+      '2026-01-14T12:42:21.928726Z',
+      '2026-01-14T13:11:31.196096Z',
+    ],
+    controlledProperties: [],
+    formats: [
+      'application/json',
+      'application/swe+json',
+      'application/swe+csv',
+      'application/swe+xml',
+      'application/swe+binary',
+    ],
+    live: true,
+    async: true,
+    links: [
+      {
+        rel: 'self',
+        href: '/controlstreams/0o10',
+        type: 'application/json',
+      },
+    ],
+  };
+
+  it('extracts all fields from a full ControlStream (cross-refs excluded)', () => {
+    const result: ControlStream = parseControlStream(
+      fullControlStreamFixture
+    );
+
+    expect(result.id).toBe('0o10');
+    expect(result.name).toBe(
+      'FCU Field Drone CubePilot - Location Control'
+    );
+    expect(result.description).toBe(
+      'Control stream for MAVLink navigation commands'
+    );
+    expect(result.inputName).toBe('mavControl');
+    expect(result.formats).toEqual([
+      'application/json',
+      'application/swe+json',
+      'application/swe+csv',
+      'application/swe+xml',
+      'application/swe+binary',
+    ]);
+    expect(result.controlledProperties).toEqual([]);
+    expect(result.live).toBe(true);
+    expect(result.async).toBe(true);
+    expect(result.links).toEqual([
+      {
+        rel: 'self',
+        href: '/controlstreams/0o10',
+        type: 'application/json',
+      },
+    ]);
+
+    // Cross-reference fields must NOT be in output
+    expect(result).not.toHaveProperty('system@id');
+    expect(result).not.toHaveProperty('system@link');
+  });
+
+  it('handles a minimal ControlStream with only required fields', () => {
+    const input = {
+      id: 'cs-minimal',
+      name: 'Minimal Control',
+      formats: ['application/json'],
+      async: false,
+    };
+
+    const result: ControlStream = parseControlStream(input);
+
+    expect(result.id).toBe('cs-minimal');
+    expect(result.name).toBe('Minimal Control');
+    expect(result.formats).toEqual(['application/json']);
+    expect(result.async).toBe(false);
+    expect(result.controlledProperties).toEqual([]);
+    expect(result.issueTime).toBeNull();
+    expect(result.executionTime).toBeNull();
+    expect(result.live).toBeNull();
+    expect(result.description).toBeUndefined();
+    expect(result.inputName).toBeUndefined();
+    expect(result.validTime).toBeUndefined();
+  });
+
+  it('parses all 3 time fields correctly (including "now" sentinel)', () => {
+    const input = {
+      id: 'cs-time',
+      name: 'Time Test',
+      formats: [],
+      async: false,
+      validTime: ['2026-01-14T04:49:19.134Z', 'now'],
+      issueTime: [
+        '2026-01-14T12:42:21.910Z',
+        '2026-01-14T13:11:31.196Z',
+      ],
+      executionTime: [
+        '2026-01-14T12:42:21.928Z',
+        '2026-01-14T13:11:31.196Z',
+      ],
+    };
+
+    const result: ControlStream = parseControlStream(input);
+
+    // validTime: "now" sentinel → end is undefined
+    expect(result.validTime?.start).toEqual(
+      new Date('2026-01-14T04:49:19.134Z')
+    );
+    expect(result.validTime?.end).toBeUndefined();
+
+    // issueTime: concrete start and end
+    expect(result.issueTime?.start).toEqual(
+      new Date('2026-01-14T12:42:21.910Z')
+    );
+    expect(result.issueTime?.end).toEqual(
+      new Date('2026-01-14T13:11:31.196Z')
+    );
+
+    // executionTime: concrete start and end
+    expect(result.executionTime?.start).toEqual(
+      new Date('2026-01-14T12:42:21.928Z')
+    );
+    expect(result.executionTime?.end).toEqual(
+      new Date('2026-01-14T13:11:31.196Z')
+    );
+  });
+
+  it('normalizes controlledProperties from object and empty array forms', () => {
+    // Object form with definition URIs
+    const inputWithProps = {
+      id: 'cs-props',
+      name: 'Props Test',
+      formats: [],
+      async: false,
+      controlledProperties: [
+        {
+          definition: 'http://sensorml.com/ont/swe/property/Location',
+          label: 'Location',
+        },
+      ],
+    };
+
+    const resultWithProps: ControlStream =
+      parseControlStream(inputWithProps);
+    expect(resultWithProps.controlledProperties).toEqual([
+      'http://sensorml.com/ont/swe/property/Location',
+    ]);
+
+    // Empty array (common in live OSH data)
+    const inputEmpty = {
+      id: 'cs-empty-props',
+      name: 'Empty Props',
+      formats: [],
+      async: false,
+      controlledProperties: [],
+    };
+
+    const resultEmpty: ControlStream = parseControlStream(inputEmpty);
+    expect(resultEmpty.controlledProperties).toEqual([]);
+  });
+
+  it('omits optional fields when they are absent', () => {
+    const input = {
+      id: 'cs-no-optionals',
+      name: 'No Optionals',
+      formats: [],
+      async: false,
+    };
+
+    const result: ControlStream = parseControlStream(input);
+
+    expect(result).not.toHaveProperty('description');
+    expect(result).not.toHaveProperty('inputName');
+    expect(result).not.toHaveProperty('validTime');
+  });
+
+  it('defaults async to false when absent', () => {
+    // async: true
+    const inputTrue = {
+      id: 'cs-async-true',
+      name: 'Async True',
+      formats: [],
+      async: true,
+    };
+    expect(parseControlStream(inputTrue).async).toBe(true);
+
+    // async: false
+    const inputFalse = {
+      id: 'cs-async-false',
+      name: 'Async False',
+      formats: [],
+      async: false,
+    };
+    expect(parseControlStream(inputFalse).async).toBe(false);
+
+    // async absent → defaults to false
+    const inputAbsent = {
+      id: 'cs-async-absent',
+      name: 'Async Absent',
+      formats: [],
+    };
+    expect(parseControlStream(inputAbsent).async).toBe(false);
+  });
+
+  it('throws on non-object input', () => {
+    expect(() => parseControlStream(null)).toThrow(
+      'parseControlStream: input must be a non-null object'
+    );
+    expect(() => parseControlStream(42)).toThrow(
+      'parseControlStream: input must be a non-null object'
+    );
+    expect(() => parseControlStream('string')).toThrow(
+      'parseControlStream: input must be a non-null object'
+    );
   });
 });
