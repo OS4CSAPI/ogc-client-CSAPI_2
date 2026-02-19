@@ -31,6 +31,20 @@ export const SOSA_NS = 'http://www.w3.org/ns/sosa/';
 const SOSA_PREFIX = 'sosa:';
 
 /**
+ * W3C SSN namespace URI.
+ *
+ * The SSN ontology defines canonical URIs for some CSAPI concepts
+ * (e.g., `ssn:Deployment`, `ssn:System`) that overlap with their
+ * SOSA counterparts. Servers such as OSH may use SSN-prefixed URIs.
+ *
+ * @see https://www.w3.org/TR/vocab-ssn/
+ */
+export const SSN_NS = 'http://www.w3.org/ns/ssn/';
+
+/** SSN compact prefix. */
+const SSN_PREFIX = 'ssn:';
+
+/**
  * OGC SensorML 2.0 namespace URI.
  * @see https://docs.ogc.org/is/12-000r2/12-000r2.html
  */
@@ -132,6 +146,25 @@ function toSosaLocalName(featureType: string): string | undefined {
 }
 
 /**
+ * Extracts the SSN local name from a featureType URI or CURIE.
+ *
+ * Handles both forms:
+ * - Full URI: `http://www.w3.org/ns/ssn/Deployment` → `Deployment`
+ * - Compact CURIE: `ssn:Deployment` → `Deployment`
+ *
+ * Returns `undefined` if the value does not use the SSN vocabulary.
+ */
+function toSsnLocalName(featureType: string): string | undefined {
+  if (featureType.startsWith(SSN_NS)) {
+    return featureType.slice(SSN_NS.length);
+  }
+  if (featureType.startsWith(SSN_PREFIX)) {
+    return featureType.slice(SSN_PREFIX.length);
+  }
+  return undefined;
+}
+
+/**
  * Extracts the SensorML local name from a featureType URI.
  *
  * Handles full URI form:
@@ -153,7 +186,7 @@ function toSensormlLocalName(featureType: string): string | undefined {
 /**
  * Tests whether a GeoJSON Feature has a CSAPI-recognized `featureType`.
  *
- * Recognition covers the SOSA and SensorML vocabularies.
+ * Recognition covers the SOSA, SSN, and SensorML vocabularies.
  *
  * @param feature - A candidate GeoJSON Feature object.
  * @returns `true` if the feature has a recognized featureType.
@@ -169,8 +202,8 @@ export function isCSAPIFeature(feature: unknown): boolean {
  * SamplingFeature. Part 2 resources (DataStreams, Observations, Control Streams,
  * Commands) do not have a `featureType` property and will return `null`.
  *
- * Checks the SOSA vocabulary first, then the SensorML vocabulary.
- * Classification priority within SOSA: System > Deployment > Procedure > SamplingFeature.
+ * Checks the SOSA vocabulary first, then SSN, then SensorML.
+ * Classification priority within SOSA/SSN: System > Deployment > Procedure > SamplingFeature.
  * This ordering ensures that featureType values shared between System and
  * Procedure schemas (per OGC spec) resolve as System.
  *
@@ -192,6 +225,16 @@ export function getCSAPIResourceType(
     if (DEPLOYMENT_LOCAL_NAMES.has(sosaLocal)) return 'Deployment';
     if (PROCEDURE_LOCAL_NAMES.has(sosaLocal)) return 'Procedure';
     if (SAMPLING_FEATURE_LOCAL_NAMES.has(sosaLocal)) return 'SamplingFeature';
+    return null;
+  }
+
+  // Try SSN vocabulary (shares local names with SOSA)
+  const ssnLocal = toSsnLocalName(ft);
+  if (ssnLocal !== undefined) {
+    if (SYSTEM_LOCAL_NAMES.has(ssnLocal)) return 'System';
+    if (DEPLOYMENT_LOCAL_NAMES.has(ssnLocal)) return 'Deployment';
+    if (PROCEDURE_LOCAL_NAMES.has(ssnLocal)) return 'Procedure';
+    if (SAMPLING_FEATURE_LOCAL_NAMES.has(ssnLocal)) return 'SamplingFeature';
     return null;
   }
 
