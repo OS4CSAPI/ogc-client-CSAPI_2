@@ -30,8 +30,12 @@ Implementation of the 9 missing parse functions identified by the Parsing Covera
 - `parseControlStreamSchemaResponse()` — Parse `{ commandFormat, commandSchema }` wrapper returned by `/controlstreams/{id}/schema`; delegate `commandSchema` to existing SWE Common parser
 - Two new TypeScript interfaces: `DatastreamSchemaResponse` and `ControlStreamSchemaResponse`
 
-**Recursive Delegation Fix**
-- Update `parseComponentEntry()` in `physical-system.ts` and `aggregate-process.ts` to delegate to `parseSensorML30()` instead of only recursing for their own type — enabling all 4 SensorML process types to be parsed when embedded as inline components
+**Recursive Delegation Fix (Subsystem Parsing)**
+- In SensorML 3.0, subsystems are represented as inline `components` within a PhysicalSystem or AggregateProcess. A PhysicalSystem can contain subsystems of any process type — other PhysicalSystems, PhysicalComponents, SimpleProcesses, or AggregateProcesses. The same applies to AggregateProcess component lists.
+- Currently, `parseComponentEntry()` in `physical-system.ts` only recursively parses inline components that are themselves `PhysicalSystem` instances. `parseComponentEntry()` in `aggregate-process.ts` only recurses for `AggregateProcess` instances. All other inline component types (e.g., a SimpleProcess sensor embedded within a PhysicalSystem platform) are returned as raw unparsed JSON.
+- This means subsystem hierarchies involving mixed process types — which are common in real-world deployments (a PhysicalSystem weather station containing SimpleProcess temperature sensors and PhysicalComponent wind vanes) — are only partially parsed.
+- **Fix:** Update both `parseComponentEntry()` functions to delegate to `parseSensorML30()`, which already dispatches all 4 process types. This makes subsystem parsing complete regardless of the component's process type.
+- **Note:** Subdeployments are not affected — they are navigated via URL path (`/deployments/{id}/subdeployments`), not embedded in JSON, and are already fully parsed as individual GeoJSON Features by `extractCSAPIFeature()`.
 
 **Quality Standards**
 - Unit tests for each new parse function with fixtures derived from real server responses
