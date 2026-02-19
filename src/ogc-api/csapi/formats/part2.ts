@@ -5,19 +5,23 @@
  * - `parseDatastream()` — Task 2a
  * - `parseObservation()` — Task 3
  * - `parseControlStream()` — Task 4
+ * - `parseCommand()` + `normalizeStatusCode()` — Task 5a
  *
- * Subsequent tasks will add `parseCommand()` and `parseCommandStatus()` to this file.
+ * Subsequent tasks will add `parseCommandStatus()` to this file.
  *
  * @see https://docs.ogc.org/is/23-002/23-002.html — OGC API - Connected Systems Part 2
  * @module
  */
 
-import type {
-  ControlStream,
-  Datastream,
-  Observation,
-  ResourceLink,
-  TimeInterval,
+import {
+  CommandStatusCodes,
+  type Command,
+  type CommandStatusCode,
+  type ControlStream,
+  type Datastream,
+  type Observation,
+  type ResourceLink,
+  type TimeInterval,
 } from '../model.js';
 import { parseValidTime } from './geojson.js';
 
@@ -248,6 +252,113 @@ export function parseControlStream(json: unknown): ControlStream {
       ? (obj.links as ResourceLink[])
       : [],
   } satisfies ControlStream;
+}
+
+// ========================================
+// parseCommand
+// ========================================
+
+/**
+ * Validates a raw value against the 9 known {@link CommandStatusCodes}.
+ *
+ * Used by both `parseCommand()` (optional `currentStatus`) and
+ * `parseCommandStatus()` (required `statusCode`) to normalize raw
+ * status strings into the typed `CommandStatusCode` union.
+ *
+ * @param value - The raw value to validate.
+ * @returns A typed `CommandStatusCode` if the value matches one of the 9
+ *   known codes, `undefined` otherwise.
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html — status codes
+ */
+export function normalizeStatusCode(
+  value: unknown
+): CommandStatusCode | undefined {
+  if (
+    typeof value === 'string' &&
+    CommandStatusCodes.includes(value as CommandStatusCode)
+  ) {
+    return value as CommandStatusCode;
+  }
+  return undefined;
+}
+
+/**
+ * Transforms a raw JSON object from the `/commands` endpoint into a typed
+ * {@link Command} object using tolerant extraction (Postel's Law).
+ *
+ * **Time field asymmetry:** `issueTime` is a single ISO 8601 instant string
+ * (like Observation's time fields — direct pass-through, `parseValidTime()`
+ * is NOT used). `executionTime` is a time interval array parsed via
+ * `parseValidTime()` (like Datastream/ControlStream) — only present after
+ * a command has been executed.
+ *
+ * `currentStatus` is validated via {@link normalizeStatusCode} against the
+ * 9 known `CommandStatusCodes`; unrecognized values fall back to `undefined`.
+ *
+ * `parameters` is passed through as an opaque `Record` because its shape
+ * varies by control stream schema.
+ *
+ * Cross-reference field (`controlstream@id`) present in the raw JSON is
+ * intentionally ignored — it is not part of the `Command` interface.
+ *
+ * @param json - Raw JSON object from the `/commands` items array.
+ * @returns A typed {@link Command} object with all 7 fields extracted.
+ * @throws {Error} When `json` is not a non-null object.
+ *
+ * @example
+ * ```ts
+ * const raw = {
+ *   id: '0o1qr7kupc33cgmqj0',
+ *   'controlstream@id': '0o10',
+ *   issueTime: '2026-01-14T12:42:21.910351Z',
+ *   sender: 'urn:osh:process:datasink:commandstream#drone',
+ *   currentStatus: 'COMPLETED',
+ *   parameters: { locationVectorLLA: { Latitude: 24.18, Longitude: 120.65 } },
+ * };
+ * const cmd = parseCommand(raw);
+ * // cmd.issueTime === '2026-01-14T12:42:21.910351Z' (string pass-through)
+ * // cmd.currentStatus === 'COMPLETED' (normalized via normalizeStatusCode)
+ * // cmd.parameters === { locationVectorLLA: { Latitude: 24.18, Longitude: 120.65 } }
+ * ```
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+ */
+export function parseCommand(json: unknown): Command {
+  if (typeof json !== 'object' || json === null) {
+    throw new Error('parseCommand: input must be a non-null object');
+  }
+
+  const obj = json as Record<string, unknown>;
+
+  // executionTime: time interval parsed via parseValidTime() (only present after execution)
+  const executionTime: TimeInterval | undefined = parseValidTime(
+    obj.executionTime
+  );
+
+  // currentStatus: validate against known status codes
+  const currentStatus = normalizeStatusCode(obj.currentStatus);
+
+  // parameters: pass through if non-null object, fall back to empty object
+  const parametersValue = obj.parameters;
+  const parameters: Record<string, unknown> =
+    typeof parametersValue === 'object' &&
+    parametersValue !== null &&
+    !Array.isArray(parametersValue)
+      ? (parametersValue as Record<string, unknown>)
+      : {};
+
+  return {
+    id: typeof obj.id === 'string' ? obj.id : '',
+    issueTime: typeof obj.issueTime === 'string' ? obj.issueTime : '',
+    ...(executionTime !== undefined ? { executionTime } : {}),
+    ...(typeof obj.sender === 'string' ? { sender: obj.sender } : {}),
+    ...(currentStatus !== undefined ? { currentStatus } : {}),
+    parameters,
+    ...(Array.isArray(obj.links)
+      ? { links: obj.links as ResourceLink[] }
+      : {}),
+  } satisfies Command;
 }
 
 // ========================================
