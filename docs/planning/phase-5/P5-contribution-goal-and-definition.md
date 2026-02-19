@@ -18,8 +18,8 @@ The SensorML 3.0, SWE Common 3.0, and Part 1 GeoJSON parsers are fully implement
 Implementation of the 9 missing parse functions identified by the Parsing Coverage Audit, consisting of:
 
 **Resource Parsers**
-- `parseProperty()` — Transform flat Property JSON into typed `Property` object; parse `validTime` into `TimeInterval`
-- `parseDatastream()` — Parse `phenomenonTime` and `resultTime` into `TimeInterval` objects; validate schema references
+- `parseProperty()` — Transform flat Property JSON (not GeoJSON — Property is a SWE Common object) into typed `Property` object; validate/normalize `uniqueId`, `baseProperty`, `objectType`, `statistic`, and `links` fields. Property has no `validTime` per OGC 23-001 (`DerivedProperty` schema). See [validTime coverage analysis](../../research/phase-5/validtime-coverage-analysis.md) for full rationale.
+- `parseDatastream()` — Parse `phenomenonTime`, `resultTime`, and `validTime` into `TimeInterval` objects; validate schema references
 - `parseObservation()` — Parse time fields; expand cross-references (`foi@id`, `datastream@id`); handle `result` field with SWE Common schema-aware parsing via existing `validateAgainstSchema()`
 - `parseControlStream()` — Parse time fields into `TimeInterval`; validate control schema references
 - `parseCommand()` — Parse `executionTime` into `TimeInterval`; handle command parameters
