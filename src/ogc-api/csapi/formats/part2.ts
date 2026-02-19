@@ -6,8 +6,9 @@
  * - `parseObservation()` — Task 3
  * - `parseControlStream()` — Task 4
  * - `parseCommand()` + `normalizeStatusCode()` — Task 5a
+ * - `parseCommandStatus()` — Task 6
  *
- * Subsequent tasks will add `parseCommandStatus()` to this file.
+ * All 5 Part 2 resource parsers are now in this file.
  *
  * @see https://docs.ogc.org/is/23-002/23-002.html — OGC API - Connected Systems Part 2
  * @module
@@ -16,6 +17,7 @@
 import {
   CommandStatusCodes,
   type Command,
+  type CommandStatus,
   type CommandStatusCode,
   type ControlStream,
   type Datastream,
@@ -432,4 +434,78 @@ export function parseObservation(json: unknown): Observation {
       ? { links: obj.links as ResourceLink[] }
       : {}),
   } satisfies Observation;
+}
+
+// ========================================
+// parseCommandStatus
+// ========================================
+
+/**
+ * Transforms a raw JSON object from the `/commandStatuses` endpoint into a
+ * typed {@link CommandStatus} object using tolerant extraction (Postel's Law).
+ *
+ * Structurally parallel to {@link parseCommand} — both share the same time
+ * asymmetry: `reportTime` is a single ISO 8601 instant string (direct
+ * pass-through, `parseValidTime()` is NOT used), while `executionTime` is a
+ * time interval array parsed via `parseValidTime()`.
+ *
+ * **Key distinction from `parseCommand()`:** `statusCode` is **required**
+ * (non-optional on the `CommandStatus` interface). If the value is missing or
+ * unrecognized, it falls back to `'PENDING'` (the initial state) rather than
+ * `undefined`. This contrasts with `currentStatus` on Command, which is
+ * optional and falls back to `undefined`.
+ *
+ * The `executionTime` semantics vary by `statusCode` (planned time for
+ * `SCHEDULED`, start time for `EXECUTING`, actual range for `COMPLETED` /
+ * `FAILED`) but the parser does not interpret them — it only extracts the
+ * time interval.
+ *
+ * Cross-reference field (`command@id`) present in the raw JSON is
+ * intentionally ignored — it is not part of the `CommandStatus` interface.
+ *
+ * @param json - Raw JSON object from the `/commandStatuses` items array.
+ * @returns A typed {@link CommandStatus} object with all 7 fields extracted.
+ * @throws {Error} When `json` is not a non-null object.
+ *
+ * @example
+ * ```ts
+ * const raw = {
+ *   id: '0o507bcujr5gcdi2racar7kupc33emq3o0',
+ *   'command@id': '0o1qr7kupc33cgmqj0',
+ *   reportTime: '2026-01-14T12:42:21.928728Z',
+ *   statusCode: 'COMPLETED',
+ *   executionTime: ['2026-01-14T12:42:21.928726Z', '2026-01-14T12:42:21.928726Z'],
+ * };
+ * const cs = parseCommandStatus(raw);
+ * // cs.statusCode === 'COMPLETED'
+ * // cs.reportTime === '2026-01-14T12:42:21.928728Z' (string pass-through)
+ * ```
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+ */
+export function parseCommandStatus(json: unknown): CommandStatus {
+  if (typeof json !== 'object' || json === null) {
+    throw new Error('parseCommandStatus: input must be a non-null object');
+  }
+
+  const obj = json as Record<string, unknown>;
+
+  // executionTime: time interval parsed via parseValidTime()
+  const executionTime: TimeInterval | undefined = parseValidTime(
+    obj.executionTime
+  );
+
+  return {
+    id: typeof obj.id === 'string' ? obj.id : '',
+    reportTime: typeof obj.reportTime === 'string' ? obj.reportTime : '',
+    statusCode: normalizeStatusCode(obj.statusCode) ?? 'PENDING',
+    ...(typeof obj.percentCompletion === 'number'
+      ? { percentCompletion: obj.percentCompletion }
+      : {}),
+    ...(executionTime !== undefined ? { executionTime } : {}),
+    ...(typeof obj.message === 'string' ? { message: obj.message } : {}),
+    ...(Array.isArray(obj.links)
+      ? { links: obj.links as ResourceLink[] }
+      : {}),
+  } satisfies CommandStatus;
 }

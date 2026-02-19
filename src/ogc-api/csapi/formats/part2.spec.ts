@@ -1,17 +1,23 @@
 import {
   normalizeStatusCode,
   parseCommand,
+  parseCommandStatus,
   parseControlStream,
   parseDatastream,
   parseObservation,
 } from './part2.js';
-import type { Command, ControlStream, Datastream, Observation } from '../model.js';
+import type {
+  Command,
+  CommandStatus,
+  ControlStream,
+  Datastream,
+  Observation,
+} from '../model.js';
 
 /**
  * Tests for Part 2 parsers.
  *
  * This file houses tests for all Part 2 resource parsers and shared utilities.
- * Subsequent tasks will add `describe` blocks for parseCommandStatus.
  *
  * Datastream fixtures are derived from real OSH response data (Smoke Test #7).
  *
@@ -849,5 +855,168 @@ describe('normalizeStatusCode', () => {
 
   it('returns undefined for undefined input', () => {
     expect(normalizeStatusCode(undefined)).toBeUndefined();
+  });
+});
+
+/**
+ * Tests for parseCommandStatus().
+ *
+ * CommandStatus shares the time asymmetry with Command: `reportTime` is a
+ * string instant (pass-through), `executionTime` is a time interval. The key
+ * distinction is that `statusCode` is **required** with a `'PENDING'` fallback,
+ * unlike `currentStatus` on Command which is optional.
+ *
+ * Fixtures derived from real OSH response data (Smoke Test #10, Finding F38).
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+ */
+describe('parseCommandStatus', () => {
+  // Fixture derived from OSH Smoke Test #10 F38 response — full CommandStatus
+  const fullCommandStatusFixture = {
+    id: '0o507bcujr5gcdi2racar7kupc33emq3o0',
+    'command@id': '0o1qr7kupc33cgmqj0',
+    reportTime: '2026-01-14T12:42:21.928728Z',
+    statusCode: 'COMPLETED',
+    percentCompletion: 100,
+    executionTime: [
+      '2026-01-14T12:42:21.928726Z',
+      '2026-01-14T12:42:25.000000Z',
+    ],
+    message: 'Command executed successfully',
+    links: [
+      {
+        rel: 'self',
+        href: '/commandStatuses/0o507bcujr5gcdi2racar7kupc33emq3o0',
+        type: 'application/json',
+      },
+    ],
+  };
+
+  it('extracts all fields from a full CommandStatus (cross-refs excluded)', () => {
+    const result: CommandStatus = parseCommandStatus(
+      fullCommandStatusFixture
+    );
+
+    expect(result.id).toBe('0o507bcujr5gcdi2racar7kupc33emq3o0');
+    expect(result.reportTime).toBe('2026-01-14T12:42:21.928728Z');
+    expect(typeof result.reportTime).toBe('string');
+    expect(result.statusCode).toBe('COMPLETED');
+    expect(result.percentCompletion).toBe(100);
+    expect(result.executionTime?.start).toEqual(
+      new Date('2026-01-14T12:42:21.928726Z')
+    );
+    expect(result.executionTime?.end).toEqual(
+      new Date('2026-01-14T12:42:25.000000Z')
+    );
+    expect(result.message).toBe('Command executed successfully');
+    expect(result.links).toEqual([
+      {
+        rel: 'self',
+        href: '/commandStatuses/0o507bcujr5gcdi2racar7kupc33emq3o0',
+        type: 'application/json',
+      },
+    ]);
+
+    // Cross-reference field must NOT be in output
+    expect(result).not.toHaveProperty('command@id');
+  });
+
+  it('handles a minimal CommandStatus with only required fields', () => {
+    const input = {
+      id: 'cs-minimal',
+      reportTime: '2026-01-14T12:42:21.928728Z',
+      statusCode: 'PENDING',
+    };
+
+    const result: CommandStatus = parseCommandStatus(input);
+
+    expect(result.id).toBe('cs-minimal');
+    expect(result.reportTime).toBe('2026-01-14T12:42:21.928728Z');
+    expect(result.statusCode).toBe('PENDING');
+    expect(result.percentCompletion).toBeUndefined();
+    expect(result.executionTime).toBeUndefined();
+    expect(result.message).toBeUndefined();
+    expect(result.links).toBeUndefined();
+  });
+
+  it('normalizes a valid statusCode via normalizeStatusCode()', () => {
+    const input = {
+      id: 'cs-valid-status',
+      reportTime: '2026-01-14T12:42:21.928728Z',
+      statusCode: 'COMPLETED',
+    };
+
+    const result: CommandStatus = parseCommandStatus(input);
+
+    expect(result.statusCode).toBe('COMPLETED');
+  });
+
+  it('falls back to PENDING when statusCode is invalid or absent', () => {
+    // Invalid status code
+    const inputInvalid = {
+      id: 'cs-invalid-status',
+      reportTime: '2026-01-14T12:42:21.928728Z',
+      statusCode: 'UNKNOWN_STATUS',
+    };
+
+    const resultInvalid: CommandStatus = parseCommandStatus(inputInvalid);
+    expect(resultInvalid.statusCode).toBe('PENDING');
+    expect(resultInvalid.statusCode).not.toBeUndefined();
+
+    // Absent status code
+    const inputAbsent = {
+      id: 'cs-absent-status',
+      reportTime: '2026-01-14T12:42:21.928728Z',
+    };
+
+    const resultAbsent: CommandStatus = parseCommandStatus(inputAbsent);
+    expect(resultAbsent.statusCode).toBe('PENDING');
+    expect(resultAbsent.statusCode).not.toBeUndefined();
+  });
+
+  it('extracts percentCompletion when present as a number', () => {
+    const input = {
+      id: 'cs-percent',
+      reportTime: '2026-01-14T12:42:21.928728Z',
+      statusCode: 'EXECUTING',
+      percentCompletion: 75,
+    };
+
+    const result: CommandStatus = parseCommandStatus(input);
+
+    expect(result.percentCompletion).toBe(75);
+  });
+
+  it('parses executionTime as a TimeInterval via parseValidTime()', () => {
+    const input = {
+      id: 'cs-exec-time',
+      reportTime: '2026-01-14T12:42:21.928728Z',
+      statusCode: 'COMPLETED',
+      executionTime: [
+        '2026-01-14T12:42:21.928726Z',
+        '2026-01-14T12:42:25.000000Z',
+      ],
+    };
+
+    const result: CommandStatus = parseCommandStatus(input);
+
+    expect(result.executionTime?.start).toEqual(
+      new Date('2026-01-14T12:42:21.928726Z')
+    );
+    expect(result.executionTime?.end).toEqual(
+      new Date('2026-01-14T12:42:25.000000Z')
+    );
+  });
+
+  it('throws on non-object input', () => {
+    expect(() => parseCommandStatus(null)).toThrow(
+      'parseCommandStatus: input must be a non-null object'
+    );
+    expect(() => parseCommandStatus(42)).toThrow(
+      'parseCommandStatus: input must be a non-null object'
+    );
+    expect(() => parseCommandStatus('string')).toThrow(
+      'parseCommandStatus: input must be a non-null object'
+    );
   });
 });
