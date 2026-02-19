@@ -1,15 +1,17 @@
 import {
+  normalizeStatusCode,
+  parseCommand,
   parseControlStream,
   parseDatastream,
   parseObservation,
 } from './part2.js';
-import type { ControlStream, Datastream, Observation } from '../model.js';
+import type { Command, ControlStream, Datastream, Observation } from '../model.js';
 
 /**
  * Tests for Part 2 parsers.
  *
- * This file houses tests for all Part 2 resource parsers. Subsequent tasks
- * will add `describe` blocks for parseCommand and parseCommandStatus.
+ * This file houses tests for all Part 2 resource parsers and shared utilities.
+ * Subsequent tasks will add `describe` blocks for parseCommandStatus.
  *
  * Datastream fixtures are derived from real OSH response data (Smoke Test #7).
  *
@@ -624,5 +626,228 @@ describe('parseControlStream', () => {
     expect(() => parseControlStream('string')).toThrow(
       'parseControlStream: input must be a non-null object'
     );
+  });
+});
+
+/**
+ * Tests for parseCommand().
+ *
+ * Command has a unique time field asymmetry: `issueTime` is a string instant
+ * (pass-through), while `executionTime` is a time interval parsed via
+ * `parseValidTime()`. Fixtures derived from real OSH response data
+ * (Smoke Test #10, Finding F31).
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+ */
+describe('parseCommand', () => {
+  // Fixture derived from OSH Smoke Test #10 F31 response — full Command with all fields
+  const fullCommandFixture = {
+    id: '0o1qr7kupc33cgmqj0',
+    'controlstream@id': '0o10',
+    issueTime: '2026-01-14T12:42:21.910351Z',
+    executionTime: [
+      '2026-01-14T12:42:21.928726Z',
+      '2026-01-14T12:42:25.000000Z',
+    ],
+    sender: 'urn:osh:process:datasink:commandstream#drone',
+    currentStatus: 'COMPLETED',
+    parameters: {
+      locationVectorLLA: {
+        Latitude: 24.180652098637896,
+        Longitude: 120.64924139592034,
+        AltitudeAGL: 105.0,
+      },
+      returnToStart: false,
+      hoverSeconds: 0,
+    },
+    links: [
+      {
+        rel: 'self',
+        href: '/commands/0o1qr7kupc33cgmqj0',
+        type: 'application/json',
+      },
+    ],
+  };
+
+  it('extracts all fields from a full Command (cross-refs excluded)', () => {
+    const result: Command = parseCommand(fullCommandFixture);
+
+    expect(result.id).toBe('0o1qr7kupc33cgmqj0');
+    expect(result.issueTime).toBe('2026-01-14T12:42:21.910351Z');
+    expect(typeof result.issueTime).toBe('string');
+    expect(result.sender).toBe(
+      'urn:osh:process:datasink:commandstream#drone'
+    );
+    expect(result.currentStatus).toBe('COMPLETED');
+    expect(result.parameters).toEqual({
+      locationVectorLLA: {
+        Latitude: 24.180652098637896,
+        Longitude: 120.64924139592034,
+        AltitudeAGL: 105.0,
+      },
+      returnToStart: false,
+      hoverSeconds: 0,
+    });
+    expect(result.links).toEqual([
+      {
+        rel: 'self',
+        href: '/commands/0o1qr7kupc33cgmqj0',
+        type: 'application/json',
+      },
+    ]);
+
+    // Cross-reference field must NOT be in output
+    expect(result).not.toHaveProperty('controlstream@id');
+  });
+
+  it('handles a minimal Command with only required fields', () => {
+    const input = {
+      id: 'cmd-minimal',
+      issueTime: '2026-01-14T12:42:21.910351Z',
+      parameters: { action: 'takeoff' },
+    };
+
+    const result: Command = parseCommand(input);
+
+    expect(result.id).toBe('cmd-minimal');
+    expect(result.issueTime).toBe('2026-01-14T12:42:21.910351Z');
+    expect(result.parameters).toEqual({ action: 'takeoff' });
+    expect(result.executionTime).toBeUndefined();
+    expect(result.sender).toBeUndefined();
+    expect(result.currentStatus).toBeUndefined();
+    expect(result.links).toBeUndefined();
+  });
+
+  it('normalizes a valid currentStatus via normalizeStatusCode()', () => {
+    const input = {
+      id: 'cmd-status-valid',
+      issueTime: '2026-01-14T12:42:21.910351Z',
+      parameters: {},
+      currentStatus: 'COMPLETED',
+    };
+
+    const result: Command = parseCommand(input);
+
+    expect(result.currentStatus).toBe('COMPLETED');
+  });
+
+  it('omits currentStatus when value is unrecognized', () => {
+    const input = {
+      id: 'cmd-status-invalid',
+      issueTime: '2026-01-14T12:42:21.910351Z',
+      parameters: {},
+      currentStatus: 'UNKNOWN_STATUS',
+    };
+
+    const result: Command = parseCommand(input);
+
+    expect(result.currentStatus).toBeUndefined();
+    expect(result).not.toHaveProperty('currentStatus');
+  });
+
+  it('parses executionTime as a TimeInterval via parseValidTime()', () => {
+    const input = {
+      id: 'cmd-exec-time',
+      issueTime: '2026-01-14T12:42:21.910351Z',
+      parameters: {},
+      executionTime: [
+        '2026-01-14T12:42:21.928726Z',
+        '2026-01-14T12:42:25.000000Z',
+      ],
+    };
+
+    const result: Command = parseCommand(input);
+
+    // executionTime is a TimeInterval (not a string)
+    expect(result.executionTime?.start).toEqual(
+      new Date('2026-01-14T12:42:21.928726Z')
+    );
+    expect(result.executionTime?.end).toEqual(
+      new Date('2026-01-14T12:42:25.000000Z')
+    );
+  });
+
+  it('omits executionTime when absent (command not yet executed)', () => {
+    const input = {
+      id: 'cmd-no-exec',
+      issueTime: '2026-01-14T12:42:21.910351Z',
+      parameters: {},
+    };
+
+    const result: Command = parseCommand(input);
+
+    expect(result.executionTime).toBeUndefined();
+    expect(result).not.toHaveProperty('executionTime');
+  });
+
+  it('passes through complex nested parameters exactly', () => {
+    const nestedParams = {
+      locationVectorLLA: {
+        Latitude: 24.180652098637896,
+        Longitude: 120.64924139592034,
+        AltitudeAGL: 105.0,
+      },
+      returnToStart: false,
+      hoverSeconds: 0,
+    };
+    const input = {
+      id: 'cmd-params',
+      issueTime: '2026-01-14T12:42:21.910351Z',
+      parameters: nestedParams,
+    };
+
+    const result: Command = parseCommand(input);
+
+    expect(result.parameters).toEqual(nestedParams);
+  });
+
+  it('throws on non-object input', () => {
+    expect(() => parseCommand(null)).toThrow(
+      'parseCommand: input must be a non-null object'
+    );
+    expect(() => parseCommand(42)).toThrow(
+      'parseCommand: input must be a non-null object'
+    );
+    expect(() => parseCommand('string')).toThrow(
+      'parseCommand: input must be a non-null object'
+    );
+  });
+});
+
+/**
+ * Tests for normalizeStatusCode() utility.
+ *
+ * Shared utility used by parseCommand() (optional currentStatus) and
+ * parseCommandStatus() (required statusCode). Validates against the
+ * 9 CommandStatusCodes defined in model.ts.
+ */
+describe('normalizeStatusCode', () => {
+  it('returns typed CommandStatusCode for valid codes', () => {
+    expect(normalizeStatusCode('COMPLETED')).toBe('COMPLETED');
+    expect(normalizeStatusCode('PENDING')).toBe('PENDING');
+    expect(normalizeStatusCode('EXECUTING')).toBe('EXECUTING');
+    expect(normalizeStatusCode('ACCEPTED')).toBe('ACCEPTED');
+    expect(normalizeStatusCode('REJECTED')).toBe('REJECTED');
+    expect(normalizeStatusCode('SCHEDULED')).toBe('SCHEDULED');
+    expect(normalizeStatusCode('UPDATED')).toBe('UPDATED');
+    expect(normalizeStatusCode('CANCELED')).toBe('CANCELED');
+    expect(normalizeStatusCode('FAILED')).toBe('FAILED');
+  });
+
+  it('returns undefined for unrecognized strings', () => {
+    expect(normalizeStatusCode('UNKNOWN')).toBeUndefined();
+    expect(normalizeStatusCode('completed')).toBeUndefined();
+    expect(normalizeStatusCode('')).toBeUndefined();
+  });
+
+  it('returns undefined for non-string input', () => {
+    expect(normalizeStatusCode(42)).toBeUndefined();
+    expect(normalizeStatusCode(true)).toBeUndefined();
+    expect(normalizeStatusCode(null)).toBeUndefined();
+    expect(normalizeStatusCode({})).toBeUndefined();
+  });
+
+  it('returns undefined for undefined input', () => {
+    expect(normalizeStatusCode(undefined)).toBeUndefined();
   });
 });
