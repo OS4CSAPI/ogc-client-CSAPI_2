@@ -255,7 +255,7 @@ These files were added between smoke test #17 and the current review — they we
 
 ### [Phase 3.12 F7] GAP: Barrel tests missing response + classification exports
 
-**Status:** ⚠️ STILL OPEN. `formats/index.spec.ts` still does not test `parseCollectionResponse`, `inferResourceTypeFromPath`, or `classifyFeature` barrel-level exports. Individual module tests provide full coverage; only the barrel accessibility test is missing.
+**Status:** ⚠️ ~~STILL OPEN~~ **CORRECTION (2026-02-18): This finding was stale at the time of review.** Issues #67 and #68 added `parseCollectionResponse`, `classifyFeature`, and `inferResourceTypeFromPath` to the barrel, and their barrel-level accessibility tests were added to `formats/index.spec.ts` as part of those implementations — before this Phase 3.13 review was written. The review mechanically carried forward the Phase 3.12 finding without verifying it against the current codebase. The tests already existed when this report was published.
 
 ---
 
@@ -501,7 +501,7 @@ The 113 lines added to `src/index.ts` export all public CSAPI symbols:
 
 ### Fix Now (before next issue)
 
-1. **[Phase 3.12 F7] Add barrel tests for response + classification exports** to `formats/index.spec.ts`. ~10 lines. This remains from the prior review and is trivial to address.
+1. ~~**[Phase 3.12 F7] Add barrel tests for response + classification exports** to `formats/index.spec.ts`. ~10 lines. This remains from the prior review and is trivial to address.~~ **CORRECTION (2026-02-18): This item was already resolved.** The barrel tests for `parseCollectionResponse`, `classifyFeature`, and `inferResourceTypeFromPath` were added during Issues #67/#68 implementation. This finding was stale — it was carried forward from Phase 3.12 without verifying against the current codebase.
 
 ### Fix Before Phase 4
 
