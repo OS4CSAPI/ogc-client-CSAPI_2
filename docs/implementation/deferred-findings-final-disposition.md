@@ -48,9 +48,38 @@ Pagination touches `shared` and `ogc-api` — that's upstream territory. If we c
 
 ### F14 — Properties Not Discoverable via Links
 
-**Verdict: Minor. Separate issue if desired, but low priority.**
+**Verdict: No remaining work. Already handled as well as it can be.**
 
-Neither server advertises `/properties` through any of the three link detection conventions our `scanCsapiLinks()` supports. However, the endpoint exists and works on both servers — properties are discoverable via direct URL construction (`/collections/{id}/properties`). The `parseProperty()` function being built in Phase 5 Task 1 will handle the response once a consumer reaches the endpoint. The discoverability gap is real but minor — it would require a fallback/probing strategy for resource types servers implement but don't advertise via links.
+This finding was initially flagged as needing a separate issue, but after thorough review of the actual code, there is nothing to fix.
+
+#### What's Happening
+
+Neither OSH nor 52North advertises `/properties` through link relations in their collection or root documents. Our `scanCsapiLinks()` function checks all three OGC link conventions (`ogc-cs:properties`, plain `"properties"` rel, and `rel: "items"` with `/properties` in href) and finds nothing — because there's nothing to find. The servers simply don't include the link.
+
+#### What We've Already Done
+
+1. **`properties` is in our known resource types list.** `CSAPIResourceTypes` in `model.ts` includes `'properties'`. If any server starts advertising properties via any of the three OGC link conventions, our code will discover it automatically with zero changes.
+
+2. **`scanCsapiLinks()` already scans for it.** The function is convention-aware, not resource-type-aware. It doesn't skip properties — it checks every link against all three conventions. The issue is that no link matches, not that our scanner ignores properties.
+
+3. **Documented the workaround.** The `scanCsapiLinks()` JSDoc explicitly states: *"Servers that do not use any of these three conventions will produce an empty map. In that case, consumers should supply explicit resource URLs via the `resourceUrls` constructor parameter of CSAPIQueryBuilder."*
+
+4. **The QueryBuilder already supports direct URL construction.** A consumer can call `builder.getProperties()` directly — it builds the URL from the base path. Discovery via links is a convenience, not a requirement.
+
+5. **Phase 5 Task 1 builds `parseProperty()`** ([Issue #78](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/78)), which will handle the response data once a consumer reaches the endpoint by any means.
+
+#### Why There's Nothing More To Do
+
+The only theoretical "fix" would be **probing** — automatically trying `/properties` even when no link advertises it. This is a bad idea because:
+
+- It's speculative HTTP requests (trying URLs that might not exist), which is inconsistent with how the upstream `ogc-client` library handles resource discovery
+- It would cause unexpected 404s on servers that genuinely don't implement properties
+- It changes the library's design philosophy from "discover via advertised links" to "guess and probe"
+- The workaround already exists — consumers provide the URL directly via `resourceUrls` or call `getProperties()` on the QueryBuilder
+
+#### Scope Principle
+
+The gap is on the server side (not advertising a working endpoint), not in our scanning logic. Our scanner is spec-correct: it implements all three OGC link relation conventions. Adding a probing fallback would be a design change that goes beyond the CSAPI parser/client contribution scope.
 
 ---
 
@@ -99,7 +128,7 @@ Adding server-specific workarounds (e.g., "if server is 52North then do X") woul
 | **P4-F2** | Phase 4.2 scope | Preserve server-assigned uid on PUT |
 | **F82** | Already mitigated | None |
 | **F5** | Out of scope | None — upstream concern |
-| **F14** | Minor, separate issue | Optional — fallback probing strategy |
+| **F14** | Already handled | None — server-side gap, scanner is spec-correct, workaround exists |
 | **F84** | Already handled | None — upstream bug, reported, fallback works |
 
-**Net result:** Of the 6 deferred findings, 2 are real Phase 4.2 work (P4-F1, P4-F2), and 4 require no further action from our CSAPI contribution (F82 mitigated, F5 out of scope, F14 minor/optional, F84 complete).
+**Net result:** Of the 6 deferred findings, 2 are real Phase 4.2 work (P4-F1, P4-F2), and 4 require no further action from our CSAPI contribution (F82 mitigated, F5 out of scope, F14 complete, F84 complete).

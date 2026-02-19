@@ -58,7 +58,7 @@ Six findings are **not covered** by the P5 ROADMAP:
 | **F5** | Missing pagination metadata | Pagination touches upstream `shared`/`ogc-api` code — out of scope | Deferred | None (out of scope) |
 | **P4-F1** | Command POST hangs (OSH holds connection open) | CRUD/write-path concern — needs timeout strategy or SSE-aware handler | Moderate — new Phase 4 finding | Phase 4.2 |
 | **F84** | 52N procedure misclassification (`sosa:Sensor`) | Upstream server bug, reported, fallback already works — no remaining work | Deferred — still present | None (complete) |
-| **F14** | Properties not discoverable via links | Discovery/link-scanning concern, not a parser gap. Minor — endpoint works via direct URL | Deferred | Optional separate issue |
+| **F14** | Properties not discoverable via links | Server-side gap — scanner is spec-correct, workaround exists, no remaining work | Deferred — still present | None (complete) |
 
 ### Disposition Summary
 
@@ -66,9 +66,8 @@ Six findings are **not covered** by the P5 ROADMAP:
 |----------|-------|----------|
 | **Covered by P5** | 5 | F27, F30, F31, F33, F38 |
 | **Phase 4.2 CRUD concerns** | 2 | P4-F1, P4-F2 |
-| **Already mitigated (no action needed)** | 2 | F82, F84 |
+| **Already mitigated (no action needed)** | 3 | F82, F84, F14 |
 | **Out of scope (upstream concern)** | 1 | F5 |
-| **Minor / optional separate issue** | 1 | F14 |
 | **Total** | **11** | |
 
 ---
@@ -83,9 +82,11 @@ Six findings are **not covered** by the P5 ROADMAP:
 
 4. **Three findings (F5, F14, F84) remain deferred.** Each would need its own scoped issue:
    - **F5 (pagination):** Would require enhancing how the library surfaces `numberMatched`/`numberReturned` to consumers.
-   - **F14 (properties discovery):** Would require a fallback/probing strategy for resource types servers implement but don't advertise via links.
+   - **F14 (properties discovery):** No remaining work — see clarification below.
    - **F84 (procedure misclassification):** No remaining work — see clarification below.
 
 > **⚠️ Note on F5 (pagination):** F5 is risky because pagination touches `shared` and `ogc-api` — that's upstream territory. If we change how pagination detection works to handle missing `links` keys, we risk breaking WMS/WFS/WMTS pagination. F5 should not have been included on the "fixable issues" list. It is either an upstream change or needs very careful scoping to avoid regressions in non-CSAPI endpoints.
 
 > **✅ Note on F84 (procedure misclassification):** After thorough review, F84 requires no further work. The root cause is upstream (52North returns `sosa:Sensor` for procedures — reported as [Issue #16](https://github.com/52North/connected-systems-pygeoapi/issues/16)). Our `classifyFeature()` already provides an endpoint-context fallback ([Issue #50](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/50)). The only theoretical fix — letting endpoint hints override featureType — would break classification for spec-compliant servers. The misclassification affects one resource on one server and will auto-resolve when 52North fixes their data. See [Deferred Findings — Final Disposition](deferred-findings-final-disposition.md#f84--52n-procedure-misclassification) for the full analysis.
+
+> **✅ Note on F14 (properties not discoverable):** After thorough review, F14 requires no further work. `properties` is already in our `CSAPIResourceTypes` list and `scanCsapiLinks()` already checks all three OGC link conventions for it. The gap is server-side — neither OSH nor 52North includes a properties link in their documents. The workaround already exists: consumers can use the `resourceUrls` parameter or call `getProperties()` directly. The only theoretical fix — speculative URL probing — would be inconsistent with the upstream library's design and could cause unexpected 404s. See [Deferred Findings — Final Disposition](deferred-findings-final-disposition.md#f14--properties-not-discoverable-via-links) for the full analysis.
