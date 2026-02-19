@@ -16,6 +16,8 @@
  * @module
  */
 
+import type { AbstractDataComponent } from './types.js';
+
 // ========================================
 // Primitive Helpers
 // ========================================
@@ -41,10 +43,13 @@ export function isRecord(
  * Note: `components.ts` has its own extended variant that also extracts
  * `referenceFrame` and `axisID` for coordinate-aware components.
  */
+// Return type narrowed from Record<string, unknown> to
+// Partial<AbstractDataComponent> to enable type-safe construction
+// in consumer parsers (Issue #72, #74).
 export function parseBaseProperties(
   json: Record<string, unknown>
-): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
+): Partial<AbstractDataComponent> {
+  const result: Partial<AbstractDataComponent> = {};
   if (typeof json.id === 'string') result.id = json.id;
   if (typeof json.label === 'string') result.label = json.label;
   if (typeof json.description === 'string') result.description = json.description;
