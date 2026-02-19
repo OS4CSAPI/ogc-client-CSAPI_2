@@ -7,6 +7,8 @@
 - [Smoke Test #19 (Post Phase 4.1)](live-server-smoke-test-post-phase-4.1.md)
 - [Server Quirks Reference](server-quirks-reference.md)
 
+**See also:** [Deferred Findings — Final Disposition](deferred-findings-final-disposition.md) for definitive verdicts on all 6 findings not covered by P5.
+
 ---
 
 ## Findings Under Review
@@ -53,10 +55,10 @@ Six findings are **not covered** by the P5 ROADMAP:
 |---------|-------------|---------------|------------------------|-------------------|
 | **P4-F2** | OSH PUT rejects uid changes | CRUD/write-path concern, not a parser gap | Moderate — new Phase 4 finding | Phase 4.2 |
 | **F82** | OSH items envelope sometimes omits `links` | Already mitigated — `parseCollectionResponse()` defaults to `[]` | Confirmed Low — no code change needed | None (resolved) |
-| **F5** | Missing pagination metadata | Pagination metadata handling is beyond parser completion scope | Deferred | TBD |
+| **F5** | Missing pagination metadata | Pagination touches upstream `shared`/`ogc-api` code — out of scope | Deferred | None (out of scope) |
 | **P4-F1** | Command POST hangs (OSH holds connection open) | CRUD/write-path concern — needs timeout strategy or SSE-aware handler | Moderate — new Phase 4 finding | Phase 4.2 |
-| **F84** | 52N procedure misclassification (`sosa:Sensor`) | Upstream server bug — filed as [Issue #16](https://github.com/52North/connected-systems-pygeoapi/issues/16) on 52North. Client-side workaround (endpoint-context classification) would be a separate issue | Deferred — still present | Separate issue |
-| **F14** | Properties not discoverable via links | Discovery/link-scanning concern, not a parser gap. `parseProperty()` (Task 1) is in P5, but the discoverability problem is separate | Deferred | Separate issue |
+| **F84** | 52N procedure misclassification (`sosa:Sensor`) | Upstream server bug, reported, fallback already works — no remaining work | Deferred — still present | None (complete) |
+| **F14** | Properties not discoverable via links | Discovery/link-scanning concern, not a parser gap. Minor — endpoint works via direct URL | Deferred | Optional separate issue |
 
 ### Disposition Summary
 
@@ -64,8 +66,9 @@ Six findings are **not covered** by the P5 ROADMAP:
 |----------|-------|----------|
 | **Covered by P5** | 5 | F27, F30, F31, F33, F38 |
 | **Phase 4.2 CRUD concerns** | 2 | P4-F1, P4-F2 |
-| **Already mitigated (no action needed)** | 1 | F82 |
-| **Deferred — needs separate issue** | 3 | F5, F14, F84 |
+| **Already mitigated (no action needed)** | 2 | F82, F84 |
+| **Out of scope (upstream concern)** | 1 | F5 |
+| **Minor / optional separate issue** | 1 | F14 |
 | **Total** | **11** | |
 
 ---
@@ -81,4 +84,8 @@ Six findings are **not covered** by the P5 ROADMAP:
 4. **Three findings (F5, F14, F84) remain deferred.** Each would need its own scoped issue:
    - **F5 (pagination):** Would require enhancing how the library surfaces `numberMatched`/`numberReturned` to consumers.
    - **F14 (properties discovery):** Would require a fallback/probing strategy for resource types servers implement but don't advertise via links.
-   - **F84 (procedure misclassification):** The upstream fix is pending on 52North. A client-side workaround using endpoint-context classification is possible but would be CSAPI-specific scope.
+   - **F84 (procedure misclassification):** No remaining work — see clarification below.
+
+> **⚠️ Note on F5 (pagination):** F5 is risky because pagination touches `shared` and `ogc-api` — that's upstream territory. If we change how pagination detection works to handle missing `links` keys, we risk breaking WMS/WFS/WMTS pagination. F5 should not have been included on the "fixable issues" list. It is either an upstream change or needs very careful scoping to avoid regressions in non-CSAPI endpoints.
+
+> **✅ Note on F84 (procedure misclassification):** After thorough review, F84 requires no further work. The root cause is upstream (52North returns `sosa:Sensor` for procedures — reported as [Issue #16](https://github.com/52North/connected-systems-pygeoapi/issues/16)). Our `classifyFeature()` already provides an endpoint-context fallback ([Issue #50](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/50)). The only theoretical fix — letting endpoint hints override featureType — would break classification for spec-compliant servers. The misclassification affects one resource on one server and will auto-resolve when 52North fixes their data. See [Deferred Findings — Final Disposition](deferred-findings-final-disposition.md#f84--52n-procedure-misclassification) for the full analysis.
