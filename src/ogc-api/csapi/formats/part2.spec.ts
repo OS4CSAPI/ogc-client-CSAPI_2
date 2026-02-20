@@ -131,6 +131,17 @@ describe('parseDatastream', () => {
     expect(result.resultType).toBeNull();
   });
 
+  it('omits type field when value is not a recognized enum', () => {
+    const input = {
+      id: 'ds-unknown-type',
+      name: 'Unknown Type Test',
+      outputName: 'test-output',
+      type: 'foobar',
+    };
+    const result = parseDatastream(input);
+    expect(result).not.toHaveProperty('type');
+  });
+
   it('parses all 3 time fields correctly (including "now" sentinel)', () => {
     const input = {
       id: 'ds-time',
