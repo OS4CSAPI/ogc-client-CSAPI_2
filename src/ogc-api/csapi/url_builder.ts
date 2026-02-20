@@ -393,14 +393,35 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for updating an existing system (PUT target).
    *
+   * @remarks
+   * **uid strictness (P4-F2):** The server rejects PUT requests with
+   * `400 "Feature UID cannot be changed"` if the `uid` in the request body
+   * does not byte-for-byte match the server-stored value. Consumers must
+   * preserve the exact `uid` from the original creation response or GET the
+   * resource before PUT to read the current uid.
+   *
+   * Recommended patterns:
+   * - **Preserve from creation:** Store the `uid` returned in the POST
+   *   `Location` header or GET response; reuse it unchanged in the PUT body.
+   * - **GET-then-PUT:** Fetch the current resource, merge your changes into
+   *   the fetched body, then PUT it back (see example below).
+   *
    * @param id - The system resource identifier to update.
    * @returns URL string for the individual system endpoint.
    * @throws {EndpointError} If 'systems' is not available on this collection.
    *
    * @example
    * ```ts
-   * const url = builder.updateSystem('abc123');
-   * // PUT to => "https://example.com/collections/iot/systems/abc123"
+   * // Safe update pattern: GET then PUT
+   * const getUrl = builder.getSystem('abc123');
+   * const current = await fetch(getUrl).then(r => r.json());
+   * current.properties.name = 'Updated Name';
+   * // uid is preserved from GET response
+   * await fetch(builder.updateSystem('abc123'), {
+   *   method: 'PUT',
+   *   headers: { 'Content-Type': 'application/geo+json' },
+   *   body: JSON.stringify(current),
+   * });
    * ```
    *
    * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
@@ -738,6 +759,14 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for updating an existing deployment (PUT target).
    *
+   * @remarks
+   * **uid strictness (P4-F2):** The server rejects PUT requests with
+   * `400 "Feature UID cannot be changed"` if the `uid` in the request body
+   * does not byte-for-byte match the server-stored value. Consumers must
+   * preserve the exact `uid` from the original creation response or GET the
+   * resource before PUT to read the current uid.
+   * See {@link updateSystem} for a full GET-then-PUT example.
+   *
    * @param id - The deployment resource identifier to update.
    * @returns URL string for the individual deployment endpoint.
    * @throws {EndpointError} If 'deployments' is not available on this collection.
@@ -930,6 +959,14 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for updating an existing procedure (PUT target).
    *
+   * @remarks
+   * **uid strictness (P4-F2):** The server rejects PUT requests with
+   * `400 "Feature UID cannot be changed"` if the `uid` in the request body
+   * does not byte-for-byte match the server-stored value. Consumers must
+   * preserve the exact `uid` from the original creation response or GET the
+   * resource before PUT to read the current uid.
+   * See {@link updateSystem} for a full GET-then-PUT example.
+   *
    * @param id - The procedure resource identifier to update.
    * @returns URL string for the individual procedure endpoint.
    * @throws {EndpointError} If 'procedures' is not available on this collection.
@@ -1098,6 +1135,14 @@ export default class CSAPIQueryBuilder {
 
   /**
    * Returns the URL for updating an existing sampling feature (PUT target).
+   *
+   * @remarks
+   * **uid strictness (P4-F2):** The server rejects PUT requests with
+   * `400 "Feature UID cannot be changed"` if the `uid` in the request body
+   * does not byte-for-byte match the server-stored value. Consumers must
+   * preserve the exact `uid` from the original creation response or GET the
+   * resource before PUT to read the current uid.
+   * See {@link updateSystem} for a full GET-then-PUT example.
    *
    * @param id - The sampling feature resource identifier to update.
    * @returns URL string for the individual sampling feature endpoint.
@@ -1426,6 +1471,15 @@ export default class CSAPIQueryBuilder {
    *
    * Caution: schema changes may affect existing observations.
    *
+   * @remarks
+   * **uid strictness (P4-F2):** The server rejects PUT requests with
+   * `400 "Feature UID cannot be changed"` if the `uid` in the request body
+   * does not byte-for-byte match the server-stored value. Consumers must
+   * preserve the exact `uid` from the original creation response or GET the
+   * resource before PUT to read the current uid.
+   * See {@link updateSystem} for a full GET-then-PUT example
+   * (use `Content-Type: application/json` for Part 2 resources).
+   *
    * @param id - The datastream resource identifier.
    * @returns URL string for the datastream update endpoint (PUT).
    * @throws {EndpointError} If 'datastreams' is not available on this collection.
@@ -1657,6 +1711,15 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for updating an existing observation.
    *
+   * @remarks
+   * **uid strictness (P4-F2):** The server rejects PUT requests with
+   * `400 "Feature UID cannot be changed"` if the `uid` in the request body
+   * does not byte-for-byte match the server-stored value. Consumers must
+   * preserve the exact `uid` from the original creation response or GET the
+   * resource before PUT to read the current uid.
+   * See {@link updateSystem} for a full GET-then-PUT example
+   * (use `Content-Type: application/json` for Part 2 resources).
+   *
    * @param id - The observation resource identifier.
    * @returns URL string for the observation update endpoint (PUT).
    * @throws {EndpointError} If 'observations' is not available on this collection.
@@ -1860,6 +1923,15 @@ export default class CSAPIQueryBuilder {
    * Returns the URL for updating an existing control stream.
    *
    * Caution: schema changes may affect pending commands.
+   *
+   * @remarks
+   * **uid strictness (P4-F2):** The server rejects PUT requests with
+   * `400 "Feature UID cannot be changed"` if the `uid` in the request body
+   * does not byte-for-byte match the server-stored value. Consumers must
+   * preserve the exact `uid` from the original creation response or GET the
+   * resource before PUT to read the current uid.
+   * See {@link updateSystem} for a full GET-then-PUT example
+   * (use `Content-Type: application/json` for Part 2 resources).
    *
    * @param id - The control stream resource identifier.
    * @returns URL string for the control stream update endpoint (PUT).
@@ -2074,6 +2146,15 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for updating an existing command.
    *
+   * @remarks
+   * **uid strictness (P4-F2):** The server rejects PUT requests with
+   * `400 "Feature UID cannot be changed"` if the `uid` in the request body
+   * does not byte-for-byte match the server-stored value. Consumers must
+   * preserve the exact `uid` from the original creation response or GET the
+   * resource before PUT to read the current uid.
+   * See {@link updateSystem} for a full GET-then-PUT example
+   * (use `Content-Type: application/json` for Part 2 resources).
+   *
    * @param id - The command resource identifier.
    * @returns URL string for the command update endpoint (PUT).
    * @throws {EndpointError} If 'commands' is not available on this collection.
@@ -2139,6 +2220,15 @@ export default class CSAPIQueryBuilder {
    *
    * Used for system-generated status updates as a command progresses
    * through its lifecycle (e.g., from PENDING to EXECUTING).
+   *
+   * @remarks
+   * **uid strictness (P4-F2):** The server rejects PUT/PATCH requests with
+   * `400 "Feature UID cannot be changed"` if the `uid` in the request body
+   * does not byte-for-byte match the server-stored value. Consumers must
+   * preserve the exact `uid` from the original creation response or GET the
+   * resource before updating to read the current uid.
+   * See {@link updateSystem} for a full GET-then-PUT example
+   * (use `Content-Type: application/json` for Part 2 resources).
    *
    * @param id - The command resource identifier.
    * @returns URL string for the command status update endpoint (PATCH).
