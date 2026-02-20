@@ -1,5 +1,7 @@
 import { parseDatastreamSchemaResponse } from './schema-response.js';
+import { parseControlStreamSchemaResponse } from './schema-response.js';
 import type { DatastreamSchemaResponse } from '../model.js';
+import type { ControlStreamSchemaResponse } from '../model.js';
 import type {
   DataRecord,
   SweQuantity,
@@ -7,6 +9,9 @@ import type {
   SweText,
   JSONEncoding,
   TypedDataField,
+  SweBoolean,
+  SweCount,
+  SweCategory,
 } from './swecommon/types.js';
 
 describe('parseDatastreamSchemaResponse', () => {
@@ -204,6 +209,180 @@ describe('parseDatastreamSchemaResponse', () => {
     );
     expect(() => parseDatastreamSchemaResponse(42)).toThrow(
       'parseDatastreamSchemaResponse: input must be a non-null object'
+    );
+  });
+});
+
+// ================================================================
+// parseControlStreamSchemaResponse — Task 7b
+// ================================================================
+
+describe('parseControlStreamSchemaResponse', () => {
+  // ========================================
+  // Test 1: JSON format response
+  // ========================================
+
+  it('parses a JSON format response with parametersSchema (DataRecord + Boolean + Count + Category)', () => {
+    const raw = {
+      commandFormat: 'application/json',
+      parametersSchema: {
+        type: 'DataRecord',
+        name: 'DroneCommand',
+        label: 'Drone Command Parameters',
+        fields: [
+          {
+            type: 'Boolean',
+            name: 'arm',
+            label: 'Arm Motors',
+          },
+          {
+            type: 'Count',
+            name: 'retryCount',
+            label: 'Retry Count',
+          },
+          {
+            type: 'Category',
+            name: 'mode',
+            label: 'Flight Mode',
+          },
+        ],
+      },
+    };
+
+    const result: ControlStreamSchemaResponse =
+      parseControlStreamSchemaResponse(raw);
+
+    // commandFormat extracted as string
+    expect(result.commandFormat).toBe('application/json');
+
+    // parametersSchema is a parsed DataRecord (not raw JSON)
+    expect(result.parametersSchema).toBeDefined();
+    const dr = result.parametersSchema as DataRecord;
+    expect(dr.type).toBe('DataRecord');
+    expect(dr.label).toBe('Drone Command Parameters');
+    expect(dr.fields).toHaveLength(3);
+
+    // Field 0: Boolean
+    const f0 = dr.fields[0] as TypedDataField;
+    expect(f0.name).toBe('arm');
+    const bool = f0.component as SweBoolean;
+    expect(bool.type).toBe('Boolean');
+
+    // Field 1: Count
+    const f1 = dr.fields[1] as TypedDataField;
+    expect(f1.name).toBe('retryCount');
+    const cnt = f1.component as SweCount;
+    expect(cnt.type).toBe('Count');
+
+    // Field 2: Category
+    const f2 = dr.fields[2] as TypedDataField;
+    expect(f2.name).toBe('mode');
+    const cat = f2.component as SweCategory;
+    expect(cat.type).toBe('Category');
+
+    // encoding absent
+    expect(result.encoding).toBeUndefined();
+  });
+
+  // ========================================
+  // Test 2: Missing parametersSchema
+  // ========================================
+
+  it('returns only commandFormat when parametersSchema is absent', () => {
+    const raw = {
+      commandFormat: 'application/json',
+    };
+
+    const result = parseControlStreamSchemaResponse(raw);
+
+    expect(result.commandFormat).toBe('application/json');
+    expect(result.parametersSchema).toBeUndefined();
+    expect(result.encoding).toBeUndefined();
+  });
+
+  // ========================================
+  // Test 3: Nested DataRecord (DataRecord within DataRecord)
+  // ========================================
+
+  it('parses nested DataRecord with Quantity + Boolean fields', () => {
+    const raw = {
+      commandFormat: 'application/json',
+      parametersSchema: {
+        type: 'DataRecord',
+        name: 'NavCommand',
+        fields: [
+          {
+            type: 'DataRecord',
+            name: 'waypoint',
+            fields: [
+              {
+                type: 'Quantity',
+                name: 'lat',
+                uom: { code: 'deg' },
+              },
+              {
+                type: 'Quantity',
+                name: 'lon',
+                uom: { code: 'deg' },
+              },
+              {
+                type: 'Quantity',
+                name: 'alt',
+                uom: { code: 'm' },
+              },
+            ],
+          },
+          {
+            type: 'Boolean',
+            name: 'immediate',
+          },
+        ],
+      },
+    };
+
+    const result = parseControlStreamSchemaResponse(raw);
+
+    const dr = result.parametersSchema as DataRecord;
+    expect(dr.type).toBe('DataRecord');
+    expect(dr.fields).toHaveLength(2);
+
+    // Field 0: Nested DataRecord
+    const wf = dr.fields[0] as TypedDataField;
+    expect(wf.name).toBe('waypoint');
+    const nested = wf.component as DataRecord;
+    expect(nested.type).toBe('DataRecord');
+    expect(nested.fields).toHaveLength(3);
+
+    const nf0 = nested.fields[0] as TypedDataField;
+    expect(nf0.name).toBe('lat');
+    expect((nf0.component as SweQuantity).uom).toEqual({ code: 'deg' });
+
+    const nf2 = nested.fields[2] as TypedDataField;
+    expect(nf2.name).toBe('alt');
+    expect((nf2.component as SweQuantity).uom).toEqual({ code: 'm' });
+
+    // Field 1: Boolean
+    const bf = dr.fields[1] as TypedDataField;
+    expect(bf.name).toBe('immediate');
+    expect((bf.component as SweBoolean).type).toBe('Boolean');
+  });
+
+  // ========================================
+  // Test 4: Non-object input
+  // ========================================
+
+  it('throws on non-object input', () => {
+    expect(() => parseControlStreamSchemaResponse(null)).toThrow(
+      'parseControlStreamSchemaResponse: input must be a non-null object'
+    );
+    expect(() => parseControlStreamSchemaResponse(undefined)).toThrow(
+      'parseControlStreamSchemaResponse: input must be a non-null object'
+    );
+    expect(() => parseControlStreamSchemaResponse('string')).toThrow(
+      'parseControlStreamSchemaResponse: input must be a non-null object'
+    );
+    expect(() => parseControlStreamSchemaResponse(42)).toThrow(
+      'parseControlStreamSchemaResponse: input must be a non-null object'
     );
   });
 });

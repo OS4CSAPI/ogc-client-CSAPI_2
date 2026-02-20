@@ -1,8 +1,9 @@
 /**
  * Schema response parsers for OGC API - Connected Systems.
  *
- * This file houses the parse function for the datastream schema response:
+ * This file houses the parse functions for schema responses:
  * - `parseDatastreamSchemaResponse()` — Task 7a
+ * - `parseControlStreamSchemaResponse()` — Task 7b
  *
  * The parser wraps the `/datastreams/{id}/schema` endpoint response,
  * delegating `resultSchema`/`recordSchema` to the existing
@@ -13,7 +14,10 @@
  * @module
  */
 
-import type { DatastreamSchemaResponse } from '../model.js';
+import type {
+  DatastreamSchemaResponse,
+  ControlStreamSchemaResponse,
+} from '../model.js';
 import { parseSWEComponent } from './swecommon/parser.js';
 import { parseEncoding } from './swecommon/data-array.js';
 
@@ -97,4 +101,77 @@ export function parseDatastreamSchemaResponse(
     ...(recordSchema !== undefined ? { recordSchema } : {}),
     ...(encoding !== undefined ? { encoding } : {}),
   } satisfies DatastreamSchemaResponse;
+}
+
+/**
+ * Transforms a raw JSON object from the `/controlstreams/{id}/schema` endpoint
+ * into a typed {@link ControlStreamSchemaResponse} object using tolerant
+ * extraction (Postel's Law).
+ *
+ * The schema response varies by command format:
+ * - **JSON format** (`application/json`): contains `parametersSchema` — a
+ *   SWE Common component describing the command parameters structure.
+ *
+ * Schema fields are delegated to the existing SWE Common parser layer:
+ * - `parametersSchema` → {@link parseSWEComponent}
+ * - `encoding` → {@link parseEncoding}
+ *
+ * Fields are only delegated when present and are non-null objects. If absent
+ * or not an object, the field is omitted from the result (`undefined`).
+ *
+ * @param json - Raw JSON object from the `/controlstreams/{id}/schema` endpoint.
+ * @returns A typed {@link ControlStreamSchemaResponse} object with up to 3 fields.
+ * @throws {Error} When `json` is not a non-null object.
+ *
+ * @example
+ * ```ts
+ * const raw = {
+ *   commandFormat: 'application/json',
+ *   parametersSchema: {
+ *     type: 'DataRecord',
+ *     name: 'DroneCommand',
+ *     fields: [
+ *       { type: 'Boolean', name: 'arm' },
+ *     ],
+ *   },
+ * };
+ * const schema = parseControlStreamSchemaResponse(raw);
+ * // schema.commandFormat === 'application/json'
+ * // schema.parametersSchema is a parsed DataRecord (not raw JSON)
+ * ```
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html — Control stream schema endpoint
+ * @see https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/87 — Task 7b
+ */
+export function parseControlStreamSchemaResponse(
+  json: unknown
+): ControlStreamSchemaResponse {
+  if (typeof json !== 'object' || json === null) {
+    throw new Error(
+      'parseControlStreamSchemaResponse: input must be a non-null object'
+    );
+  }
+
+  const obj = json as Record<string, unknown>;
+
+  // parametersSchema: delegate to parseSWEComponent() if present and non-null object
+  const rawParametersSchema = obj.parametersSchema;
+  const parametersSchema =
+    typeof rawParametersSchema === 'object' && rawParametersSchema !== null
+      ? parseSWEComponent(rawParametersSchema)
+      : undefined;
+
+  // encoding: delegate to parseEncoding() if present and non-null object
+  const rawEncoding = obj.encoding;
+  const encoding =
+    typeof rawEncoding === 'object' && rawEncoding !== null
+      ? parseEncoding(rawEncoding)
+      : undefined;
+
+  return {
+    commandFormat:
+      typeof obj.commandFormat === 'string' ? obj.commandFormat : '',
+    ...(parametersSchema !== undefined ? { parametersSchema } : {}),
+    ...(encoding !== undefined ? { encoding } : {}),
+  } satisfies ControlStreamSchemaResponse;
 }

@@ -600,6 +600,30 @@ export interface DatastreamSchemaResponse {
   encoding?: import('./formats/swecommon/types.js').DataEncoding;
 }
 
+/**
+ * Typed representation of the response from a Control Stream schema endpoint
+ * (`/controlstreams/{id}/schema`).
+ *
+ * This is the Phase 5 Task 7b counterpart to {@link DatastreamSchemaResponse}.
+ * The response varies by command format:
+ * - **JSON format** (`application/json`): contains `parametersSchema` — a
+ *   SWE Common component describing the command parameters structure.
+ *
+ * Schema fields are parsed via `parseSWEComponent()` from the SWE Common parser
+ * layer. The `encoding` field is parsed via `parseEncoding()`.
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html — Control stream schema endpoint
+ * @see https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/87 — Task 7b
+ */
+export interface ControlStreamSchemaResponse {
+  /** The command format identifier (e.g., `"application/json"`). */
+  commandFormat: string;
+  /** Parameters schema for the command. Parsed via `parseSWEComponent()`. */
+  parametersSchema?: import('./formats/swecommon/types.js').AnyComponent;
+  /** Encoding descriptor for SWE Common command format. Parsed via `parseEncoding()`. */
+  encoding?: import('./formats/swecommon/types.js').DataEncoding;
+}
+
 // ========================================
 // Collection Types
 // ========================================
