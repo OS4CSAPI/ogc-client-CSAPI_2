@@ -9,14 +9,12 @@
  * properties.
  *
  * Component parsing is recursive: an AggregateProcess may contain other
- * AggregateProcess instances as inline components, which are parsed by
- * calling `parseAggregateProcess` again. Other inline process types
- * (SimpleProcess, PhysicalComponent, PhysicalSystem) are passed through
- * as-is until the main parser (Issue #22) coordinates full sub-parser
- * delegation.
+ * process instances as inline components. All 4 concrete SensorML process
+ * types are parsed by delegating to `parseSensorML30()`, which dispatches
+ * to the correct sub-parser.
  *
  * This is a sub-parser — it is intended to be called by the main
- * SensorML parser (Issue #22) when the `type` discriminator is
+ * SensorML parser (`parseSensorML30()`) when the `type` discriminator is
  * `'AggregateProcess'`.
  *
  * @see https://docs.ogc.org/is/23-000/23-000.html — OGC SensorML 3.0
@@ -35,6 +33,7 @@ import type {
   ParameterList,
 } from './types.js';
 import { SensorMLParseError } from './errors.js';
+import { parseSensorML30 } from './parser.js';
 import {
   isRecord,
   optionalString,
@@ -62,16 +61,17 @@ export { SensorMLParseError };
  *   `'PhysicalComponent'`, `'PhysicalSystem'`)
  * - An **external link** (`type: 'Link'` with `href`)
  *
- * Inline `AggregateProcess` components are parsed recursively via
- * {@link parseAggregateProcess}. Other inline process types are
- * passed through as-is until the main parser (Issue #22) coordinates
- * full sub-parser delegation.
+ * All 4 inline process types (`PhysicalSystem`, `PhysicalComponent`,
+ * `SimpleProcess`, `AggregateProcess`) are parsed by delegating to
+ * {@link parseSensorML30}, which dispatches to the correct sub-parser.
+ * External links and unrecognized types are passed through as-is.
  *
  * @param value - Raw JSON value
  * @param index - Array index for error messages
  * @returns Parsed ComponentEntry
  * @throws {SensorMLParseError} If the entry is not a valid object or
  *   lacks a required `name` property
+ * @see {@link parseSensorML30} in `parser.ts` — dispatches all 4 process types
  * @see OAS: ComponentList (L4112), SoftNamedProperty (L1938)
  */
 export function parseComponentEntry(
@@ -89,15 +89,14 @@ export function parseComponentEntry(
     );
   }
 
-  // Recursive AggregateProcess parsing
-  if (value.type === 'AggregateProcess') {
-    const parsed = parseAggregateProcess(value);
+  // Delegate all inline process types to the main SensorML dispatcher
+  const knownTypes = ['PhysicalSystem', 'PhysicalComponent', 'SimpleProcess', 'AggregateProcess'];
+  if (typeof value.type === 'string' && knownTypes.includes(value.type)) {
+    const parsed = parseSensorML30(value);
     return { ...parsed, name: value.name as string } as ComponentEntry;
   }
 
-  // Other inline process types and external links are passed through.
-  // Full sub-parser delegation (SimpleProcess, PhysicalComponent,
-  // PhysicalSystem) is coordinated by the main parser (Issue #22).
+  // External links and unrecognized types are passed through
   return value as unknown as ComponentEntry;
 }
 
