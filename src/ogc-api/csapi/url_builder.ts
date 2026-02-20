@@ -2103,14 +2103,38 @@ export default class CSAPIQueryBuilder {
    * The request body (not part of the URL) must conform to the control stream's
    * parameter schema.
    *
+   * @remarks
+   * **Streaming POST behavior (P4-F1):** Some OGC API servers (e.g. OSH)
+   * hold the HTTP connection open after receiving a command POST — the server
+   * streams back a long-lived response rather than returning `201 Created`.
+   * Standard `fetch()` calls will appear to hang. Consumers should use
+   * `AbortController` with a timeout, or treat the request as fire-and-forget.
+   *
    * @param controlStreamId - The control stream resource identifier.
    * @returns URL string for the command creation endpoint (POST).
    * @throws {EndpointError} If 'controlStreams' is not available on this collection.
    *
    * @example
    * ```ts
-   * const url = builder.createCommand('cs-001');
-   * // => "https://example.com/collections/iot/controlStreams/cs-001/commands"
+   * // Safe pattern: AbortController with timeout
+   * const controller = new AbortController();
+   * const timeoutId = setTimeout(() => controller.abort(), 5000);
+   * try {
+   *   await fetch(builder.createCommand('cs-001'), {
+   *     method: 'POST',
+   *     headers: { 'Content-Type': 'application/json' },
+   *     body: JSON.stringify(commandBody),
+   *     signal: controller.signal,
+   *   });
+   * } catch (e) {
+   *   if (e.name === 'AbortError') {
+   *     // Expected — command was received, connection just stayed open
+   *   } else {
+   *     throw e;
+   *   }
+   * } finally {
+   *   clearTimeout(timeoutId);
+   * }
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
@@ -2125,6 +2149,14 @@ export default class CSAPIQueryBuilder {
    *
    * The request body (not part of the URL) must contain an array of command
    * objects, each conforming to the control stream's parameter schema.
+   *
+   * @remarks
+   * **Streaming POST behavior (P4-F1):** Some OGC API servers (e.g. OSH)
+   * hold the HTTP connection open after receiving a command POST — the server
+   * streams back a long-lived response rather than returning `201 Created`.
+   * Standard `fetch()` calls will appear to hang. Consumers should use
+   * `AbortController` with a timeout, or treat the request as fire-and-forget.
+   * See {@link createCommand} for a full AbortController example.
    *
    * @param controlStreamId - The control stream resource identifier.
    * @returns URL string for the bulk command creation endpoint (POST).
