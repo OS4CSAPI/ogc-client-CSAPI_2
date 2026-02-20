@@ -120,6 +120,17 @@ describe('parseDatastream', () => {
     expect(result.type).toBeUndefined();
   });
 
+  it('rejects unknown resultType enum value and returns null', () => {
+    const input = {
+      id: 'ds-unknown-result',
+      name: 'Unknown Result Type Test',
+      outputName: 'test-output',
+      resultType: 'foobar',
+    };
+    const result = parseDatastream(input);
+    expect(result.resultType).toBeNull();
+  });
+
   it('parses all 3 time fields correctly (including "now" sentinel)', () => {
     const input = {
       id: 'ds-time',
