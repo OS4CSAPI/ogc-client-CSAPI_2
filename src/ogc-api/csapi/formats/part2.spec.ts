@@ -945,14 +945,14 @@ describe('parseCommandStatus', () => {
 
   it('handles a minimal CommandStatus with only required fields', () => {
     const input = {
-      id: 'cs-minimal',
+      id: 'cmdstatus-minimal',
       reportTime: '2026-01-14T12:42:21.928728Z',
       statusCode: 'PENDING',
     };
 
     const result: CommandStatus = parseCommandStatus(input);
 
-    expect(result.id).toBe('cs-minimal');
+    expect(result.id).toBe('cmdstatus-minimal');
     expect(result.reportTime).toBe('2026-01-14T12:42:21.928728Z');
     expect(result.statusCode).toBe('PENDING');
     expect(result.percentCompletion).toBeUndefined();
