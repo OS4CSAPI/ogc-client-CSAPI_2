@@ -54,8 +54,7 @@ import {
 } from './_helpers.js';
 
 export { SensorMLParseError };
-export { parseProcessMethod } from './_helpers.js';
-export { parseComponentEntry } from './_helpers.js';
+export { parseProcessMethod, parseComponentEntry } from './_helpers.js';
 
 // ========================================
 // Internal Helpers — Components & Connections
