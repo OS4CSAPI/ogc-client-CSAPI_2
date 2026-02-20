@@ -573,6 +573,34 @@ export interface CommandStatus {
 }
 
 // ========================================
+// Schema Response Types
+// ========================================
+
+/**
+ * Parsed response from the `/datastreams/{id}/schema` endpoint.
+ *
+ * The schema format varies by `obsFormat`:
+ * - JSON format (`application/om+json`): uses `resultSchema`
+ * - SWE Common format (`application/swe+json`): uses `recordSchema` + `encoding`
+ *
+ * Schema fields are parsed via `parseSWEComponent()` from the SWE Common parser
+ * layer. The `encoding` field is parsed via `parseEncoding()`.
+ *
+ * @see https://docs.ogc.org/is/23-002/23-002.html — Datastream schema endpoint
+ * @see https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/17 — Demo app finding F-14
+ */
+export interface DatastreamSchemaResponse {
+  /** The observation format identifier (e.g., `"application/om+json"`). */
+  obsFormat: string;
+  /** Result schema for JSON observation format. Parsed via `parseSWEComponent()`. */
+  resultSchema?: import('./formats/swecommon/types.js').AnyComponent;
+  /** Record schema for SWE Common observation format. Parsed via `parseSWEComponent()`. */
+  recordSchema?: import('./formats/swecommon/types.js').AnyComponent;
+  /** Encoding descriptor for SWE Common observation format. Parsed via `parseEncoding()`. */
+  encoding?: import('./formats/swecommon/types.js').DataEncoding;
+}
+
+// ========================================
 // Collection Types
 // ========================================
 
