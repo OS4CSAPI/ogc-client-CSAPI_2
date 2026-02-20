@@ -136,8 +136,8 @@ describe('end-to-end: Datastream collection pipeline', () => {
     ]);
 
     // Cross-reference fields stripped (not in Datastream interface)
-    expect((ds as Record<string, unknown>)['system@id']).toBeUndefined();
-    expect((ds as Record<string, unknown>)['system@link']).toBeUndefined();
+    expect((ds as unknown as Record<string, unknown>)['system@id']).toBeUndefined();
+    expect((ds as unknown as Record<string, unknown>)['system@link']).toBeUndefined();
   });
 
   it('handles empty collection gracefully', () => {
