@@ -88,6 +88,10 @@ export type {
   CommandCollection,
   CommandStatusCollection,
 } from './ogc-api/csapi/model.js';
+export type {
+  DatastreamSchemaResponse,
+  ControlStreamSchemaResponse,
+} from './ogc-api/csapi/model.js';
 export {
   SOSA_NS,
   SSN_NS,
@@ -107,6 +111,15 @@ export {
   validateAgainstSchema,
   CSAPI_CONTENT_TYPES,
   getContentTypeForResource,
+  parseProperty,
+  parseDatastream,
+  parseObservation,
+  parseControlStream,
+  parseCommand,
+  parseCommandStatus,
+  normalizeStatusCode,
+  parseDatastreamSchemaResponse,
+  parseControlStreamSchemaResponse,
 } from './ogc-api/csapi/formats/index.js';
 export type { CSAPIResourceTypeName } from './ogc-api/csapi/formats/index.js';
 export type {
