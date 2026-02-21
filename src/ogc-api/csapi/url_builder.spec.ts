@@ -2352,6 +2352,75 @@ describe('checkCommandFeasibility', () => {
   });
 });
 
+describe('getControlStreamSystems', () => {
+  function makeCsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:controlStreams', type: '', title: '', href: '/controlstreams' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makeCsBuilder().getControlStreamSystems('cs-001');
+    expect(url).toBe('https://example.com/collections/iot/controlstreams/cs-001/systems');
+  });
+
+  it('returns correct URL with pagination', () => {
+    const url = makeCsBuilder().getControlStreamSystems('cs-001', { limit: 5, offset: 10 });
+    expect(url).toBe('https://example.com/collections/iot/controlstreams/cs-001/systems?limit=5&offset=10');
+  });
+});
+
+describe('getControlStreamProcedures', () => {
+  function makeCsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:controlStreams', type: '', title: '', href: '/controlstreams' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makeCsBuilder().getControlStreamProcedures('cs-001');
+    expect(url).toBe('https://example.com/collections/iot/controlstreams/cs-001/procedures');
+  });
+
+  it('returns correct URL with options', () => {
+    const url = makeCsBuilder().getControlStreamProcedures('cs-001', { limit: 10 });
+    expect(url).toBe('https://example.com/collections/iot/controlstreams/cs-001/procedures?limit=10');
+  });
+});
+
+describe('getControlStreamHistory', () => {
+  function makeCsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          { rel: 'self', type: '', title: '', href: 'https://example.com/collections/iot' },
+          { rel: 'ogc-cs:controlStreams', type: '', title: '', href: '/controlstreams' },
+        ],
+      })
+    );
+  }
+
+  it('returns correct URL with no options', () => {
+    const url = makeCsBuilder().getControlStreamHistory('cs-001');
+    expect(url).toBe('https://example.com/collections/iot/controlstreams/cs-001/history');
+  });
+
+  it('returns correct URL with limit', () => {
+    const url = makeCsBuilder().getControlStreamHistory('cs-001', { limit: 5 });
+    expect(url).toBe('https://example.com/collections/iot/controlstreams/cs-001/history?limit=5');
+  });
+});
+
 describe('ControlStream resource validation', () => {
   it('throws EndpointError when controlStreams is unavailable', () => {
     const builder = new CSAPIQueryBuilder(
@@ -2371,6 +2440,9 @@ describe('ControlStream resource validation', () => {
     expect(() => builder.getControlStreamSchema('x')).toThrow(EndpointError);
     expect(() => builder.getControlStreamCommands('x')).toThrow(EndpointError);
     expect(() => builder.checkCommandFeasibility('x')).toThrow(EndpointError);
+    expect(() => builder.getControlStreamSystems('x')).toThrow(EndpointError);
+    expect(() => builder.getControlStreamProcedures('x')).toThrow(EndpointError);
+    expect(() => builder.getControlStreamHistory('x')).toThrow(EndpointError);
   });
 });
 

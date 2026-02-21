@@ -2049,6 +2049,77 @@ export default class CSAPIQueryBuilder {
     return this.buildResourceUrl('controlStreams', controlStreamId, 'feasibility');
   }
 
+  /**
+   * Returns the URL for listing systems that receive commands from a control stream.
+   *
+   * Per OGC 23-002 Table 10, a ControlStream has a required `system` association
+   * (mapped to `sosa:madeByActuator`) — the System that receives commands from
+   * this control channel.
+   *
+   * @param id - The control stream resource identifier.
+   * @param options - Optional query parameters for filtering systems.
+   * @returns URL string for the control stream's systems endpoint.
+   * @throws {EndpointError} If 'controlStreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getControlStreamSystems('cs-001');
+   * // => "https://example.com/collections/iot/controlstreams/cs-001/systems"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#clause-controlstream-resource
+   */
+  getControlStreamSystems(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('controlStreams');
+    return this.buildResourceUrl('controlStreams', id, 'systems', options);
+  }
+
+  /**
+   * Returns the URL for listing procedures associated with a control stream.
+   *
+   * Per OGC 23-002 Table 10, a ControlStream has an optional `procedure` association
+   * (mapped to `sosa:usedProcedure`) — the procedure used to process commands
+   * received in this control channel.
+   *
+   * @param id - The control stream resource identifier.
+   * @param options - Optional query parameters for filtering procedures.
+   * @returns URL string for the control stream's procedures endpoint.
+   * @throws {EndpointError} If 'controlStreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getControlStreamProcedures('cs-001');
+   * // => "https://example.com/collections/iot/controlstreams/cs-001/procedures"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#clause-controlstream-resource
+   */
+  getControlStreamProcedures(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('controlStreams');
+    return this.buildResourceUrl('controlStreams', id, 'procedures', options);
+  }
+
+  /**
+   * Returns the URL for retrieving a control stream's version history.
+   *
+   * @param id - The control stream resource identifier.
+   * @param options - Optional query parameters for filtering history entries.
+   * @returns URL string for the control stream history endpoint.
+   * @throws {EndpointError} If 'controlStreams' is not available on this collection.
+   *
+   * @example
+   * ```ts
+   * const url = builder.getControlStreamHistory('cs-001', { limit: 5 });
+   * // => "https://example.com/collections/iot/controlstreams/cs-001/history?limit=5"
+   * ```
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html#clause-controlstream-resource
+   */
+  getControlStreamHistory(id: string, options?: QueryOptions): string {
+    this.assertResourceAvailable('controlStreams');
+    return this.buildResourceUrl('controlStreams', id, 'history', options);
+  }
+
   // ── COMMANDS ──
 
   /**
