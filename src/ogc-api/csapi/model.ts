@@ -103,6 +103,27 @@ export interface TimeInterval {
  */
 export type ResourceLink = OgcApiDocumentLink;
 
+/**
+ * Parsed form of a CS API `@link` inline property.
+ *
+ * `@link` properties appear on Part 1 GeoJSON resources to encode structural
+ * associations between resources (e.g., which procedure a system implements,
+ * which platform a deployment sits on). They are distinct from the HATEOAS
+ * `links[]` array which provides navigation URLs.
+ *
+ * @see https://docs.ogc.org/is/23-001/23-001.html §16 — JSON encoding for Part 1 resources
+ */
+export interface CSAPIResourceRef {
+  /** URL of the referenced resource. */
+  href: string;
+  /** Globally unique identifier of the referenced resource. */
+  uid?: string;
+  /** Human-readable title. */
+  title?: string;
+  /** Resource type URI. */
+  rt?: string;
+}
+
 // ========================================
 // Query Options
 // ========================================
@@ -320,6 +341,11 @@ export interface System {
     assetType?: 'Equipment' | 'Human' | 'LivingThing' | 'Simulation' | 'Process' | 'Group' | 'Other';
     /** Validity time period for this system. */
     validTime?: TimeInterval;
+    /**
+     * Link to the procedure/method this system implements (from `systemKind@link`).
+     * @see https://docs.ogc.org/is/23-001/23-001.html §8.3 Table 8 — Conditional (when a procedure exists)
+     */
+    systemKindLink?: CSAPIResourceRef;
   };
   geometry?: Geometry;
   links: ResourceLink[];
@@ -360,6 +386,16 @@ export interface Deployment {
      * tolerate servers that omit it.
      */
     validTime?: TimeInterval;
+    /**
+     * Link to the platform system (from `platform@link`).
+     * @see https://docs.ogc.org/is/23-001/23-001.html §8.5 Table 10 — Optional
+     */
+    platformLink?: CSAPIResourceRef;
+    /**
+     * Links to deployed systems (from `deployedSystems@link`).
+     * @see https://docs.ogc.org/is/23-001/23-001.html §8.5 Table 10 — Required (array)
+     */
+    deployedSystemsLink?: CSAPIResourceRef[];
   };
   geometry?: Geometry;
   links: ResourceLink[];
@@ -428,6 +464,11 @@ export interface SamplingFeature {
     description?: string;
     /** Optional validity time period. */
     validTime?: TimeInterval;
+    /**
+     * Link to the sampled feature (from `sampledFeature@link`).
+     * @see https://docs.ogc.org/is/23-001/23-001.html §8.9 Table 14 — Required
+     */
+    sampledFeatureLink?: CSAPIResourceRef;
   };
   geometry?: Geometry;
   links: ResourceLink[];
