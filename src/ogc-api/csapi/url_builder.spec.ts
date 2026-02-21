@@ -381,14 +381,14 @@ describe('getSystems', () => {
   it('returns correct URL with procedureId parameter', () => {
     const url = makeIotBuilder().getSystems({ procedureId: 'proc-001' });
     expect(url).toBe(
-      'https://example.com/collections/iot/systems?procedureId=proc-001'
+      'https://example.com/collections/iot/systems?procedure=proc-001'
     );
   });
 
   it('returns correct URL with foiId parameter', () => {
     const url = makeIotBuilder().getSystems({ foiId: 'foi-001' });
     expect(url).toBe(
-      'https://example.com/collections/iot/systems?foiId=foi-001'
+      'https://example.com/collections/iot/systems?foi=foi-001'
     );
   });
 
@@ -397,7 +397,7 @@ describe('getSystems', () => {
       observedPropertyId: 'temp-prop',
     });
     expect(url).toBe(
-      'https://example.com/collections/iot/systems?observedPropertyId=temp-prop'
+      'https://example.com/collections/iot/systems?observedProperty=temp-prop'
     );
   });
 
@@ -406,7 +406,7 @@ describe('getSystems', () => {
       controlledPropertyId: 'ctrl-prop',
     });
     expect(url).toBe(
-      'https://example.com/collections/iot/systems?controlledPropertyId=ctrl-prop'
+      'https://example.com/collections/iot/systems?controlledProperty=ctrl-prop'
     );
   });
 
@@ -916,7 +916,7 @@ describe('getDeployments', () => {
 
   it('returns correct URL with systemId filter', () => {
     const url = makeDepBuilder().getDeployments({ systemId: 'sys-001' });
-    expect(url).toBe('https://example.com/collections/iot/deployments?systemId=sys-001');
+    expect(url).toBe('https://example.com/collections/iot/deployments?system=sys-001');
   });
 
   it('returns correct URL with parent parameter', () => {
@@ -1683,12 +1683,12 @@ describe('getDataStreams', () => {
 
   it('returns correct URL with systemId filter', () => {
     const url = makeDsBuilder().getDataStreams({ systemId: 'sys-001' });
-    expect(url).toBe('https://example.com/collections/iot/datastreams?systemId=sys-001');
+    expect(url).toBe('https://example.com/collections/iot/datastreams?system=sys-001');
   });
 
   it('returns correct URL with observedPropertyId filter', () => {
     const url = makeDsBuilder().getDataStreams({ observedPropertyId: 'temperature' });
-    expect(url).toBe('https://example.com/collections/iot/datastreams?observedPropertyId=temperature');
+    expect(url).toBe('https://example.com/collections/iot/datastreams?observedProperty=temperature');
   });
 
   it('returns correct URL with phenomenonTime temporal filter', () => {
@@ -1710,7 +1710,7 @@ describe('getDataStreams', () => {
 
   it('returns correct URL with multiple options', () => {
     const url = makeDsBuilder().getDataStreams({ limit: 10, offset: 5, systemId: 'sys-001' });
-    expect(url).toBe('https://example.com/collections/iot/datastreams?limit=10&offset=5&systemId=sys-001');
+    expect(url).toBe('https://example.com/collections/iot/datastreams?limit=10&offset=5&system=sys-001');
   });
 
   it('returns correct URL with q parameter', () => {
@@ -2179,12 +2179,12 @@ describe('getControlStreams', () => {
 
   it('returns correct URL with systemId filter', () => {
     const url = makeCsBuilder().getControlStreams({ systemId: 'sys-001' });
-    expect(url).toBe('https://example.com/collections/iot/controlstreams?systemId=sys-001');
+    expect(url).toBe('https://example.com/collections/iot/controlstreams?system=sys-001');
   });
 
   it('returns correct URL with controlledPropertyId filter', () => {
     const url = makeCsBuilder().getControlStreams({ controlledPropertyId: 'prop-001' });
-    expect(url).toBe('https://example.com/collections/iot/controlstreams?controlledPropertyId=prop-001');
+    expect(url).toBe('https://example.com/collections/iot/controlstreams?controlledProperty=prop-001');
   });
 
   it('returns correct URL with pagination', () => {
@@ -2486,7 +2486,7 @@ describe('getCommands', () => {
 
   it('returns correct URL with currentStatus filter', () => {
     const url = makeCmdBuilder().getCommands({ currentStatus: 'EXECUTING' });
-    expect(url).toBe('https://example.com/collections/iot/commands?currentStatus=EXECUTING');
+    expect(url).toBe('https://example.com/collections/iot/commands?statusCode=EXECUTING');
   });
 
   it('returns correct URL with f parameter', () => {
@@ -2511,12 +2511,12 @@ describe('getCommands', () => {
 
   it('returns correct URL with multiple options', () => {
     const url = makeCmdBuilder().getCommands({ limit: 10, currentStatus: 'PENDING', cursor: 'abc' });
-    expect(url).toBe('https://example.com/collections/iot/commands?limit=10&currentStatus=PENDING&cursor=abc');
+    expect(url).toBe('https://example.com/collections/iot/commands?limit=10&statusCode=PENDING&cursor=abc');
   });
 
   it('returns correct URL with multiple options including offset', () => {
     const url = makeCmdBuilder().getCommands({ limit: 10, offset: 5, currentStatus: 'PENDING' });
-    expect(url).toBe('https://example.com/collections/iot/commands?limit=10&offset=5&currentStatus=PENDING');
+    expect(url).toBe('https://example.com/collections/iot/commands?limit=10&offset=5&statusCode=PENDING');
   });
 });
 

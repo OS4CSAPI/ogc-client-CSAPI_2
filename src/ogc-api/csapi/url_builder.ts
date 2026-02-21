@@ -277,6 +277,23 @@ export default class CSAPIQueryBuilder {
     'datetime', 'phenomenonTime', 'resultTime', 'issueTime', 'executionTime',
   ]);
 
+  /**
+   * Maps TypeScript query-option property names to the OGC-spec wire names
+   * used in URL query strings.  Properties not listed here are serialized
+   * as-is (the TypeScript name already matches the spec name).
+   *
+   * @see https://docs.ogc.org/is/23-001/23-001.html#clause-advanced-filtering
+   * @see https://docs.ogc.org/is/23-002/23-002.html#clause-advanced-filtering
+   */
+  private static readonly PARAM_NAME_MAP: Readonly<Record<string, string>> = {
+    currentStatus: 'statusCode',
+    systemId: 'system',
+    observedPropertyId: 'observedProperty',
+    controlledPropertyId: 'controlledProperty',
+    foiId: 'foi',
+    procedureId: 'procedure',
+  };
+
   private buildQueryString(options?: QueryOptions): string {
     if (!options) return '';
     const params = new URLSearchParams();
@@ -286,21 +303,24 @@ export default class CSAPIQueryBuilder {
         continue;
       }
 
+      // Resolve the OGC-spec wire name (falls back to the TypeScript key).
+      const wireName = CSAPIQueryBuilder.PARAM_NAME_MAP[key] ?? key;
+
       if (key === 'bbox') {
         validateBbox(value);
-        params.append(key, value.join(','));
+        params.append(wireName, value.join(','));
       } else if (CSAPIQueryBuilder.TEMPORAL_KEYS.has(key)) {
-        params.append(key, formatDateTimeParameter(value));
+        params.append(wireName, formatDateTimeParameter(value));
       } else if (key === 'limit') {
         validateLimit(value);
-        params.append(key, String(value));
+        params.append(wireName, String(value));
       } else if (Array.isArray(value)) {
         // Use plain join — URLSearchParams.append() handles percent-encoding.
         // Previously used encodeArrayParameter() here, which pre-encoded values
         // before URLSearchParams encoded them again (double-encoding bug F5).
-        params.append(key, value.join(','));
+        params.append(wireName, value.join(','));
       } else {
-        params.append(key, String(value));
+        params.append(wireName, String(value));
       }
     }
 
