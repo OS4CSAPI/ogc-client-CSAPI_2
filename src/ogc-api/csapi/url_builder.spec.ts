@@ -2643,6 +2643,11 @@ describe('Command status and result methods', () => {
     expect(url).toBe('https://example.com/collections/iot/commands/cmd-001/status?limit=10');
   });
 
+  it('getCommandStatus returns correct URL with statusCode + limit options', () => {
+    const url = makeCmdBuilder().getCommandStatus('cmd-001', { statusCode: 'EXECUTING', limit: 5 });
+    expect(url).toBe('https://example.com/collections/iot/commands/cmd-001/status?statusCode=EXECUTING&limit=5');
+  });
+
   it('updateCommandStatus returns correct URL', () => {
     const url = makeCmdBuilder().updateCommandStatus('cmd-001');
     expect(url).toBe('https://example.com/collections/iot/commands/cmd-001/status');
