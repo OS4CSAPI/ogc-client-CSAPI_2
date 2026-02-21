@@ -552,7 +552,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  getSystemDataStreams(id: string, options?: QueryOptions): string {
+  getSystemDataStreams(id: string, options?: DatastreamQueryOptions): string {
     this.assertResourceAvailable('systems');
     return this.buildResourceUrl('systems', id, 'datastreams', options);
   }
@@ -597,7 +597,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_controlstream_resources
    */
-  getSystemControlStreams(id: string, options?: QueryOptions): string {
+  getSystemControlStreams(id: string, options?: ControlStreamQueryOptions): string {
     this.assertResourceAvailable('systems');
     return this.buildResourceUrl('systems', id, 'controlstreams', options);
   }
@@ -685,7 +685,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
    */
-  getSystemDeployments(id: string, options?: QueryOptions): string {
+  getSystemDeployments(id: string, options?: DeploymentQueryOptions): string {
     this.assertResourceAvailable('systems');
     return this.buildResourceUrl('systems', id, 'deployments', options);
   }
@@ -884,7 +884,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
    */
-  getDeploymentSystems(id: string, options?: QueryOptions): string {
+  getDeploymentSystems(id: string, options?: SystemQueryOptions): string {
     this.assertResourceAvailable('deployments');
     return this.buildResourceUrl('deployments', id, 'systems', options);
   }
@@ -1040,7 +1040,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
    */
-  getProcedureSystems(id: string, options?: QueryOptions): string {
+  getProcedureSystems(id: string, options?: SystemQueryOptions): string {
     this.assertResourceAvailable('procedures');
     return this.buildResourceUrl('procedures', id, 'systems', options);
   }
@@ -1061,7 +1061,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  getProcedureDataStreams(id: string, options?: QueryOptions): string {
+  getProcedureDataStreams(id: string, options?: DatastreamQueryOptions): string {
     this.assertResourceAvailable('procedures');
     return this.buildResourceUrl('procedures', id, 'datastreams', options);
   }
@@ -1217,7 +1217,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-001/23-001.html#_sampling_feature_resources
    */
-  getSamplingFeatureSystems(id: string, options?: QueryOptions): string {
+  getSamplingFeatureSystems(id: string, options?: SystemQueryOptions): string {
     this.assertResourceAvailable('samplingFeatures');
     return this.buildResourceUrl('samplingFeatures', id, 'systems', options);
   }
@@ -1241,7 +1241,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
    */
-  getSamplingFeatureObservations(id: string, options?: QueryOptions): string {
+  getSamplingFeatureObservations(id: string, options?: ObservationQueryOptions): string {
     this.assertResourceAvailable('samplingFeatures');
     return this.buildResourceUrl('samplingFeatures', id, 'observations', options);
   }
@@ -1342,7 +1342,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-001/23-001.html#_property_resources
    */
-  getPropertySystems(id: string, options?: QueryOptions): string {
+  getPropertySystems(id: string, options?: SystemQueryOptions): string {
     this.assertResourceAvailable('properties');
     return this.buildResourceUrl('properties', id, 'systems', options);
   }
@@ -1366,7 +1366,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  getPropertyDataStreams(id: string, options?: QueryOptions): string {
+  getPropertyDataStreams(id: string, options?: DatastreamQueryOptions): string {
     this.assertResourceAvailable('properties');
     return this.buildResourceUrl('properties', id, 'datastreams', options);
   }
@@ -1390,7 +1390,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_control_stream_resources
    */
-  getPropertyControlStreams(id: string, options?: QueryOptions): string {
+  getPropertyControlStreams(id: string, options?: ControlStreamQueryOptions): string {
     this.assertResourceAvailable('properties');
     return this.buildResourceUrl('properties', id, 'controlstreams', options);
   }
@@ -1632,7 +1632,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  getDataStreamSystems(id: string, options?: QueryOptions): string {
+  getDataStreamSystems(id: string, options?: SystemQueryOptions): string {
     this.assertResourceAvailable('datastreams');
     return this.buildResourceUrl('datastreams', id, 'systems', options);
   }
@@ -2089,7 +2089,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#clause-controlstream-resource
    */
-  getControlStreamSystems(id: string, options?: QueryOptions): string {
+  getControlStreamSystems(id: string, options?: SystemQueryOptions): string {
     this.assertResourceAvailable('controlStreams');
     return this.buildResourceUrl('controlStreams', id, 'systems', options);
   }
