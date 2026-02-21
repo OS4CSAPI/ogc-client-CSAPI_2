@@ -2114,7 +2114,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#clause-controlstream-resource
    */
-  getControlStreamProcedures(id: string, options?: QueryOptions): string {
+  getControlStreamProcedures(id: string, options?: ProcedureQueryOptions): string {
     this.assertResourceAvailable('controlStreams');
     return this.buildResourceUrl('controlStreams', id, 'procedures', options);
   }
