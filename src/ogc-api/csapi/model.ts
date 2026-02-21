@@ -457,6 +457,8 @@ export interface Datastream {
   /** Datastream classification: status reporting or observation. */
   type?: 'status' | 'observation';
   links: ResourceLink[];
+  /** ID of the parent system (from `system@id` in raw JSON). @see OGC 23-002 §9.2 Table 5 */
+  systemId?: string;
 }
 
 /**
@@ -482,6 +484,12 @@ export interface Observation {
   /** Inline result value (type depends on observed property). */
   result?: unknown;
   links?: ResourceLink[];
+  /** ID of the parent datastream (from `datastream@id` in raw JSON). @see OGC 23-002 §9.7 Table 7 */
+  datastreamId?: string;
+  /** ID of the sampling feature (from `samplingFeature@id` in raw JSON). @see OGC 23-002 §9.7 Table 7 */
+  samplingFeatureId?: string;
+  /** ID of the feature of interest (from `foi@id` in raw JSON). @see OGC 23-002 §9.7 Table 7 */
+  featureOfInterestId?: string;
 }
 
 /**
@@ -519,6 +527,8 @@ export interface ControlStream {
   /** Whether commands are handled asynchronously. */
   async: boolean;
   links: ResourceLink[];
+  /** ID of the parent system (from `system@id` in raw JSON). @see OGC 23-002 §10.2 Table 10 */
+  systemId?: string;
 }
 
 /**
@@ -545,6 +555,8 @@ export interface Command {
   /** Command parameters (required). */
   parameters: Record<string, unknown>;
   links?: ResourceLink[];
+  /** ID of the parent control stream (from `controlstream@id` in raw JSON). @see OGC 23-002 §10.7 Table 12 */
+  controlStreamId?: string;
 }
 
 /**
@@ -570,6 +582,8 @@ export interface CommandStatus {
   /** Human-readable status message. */
   message?: string;
   links?: ResourceLink[];
+  /** ID of the parent command (from `command@id` in raw JSON). @see OGC 23-002 §10.11 Table 15 */
+  commandId?: string;
 }
 
 // ========================================
