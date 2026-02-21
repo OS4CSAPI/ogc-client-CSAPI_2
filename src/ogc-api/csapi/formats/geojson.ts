@@ -406,13 +406,21 @@ function isCSAPIResourceRef(value: unknown): value is Record<string, unknown> {
 /**
  * Parse a raw `@link` object into a typed {@link CSAPIResourceRef}.
  * Only includes optional fields (`uid`, `title`, `rt`) when they are strings.
+ *
+ * OSH sends `type` (per OGC API / RFC 8288 conventions) rather than `rt` for
+ * the media type field. This function accepts both: `rt` takes precedence, and
+ * `type` is used as a fallback when `rt` is absent.
  */
 function parseResourceRef(raw: Record<string, unknown>): CSAPIResourceRef {
   return {
     href: String(raw.href),
     ...(typeof raw.uid === 'string' ? { uid: raw.uid } : {}),
     ...(typeof raw.title === 'string' ? { title: raw.title } : {}),
-    ...(typeof raw.rt === 'string' ? { rt: raw.rt } : {}),
+    ...(typeof raw.rt === 'string'
+      ? { rt: raw.rt }
+      : typeof raw.type === 'string'
+        ? { rt: raw.type }
+        : {}),
   };
 }
 

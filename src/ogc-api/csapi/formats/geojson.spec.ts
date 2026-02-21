@@ -665,6 +665,37 @@ describe('extractCSAPIFeature', () => {
     });
   });
 
+  it('normalizes @link type field to rt (OSH wire format)', () => {
+    const raw = makeFeature('sosa:Sensor', {
+      'systemKind@link': {
+        href: 'http://example.com/api/procedures/proc1',
+        uid: 'urn:x:procedure:1',
+        type: 'application/geo+json',
+      },
+    });
+    const result = extractCSAPIFeature(raw);
+    expect((result as any).properties.systemKindLink).toEqual({
+      href: 'http://example.com/api/procedures/proc1',
+      uid: 'urn:x:procedure:1',
+      rt: 'application/geo+json',
+    });
+  });
+
+  it('prefers rt over type when both are present in @link', () => {
+    const raw = makeFeature('sosa:Sensor', {
+      'systemKind@link': {
+        href: 'http://example.com/api/procedures/proc1',
+        rt: 'http://www.w3.org/ns/sosa/Procedure',
+        type: 'application/geo+json',
+      },
+    });
+    const result = extractCSAPIFeature(raw);
+    expect((result as any).properties.systemKindLink).toEqual({
+      href: 'http://example.com/api/procedures/proc1',
+      rt: 'http://www.w3.org/ns/sosa/Procedure',
+    });
+  });
+
   it('throws for unrecognized featureType', () => {
     const raw = makeFeature('http://example.com/Unknown');
     expect(() => extractCSAPIFeature(raw)).toThrow(
