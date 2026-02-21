@@ -19,7 +19,9 @@
 | tsc --noEmit | ✅ 0 errors (clean) |
 | CSAPI unit tests (all) | ✅ 1285 passing, 29 suites |
 | CSAPI format tests | ✅ 742 passing, 20 suites |
-| Endpoint integration tests | ⚠️ 82/83 passing (1 pre-existing upstream failure — Unicode mismatch at `endpoint.spec.ts:1789`) |
+| Endpoint integration tests | ⚠️ 82/83 passing (1 pre-existing upstream failure — see note below) |
+
+**Endpoint test failure detail:** The single failure is at `endpoint.spec.ts:1789` — a `toEqual` assertion on the error message produced by `JSON.parse` for invalid input. Node.js appends a Unicode middle-dot character (`·` / U+00B7) to the preview string in the error message, but the test's expected string omits it. This is a Node.js-version-sensitive encoding mismatch in an upstream (non-CSAPI) test, not a logic or regression issue. The fix would be to replace `toEqual` with a regex-based `toMatch`, but that change is outside the CSAPI contribution scope.
 
 **Test delta from Phase 5.5:** +3 tests (1282 → 1285), 0 new suites (29 → 29).  
 **Format test delta:** +2 tests (740 → 742), 0 new suites (20 → 20).
