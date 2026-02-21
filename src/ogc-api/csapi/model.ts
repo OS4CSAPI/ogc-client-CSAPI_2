@@ -207,6 +207,11 @@ export interface DatastreamQueryOptions extends QueryOptions {
   phenomenonTime?: DateTimeParameter;
   /** Filter by result time interval or the special `'latest'` keyword. */
   resultTime?: CsapiDateTimeParameter;
+  /**
+   * Filter by feature-of-interest ID.
+   * @see https://docs.ogc.org/is/23-002/23-002.html#clause-datastream-query-params §13.2.4 Req 48
+   */
+  foiId?: string;
 }
 
 /**
@@ -218,6 +223,11 @@ export interface ObservationQueryOptions extends QueryOptions {
   phenomenonTime?: DateTimeParameter;
   /** Filter by result time interval or the special `'latest'` keyword. */
   resultTime?: CsapiDateTimeParameter;
+  /**
+   * Filter by feature-of-interest ID.
+   * @see https://docs.ogc.org/is/23-002/23-002.html#clause-observation-query-params §13.3.3 Req 51
+   */
+  foiId?: string;
 }
 
 /**
@@ -229,6 +239,21 @@ export interface ControlStreamQueryOptions extends QueryOptions {
   systemId?: string;
   /** Filter by controlled property ID. */
   controlledPropertyId?: string;
+  /**
+   * Filter by issue time interval.
+   * @see https://docs.ogc.org/is/23-002/23-002.html#clause-controlstream-query-params §13.4.1 Req 52
+   */
+  issueTime?: DateTimeParameter;
+  /**
+   * Filter by execution time interval.
+   * @see https://docs.ogc.org/is/23-002/23-002.html#clause-controlstream-query-params §13.4.2 Req 53
+   */
+  executionTime?: DateTimeParameter;
+  /**
+   * Filter by feature-of-interest ID.
+   * @see https://docs.ogc.org/is/23-002/23-002.html#clause-controlstream-query-params §13.4.4 Req 55
+   */
+  foiId?: string;
 }
 
 /**
@@ -242,6 +267,26 @@ export interface CommandQueryOptions extends QueryOptions {
   executionTime?: DateTimeParameter;
   /** Filter by current status code. */
   currentStatus?: CommandStatusCode;
+  /**
+   * Filter by command sender.
+   * @see https://docs.ogc.org/is/23-002/23-002.html#clause-command-query-params §13.5.4 Req 59
+   */
+  sender?: string;
+  /**
+   * Filter by feature-of-interest ID.
+   * @see https://docs.ogc.org/is/23-002/23-002.html#clause-command-query-params §13.5.5 Req 60
+   */
+  foiId?: string;
+}
+
+/**
+ * Query options for CommandStatus list endpoints.
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+ * @see https://docs.ogc.org/is/23-002/23-002.html#_CommandStatus_Query_Params §13.6.1 Req 61
+ */
+export interface CommandStatusQueryOptions extends QueryOptions {
+  /** Filter by status code. */
+  statusCode?: CommandStatusCode;
 }
 
 // ========================================

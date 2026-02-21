@@ -65,6 +65,7 @@ export type {
   ObservationQueryOptions,
   ControlStreamQueryOptions,
   CommandQueryOptions,
+  CommandStatusQueryOptions,
   System,
   Deployment,
   Procedure,

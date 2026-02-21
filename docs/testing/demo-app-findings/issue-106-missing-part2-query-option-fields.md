@@ -308,6 +308,25 @@ Both options produce the same wire output (`?foi=...`). The choice is purely abo
 
 ---
 
+## Assessment: Scope, Risk, and Implementation Decision
+
+**Is this a bug?** No. The library works correctly at runtime today. `buildQueryString()` already serializes any property passed to it. A savvy caller can use type assertions to pass any query parameter — nothing is broken at the wire level.
+
+**What this is:** Incomplete TypeScript type coverage for spec-normative query parameters. The library's purpose is to provide a **typed TypeScript client** for the CSAPI spec. Missing optional fields on QueryOptions interfaces means callers don't get autocompletion, type checking, or discoverability for 7 spec-normative parameters.
+
+**Is it within scope?** Yes. The library's explicit goal is spec-complete typed coverage of OGC API — Connected Systems. These are additive optional fields directly traceable to normative requirements (Req 48, 51–53, 55, 59–61) in OGC 23-002 §13.
+
+**Priority and risk:**
+- **Low priority** — no runtime behavior is broken; this is a developer-experience improvement.
+- **Low risk** — all changes are additive optional fields on TypeScript interfaces. One backward-compatible method signature change (`getCommandStatus()`). No parser, fixture, serialization, or model changes.
+- **Safe to defer** — nothing breaks if this waits. Nothing regresses.
+
+**Scope creep risk:** The 3 items flagged as "do NOT implement" (`dataStream`, `controlStream`, `reportTime`) are where real risk of scope creep exists. They are not defined in OGC 23-002 §13 and must not be added.
+
+**Naming decision:** Use `foiId` (Option B) for the new `foi` fields on all 4 Part 2 interfaces. This maintains consistency with Part 1's `SystemQueryOptions.foiId` convention and reuses the existing `PARAM_NAME_MAP` entry (`foiId → foi`). The entire library already follows this internal naming convention; introducing `foi` alongside `foiId` would create an inconsistency.
+
+---
+
 ## References
 
 | # | Document | What It Provides |

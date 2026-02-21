@@ -1,5 +1,5 @@
 import type { OgcApiCollectionInfo } from '../model.js';
-import type { QueryOptions, SystemQueryOptions, DeploymentQueryOptions, ProcedureQueryOptions, SamplingFeatureQueryOptions, PropertyQueryOptions, DatastreamQueryOptions, ObservationQueryOptions, ControlStreamQueryOptions, CommandQueryOptions } from './model.js';
+import type { QueryOptions, SystemQueryOptions, DeploymentQueryOptions, ProcedureQueryOptions, SamplingFeatureQueryOptions, PropertyQueryOptions, DatastreamQueryOptions, ObservationQueryOptions, ControlStreamQueryOptions, CommandQueryOptions, CommandStatusQueryOptions } from './model.js';
 import { CSAPIResourceTypes } from './model.js';
 import { EndpointError } from '../../shared/errors.js';
 import {
@@ -2322,6 +2322,7 @@ export default class CSAPIQueryBuilder {
    * EXECUTING → COMPLETED/FAILED/CANCELED.
    *
    * @param id - The command resource identifier.
+   * @param options - Optional query parameters for filtering command status results.
    * @returns URL string for the command status endpoint.
    * @throws {EndpointError} If 'commands' is not available on this collection.
    *
@@ -2329,13 +2330,17 @@ export default class CSAPIQueryBuilder {
    * ```ts
    * const url = builder.getCommandStatus('cmd-001');
    * // => "https://example.com/collections/iot/commands/cmd-001/status"
+   *
+   * const filtered = builder.getCommandStatus('cmd-001', { statusCode: 'EXECUTING' });
+   * // => "https://example.com/collections/iot/commands/cmd-001/status?statusCode=EXECUTING"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+   * @see https://docs.ogc.org/is/23-002/23-002.html#_CommandStatus_Query_Params §13.6.1 Req 61
    */
-  getCommandStatus(id: string): string {
+  getCommandStatus(id: string, options?: CommandStatusQueryOptions): string {
     this.assertResourceAvailable('commands');
-    return this.buildResourceUrl('commands', id, 'status');
+    return this.buildResourceUrl('commands', id, 'status') + this.buildQueryString(options);
   }
 
   /**
