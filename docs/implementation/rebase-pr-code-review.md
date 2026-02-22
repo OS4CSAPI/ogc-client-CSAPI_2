@@ -34,6 +34,19 @@
 | CSAPI tests in endpoint.spec.ts | ✅ **6/6 passing** (isolated `-t "CSAPI"` run) |
 | Upstream test regression | ✅ **Zero regressions introduced** — all failures are pre-existing (WMTS/WFS timeouts, http-utils worker path, JSON error encoding) |
 | Working tree | ✅ Clean (`git status --short` empty) |
+| Rebase integrity | ✅ **Byte-identical** — all source files match archive `main` (see below) |
+
+### Rebase Integrity Verification
+
+A byte-level comparison was performed between the archive development branch (`main`) and the rebased PR branch (`clean-pr`) to confirm no code was lost, corrupted, or altered during the rebase.
+
+| Comparison Scope | Command | Result |
+|-----------------|---------|--------|
+| All CSAPI source files (`src/ogc-api/csapi/**`) | `git diff main clean-pr -- "src/ogc-api/csapi/**" --stat` | **Zero diff** — all 62 CSAPI files byte-identical |
+| All modified upstream files (`endpoint.ts`, `endpoint.spec.ts`, `info.ts`, `mime-type.ts`, `mime-type.spec.ts`, `index.ts`, `.gitignore`, `fixtures/`) | `git diff main clean-pr -- src/ogc-api/endpoint.ts src/ogc-api/endpoint.spec.ts src/ogc-api/info.ts src/shared/mime-type.ts src/shared/mime-type.spec.ts src/index.ts .gitignore fixtures/ --stat` | **Zero diff** — all 5 modified upstream files + fixtures byte-identical |
+| Full repository diff | `git diff main clean-pr -- . --name-only ':!src/' ':!fixtures/' ':!.gitignore'` | **~370 files differ** — all are documentation, planning, governance, research, and demo app files that exist only in the archive repo and were intentionally excluded from the upstream contribution |
+
+**Conclusion:** The rebase is a faithful extraction of the contribution code. All 62 new source files and 5 modified upstream files are byte-for-byte identical to the versions developed on `main`. The only differences between the two branches are non-code files (docs, planning, governance, research, demo app, `.github/` templates) that belong exclusively in the archive repository and are not part of the upstream PR.
 
 ---
 
