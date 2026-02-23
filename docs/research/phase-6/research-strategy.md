@@ -1,9 +1,11 @@
 # Phase 6 Research Strategy: Upstream Acceptance Refactoring
 
+**Version:** 2.0
 **Date:** 2026-02-23
 **Context:** Maintainer feedback on PR #136 requires architectural changes before CSAPI can be accepted upstream
 **Branch:** `phase-6`
 **Related:** [Work Assessment and Strategy](../../planning/phase-6/work-assessment-and-strategy.md)
+**Previous Version:** [v1 (archived)](archive/research-strategy-v1.md)
 
 ---
 
@@ -11,24 +13,60 @@
 
 **Research-First Approach:** Complete all research plans in order before implementing changes. Each plan builds understanding needed for subsequent plans. Do not write code until research is complete and synthesized into an implementation plan.
 
-**Primary Constraint:** The maintainer's acceptance criteria are:
-1. CSAPI must **not** be exported from the root `index.ts`
-2. CSAPI must be importable via `@camptocamp/ogc-client/csapi`
-3. Nothing outside `src/ogc-api/csapi/` should import from the CSAPI module
-4. All existing CI checks must pass (Prettier, TypeScript, ESLint, tests)
+**External-Knowledge-First Pattern:** Before making any design decision, gather authoritative external knowledge (industry case studies, proven library patterns, specification references). This is the same methodology used in the testing research phase, where external research plans (Sections 3, 8, 9, 32) preceded every internal design synthesis.
 
 **Success Criteria:** After completing this research, we can answer:
 1. Exactly how does the upstream build system produce dist artifacts, and how do we add a second entry point?
 2. How did EDR integrate with `endpoint.ts`, and why is that pattern unacceptable for CSAPI at this scale?
-3. What is the correct factory/adapter pattern to let CSAPI consume `OgcApiEndpoint` without the endpoint importing CSAPI?
-4. What Prettier/ESLint configuration rules apply, and what changes will they force on our code?
-5. What is the exact file-level changelist needed, and what is the correct commit sequence for a clean rebase?
+3. How do proven TypeScript libraries solve sub-module composition, and what patterns apply to our constraints?
+4. What adapter/decoupling patterns work in TypeScript's structural type system for extracting a tightly-coupled module?
+5. What is the correct architecture to let CSAPI consume `OgcApiEndpoint` without violating any boundary condition?
+6. What Prettier/ESLint configuration rules apply, and what changes will they force on our code?
+7. What is the exact file-level changelist needed, and what is the correct commit sequence for a clean rebase?
+
+---
+
+## Boundary Conditions (Non-Negotiable)
+
+These are hard constraints from jahow's review of PR #136. They are **not design options** — they are boundary conditions that every research plan must respect. No research question should explore patterns that violate these rules.
+
+### jahow's Four Rules
+
+1. **No CSAPI in root exports:** Nothing from `src/ogc-api/csapi/` shall appear in the root `index.ts`
+2. **Separate entry point:** CSAPI must be importable via `@camptocamp/ogc-client/csapi`
+3. **No outward imports:** Nothing outside `src/ogc-api/csapi/` should import from the CSAPI module
+4. **One-way dependency:** The core module must not depend on CSAPI code. Dependency direction is strictly CSAPI → core, never core → CSAPI
+
+### What These Constraints Close Off
+
+These patterns are **excluded from research scope** — do not study or propose them:
+
+- **Plugin/mixin patterns** where the host module imports the plugin (violates rule 4)
+- **Decorator or monkey-patching patterns** where CSAPI adds methods to `OgcApiEndpoint` (violates rules 3 and 4)
+- **Shared barrel exports** that re-export CSAPI from root (violates rule 1)
+- **`endpoint.csapi()` remaining on the endpoint class** with an import from CSAPI code (violates rule 4)
+
+### What Remains Open for Design
+
+These are the genuine design decisions our research must inform:
+
+- **Consumer API shape:** `new CSAPIClient(endpoint)` vs `CSAPIClient.fromEndpoint(endpoint)` vs `createCSAPIClient({baseUrl, conformance})`
+- **Coupling level:** Accept `OgcApiEndpoint` as concrete class vs interface/type vs extracted data primitives
+- **`hasConnectedSystems` placement:** Stays on endpoint (if it only checks conformance URIs without importing CSAPI) vs moves to CSAPI module as standalone function
+- **`csapiCollections` placement:** Same question as above
+- **Shared type references:** Does CSAPI import types like `OgcApiCollectionInfo` from the core module's public API?
+
+### Additional Constraint: CI Compliance
+
+5. **All CI checks must pass:** Prettier formatting, TypeScript type checking, ESLint linting, browser tests, Node.js tests
 
 ---
 
 ## Research Plans Overview
 
 ### Plan 01: Upstream Build System and Entry Point Analysis
+
+> **Type:** Internal analysis | **Depends on:** None
 
 **Objective:** Understand how `ogc-client` builds, bundles, and exposes its public API so we can add a `./csapi` entry point correctly.
 
@@ -42,8 +80,9 @@
 - What does `build:browser` output look like in `dist/`?
 - How does `vite-plugin-dts` generate `.d.ts` files — does it follow the same export structure?
 - What changes to `package.json` `"exports"` are needed for `"./csapi"`?
-- Are there existing examples of multi-entry-point packages using similar tooling?
 - Does tree-shaking work automatically if we just add exports, or is the separate entry point strictly necessary?
+
+**Boundary scoping:** The entry point *must* be `"./csapi"` mapping to CSAPI module code only. Do not explore shared or merged entry point configurations.
 
 **Sources:**
 - `package.json` (scripts, exports, main, browser, types fields)
@@ -57,6 +96,8 @@
 ---
 
 ### Plan 02: EDR Integration Pattern Analysis
+
+> **Type:** Internal analysis | **Depends on:** None
 
 **Objective:** Understand exactly how EDR (PR #114) integrated with `endpoint.ts`, `info.ts`, and `index.ts`, and why jahow is requesting a different approach for CSAPI.
 
@@ -72,6 +113,8 @@
 - What is the exact boundary between "small enough to include" and "needs its own entry point"?
 - Could EDR eventually move to the same pattern we're building for CSAPI?
 
+**Boundary scoping:** EDR's integration pattern is a reference for *what CSAPI must NOT do*. Research the pattern to understand why it's disallowed at CSAPI's scale, not to replicate it.
+
 **Sources:**
 - `src/ogc-api/endpoint.ts` (EDR-related imports and methods)
 - `src/ogc-api/info.ts` (EDR conformance checks)
@@ -86,6 +129,8 @@
 
 ### Plan 03: Separate Entry Point Design Patterns
 
+> **Type:** External research (build/packaging mechanics) | **Depends on:** 01
+
 **Objective:** Research how other TypeScript/JavaScript libraries implement sub-path exports (`package/submodule`) and determine the best pattern for `@camptocamp/ogc-client/csapi`.
 
 **Why Third:** After understanding the build system (Plan 01) and the EDR precedent (Plan 02), we need to research proven patterns before designing our own.
@@ -99,6 +144,8 @@
 - How do consumers' bundlers (Vite, webpack, esbuild, Rollup) resolve sub-path exports?
 - What happens if a consumer imports from `@camptocamp/ogc-client` and `@camptocamp/ogc-client/csapi` — are there duplicate module issues?
 
+**Boundary scoping:** Only research patterns where the sub-module is a **one-way dependent** of the host package (CSAPI depends on core, never reverse). Exclude patterns where sub-modules register themselves with the host.
+
 **Sources:**
 - Node.js documentation on package exports
 - TypeScript handbook on module resolution with `"exports"`
@@ -110,40 +157,127 @@
 
 ---
 
-### Plan 04: Endpoint Decoupling Architecture
+### Plan 04: TypeScript Sub-Module API Design Patterns (Industry Case Studies)
 
-**Objective:** Design the factory/adapter pattern that lets the CSAPI module consume `OgcApiEndpoint` data without `endpoint.ts` importing CSAPI code.
+> **Type:** External research (industry case studies) | **Depends on:** None
 
-**Why Fourth:** With build system knowledge (01), EDR analysis (02), and entry point patterns (03), we can now design the actual architecture for decoupling.
+**Objective:** Study how proven TypeScript libraries design the consumer-facing API for sub-modules that depend on a core module, to inform the CSAPI consumer API shape.
 
-**Key Questions:**
-- What data does `CSAPIQueryBuilder` actually need from the endpoint? (base URL, available resources, resource URLs, conformance classes)
-- Which `OgcApiEndpoint` public properties provide that data today?
-- Can a factory function (`CSAPIQueryBuilder.fromEndpoint(endpoint, collectionId)`) extract everything it needs from the endpoint's public API?
-- Does `OgcApiEndpoint` need any new public methods/properties to support this, or is the existing API sufficient?
-- How should `hasConnectedSystems` be exposed — as a standalone function in the CSAPI module that accepts an endpoint?
-- How should `csapiCollections` be exposed — same pattern?
-- What happens to the endpoint test fixtures and the 6 CSAPI tests in `endpoint.spec.ts`?
-- Should the CSAPI module re-export `OgcApiEndpoint` types it depends on, or should consumers import from both paths?
-- What's the right level of coupling — should CSAPI depend on `OgcApiEndpoint` as a class, or just on an interface/type describing the data shape?
+**Why Fourth:** This is the most visible design decision — what developers actually type when they use CSAPI. Without studying industry precedent, we'd design from instinct. This plan mirrors Section 3 (TypeScript Testing Best Practices) from the testing research phase.
+
+**Key Questions (all scoped to one-way dependency patterns only):**
+- How does `@aws-sdk/lib-storage` consume `@aws-sdk/client-s3`? Does the sub-module accept the client instance, a config object, or primitives?
+- How does `@octokit/plugin-rest-endpoint-methods` compose with `@octokit/core`? What does the consumer API look like?
+- How does `@angular/cdk/testing` relate to `@angular/core`? Does it import concrete classes or interfaces?
+- How do `date-fns`, `lodash-es`, or `rxjs/operators` expose stateless utility APIs vs stateful module APIs?
+- How does `zod`'s ecosystem (`zod-to-json-schema`, `@anatine/zod-openapi`) depend on zod — concrete class or interface?
+- Across these examples, what is the dominant pattern: factory function, static method, constructor injection, or standalone functions?
+- How do these libraries share types between core and sub-module without circular dependencies?
+- How do these libraries handle the case where the sub-module needs data that the core module provides asynchronously?
+
+**Boundary scoping:** Only study patterns where:
+- The sub-module depends on the core (never reverse) — matching constraint 4
+- The sub-module is imported via a separate path — matching constraint 2
+- The core module has no knowledge of the sub-module's existence — matching constraint 3
+
+**Excluded patterns:** Plugin registration, mixin injection, decorator/monkey-patching, host-imports-plugin architectures.
 
 **Sources:**
-- `src/ogc-api/endpoint.ts` (current CSAPI integration: `csapi()`, `hasConnectedSystems`, `csapiCollections`)
+- AWS SDK v3 source code and documentation (multi-package monorepo with sub-module composition)
+- Octokit source code (plugin architecture with core dependency)
+- Angular CDK source code (sub-path exports with core dependency)
+- RxJS, date-fns, lodash-es (stateless utility sub-modules)
+- zod ecosystem packages (extension packages depending on core)
+
+**Deliverable:** Pattern catalog of consumer API shapes from 5+ proven libraries, with analysis of which patterns satisfy our boundary conditions and which don't
+
+---
+
+### Plan 05: Module Decoupling Patterns in TypeScript (Architectural Patterns)
+
+> **Type:** External research (architectural patterns) | **Depends on:** None
+
+**Objective:** Research adapter patterns, dependency inversion, and module extraction techniques specifically in TypeScript's structural type system, to inform the endpoint decoupling architecture.
+
+**Why Fifth:** Plan 06 requires us to design the decoupling architecture. TypeScript's structural typing makes adapter patterns different from Java/C# where they originated. Without studying TypeScript-specific approaches, we'd apply textbook patterns that may not translate well.
+
+**Key Questions (all scoped to our extraction scenario):**
+- What does the adapter pattern look like in TypeScript? Concrete examples, not just UML diagrams
+- How does dependency inversion work with TypeScript's structural typing? (Duck-typed interfaces as implicit contracts vs explicit `interface` declarations)
+- What are the tradeoffs between coupling levels that satisfy our constraints?
+  - Accept `OgcApiEndpoint` concrete class (tight but simple)
+  - Accept `OgcApiEndpointLike` explicit interface (medium coupling)
+  - Accept `{baseUrl: string, conformance: string[], collections: ...}` data record (loose)
+  - Accept individual function parameters (loosest, most verbose)
+- How do TypeScript projects define module boundaries? (barrel files, explicit public APIs, `@internal` tags)
+- Are there documented case studies of extracting a tightly-coupled module into a separately-importable sub-module *within the same package*? (This is exactly our situation)
+- How loose is "loose enough" for a module that lives in the same repo as its dependency?
+
+**Boundary scoping:** All patterns must result in:
+- CSAPI importing from core (never reverse) — constraint 4
+- No CSAPI types/code appearing in core's module graph — constraint 3
+- A clean module boundary where core can be built/tested without CSAPI — constraints 1, 3, 4
+
+**Excluded patterns:** Circular dependency patterns, shared mutable state, service locator patterns, runtime dependency injection containers.
+
+**Sources:**
+- TypeScript handbook (structural typing, module resolution)
+- Adapter and facade pattern references with TypeScript examples
+- Real-world TypeScript library refactoring case studies (blog posts, conference talks, GitHub issues documenting module extractions)
+- Martin Fowler's refactoring catalog (Extract Module, Replace Dependency with Interface) applied to TypeScript
+
+**Deliverable:** Decision matrix of coupling levels (concrete class → interface → data record → parameters) with tradeoffs analysis specific to our boundary conditions, plus TypeScript code examples for each level
+
+---
+
+### Plan 06: Endpoint Decoupling Architecture (Design Synthesis)
+
+> **Type:** Design synthesis | **Depends on:** 02, 03, 04, 05
+
+**Objective:** Synthesize all prior research into the concrete architecture for decoupling CSAPI from `endpoint.ts`.
+
+**Why Sixth:** This is the critical design plan — every consequential decision lives here. It is now informed by five prior plans: build system mechanics (01), EDR precedent (02), entry point patterns (03), industry API patterns (04), and TypeScript decoupling patterns (05).
+
+**Key Questions (all framed as "given our boundary conditions and prior research findings"):**
+- Given the industry patterns from Plan 04, what consumer API shape best fits our constraints? Factory function, static method, or constructor with endpoint parameter?
+- Given the coupling analysis from Plan 05, what level of coupling is optimal? Concrete `OgcApiEndpoint`, an interface, or extracted data primitives?
+- What exact data does `CSAPIQueryBuilder` need from the endpoint? (base URL, available resources, resource URLs, conformance classes)
+- Which `OgcApiEndpoint` public properties provide that data today?
+- Can a factory function extract everything it needs from the endpoint's existing public API, or does `OgcApiEndpoint` need new public members?
+- Where does `hasConnectedSystems` live? If it only checks conformance URIs (no CSAPI import), it can stay on endpoint. If it needs CSAPI logic, it must move.
+- Where does `csapiCollections` live? Same analysis.
+- What happens to the 6 CSAPI tests in `endpoint.spec.ts`? Do they move to CSAPI's test suite?
+- How are shared types (like `OgcApiCollectionInfo`) referenced across the module boundary?
+
+**Boundary verification checklist (every design decision must pass all four):**
+- [ ] Nothing from CSAPI appears in root `index.ts`
+- [ ] CSAPI is importable via `@camptocamp/ogc-client/csapi`
+- [ ] Nothing outside `src/ogc-api/csapi/` imports from CSAPI
+- [ ] Core module has zero imports from CSAPI code
+
+**Sources:**
+- Plan 01 findings (build system capabilities)
+- Plan 02 findings (EDR pattern analysis)
+- Plan 03 findings (entry point configuration)
+- Plan 04 findings (industry API patterns)
+- Plan 05 findings (TypeScript decoupling patterns)
+- `src/ogc-api/endpoint.ts` (current CSAPI integration)
 - `src/ogc-api/csapi/url_builder.ts` (constructor parameters)
 - `src/ogc-api/csapi/helpers.ts` (link scanning, resource discovery)
 - `src/ogc-api/info.ts` (`checkHasConnectedSystems`)
 - `src/ogc-api/endpoint.spec.ts` (CSAPI test block)
-- Dependency inversion and adapter pattern references
 
-**Deliverable:** Complete architecture design with class diagrams, data flow, factory function signatures, and before/after code comparison
+**Deliverable:** Complete architecture design with class diagrams, data flow, factory function signatures, before/after code comparison, and boundary condition verification for every design choice
 
 ---
 
-### Plan 05: Prettier and ESLint Configuration Analysis
+### Plan 07: Prettier and ESLint Configuration Analysis
+
+> **Type:** Mechanical analysis | **Depends on:** None
 
 **Objective:** Understand the exact formatting and linting rules that our code must conform to, and identify any linting issues beyond just Prettier.
 
-**Why Fifth:** Formatting is mechanical but we need to understand the rules before applying them, especially since we've never run ESLint against this codebase. There may be lint errors beyond formatting that affect our code.
+**Why Seventh:** Formatting is mechanical but we need to understand the rules before applying them, especially since we've never run ESLint against this codebase. There may be lint errors beyond formatting that affect our code.
 
 **Key Questions:**
 - What Prettier version and configuration does upstream use? (`.prettierrc.json` rules)
@@ -165,11 +299,13 @@
 
 ---
 
-### Plan 06: File-Level Changelist and Commit Strategy
+### Plan 08: File-Level Changelist and Commit Strategy
+
+> **Type:** Implementation synthesis | **Depends on:** 01–07
 
 **Objective:** Produce the exact list of file changes needed, organized into a clean commit sequence for the rebase.
 
-**Why Sixth (Last):** This is the synthesis of all prior research into a concrete implementation plan. It requires knowing the build config (01), the EDR pattern (02), the entry point design (03), the decoupling architecture (04), and the formatting rules (05).
+**Why Last:** This is the synthesis of all prior research into a concrete implementation plan. It requires the build config (01), EDR pattern (02), entry point design (03), industry patterns (04), decoupling patterns (05), architecture (06), and formatting rules (07).
 
 **Key Questions:**
 - What is the complete list of files to create, modify, move, or delete?
@@ -180,31 +316,53 @@
 - Do we need to update the PR description?
 - What is the verification checklist before pushing?
 
+**Boundary verification (final gate):**
+- [ ] `git grep` confirms no CSAPI imports in `src/index.ts`
+- [ ] `git grep` confirms no CSAPI imports in any file outside `src/ogc-api/csapi/`
+- [ ] `npm run format:check` passes
+- [ ] `npm run typecheck` passes
+- [ ] `npm run lint` passes
+- [ ] `npm run test:browser` passes
+- [ ] `npm run test:node` passes
+
 **Sources:**
-- All prior research findings (Plans 01–05)
+- All prior research findings (Plans 01–07)
 - Current file inventory on `clean-pr` branch
 - The 13-commit structure of the existing PR
 - Upstream CI pipeline (`qa.yml`)
 
-**Deliverable:** Numbered file-level changelist with before/after paths, commit message drafts, and a rebase strategy
+**Deliverable:** Numbered file-level changelist with before/after paths, commit message drafts, rebase strategy, and CI verification checklist
 
 ---
 
 ## Research Execution Order
 
-| # | Research Plan | Depends On | Est. Time |
-|---|--------------|------------|-----------|
-| 01 | Build System and Entry Point Analysis | — | 2–3 hours |
-| 02 | EDR Integration Pattern Analysis | — | 1–2 hours |
-| 03 | Separate Entry Point Design Patterns | 01 | 2–3 hours |
-| 04 | Endpoint Decoupling Architecture | 02, 03 | 3–4 hours |
-| 05 | Prettier and ESLint Configuration Analysis | — | 1–2 hours |
-| 06 | File-Level Changelist and Commit Strategy | 01–05 | 2–3 hours |
+| # | Research Plan | Type | Depends On | Est. Time |
+|---|--------------|------|------------|-----------|
+| 01 | Build System and Entry Point Analysis | Internal analysis | — | 2–3 hours |
+| 02 | EDR Integration Pattern Analysis | Internal analysis | — | 1–2 hours |
+| 03 | Separate Entry Point Design Patterns | External (packaging) | 01 | 2–3 hours |
+| 04 | TypeScript Sub-Module API Design Patterns | External (industry) | — | 2–3 hours |
+| 05 | Module Decoupling Patterns in TypeScript | External (architecture) | — | 2–3 hours |
+| 06 | Endpoint Decoupling Architecture | **Design synthesis** | 02, 03, 04, 05 | 3–4 hours |
+| 07 | Prettier and ESLint Configuration Analysis | Mechanical | — | 1–2 hours |
+| 08 | File-Level Changelist and Commit Strategy | Implementation synthesis | 01–07 | 2–3 hours |
 
-**Notes:**
-- Plans 01, 02, and 05 have no dependencies and can be executed in parallel
-- Plan 03 depends on 01 (build system knowledge needed first)
-- Plan 04 depends on 02 and 03 (need EDR analysis + entry point patterns before designing architecture)
-- Plan 06 is the synthesis — must be last
-- Total estimated research time: **12–18 hours**
-- This research phase can proceed immediately, without waiting for jahow's detailed review (research doesn't change code)
+**Parallel execution opportunities:**
+- Plans 01, 02, 04, 05, and 07 have no dependencies — can run in parallel
+- Plan 03 depends on 01 only
+- Plan 06 depends on 02, 03, 04, 05 — the critical design synthesis
+- Plan 08 is the final synthesis — must be last
+
+**Total estimated research time: 16–24 hours**
+
+This research phase can proceed immediately, without waiting for jahow's detailed review (research doesn't change code).
+
+---
+
+## Version History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0 | 2026-02-23 | Initial 6-plan strategy |
+| 2.0 | 2026-02-23 | Added Boundary Conditions section, added Plans 04–05 (external research), renumbered Plans 05–06 to 07–08, scoped all research questions to respect jahow's constraints, added boundary verification checklists |
