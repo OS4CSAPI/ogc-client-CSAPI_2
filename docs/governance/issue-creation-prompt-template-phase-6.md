@@ -12,6 +12,8 @@
 
 ## Before Creating an Issue
 
+> **⚠️ Implementation branch:** `phase-6` — All Phase 6 work MUST be implemented on the `phase-6` branch. Do NOT implement on `main` or `clean-pr`.
+
 1. **Read the ROADMAP task** — Identify the authoritative task definition:
    - **Phase 6 tasks:** [`docs/planning/phase-6/P6-ROADMAP.md`](../planning/phase-6/P6-ROADMAP.md) — 10 tasks (13 execution units) for module boundary refactoring
    - **Phase 1–5 tasks:** [`docs/planning/ROADMAP.md`](../planning/ROADMAP.md), [`docs/planning/phase-5/P5-ROADMAP.md`](../planning/phase-5/P5-ROADMAP.md) — prior phases (complete)
@@ -41,6 +43,7 @@ Use this template when the issue maps to a planned P6 ROADMAP task.
 {{One-sentence summary of what this task produces. Example: "Apply Prettier formatting to all 51 CSAPI files" or "Create barrel file `csapi/index.ts` with all public CSAPI re-exports."}}
 
 **ROADMAP Reference:** Phase 6, Task {{number/subtask}} — {{ROADMAP task title}} (~{{X-Y}} hours, {{Low/Medium}} complexity)
+**Implementation Branch:** `phase-6`
 
 ---
 
@@ -207,6 +210,7 @@ Use this template when the issue is triggered by a verification failure, code re
 **Finding Reference:** {{Code review finding ID or verification gate failure}} from [{{Source document}}]({{link}})
 **Severity:** {{Critical / Moderate / Low / Informational}}
 **Category:** {{Boundary violation / Export gap / Type error / Test regression / Formatting issue}}
+**Implementation Branch:** `phase-6`
 
 ---
 
