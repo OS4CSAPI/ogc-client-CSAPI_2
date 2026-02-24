@@ -1,28 +1,29 @@
 # Phase 6 — Architecture Verification Test Prompt Template
 
-**Purpose:** Reusable prompt for triggering comprehensive architecture verification of Phase 6 (Upstream Acceptance Refactoring) work. Unlike Phase 5's live server smoke test, Phase 6 verification focuses on **module boundary isolation, export completeness, build correctness, and bundle independence** — not runtime behavior against live servers. The CSAPI business logic is unchanged; what changed is how it's packaged and accessed.
+**Purpose:** Reusable prompt for triggering comprehensive architecture verification of Phase 6 (Upstream Acceptance Refactoring) work. The primary focus is **module boundary isolation, export completeness, build correctness, and bundle independence** (Steps 1–12). A focused **live server regression check** (Step 13) is included to confirm the restructuring introduced no runtime regressions against either server. The CSAPI business logic is unchanged; what changed is how it's packaged and accessed.
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Date:** February 24, 2026  
-**Supersedes:** Nothing — sibling to `smoke-test-prompt-template-phase-5.md` (Phase 5), which remains valid for runtime parser validation. Phase 6 does not introduce new runtime behavior to test against live servers.  
+**Supersedes:** v1.0 of this template (added Step 13 live server regression)  
+**Sibling:** `smoke-test-prompt-template-phase-5.md` (Phase 5) remains the authoritative template for exhaustive parser validation and full CRUD testing.  
 **Report destination:** `docs/implementation/phase-6-architecture-verification.md`
 
 ---
 
 ## Why "Architecture Verification" Instead of "Smoke Test"?
 
-Phase 5 smoke tests validated **runtime behavior** — parsers producing correct typed output from real server JSON. Phase 6 changes **zero runtime behavior**. It restructures the integration boundary (imports, exports, entry points). The correct validation is structural, not behavioral:
+Phase 5 smoke tests validated **runtime behavior** — parsers producing correct typed output from real server JSON. Phase 6 changes **zero runtime behavior**. It restructures the integration boundary (imports, exports, entry points). The primary validation is structural, not behavioral — but a focused live server regression step (Step 13) provides end-to-end confidence that the restructuring breaks nothing at runtime:
 
-| Dimension            | Phase 5 Smoke Test                            | Phase 6 Architecture Verification                                                  |
-| -------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------- |
-| What's tested        | Parser correctness against live data          | Module boundary isolation and build correctness                                    |
-| Requires servers     | Yes (OSH + 52North)                           | No — entirely local                                                                |
-| HTTP requests        | 100+ per test                                 | Zero                                                                               |
-| Primary tool         | `Invoke-RestMethod`                           | `git grep`, `npx tsc`, `npm run test`, `node --conditions`                         |
-| Risk being mitigated | Parsers disagree with real server data        | Consumer imports break, bundle includes unwanted code, TypeScript resolution fails |
-| Success criteria     | All parsers handle all server response shapes | All 12 verification gates pass, litmus test passes, consumer simulation succeeds   |
+| Dimension            | Phase 5 Smoke Test                            | Phase 6 Architecture Verification                                                                                |
+| -------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| What's tested        | Parser correctness against live data          | Module boundary isolation and build correctness + **focused live server regression**                             |
+| Requires servers     | Yes (OSH + 52North)                           | Steps 1–12: No (entirely local). **Step 13: Yes (OSH + 52North)**                                                |
+| HTTP requests        | 100+ per test                                 | Steps 1–12: Zero. **Step 13: ~20–30 focused requests**                                                           |
+| Primary tool         | `Invoke-RestMethod`                           | `git grep`, `npx tsc`, `npm run test`, `node --conditions`, **`Invoke-RestMethod` (Step 13)**                    |
+| Risk being mitigated | Parsers disagree with real server data        | Consumer imports break, bundle includes unwanted code, TypeScript resolution fails, **packaging breaks runtime** |
+| Success criteria     | All parsers handle all server response shapes | All 12 verification gates pass, litmus test passes, consumer simulation succeeds, **no live server regressions** |
 
-All Phase 5 smoke test findings (F1–F90, P4-F1–F5, P5-F\*) remain valid and unchanged — Phase 6 did not modify any parser, URL builder, or format handler behavior.
+All Phase 5 smoke test findings (F1–F90, P4-F1–F5, P5-F\*) remain valid and unchanged — Phase 6 did not modify any parser, URL builder, or format handler behavior. Step 13 spot-checks a representative sample of those findings to confirm continuity.
 
 ---
 
@@ -67,6 +68,8 @@ Read these documents IN FULL before running any verification commands:
 | P6 ROADMAP | `docs/planning/phase-6/P6-ROADMAP.md` | Task definitions and verification gates |
 | AI Operational Constraints | `docs/governance/AI_OPERATIONAL_CONSTRAINTS.md` | Behavioral boundaries |
 | Previous Code Review | `docs/implementation/phase-{prev}-code-review.md` | Prior findings and open items |
+| Known Server Quirks | `docs/governance/known-server-quirks.md` | **CRITICAL for Step 13** — All known server behaviors, content negotiation rules |
+| Previous Smoke Test | `docs/implementation/live-server-smoke-test-post-phase-{prev}.md` | Prior findings for Step 13e regression check |
 
 ### Test Instructions
 
@@ -380,14 +383,164 @@ For each issue discovered during verification, classify with:
 
 After completing Steps 1–11, present a summary:
 
-1. **Quick verdict:** PASS (all 12 gates green) / FAIL (list failing gates)
+1. **Quick verdict:** PASS (all 12 gates green + no live server regressions) / FAIL (list failing gates or regressions)
 2. **Gate scorecard:** 12/12 ✅, or N/12 with failures listed
 3. **Litmus test result:** Core compiles without CSAPI? Yes/No
 4. **Export completeness:** All symbols accounted for? Yes/No
 5. **Factory function:** Tests pass? Yes/No
 6. **Any findings?** Count by severity
-7. **Ready for Task 10b (push to upstream)?** Yes/No/Conditional
-8. Ask: "Should I write the full report and commit it?"
+7. **Ready for Step 13?** If all structural gates pass, proceed to live server regression.
+8. Ask: "Should I proceed to Step 13 (live server regression)?"
+
+After completing Step 13, present the live server regression summary:
+
+9. **Live server verdict:** PASS / FAIL
+10. **Server connectivity:** Both reachable? Yes/No
+11. **Parser regression:** All spot-checked parsers correct? Yes/No
+12. **CRUD regression:** Create/read/delete cycle successful? Yes/No
+13. **Prior findings stable?** Any status changes? Yes/No
+14. **Ready for Task 10b (push to upstream)?** Yes/No/Conditional
+15. Ask: "Should I write the full report and commit it?"
+
+---
+
+#### Step 13: Live Server Regression Verification
+
+Phase 6 changed zero runtime behavior — parsers, URL builders, and CRUD methods are identical to Phase 5. This step confirms that the restructured imports and packaging introduced no runtime regression. It is NOT a full Phase 5 smoke test; it is a focused confidence check against both live servers.
+
+**⚠️ CREDENTIAL REMINDER:** OSH requires Basic authentication. If you do not have the credentials from prior conversation context, you MUST ask the user before proceeding. Credentials are NEVER committed to the repository.
+
+##### 13a: Server Connectivity
+
+For EACH server, verify the root API is reachable and returns the expected structure:
+
+| Server | URL                                      | Auth                             | Command Pattern                                                            |
+| ------ | ---------------------------------------- | -------------------------------- | -------------------------------------------------------------------------- |
+| OSH    | `http://45.55.99.236:8080/sensorhub/api` | Basic (ask user for credentials) | `Invoke-RestMethod -Uri "..." -Headers @{ Authorization = "Basic $cred" }` |
+| 52N    | `https://csa.demo.52north.org/`          | None                             | `Invoke-RestMethod -Uri "..." -SkipCertificateCheck`                       |
+
+For each server, record:
+
+- HTTP status (expect 200)
+- `links` array present and non-empty
+- Key link relations visible (e.g., `systems`, `deployments`, `conformance`)
+
+Then fetch `/conformance` from each server — record conformance class count.
+
+##### 13b: Resource Inventory Regression
+
+For EACH server, fetch the resource inventory and compare against the most recent Phase 5 smoke test baseline:
+
+| Endpoint          | Accept / `?f=`  | OSH P5 Count | OSH Now | 52N P5 Count | 52N Now | Changed? |
+| ----------------- | --------------- | ------------ | ------- | ------------ | ------- | -------- |
+| /systems          | OSH: `?f=json`  | {{prev}}     |         | {{prev}}     |         |          |
+|                   | 52N: `geo+json` |              |         |              |         |          |
+| /deployments      |                 | {{prev}}     |         | {{prev}}     |         |          |
+| /procedures       |                 | {{prev}}     |         | {{prev}}     |         |          |
+| /samplingFeatures |                 | {{prev}}     |         | {{prev}}     |         |          |
+| /properties       |                 | {{prev}}     |         | N/A          | N/A     |          |
+| /datastreams      |                 | {{prev}}     |         | N/A          | N/A     |          |
+| /observations     |                 | {{prev}}     |         | N/A          | N/A     |          |
+| /controlstreams   |                 | {{prev}}     |         | N/A          | N/A     |          |
+| /commands         |                 | {{prev}}     |         | N/A          | N/A     |          |
+
+**Notes:**
+
+- Count changes are expected (data is live and servers may have new resources). Failures to reach endpoints are NOT expected — those indicate a regression.
+- 52N Part 2 endpoints are expected to be broken (500/400/404) — this is a known server limitation, not a regression.
+- **NEVER use `Accept: application/json` for 52N** — it returns empty collections. Use `Accept: application/geo+json`.
+- OSH ignores Accept headers — use `?f=json` or `?f=geojson` query parameter.
+
+##### 13c: Parser Regression Spot-Check
+
+Validate at least 2 Part 1 and 2 Part 2 parsers against live data to confirm they still produce correct output. This is a spot-check, not the exhaustive Phase 5 parser validation.
+
+**Part 1 — Both servers:**
+
+1. Fetch 1 system from OSH (`?f=json`) and 1 from 52N (`Accept: application/geo+json`)
+2. Trace through `classifyFeature()` — does it still return the correct resource type from `featureType`?
+3. Trace through `parseValidTime()` if `validTime` is present — does it handle the server's format (array for OSH, null for 52N)?
+
+**Part 2 — OSH only (52N Part 2 is all broken):**
+
+4. Fetch 1 datastream from OSH — trace through `parseDatastream()`:
+   - `outputName`, `validTime`, `resultType`, `observedProperties`, `links` extracted correctly?
+5. Fetch 1 observation from OSH — trace through `parseObservation()`:
+   - `phenomenonTime`, `resultTime`, `result`, `datastreamId` extracted correctly?
+
+| Parser           | Server | Resource ID | Throws? | Output Correct? | Regression? |
+| ---------------- | ------ | ----------- | ------- | --------------- | ----------- |
+| classifyFeature  | OSH    |             |         |                 |             |
+| classifyFeature  | 52N    |             |         |                 |             |
+| parseValidTime   | OSH    |             |         |                 |             |
+| parseValidTime   | 52N    |             |         |                 |             |
+| parseDatastream  | OSH    |             |         |                 |             |
+| parseObservation | OSH    |             |         |                 |             |
+
+**If any parser throws or produces incorrect output, this is a potential Phase 6 regression.** Investigate immediately — Phase 6 should not have changed any parser behavior.
+
+##### 13d: CRUD Smoke Cycle (OSH Only)
+
+Perform a minimal create → read → delete cycle to confirm write operations still work through the restructured module:
+
+1. **Create** a test system:
+
+   ```powershell
+   $body = '{"type":"Feature","properties":{"featureType":"http://www.w3.org/ns/sosa/Sensor","name":"P6-smoke-test-temp","description":"Temporary Phase 6 regression test — will be deleted"},"geometry":null}'
+   Invoke-RestMethod -Method Post -Uri "http://45.55.99.236:8080/sensorhub/api/systems" -Headers $headers -ContentType "application/geo+json" -Body $body
+   ```
+
+   Record: HTTP status (expect 201), Location header → extract new system ID
+
+2. **Read** it back: `GET /systems/{id}` — verify 200, correct `name` and `featureType`
+
+3. **Delete** it: `DELETE /systems/{id}` — verify 204
+
+4. **Confirm deletion**: `GET /systems/{id}` — verify 404
+
+| Operation                 | HTTP Status | Expected | Regression? |
+| ------------------------- | ----------- | -------- | ----------- |
+| POST /systems             |             | 201      |             |
+| GET /systems/{id}         |             | 200      |             |
+| DELETE /systems/{id}      |             | 204      |             |
+| GET /systems/{id} (after) |             | 404      |             |
+
+**⚠️ Only delete what you create. Do NOT delete pre-existing data.**
+
+**⚠️ Do NOT include an `Accept` header on POST requests to OSH** — this is a known quirk.
+
+**⚠️ PUT requires `uid` in the body on OSH** — but this cycle skips update for brevity. A full CRUD cycle with update is in the Phase 5 template.
+
+##### 13e: Prior Findings Quick Regression
+
+Reference the most recent smoke test report and spot-check **at least 5** representative prior findings. Select findings that cover different categories:
+
+| Finding | Category                 | Original Status | Current Status | Evidence |
+| ------- | ------------------------ | --------------- | -------------- | -------- |
+| {{id}}  | Code bug                 | {{status}}      |                |          |
+| {{id}}  | Server limitation        | {{status}}      |                |          |
+| {{id}}  | Interoperability concern | {{status}}      |                |          |
+| {{id}}  | Parser gap               | {{status}}      |                |          |
+| {{id}}  | Naming variation         | {{status}}      |                |          |
+
+Prior finding series to check:
+
+- **F1–F90** (Phase 2/3 findings)
+- **P4-F1–P4-F5** (Phase 4 findings)
+- **P5-F\*** (Phase 5 findings)
+
+**Any finding whose status changed since the last smoke test is a potential Phase 6 regression and must be investigated.** Phase 6 changed zero runtime behavior, so status changes are unexpected.
+
+##### 13f: Live Server Regression Verdict
+
+After completing Steps 13a–13e, provide a live server regression verdict:
+
+1. **Server connectivity:** Both servers reachable? Yes/No
+2. **Resource inventory:** Endpoints still respond? Yes/No
+3. **Parser spot-check:** All parsers produce correct output? Yes/No
+4. **CRUD cycle:** Create/read/delete successful? Yes/No
+5. **Prior findings:** Any status changes detected? Yes/No
+6. **Overall regression verdict:** PASS (no regressions) / FAIL (regressions found)
 
 ---
 
@@ -528,19 +681,77 @@ Match: ✅/❌
 ## Findings
 
 ### P6-V{{N}} ({{Severity}}): {{Title}}
-**Category:** {{Boundary violation / Export gap / Build error / ...}}
-**Gate affected:** {{A1/A2/.../B3}}
+**Category:** {{Boundary violation / Export gap / Build error / Live server regression / ...}}
+**Gate affected:** {{A1/A2/.../B3/R1–R5}}
 **Evidence:** {{command and output}}
 **Status:** {{Needs fix / Informational}}
+
+## Live Server Regression Results
+
+### Server Connectivity
+
+| Server | HTTP Status | Links Count | Conformance Classes |
+| ------ | ----------- | ----------- | ------------------- |
+| OSH    |             |             |                     |
+| 52N    |             |             |                     |
+
+### Resource Inventory (vs Phase 5 Baseline)
+
+| Endpoint          | OSH P5 | OSH Now | 52N P5 | 52N Now | Regression? |
+| ----------------- | ------ | ------- | ------ | ------- | ----------- |
+| /systems          |        |         |        |         |             |
+| /deployments      |        |         |        |         |             |
+| /procedures       |        |         |        |         |             |
+| /samplingFeatures |        |         |        |         |             |
+| /properties       |        |         | N/A    | N/A     |             |
+| /datastreams      |        |         | N/A    | N/A     |             |
+| /observations     |        |         | N/A    | N/A     |             |
+| /controlstreams   |        |         | N/A    | N/A     |             |
+| /commands         |        |         | N/A    | N/A     |             |
+
+### Parser Spot-Check
+
+| Parser             | Server | Resource ID | Throws? | Output Correct? | Regression? |
+| ------------------ | ------ | ----------- | ------- | --------------- | ----------- |
+| classifyFeature    | OSH    |             |         |                 |             |
+| classifyFeature    | 52N    |             |         |                 |             |
+| parseDatastream    | OSH    |             |         |                 |             |
+| parseObservation   | OSH    |             |         |                 |             |
+
+### CRUD Smoke Cycle (OSH)
+
+| Operation                 | HTTP Status | Expected | Regression? |
+| ------------------------- | ----------- | -------- | ----------- |
+| POST /systems             |             | 201      |             |
+| GET /systems/{id}         |             | 200      |             |
+| DELETE /systems/{id}      |             | 204      |             |
+| GET /systems/{id} (after) |             | 404      |             |
+
+### Prior Findings Regression
+
+| Finding | Category | Original Status | Current Status | Changed? |
+| ------- | -------- | --------------- | -------------- | -------- |
+|         |          |                 |                |          |
+
+### Live Server Regression Verdict
+
+- Server connectivity: ✅/❌
+- Resource inventory: ✅/❌
+- Parser spot-check: ✅/❌
+- CRUD cycle: ✅/❌
+- Prior findings stable: ✅/❌
+- **Overall: PASS / FAIL**
 
 ## Verdict
 
 {{2-3 paragraph assessment:
-- Do all 12 gates pass?
+- Do all 12 structural gates pass?
 - Is the module boundary clean?
 - Are exports complete?
 - Is the factory function correct?
 - Is the consumer API migration viable?
+- Did the live server regression check pass?
+- Any prior findings that changed status?
 - Ready for Task 10b (push to clean-pr)?
 }}
 ```
@@ -555,10 +766,11 @@ Then commit the report, push, and confirm the file is at the expected path.
 
 After the verification report is generated:
 
-1. **If all 12 gates pass:** Proceed to Task 10b (rebase to `clean-pr`, push to upstream)
-2. **If any gate fails:** Create a fix issue using `docs/governance/issue-creation-prompt-template-phase-6.md`, fix the issue, then re-run verification
-3. **Update the code review** if the verification found issues not caught in code review
-4. **The verification report is the final gate** before pushing to upstream — it proves to jahow that all requirements are met
+1. **If all 12 structural gates pass AND live server regression passes:** Proceed to Task 10b (rebase to `clean-pr`, push to upstream)
+2. **If any structural gate fails:** Create a fix issue using `docs/governance/issue-creation-prompt-template-phase-6.md`, fix the issue, then re-run verification
+3. **If live server regression fails:** Investigate immediately — Phase 6 changed zero runtime behavior, so regressions indicate a packaging/import issue. Fix before proceeding.
+4. **Update the code review** if the verification found issues not caught in code review
+5. **The verification report is the final gate** before pushing to upstream — it proves to jahow that all requirements are met
 
 ---
 
@@ -573,22 +785,51 @@ After the verification report is generated:
 - [ ] **Commit 15 touches exactly 7 files** — 3 created + 4 modified. Any additional file changes are scope creep.
 - [ ] **Record every command and output** — the verification report is evidence for jahow. It must be reproducible.
 - [ ] **Findings get P6-V numbering** — Phase 6 verification findings use `P6-V1`, `P6-V2`, etc.
+- [ ] **OSH credentials not in repo** — The OpenSensorHub username and password are NEVER committed to the repository, NEVER written into any file, and NEVER included in the report. If you don't have them, ask the user.
+- [ ] **52North needs `-SkipCertificateCheck`** — Every PowerShell command to the 52North server MUST include this flag due to the expired SSL certificate.
+- [ ] **NEVER use `Accept: application/json` for 52N** — Returns empty collections. Use `Accept: application/geo+json` or `Accept: application/sml+json`.
+- [ ] **OSH uses `?f=` not Accept headers** — OSH ignores Accept headers entirely. Use `?f=json`, `?f=geojson`, or `?f=sml3`.
+- [ ] **Only delete what you create** — The CRUD smoke cycle creates a test resource and deletes ONLY that resource. Never delete pre-existing data.
+- [ ] **Prior findings regression is mandatory** — At least 5 prior findings from different categories must be spot-checked. Any status change is a potential Phase 6 regression.
+- [ ] **Read `known-server-quirks.md` before Step 13** — Before issuing any HTTP request, read the server quirks document to avoid re-discovering known issues.
 
 ---
 
 ## Relationship to Phase 5 Smoke Tests
 
-Phase 6 architecture verification does NOT replace Phase 5 smoke tests. They test different things:
+Phase 6 architecture verification does NOT replace Phase 5 smoke tests. Steps 1–12 are structural; Step 13 is a focused regression spot-check. For exhaustive parser validation, full CRUD testing, or new-feature validation, use the Phase 5 template.
 
-| Concern | Validated By |
-|---------|-------------|
-| Parsers produce correct output from live server data | Phase 5 smoke test |
-| URL builder generates correct URLs | Phase 5 smoke test |
-| CRUD operations work against live servers | Phase 5 smoke test |
-| Module boundary is clean | **Phase 6 verification** (this template) |
-| Bundle isolation works | **Phase 6 verification** (this template) |
-| Consumer imports resolve | **Phase 6 verification** (this template) |
-| CI pipeline passes | **Phase 6 verification** (this template) |
+| Concern                                               | Validated By                                                        |
+| ----------------------------------------------------- | ------------------------------------------------------------------- |
+| Parsers produce correct output from live server data  | Phase 5 smoke test (exhaustive) / **Step 13c** (spot-check)        |
+| URL builder generates correct URLs                    | Phase 5 smoke test                                                  |
+| CRUD operations work against live servers             | Phase 5 smoke test (full cycle) / **Step 13d** (create-read-delete) |
+| Module boundary is clean                              | **Steps 1–12** (this template)                                      |
+| Bundle isolation works                                | **Steps 1–12** (this template)                                      |
+| Consumer imports resolve                              | **Steps 1–12** (this template)                                      |
+| CI pipeline passes                                    | **Steps 1–12** (this template)                                      |
+| Server connectivity regression                        | **Step 13a** (this template)                                        |
+| Resource inventory regression                         | **Step 13b** (this template)                                        |
+| Prior findings stability                              | Phase 5 smoke test (full) / **Step 13e** (5-finding spot-check)     |
 
-If a Phase 5 smoke test is needed after Phase 6, use `smoke-test-prompt-template-phase-5.md` — it remains fully valid since Phase 6 changed zero runtime behavior.
+If a full Phase 5 smoke test is needed after Phase 6, use `smoke-test-prompt-template-phase-5.md` — it remains fully valid since Phase 6 changed zero runtime behavior.
+
+---
+
+## Server Quick Reference
+
+| Property              | OpenSensorHub                                    | 52North                                                             |
+| --------------------- | ------------------------------------------------ | ------------------------------------------------------------------- |
+| URL                   | `http://45.55.99.236:8080/sensorhub/api`         | `https://csa.demo.52north.org/`                                     |
+| Auth                  | Basic (⚠️ ask user for credentials)              | None                                                                |
+| SSL                   | HTTP (no SSL issues)                             | HTTPS (expired cert — use `-SkipCertificateCheck`)                  |
+| Conformance           | 20+ CSAPI classes                                | Zero CSAPI classes                                                  |
+| Content negotiation   | `?f=` query parameter (Accept headers ignored)   | `Accept` header (routes to different backends)                      |
+| Default content type  | `application/json`                               | `application/sml+json`                                              |
+| Part 1 resources      | ✅ All work                                       | ✅ systems, deployments, procedures (SFs empty)                      |
+| Part 2 resources      | ✅ All work                                       | ❌ All broken (500/400/404)                                          |
+| Write operations      | ✅ Full CRUD                                      | ❓ Not tested                                                        |
+| SML access            | `?f=sml3`                                        | `Accept: application/sml+json`                                      |
+| Response envelope     | `{items}` or `{FeatureCollection}`               | `{items}` or `{FeatureCollection}` depending on Accept              |
+| Parser testable?      | ✅ All parsers                                    | ⚠️ Part 1 only (Part 2 broken)                                      |
 ```
