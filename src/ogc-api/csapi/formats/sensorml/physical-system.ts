@@ -29,7 +29,6 @@ import type {
   OutputList,
   ParameterList,
   ComponentList,
-  ComponentEntry,
   ConnectionList,
   Connection,
   SpatialFrame,
@@ -46,7 +45,6 @@ import {
   parseLink,
   parseProcessMethod,
   parseComponentEntry,
-  parseIOComponentChoice,
   parseIOList,
   parseSettings,
   parseFeatureList,
@@ -69,9 +67,7 @@ export { parseProcessMethod, parseComponentEntry } from './_helpers.js';
  *   or if any component entry is invalid
  * @see OAS: ComponentList (L4112)
  */
-export function parseComponentList(
-  value: unknown
-): ComponentList | undefined {
+export function parseComponentList(value: unknown): ComponentList | undefined {
   if (value === undefined || value === null) return undefined;
   if (!Array.isArray(value)) {
     throw new SensorMLParseError('"components" must be an array');
@@ -103,9 +99,7 @@ export function parseComponentList(
  */
 function parseConnection(value: unknown, index: number): Connection {
   if (!isRecord(value)) {
-    throw new SensorMLParseError(
-      `connections[${index}] must be an object`
-    );
+    throw new SensorMLParseError(`connections[${index}] must be an object`);
   }
   if (typeof value.source !== 'string') {
     throw new SensorMLParseError(
@@ -160,9 +154,7 @@ export function parseConnectionList(
  */
 function parseFrameAxis(value: unknown, index: number): FrameAxis {
   if (!isRecord(value)) {
-    throw new SensorMLParseError(
-      `axes[${index}] must be an object`
-    );
+    throw new SensorMLParseError(`axes[${index}] must be an object`);
   }
   if (typeof value.name !== 'string') {
     throw new SensorMLParseError(
@@ -189,10 +181,7 @@ function parseFrameAxis(value: unknown, index: number): FrameAxis {
  * @see OAS: SpatialFrame (L3961)
  * @see SensorML 3.0 §7.6.2 — Local Reference Frames
  */
-function parseSpatialFrame(
-  value: unknown,
-  index: number
-): SpatialFrame {
+function parseSpatialFrame(value: unknown, index: number): SpatialFrame {
   if (!isRecord(value)) {
     throw new SensorMLParseError(
       `localReferenceFrames[${index}] must be an object`
@@ -249,14 +238,9 @@ function parseSpatialFrames(value: unknown): SpatialFrame[] | undefined {
  * @see OAS: TemporalFrame (L3987)
  * @see SensorML 3.0 §7.6.3 — Local Time Frames
  */
-function parseTemporalFrame(
-  value: unknown,
-  index: number
-): TemporalFrame {
+function parseTemporalFrame(value: unknown, index: number): TemporalFrame {
   if (!isRecord(value)) {
-    throw new SensorMLParseError(
-      `localTimeFrames[${index}] must be an object`
-    );
+    throw new SensorMLParseError(`localTimeFrames[${index}] must be an object`);
   }
   if (typeof value.origin !== 'string') {
     throw new SensorMLParseError(
@@ -546,8 +530,7 @@ export function parsePhysicalSystem(json: unknown): PhysicalSystem {
   if (attachedTo !== undefined) result.attachedTo = attachedTo;
   if (localReferenceFrames !== undefined)
     result.localReferenceFrames = localReferenceFrames;
-  if (localTimeFrames !== undefined)
-    result.localTimeFrames = localTimeFrames;
+  if (localTimeFrames !== undefined) result.localTimeFrames = localTimeFrames;
   if (position !== undefined) result.position = position;
 
   if (components !== undefined) result.components = components;
@@ -667,8 +650,7 @@ export function parsePhysicalComponent(json: unknown): PhysicalComponent {
   if (attachedTo !== undefined) result.attachedTo = attachedTo;
   if (localReferenceFrames !== undefined)
     result.localReferenceFrames = localReferenceFrames;
-  if (localTimeFrames !== undefined)
-    result.localTimeFrames = localTimeFrames;
+  if (localTimeFrames !== undefined) result.localTimeFrames = localTimeFrames;
   if (position !== undefined) result.position = position;
 
   if (method !== undefined) result.method = method;

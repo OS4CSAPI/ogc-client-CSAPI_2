@@ -292,10 +292,7 @@ export type {
 } from './swecommon/index.js';
 
 // Validation types
-export type {
-  ValidationResult,
-  ValidationError,
-} from './swecommon/index.js';
+export type { ValidationResult, ValidationError } from './swecommon/index.js';
 
 // ========================================
 // Response — Collection Envelope Normalization

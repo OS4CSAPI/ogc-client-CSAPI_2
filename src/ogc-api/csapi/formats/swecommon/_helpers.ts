@@ -16,7 +16,10 @@
  * @module
  */
 
-import type { AbstractDataComponent, AssociationAttributeGroup } from './types.js';
+import type {
+  AbstractDataComponent,
+  AssociationAttributeGroup,
+} from './types.js';
 
 // ========================================
 // Primitive Helpers
@@ -25,9 +28,7 @@ import type { AbstractDataComponent, AssociationAttributeGroup } from './types.j
 /**
  * Type guard: checks whether `value` is a non-null, non-array object.
  */
-export function isRecord(
-  value: unknown
-): value is Record<string, unknown> {
+export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
@@ -52,7 +53,8 @@ export function parseBaseProperties(
   const result: Partial<AbstractDataComponent> = {};
   if (typeof json.id === 'string') result.id = json.id;
   if (typeof json.label === 'string') result.label = json.label;
-  if (typeof json.description === 'string') result.description = json.description;
+  if (typeof json.description === 'string')
+    result.description = json.description;
   if (typeof json.definition === 'string') result.definition = json.definition;
   if (typeof json.updatable === 'boolean') result.updatable = json.updatable;
   if (typeof json.optional === 'boolean') result.optional = json.optional;

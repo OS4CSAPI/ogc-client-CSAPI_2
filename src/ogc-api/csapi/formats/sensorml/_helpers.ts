@@ -35,9 +35,7 @@ import { parseSensorML30 } from './parser.js';
 /**
  * Type guard: checks whether `value` is a non-null object.
  */
-export function isRecord(
-  value: unknown
-): value is Record<string, unknown> {
+export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
@@ -107,9 +105,7 @@ export function parseFeatureList(value: unknown): FeatureList | undefined {
  * @throws {SensorMLParseError} If the entry lacks a required `name`
  * @see OAS: IOComponentChoice (L3662)
  */
-export function parseIOComponentChoice(
-  value: unknown
-): IOComponentChoice {
+export function parseIOComponentChoice(value: unknown): IOComponentChoice {
   if (!isRecord(value)) {
     throw new SensorMLParseError('IOComponentChoice entry must be an object');
   }
@@ -214,9 +210,7 @@ export function parseModes(value: unknown): Mode[] | undefined {
  * @returns Parsed ProcessMethod or `undefined` if not a valid object
  * @see OAS: ProcessMethod (L3671)
  */
-export function parseProcessMethod(
-  value: unknown
-): ProcessMethod | undefined {
+export function parseProcessMethod(value: unknown): ProcessMethod | undefined {
   if (!isRecord(value)) return undefined;
   const method: ProcessMethod = {};
   if (value.algorithm !== undefined) method.algorithm = value.algorithm;
@@ -257,9 +251,7 @@ export function parseComponentEntry(
   index: number
 ): ComponentEntry {
   if (!isRecord(value)) {
-    throw new SensorMLParseError(
-      `components[${index}] must be an object`
-    );
+    throw new SensorMLParseError(`components[${index}] must be an object`);
   }
   if (typeof value.name !== 'string') {
     throw new SensorMLParseError(
@@ -268,7 +260,12 @@ export function parseComponentEntry(
   }
 
   // Delegate all inline process types to the main SensorML dispatcher
-  const knownTypes = ['PhysicalSystem', 'PhysicalComponent', 'SimpleProcess', 'AggregateProcess'];
+  const knownTypes = [
+    'PhysicalSystem',
+    'PhysicalComponent',
+    'SimpleProcess',
+    'AggregateProcess',
+  ];
   if (typeof value.type === 'string' && knownTypes.includes(value.type)) {
     const parsed = parseSensorML30(value);
     return { ...parsed, name: value.name as string } as ComponentEntry;

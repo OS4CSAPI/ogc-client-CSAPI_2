@@ -49,8 +49,7 @@ export function parseProperty(json: unknown): Property {
       ? { description: obj.description }
       : {}),
     uniqueId: typeof obj.uniqueId === 'string' ? obj.uniqueId : '',
-    baseProperty:
-      typeof obj.baseProperty === 'string' ? obj.baseProperty : '',
+    baseProperty: typeof obj.baseProperty === 'string' ? obj.baseProperty : '',
     ...(typeof obj.objectType === 'string'
       ? { objectType: obj.objectType }
       : {}),

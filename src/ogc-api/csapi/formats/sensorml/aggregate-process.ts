@@ -25,7 +25,6 @@
 import type {
   AggregateProcess,
   ComponentList,
-  ComponentEntry,
   ConnectionList,
   Connection,
   InputList,
@@ -38,7 +37,6 @@ import {
   optionalString,
   parseLink,
   parseComponentEntry,
-  parseIOComponentChoice,
   parseIOList,
   parseSettings,
   parseFeatureList,
@@ -61,9 +59,7 @@ export { parseComponentEntry } from './_helpers.js';
  *   or if any component entry is invalid
  * @see OAS: ComponentList (L4112)
  */
-export function parseComponentList(
-  value: unknown
-): ComponentList | undefined {
+export function parseComponentList(value: unknown): ComponentList | undefined {
   if (value === undefined || value === null) return undefined;
   if (!Array.isArray(value)) {
     throw new SensorMLParseError('"components" must be an array');
@@ -95,9 +91,7 @@ export function parseComponentList(
  */
 function parseConnection(value: unknown, index: number): Connection {
   if (!isRecord(value)) {
-    throw new SensorMLParseError(
-      `connections[${index}] must be an object`
-    );
+    throw new SensorMLParseError(`connections[${index}] must be an object`);
   }
   if (typeof value.source !== 'string') {
     throw new SensorMLParseError(

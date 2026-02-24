@@ -32,9 +32,7 @@ describe('parseProperty', () => {
     const result: Property = parseProperty(input);
 
     expect(result.id).toBe('air-temp');
-    expect(result.uniqueId).toBe(
-      'urn:x-ogc:def:property:noaa::AirTemperature'
-    );
+    expect(result.uniqueId).toBe('urn:x-ogc:def:property:noaa::AirTemperature');
     expect(result.label).toBe('Air Temperature');
     expect(result.description).toBe('Temperature of the ambient air');
     expect(result.baseProperty).toBe(

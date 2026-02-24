@@ -235,9 +235,7 @@ ${e.message}`);
     return Promise.all([this.data, this.hasConnectedSystems])
       .then(([data, hasCSAPI]) => (hasCSAPI ? data : { collections: [] }))
       .then(parseCollections)
-      .then((collections) =>
-        collections.filter((c) => c.hasConnectedSystems)
-      )
+      .then((collections) => collections.filter((c) => c.hasConnectedSystems))
       .then((collections) => collections.map((collection) => collection.name));
   }
 
@@ -384,9 +382,7 @@ ${e.message}`);
    */
   public async csapi(collectionId: string): Promise<CSAPIQueryBuilder> {
     if (!(await this.hasConnectedSystems)) {
-      throw new EndpointError(
-        'Endpoint does not support Connected Systems'
-      );
+      throw new EndpointError('Endpoint does not support Connected Systems');
     }
     const cache = this.collection_id_to_csapi_builder_;
     if (cache.has(collectionId)) {
