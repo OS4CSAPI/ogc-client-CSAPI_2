@@ -163,7 +163,9 @@ New file: `docs/research/phase-6/issue-128-resolution-report.md` — resolution 
 
 **Impact:** Low — the upstream repo (`camptocamp/ogc-client`) also has no `.gitattributes`, so adding one would be a scope expansion beyond what upstream has.
 
-**Recommendation:** Defer. Follow upstream's convention. If this causes issues for future contributors, consider adding `.gitattributes` at that point.
+**Can it be scoped to the CSAPI module?** Technically, `.gitattributes` can be placed in a subdirectory and it applies to files in that directory. However, this would not solve the problem: the CRLF issue affected **all** files (389 docs, configs, source), not just CSAPI files. A `.gitattributes` in `src/ogc-api/csapi/` would only cover CSAPI source files, missing `docs/` entirely. To actually solve the problem, `.gitattributes` must go at the repo root — which is a repo-wide configuration change, not a CSAPI module concern.
+
+**Recommendation:** Defer. Follow upstream's convention. Adding a repo-wide config file to a PR scoped to "decouple the CSAPI module" would be off-topic. If this causes issues for future contributors, consider adding `.gitattributes` at that point.
 
 ### [F58] DESIGN (minor): `.prettierignore` addition for standards YAML
 
@@ -172,7 +174,11 @@ New file: `docs/research/phase-6/issue-128-resolution-report.md` — resolution 
 
 **Impact:** Low — the file is a read-only reference document. Ignoring it from Prettier is the correct approach since we should not modify the specification file to fix its syntax.
 
+**Can it be scoped to the CSAPI module?** No. `.prettierignore` is a repo-root configuration file — Prettier only looks for it at the project root. There is no mechanism to place ignore rules inside a subdirectory. However, this is already resolved and correct: the entry ignores a reference spec document in `docs/research/standards/`, not CSAPI code. No CSAPI files are affected.
+
 **Note:** The issue description for #128 explicitly stated "Do NOT add `.prettierignore` entries to skip files." This was a minor scope deviation, but it was the only viable option. The alternative — fixing the YAML syntax in an OGC specification file — would be worse.
+
+**Status:** Resolved. No further action needed.
 
 ### [F59] PROCESS: Issue #115 scope was too narrow
 
