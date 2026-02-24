@@ -247,6 +247,7 @@ Tasks are ordered by **dependency chain** and **commit boundary alignment**:
   2. Throws on non-CSAPI endpoint → expects `EndpointError`
 - Uses same fixture URL as existing endpoint tests: `http://local/csapi/sample-data-hub`
 - **Not migrated:** The `caches the CSAPI query builder` test — factory has no auto-caching, this behavior no longer exists
+- **Testing research basis:** Factory test pattern follows EDR blueprint precedent ([Testing Plan 01](../../research/testing/findings/01-edr-test-blueprint.md), lines ~437–475). Quality bar per [Testing Plan 06](../../research/testing/findings/06-meaningful-vs-trivial-definition.md) and [Testing Plan 36](../../research/testing/findings/36-test-quality-checklist-review-process.md). See [Testing Strategy](#testing-strategy) section.
 
 - **Verification:** `npx tsc --noEmit` + `npm run test:browser -- --testPathPattern factory`
 - **Deliverable:** Factory function compiles, both tests pass
@@ -454,6 +455,40 @@ All 12 gates from the [P6 Contribution Goal](P6-contribution-goal-and-definition
 | B1 | Behavioral | `hasConnectedSystems` works | Existing test passes |
 | B2 | Behavioral | `csapiCollections` works | Existing test passes |
 | B3 | Behavioral | All non-CSAPI functionality unchanged | Full test suite passes |
+
+---
+
+## Testing Strategy
+
+Phase 6 creates **exactly 2 new tests** in 1 new file, migrates 2 tests, and removes 1 obsolete test. The testing surface is minimal compared to Phases 1–5 (~6,000 lines of new test code). No new testing research is required — all Phase 6 testing decisions are covered by the existing [38-plan testing research arc](../../research/testing/findings/).
+
+### Research Traceability
+
+| Testing Decision | Research Source | What It Covers |
+|---|---|---|
+| Factory test pattern (create builder + verify properties) | [Plan 01: EDR Blueprint](../../research/testing/findings/01-edr-test-blueprint.md), lines ~437–475 | Direct analog: `endpoint.edr('collection-id')` → assert builder, validate properties |
+| Error case test (non-CSAPI throws `EndpointError`) | [Plan 14: Integration Test Workflow](../../research/testing/findings/14-integration-test-workflow-design.md), Test 5 | "Throws Error for Non-CSAPI Collection" — exact pattern |
+| Test file location (`factory.spec.ts` colocated) | [Plan 19: Test Organization](../../research/testing/findings/19-test-organization-file-structure.md) | Colocated `.spec.ts` next to implementation, flat directory |
+| Fixture reuse (same mock fetch as endpoint tests) | [Plan 15: Fixture Sourcing](../../research/testing/findings/15-fixture-sourcing-organization.md) | Fixtures shared across test files via `setupMockFetch()` |
+| Quality bar (meaningful assertions, not trivial) | [Plan 06: Meaningful vs Trivial](../../research/testing/findings/06-meaningful-vs-trivial-definition.md) + [Plan 36: Quality Checklist](../../research/testing/findings/36-test-quality-checklist-review-process.md) | Complete validation, behavior assertions, specific error messages |
+| Endpoint mocking pattern | [Plan 34: Test Utility Helpers](../../research/testing/findings/34-test-utility-helper-design.md) | `setupMockFetch()`, `createTestEndpoint()` patterns |
+| Removing obsolete caching test | [Plan 37: Test Maintenance](../../research/testing/findings/37-test-maintenance-evolution-strategy.md) | "Remove tests when the feature they test has been removed" |
+| `hasConnectedSystems` stays tested on endpoint | [Plan 22: Conformance Testing](../../research/testing/findings/22-conformance-capability-testing.md) | 8+ server profiles with fixture JSON for conformance detection |
+
+### Testing Embedded at Task Level
+
+Per [Testing Playbook §2](../../research/testing/findings/38-testing-playbook-synthesis.md) and the lesson learned from ROADMAP v1.0 (testing deferred too late), all Phase 6 testing is embedded within individual tasks:
+
+| Task | Testing Action | When |
+|---|---|---|
+| Task 3 (Phase A) | Run full test suite after formatting — confirm zero regressions | End of Commit 14 |
+| Task 5 (Phase B) | Create `factory.spec.ts` with 2 tests — run immediately | With factory creation |
+| Task 6 (Phase B) | Run `npx tsc --noEmit` after endpoint changes | With endpoint modification |
+| Task 7 (Phase B) | Remove 3 tests from `endpoint.spec.ts` | With test migration |
+| Task 9 (Phase B) | Run full CI suite (C4 + C5) — all 1,282+ tests pass | End of Commit 15 |
+| Task 10 (Phase C) | Litmus test, boundary verification, regression confirmation | Final verification |
+
+No testing is deferred to a later phase or batched at the end.
 
 ---
 
