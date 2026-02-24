@@ -62,12 +62,12 @@ The 261 eliminated failures were pure CRLF artifacts on untouched upstream files
 
 The 394 real failures were categorized:
 
-| Category                        | Count | Origin                                       |
-| ------------------------------- | ----- | -------------------------------------------- |
-| Markdown docs (`docs/`)         | 389   | Created by us, never run through Prettier    |
-| Modified upstream source files  | 2     | `endpoint.spec.ts`, `info.ts` — our edits    |
-| New config/data files           | 3     | Issue template, `tasks.json`, `api.json`     |
-| **Total**                       | **394** | **100% caused by our work**                |
+| Category                       | Count   | Origin                                    |
+| ------------------------------ | ------- | ----------------------------------------- |
+| Markdown docs (`docs/`)        | 389     | Created by us, never run through Prettier |
+| Modified upstream source files | 2       | `endpoint.spec.ts`, `info.ts` — our edits |
+| New config/data files          | 3       | Issue template, `tasks.json`, `api.json`  |
+| **Total**                      | **394** | **100% caused by our work**               |
 
 Zero untouched upstream files fail. Zero CSAPI code files fail.
 
@@ -75,12 +75,12 @@ Zero untouched upstream files fail. Zero CSAPI code files fail.
 
 While investigating, all other QA gates were verified locally:
 
-| Gate             | Result                                                  |
-| ---------------- | ------------------------------------------------------- |
-| `typecheck`      | **PASS** — clean, exit 0                                |
-| `lint`           | **PASS** — clean, exit 0                                |
-| `test:node`      | **PASS** — 60/60 suites, 0 failures                    |
-| `test:browser`   | 58/60 pass — 2 fail due to Windows-only esbuild bug    |
+| Gate           | Result                                              |
+| -------------- | --------------------------------------------------- |
+| `typecheck`    | **PASS** — clean, exit 0                            |
+| `lint`         | **PASS** — clean, exit 0                            |
+| `test:node`    | **PASS** — 60/60 suites, 0 failures                 |
+| `test:browser` | 58/60 pass — 2 fail due to Windows-only esbuild bug |
 
 The QA workflow was blocked entirely at step 1 (`format:check`), so none of
 these other gates were ever reached in CI.
@@ -157,16 +157,16 @@ logic changes.
 
 ## Files Changed
 
-| Scope                       | Files | Nature of Changes                        |
-| --------------------------- | ----- | ---------------------------------------- |
-| `docs/**` (markdown)        | 389   | Line wrapping, spacing, table alignment  |
-| `src/ogc-api/endpoint.spec.ts` | 1 | Whitespace/formatting from our edits     |
-| `src/ogc-api/info.ts`       | 1     | Whitespace/formatting from our edits     |
-| `.github/ISSUE_TEMPLATE/general-task.yml` | 1 | Formatting                  |
-| `.vscode/tasks.json`        | 1     | Formatting                               |
-| `app/src/data/api.json`     | 1     | Formatting (removed by `.vscode` ignore) |
-| `.prettierignore`           | 1     | Added `docs/research/standards/*.yaml`   |
-| `.gitignore`                | 1     | Added temp debug file patterns           |
+| Scope                                     | Files | Nature of Changes                        |
+| ----------------------------------------- | ----- | ---------------------------------------- |
+| `docs/**` (markdown)                      | 389   | Line wrapping, spacing, table alignment  |
+| `src/ogc-api/endpoint.spec.ts`            | 1     | Whitespace/formatting from our edits     |
+| `src/ogc-api/info.ts`                     | 1     | Whitespace/formatting from our edits     |
+| `.github/ISSUE_TEMPLATE/general-task.yml` | 1     | Formatting                               |
+| `.vscode/tasks.json`                      | 1     | Formatting                               |
+| `app/src/data/api.json`                   | 1     | Formatting (removed by `.vscode` ignore) |
+| `.prettierignore`                         | 1     | Added `docs/research/standards/*.yaml`   |
+| `.gitignore`                              | 1     | Added temp debug file patterns           |
 
 **Note:** `.vscode/tasks.json` is already in `.gitignore`, so it was formatted
 locally but not tracked. The actual commit contains 394 file changes.
