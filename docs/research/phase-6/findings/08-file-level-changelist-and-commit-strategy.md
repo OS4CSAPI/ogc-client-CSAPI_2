@@ -268,6 +268,8 @@ Add at top level of `package.json` (after `"type": "module"`):
 "sideEffects": false,
 ```
 
+> **Verification pass note (Plans 01–05 tail review):** `src/index.ts` line 251 has a bare side-effect import: `import './worker-fallback/index.js'`. Plan 03 Open Question 2 flagged this. In practice, risk is LOW: any consumer importing from `@camptocamp/ogc-client` forces the bundler to evaluate `index.js` including the worker-fallback. The `sideEffects` field mainly affects tree-shaking of *unused re-exports from barrels*, not bare side-effect imports inside an actively-used entry point. All 5/6 surveyed libraries use plain `false`. If caution is needed during implementation, `"sideEffects": ["./dist/index.js", "./dist/worker-fallback/index.js"]` is an alternative. All tests running after the change will confirm nothing breaks.
+
 **Net change:** +8 lines. No other `package.json` changes (`"files"` field already includes `"dist/"` and `"src/"` which cover the barrel file).
 
 ### Question 13: `src/ogc-api/csapi/index.ts` (New Barrel File)
@@ -902,6 +904,16 @@ Every prior plan's open questions have been resolved:
 - Plan 07 Q1 (ESLint fix commit placement) → Resolved: combined with formatting commit
 - Plan 07 Q2 (`endpoint.ts` formatting placement) → Resolved: in formatting commit
 - Plan 07 Q3 (`url_builder.spec.ts` reviewer reaction) → Mitigated: noted in commit message
+
+### Verification Pass Findings (Plans 01–05 Tails)
+
+A cross-reference review of Plans 01–05 tail sections (lines 601+) against Plan 08 identified two items:
+
+1. **`"sideEffects": false` and the worker-fallback import** — `src/index.ts` line 251 has `import './worker-fallback/index.js'` (a bare side-effect import). Plan 03 Open Question 2 flagged this. Risk is LOW — see § 3 Q12 verification pass note for analysis. Implementation should confirm via tests; the alternative `"sideEffects": ["./dist/index.js", "./dist/worker-fallback/index.js"]` is available if needed.
+
+2. **Plan 03 Appendix C documentation error** — Plan 03 recorded the root `"."` export `"import"` condition as `"./dist/index.js"`, but the actual `package.json` has `"import": "./dist/dist-node.js"`. Plan 08 already has the correct value (§ 3 Q12). This is a Plan 03 doc error only — zero implementation impact since Plan 08 does not modify the root `"."` export.
+
+All other items from Plans 01–05 tails were confirmed correctly captured in Plan 08. No additional changes required.
 
 ---
 
