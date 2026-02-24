@@ -1,6 +1,6 @@
 # Phase 6: Upstream Acceptance Refactoring — Roadmap
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Date:** February 24, 2026  
 **Status:** Ready for Execution  
 **Scope:** Module boundary refactoring only — zero CSAPI business logic changes
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-This roadmap covers the execution of **Phase 6: Upstream Acceptance Refactoring** — decoupling the CSAPI module from the core ogc-client library to satisfy upstream maintainer jahow's two acceptance requirements from [PR #136](https://github.com/camptocamp/ogc-client/pull/136). The work is organized into **3 sequential phases (10 tasks, 12 execution units)** spanning an estimated **6–10 hours of development time** (1 week calendar time).
+This roadmap covers the execution of **Phase 6: Upstream Acceptance Refactoring** — decoupling the CSAPI module from the core ogc-client library to satisfy upstream maintainer jahow's two acceptance requirements from [PR #136](https://github.com/camptocamp/ogc-client/pull/136). The work is organized into **3 sequential phases (10 tasks, 13 execution units)** spanning an estimated **6–10 hours of development time** (1 week calendar time).
 
 > **Full Context**
 >
@@ -56,17 +56,24 @@ This roadmap covers the execution of **Phase 6: Upstream Acceptance Refactoring*
 | # | Unit | Est. Time | Complexity |
 |---|------|-----------|------------|
 | 1 | Task 1: Apply Prettier to 51 files | ~0.5h | Low |
-| 2 | Task 2: Fix 99 ESLint errors across 15 files | ~1–1.5h | Low |
+| 2a | Task 2a: Fix 9 ESLint errors in 5 source files | ~0.5h | Low |
+| 2b | Task 2b: Fix 90 ESLint errors in 10 test files | ~0.5–1h | Low |
 | 3 | Task 3: Verify formatting + lint, commit (Commit 14) | ~0.5h | Low |
-| 4 | Task 4: Create barrel file `csapi/index.ts` | ~1–1.5h | Medium |
+| 4a | Task 4a: Audit and build CSAPI export inventory | ~0.5h | Medium |
+| 4b | Task 4b: Write barrel file `csapi/index.ts` | ~0.5–1h | Medium |
 | 5 | Task 5: Create `factory.ts` + `factory.spec.ts` | ~1–1.5h | Medium |
 | 6 | Task 6: Modify `endpoint.ts` | ~0.5–1h | Medium |
 | 7 | Task 7: Modify `index.ts` + `endpoint.spec.ts` | ~0.5h | Low |
 | 8 | Task 8: Modify `package.json` | ~0.25h | Low |
 | 9 | Task 9: Run all CI gates, commit (Commit 15) | ~0.5–1h | Low |
-| 10 | Task 10: Boundary verification, litmus test, rebase | ~1–1.5h | Medium |
+| 10a | Task 10a: Boundary verification + litmus test | ~0.5–1h | Medium |
+| 10b | Task 10b: Rebase to clean-pr + push to upstream | ~0.5h | Medium |
 
-**Total: 10 tasks, 12 execution units, ~6–10 hours**
+**Total: 10 tasks, 13 execution units, ~6–10 hours**
+
+**Execution order:** 1 → 2a → 2b → 3 → 4a → 4b → 5 → 6 → 7 → 8 → 9 → 10a → 10b
+
+> **Task splits rationale:** Three tasks were split at natural risk boundaries — see [Task Granularity Review](../../research/phase-6/task-granularity-review.md) for full analysis. Splits are calibrated to risk boundaries (source/test, research/write, verify/deliver), not volume.
 
 **Dependencies:**
 - Phase A → Phase B (Prettier must precede architecture changes — line numbers shift after formatting)
@@ -126,16 +133,15 @@ Tasks are ordered by **dependency chain** and **commit boundary alignment**:
 - **Volume note:** `url_builder.spec.ts` accounts for ~55% of the formatting diff (2,221 of 4,059 lines) due to inline link object expansion at 80-char `printWidth`
 - **Deliverable:** All 51 files Prettier-compliant
 
-### Task 2: Fix ESLint Errors
+### Task 2a: Fix ESLint Errors in Source Files
 
-**Estimated Time:** ~1–1.5 hours  
-**Complexity:** Low (mechanical — all `no-unused-vars`)
+**Estimated Time:** ~0.5 hours  
+**Complexity:** Low  
+**Split rationale:** Source files require judgment (`import type` conversions vs. removals); test files are mechanical bulk removal. Split at the source/test risk boundary. See [Task Granularity Review](../../research/phase-6/task-granularity-review.md).
 
-99 errors total across 15 files — **all `@typescript-eslint/no-unused-vars`**.
+9 errors across 5 source files — **all `@typescript-eslint/no-unused-vars`**.
 
-**Fix approach:** Remove unused imports entirely, or convert `import { X }` to `import type { X }` where the import is used only as a type annotation. Do NOT prefix with `_` unless it is a function parameter (not an import). All fixes are mechanical — removing an unused import cannot change runtime behavior.
-
-**Source files (5 files, 9 errors):**
+**Fix approach:** Remove unused imports entirely, or convert `import { X }` to `import type { X }` where the import is used only as a type annotation. Do NOT prefix with `_` unless it is a function parameter (not an import).
 
 | File | Errors | Fix Pattern |
 |------|--------|-------------|
@@ -145,7 +151,15 @@ Tasks are ordered by **dependency chain** and **commit boundary alignment**:
 | `formats/sensorml/physical-system.ts` | 3 | Remove or convert to `import type` |
 | `formats/sensorml/simple-process.ts` | 1 | Remove unused import |
 
-**Test files (10 files, 90 errors):**
+- **Verification:** `npx tsc --noEmit` after all 5 files — confirm source still compiles
+- **Deliverable:** 9 ESLint errors resolved in source files
+
+### Task 2b: Fix ESLint Errors in Test Files
+
+**Estimated Time:** ~0.5–1 hours  
+**Complexity:** Low (mechanical bulk removal)
+
+90 errors across 10 test files — **all `@typescript-eslint/no-unused-vars`**, almost entirely unused import removals.
 
 | File | Errors | Fix Pattern |
 |------|--------|-------------|
@@ -160,8 +174,8 @@ Tasks are ordered by **dependency chain** and **commit boundary alignment**:
 | `formats/swecommon/types.spec.ts` | **27** | Remove unused imports |
 | `integration/observation.spec.ts` | 3 | Remove unused imports |
 
-- **Ordering:** Prettier first, ESLint second. They do not conflict — upstream ESLint enforces no formatting rules.
-- **Deliverable:** All 99 ESLint errors resolved
+- **Ordering:** Prettier first (Task 1), source ESLint second (Task 2a), test ESLint third (Task 2b). They do not conflict — upstream ESLint enforces no formatting rules.
+- **Deliverable:** All 90 test-file ESLint errors resolved. Combined with 2a: all 99 errors fixed.
 
 ### Task 3: Verify and Commit (Commit 14)
 
@@ -202,25 +216,37 @@ Tasks are ordered by **dependency chain** and **commit boundary alignment**:
 **Estimated Time:** 3–5 hours  
 **Goal:** Decouple CSAPI from core — 3 files created, 4 files modified, 12 acceptance criteria satisfied.
 
-### Task 4: Create Barrel File `csapi/index.ts`
+### Task 4a: Audit and Build CSAPI Export Inventory
 
-**Estimated Time:** ~1–1.5 hours  
+**Estimated Time:** ~0.5 hours  
 **Complexity:** Medium  
-**File:** `src/ogc-api/csapi/index.ts` (new, ~190 lines)  
+**Split rationale:** Separates research (mapping symbols to sources) from code authoring (writing the barrel file). Errors in mapping cascade downstream. Split at the research/write risk boundary. See [Task Granularity Review](../../research/phase-6/task-granularity-review.md).
+
 **Spec:** [Implementation Guide §6.1](P6-implementation-guide.md#61-barrel-file-csapiindexts)
 
-- Create `src/ogc-api/csapi/index.ts`
-- Re-export all CSAPI public symbols across 6 organized sections:
+- Trace every CSAPI symbol currently exported from `src/index.ts` lines 45–227 back to its source module in `csapi/`
+- Build a complete inventory organized by the 6 barrel sections:
   1. Factory function from `./factory.js`
   2. Query builder from `./url_builder.js`
   3. Model values (enums/constants) from `./model.js`
   4. Model types from `./model.js`
   5. Format handler values from `./formats/index.js`
   6. Format handler types from `./formats/index.js`
+- Classify each symbol as value (`export { ... }`) or type (`export type { ... }`)
+- Verify every symbol has a traceable source — no guesses
+- **Deliverable:** Complete symbol-to-source mapping ready for barrel file authoring. Zero code changes.
+
+### Task 4b: Write Barrel File `csapi/index.ts`
+
+**Estimated Time:** ~0.5–1 hours  
+**Complexity:** Medium  
+**File:** `src/ogc-api/csapi/index.ts` (new, ~190 lines)
+
+- Create `src/ogc-api/csapi/index.ts` using the inventory from Task 4a
+- Re-export all CSAPI public symbols across the 6 organized sections
 - Use `export { ... }` for values, `export type { ... }` for types
 - All paths use `.js` extensions
 - Follow `formats/index.ts` (344 lines) sectioned JSDoc divider pattern
-- **Must re-export every symbol currently exported from `src/index.ts` lines 45–227** — trace each export to its source in `csapi/` and re-export with correct relative path
 - **JSDoc:** Module-level documentation with `@example` showing import paths
 - **Verification:** `npx tsc --noEmit` — barrel compiles without errors
 - **Deliverable:** Barrel file compiles, all CSAPI public symbols accessible via single import path
@@ -366,10 +392,11 @@ git commit -m "refactor(csapi): decouple from endpoint with separate entry point
 **Estimated Time:** 1–2 hours  
 **Goal:** Verify all 12 acceptance criteria, pass litmus test, rebase to contribution-ready branch.
 
-### Task 10: Boundary Verification, Litmus Test, and Rebase
+### Task 10a: Boundary Verification and Litmus Test
 
-**Estimated Time:** ~1–1.5 hours  
-**Complexity:** Medium
+**Estimated Time:** ~0.5–1 hours  
+**Complexity:** Medium  
+**Split rationale:** Verification is fully local and reversible; rebase/push modifies remote state visible to the upstream reviewer. Split at the verify/deliver risk boundary — only cross to 10b when 10a confirms everything is green. See [Task Granularity Review](../../research/phase-6/task-granularity-review.md).
 
 **Step 1: Boundary Verification (V1–V4)**
 
@@ -405,7 +432,16 @@ git diff --stat HEAD~2..HEAD
 git push origin phase-6
 ```
 
-**Step 5: Rebase to clean-pr**
+- **Gate:** All 12 verification gates must pass before proceeding to Task 10b
+- **Deliverable:** All V1–V4 boundary checks pass, litmus test passes, diff reviewed, phase-6 branch pushed
+
+### Task 10b: Rebase to clean-pr and Push to Upstream
+
+**Estimated Time:** ~0.5 hours  
+**Complexity:** Medium  
+**Prerequisite:** Task 10a passes all verification gates
+
+**Step 1: Rebase to clean-pr**
 
 ```bash
 # Create safety tag
@@ -422,11 +458,13 @@ git log --oneline upstream/main..clean-pr  # Should show 15 commits
 git push --force-with-lease clean-fork clean-pr
 ```
 
-**Step 6: Update PR #136**
+**Step 2: Update PR #136**
 
 - Update PR description to document new consumer API
 - Note the `"./csapi"` sub-path in the description
 - Respond to jahow's review thread confirming requirements met
+
+- **Deliverable:** `pre-refactor-backup` tag created, `clean-pr` updated with 15 commits, upstream fork pushed, PR #136 description updated
 
 **Phase C Deliverables:**
 - All 12 verification gates passed (V1–V4 + C1–C5 + A4 litmus + B1–B3 behavioral)
@@ -575,6 +613,14 @@ All findings: [`docs/research/phase-6/findings/`](../../research/phase-6/finding
 ---
 
 ## Version History
+
+**Version 1.1 (February 24, 2026):**
+- Split Task 2 into 2a (5 source files, 9 errors) + 2b (10 test files, 90 errors) — source/test risk boundary
+- Split Task 4 into 4a (audit export inventory) + 4b (write barrel file) — research/write risk boundary
+- Split Task 10 into 10a (verification + litmus) + 10b (rebase + push) — verify/deliver risk boundary
+- Updated execution unit summary table (10 tasks → 13 execution units)
+- Added explicit execution order and split rationale links
+- See [Task Granularity Review](../../research/phase-6/task-granularity-review.md) for full analysis
 
 **Version 1.0 (February 24, 2026):**
 - Initial Phase 6 roadmap covering module boundary refactoring
