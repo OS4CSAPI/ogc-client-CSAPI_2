@@ -14,8 +14,7 @@
  */
 
 // ── Factory Function ───────────────────────────────────────
-// export { createCSAPIBuilder } from './factory.js';
-// ↑ Uncomment when Task 5 creates factory.ts
+export { createCSAPIBuilder } from './factory.js';
 
 // ── Query Builder ──────────────────────────────────────────
 export { default as CSAPIQueryBuilder } from './url_builder.js';
