@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-      # - phase-6  # disabled during planning; re-enable when ready to test code changes
+      - phase-6
   pull_request:
     types: [opened, synchronize, ready_for_review]
 
