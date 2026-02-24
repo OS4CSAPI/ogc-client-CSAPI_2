@@ -6,16 +6,16 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Status** | Not Started |
-| **Plan Type** | Implementation synthesis |
-| **Date Created** | 2026-02-23 |
-| **Last Updated** | 2026-02-23 |
-| **Estimated Time** | 2–3 hours |
-| **Actual Time** | — |
-| **Depends On** | Plans 01, 02, 03, 04, 05, 06, 07 (all prior plans) |
-| **Blocks** | None — this is the final plan; it unblocks implementation |
+| Field                  | Value                                                     |
+| ---------------------- | --------------------------------------------------------- |
+| **Status**             | Not Started                                               |
+| **Plan Type**          | Implementation synthesis                                  |
+| **Date Created**       | 2026-02-23                                                |
+| **Last Updated**       | 2026-02-23                                                |
+| **Estimated Time**     | 2–3 hours                                                 |
+| **Actual Time**        | —                                                         |
+| **Depends On**         | Plans 01, 02, 03, 04, 05, 06, 07 (all prior plans)        |
+| **Blocks**             | None — this is the final plan; it unblocks implementation |
 | **Strategy Reference** | [research-strategy.md § Plan 08](../research-strategy.md) |
 
 ---
@@ -36,7 +36,7 @@ Every decision made in Plans 01–07 converges here. Plan 01 provides the `packa
 
 This must be last because it synthesizes every prior plan's output into the implementation spec. It cannot be written until all architectural decisions (Plan 06), formatting strategies (Plan 07), and technical details (Plans 01–05) are finalized. Any unresolved decision from a prior plan would create an ambiguity in the changelist — and the changelist must have zero ambiguities. Every line in the spec must be actionable without further research.
 
-This plan is also uniquely positioned: it must account for the *existing* 13-commit structure on the `clean-pr` branch (PR #136). The refactoring changes don't start from scratch — they modify, amend, or extend an existing commit history. The commit strategy must decide whether to squash the refactoring into those existing commits, add new commits on top, or restructure the entire history. This decision has implications for PR review, `git blame`, and jahow's ability to see what changed.
+This plan is also uniquely positioned: it must account for the _existing_ 13-commit structure on the `clean-pr` branch (PR #136). The refactoring changes don't start from scratch — they modify, amend, or extend an existing commit history. The commit strategy must decide whether to squash the refactoring into those existing commits, add new commits on top, or restructure the entire history. This decision has implications for PR review, `git blame`, and jahow's ability to see what changed.
 
 ### Dependency Chain
 
@@ -73,11 +73,13 @@ This plan is also uniquely positioned: it must account for the *existing* 13-com
 > **"Does this file change directly serve jahow's two requirements (CSAPI out of root index.ts, non-CSAPI code stops importing CSAPI), or are we adding work he didn't request?"**
 >
 > The changelist must contain ONLY:
+>
 > - Changes required to satisfy jahow's two bullet points
 > - Changes that are direct consequences of those requirements (e.g., moving a method because its imports violate the constraints)
 > - Changes required to pass CI (formatting, linting)
 >
 > The changelist must NOT contain:
+>
 > - "While we're at it" improvements (refactoring code that isn't affected by the boundary conditions)
 > - New abstractions or patterns inspired by research but not required by the constraints
 > - Changes to modules outside our scope (EDR, other upstream code)
@@ -89,7 +91,7 @@ This plan is also uniquely positioned: it must account for the *existing* 13-com
 
 - **Architectural decision-making:** All architectural decisions are made in Plans 01–06. Plan 08 does not revisit them — it translates them into file operations. If a decision is ambiguous, this plan flags it as an open question for Plan 06 rather than resolving it.
 - **Formatting rule analysis:** Covered in Plan 07. Plan 08 consumes Plan 07's output (which files are affected, what changes are needed, what execution order is recommended) without re-analyzing the rules.
-- **Code implementation:** Plan 08 specifies *what* to change, not the exact code. It says "remove lines 52–53 from `endpoint.ts`" or "create barrel file with these exports" — it does not draft complete source files. (Plan 06's before/after code snippets are referenced, not duplicated.)
+- **Code implementation:** Plan 08 specifies _what_ to change, not the exact code. It says "remove lines 52–53 from `endpoint.ts`" or "create barrel file with these exports" — it does not draft complete source files. (Plan 06's before/after code snippets are referenced, not duplicated.)
 - **PR description drafting:** While noting that the PR description may need updating, the actual prose is out of scope.
 - **Upstream communication strategy:** How to present the changes to jahow, what to say in PR comments, etc. — out of scope.
 
@@ -191,48 +193,48 @@ This plan is also uniquely positioned: it must account for the *existing* 13-com
 
 ### Primary Sources (In Workspace)
 
-| Source | Path | What to Extract |
-|--------|------|-----------------|
-| Endpoint CSAPI integration | `src/ogc-api/endpoint.ts` (lines 2, 52–53, 68–69, 220–241, 312–337, 391–411, 432–437) | Every CSAPI touchpoint: 2 imports, 1 cache field, 3 getters/methods, 1 private helper. Exact line numbers for the changelist. |
-| Root CSAPI exports | `src/index.ts` (lines 46–211) | All ~152 CSAPI symbols (184 lines) that must be removed and relocated to the barrel file |
-| Endpoint CSAPI tests | `src/ogc-api/endpoint.spec.ts` (lines 2836–2888) | 6 test cases in 2 describe blocks. Must classify each: stays, moves, or rewrites. |
-| Info.ts CSAPI additions | `src/ogc-api/info.ts` (lines 112–121, 255, 265, 303) | `checkHasConnectedSystems()` and `parseCollections` additions — verify no CSAPI imports |
-| Shared MIME type additions | `src/shared/mime-type.ts` (CSAPI additions) | 4 CSAPI-specific functions — determine if they stay in shared or move |
-| Shared MIME type tests | `src/shared/mime-type.spec.ts` (CSAPI additions) | Tests for CSAPI MIME types — stay or move? |
-| Package.json | `package.json` | Current `"exports"` field (`"."` only), scripts, `"files"` field |
-| Existing barrel file pattern | `src/ogc-api/csapi/formats/index.ts` (344 lines) | Re-export pattern: JSDoc sections, comment dividers, value vs type export grouping |
-| CSAPI module full inventory | `src/ogc-api/csapi/` (56 files) | 27 source, 24 unit test, 5 integration test — all must remain after refactoring |
-| CSAPI fixtures | `fixtures/ogc-api/csapi/sample-data-hub*` (4 files) | JSON fixtures for endpoint CSAPI tests — fixture handling strategy |
-| Vite node config | `vite.node-config.js` | Node build entry point (`src-node/index.ts` → `dist/dist-node.js`) — may need `./csapi` considerations |
-| Vite worker config | `vite.worker-config.js` | Worker build + DTS generation — `vite-plugin-dts` scope for `.d.ts` files |
-| CI workflow | `.github/workflows/qa.yml` | 5-step sequential CI: format:check, typecheck, lint, test:browser, test:node |
-| Jest browser config | `jest.config.cjs` | Test environment, transform, module name mapping — verify CSAPI test compatibility |
-| Jest node config | `jest.node.config.cjs` | Node test config — verify CSAPI test compatibility |
-| TypeScript config | `tsconfig.json` | Include paths, declaration generation — verify barrel file is in scope |
-| Clean-PR commit log | `git log --oneline clean-fork/clean-pr` | 13-commit structure: commits 1–10 (pure CSAPI), 11 (endpoint integration), 12 (index exports), 13 (.gitignore) |
+| Source                       | Path                                                                                  | What to Extract                                                                                                               |
+| ---------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Endpoint CSAPI integration   | `src/ogc-api/endpoint.ts` (lines 2, 52–53, 68–69, 220–241, 312–337, 391–411, 432–437) | Every CSAPI touchpoint: 2 imports, 1 cache field, 3 getters/methods, 1 private helper. Exact line numbers for the changelist. |
+| Root CSAPI exports           | `src/index.ts` (lines 46–211)                                                         | All ~152 CSAPI symbols (184 lines) that must be removed and relocated to the barrel file                                      |
+| Endpoint CSAPI tests         | `src/ogc-api/endpoint.spec.ts` (lines 2836–2888)                                      | 6 test cases in 2 describe blocks. Must classify each: stays, moves, or rewrites.                                             |
+| Info.ts CSAPI additions      | `src/ogc-api/info.ts` (lines 112–121, 255, 265, 303)                                  | `checkHasConnectedSystems()` and `parseCollections` additions — verify no CSAPI imports                                       |
+| Shared MIME type additions   | `src/shared/mime-type.ts` (CSAPI additions)                                           | 4 CSAPI-specific functions — determine if they stay in shared or move                                                         |
+| Shared MIME type tests       | `src/shared/mime-type.spec.ts` (CSAPI additions)                                      | Tests for CSAPI MIME types — stay or move?                                                                                    |
+| Package.json                 | `package.json`                                                                        | Current `"exports"` field (`"."` only), scripts, `"files"` field                                                              |
+| Existing barrel file pattern | `src/ogc-api/csapi/formats/index.ts` (344 lines)                                      | Re-export pattern: JSDoc sections, comment dividers, value vs type export grouping                                            |
+| CSAPI module full inventory  | `src/ogc-api/csapi/` (56 files)                                                       | 27 source, 24 unit test, 5 integration test — all must remain after refactoring                                               |
+| CSAPI fixtures               | `fixtures/ogc-api/csapi/sample-data-hub*` (4 files)                                   | JSON fixtures for endpoint CSAPI tests — fixture handling strategy                                                            |
+| Vite node config             | `vite.node-config.js`                                                                 | Node build entry point (`src-node/index.ts` → `dist/dist-node.js`) — may need `./csapi` considerations                        |
+| Vite worker config           | `vite.worker-config.js`                                                               | Worker build + DTS generation — `vite-plugin-dts` scope for `.d.ts` files                                                     |
+| CI workflow                  | `.github/workflows/qa.yml`                                                            | 5-step sequential CI: format:check, typecheck, lint, test:browser, test:node                                                  |
+| Jest browser config          | `jest.config.cjs`                                                                     | Test environment, transform, module name mapping — verify CSAPI test compatibility                                            |
+| Jest node config             | `jest.node.config.cjs`                                                                | Node test config — verify CSAPI test compatibility                                                                            |
+| TypeScript config            | `tsconfig.json`                                                                       | Include paths, declaration generation — verify barrel file is in scope                                                        |
+| Clean-PR commit log          | `git log --oneline clean-fork/clean-pr`                                               | 13-commit structure: commits 1–10 (pure CSAPI), 11 (endpoint integration), 12 (index exports), 13 (.gitignore)                |
 
 ### External Sources
 
-| Source | URL/Reference | What to Extract |
-|--------|---------------|-----------------|
-| GitHub PR #136 | `https://github.com/camptocamp/ogc-client/pull/136` | Current PR description, review comments from jahow, draft status, any CI check results from previous pushes |
-| GitHub Issue #118 | `https://github.com/camptocamp/ogc-client/issues/118` | jahow's original feature request, referenced EDR precedent (PR #114), constraints on CSAPI integration |
-| Upstream CI workflow | `https://github.com/camptocamp/ogc-client/blob/master/.github/workflows/qa.yml` | Verify our local `qa.yml` matches upstream — check for any recent changes |
-| Git interactive rebase docs | `https://git-scm.com/docs/git-rebase` | `git rebase -i` mechanics for amending historical commits |
-| Conventional Commits | `https://www.conventionalcommits.org/en/v1.0.0/` | Commit message format: `feat(csapi):`, `refactor(csapi):`, `chore:` — match existing convention |
-| GitHub Draft PR documentation | `https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests` | Force-push behavior on draft PRs, review implications |
+| Source                        | URL/Reference                                                                                                                                                         | What to Extract                                                                                             |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| GitHub PR #136                | `https://github.com/camptocamp/ogc-client/pull/136`                                                                                                                   | Current PR description, review comments from jahow, draft status, any CI check results from previous pushes |
+| GitHub Issue #118             | `https://github.com/camptocamp/ogc-client/issues/118`                                                                                                                 | jahow's original feature request, referenced EDR precedent (PR #114), constraints on CSAPI integration      |
+| Upstream CI workflow          | `https://github.com/camptocamp/ogc-client/blob/master/.github/workflows/qa.yml`                                                                                       | Verify our local `qa.yml` matches upstream — check for any recent changes                                   |
+| Git interactive rebase docs   | `https://git-scm.com/docs/git-rebase`                                                                                                                                 | `git rebase -i` mechanics for amending historical commits                                                   |
+| Conventional Commits          | `https://www.conventionalcommits.org/en/v1.0.0/`                                                                                                                      | Commit message format: `feat(csapi):`, `refactor(csapi):`, `chore:` — match existing convention             |
+| GitHub Draft PR documentation | `https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests` | Force-push behavior on draft PRs, review implications                                                       |
 
 ### Prior Research Findings (All Plans)
 
-| Finding | Path | What to Use |
-|---------|------|-------------|
-| Plan 01 findings | `docs/research/phase-6/findings/01-build-system-entry-point-analysis.md` | `package.json` `"exports"` configuration for `"./csapi"`, build script changes (if any), esbuild per-file output confirmation, DTS generation scope |
-| Plan 02 findings | `docs/research/phase-6/findings/02-edr-integration-pattern-analysis.md` | EDR pattern comparison — what changes are acceptable, what EDR did that CSAPI must not, whether EDR also needs refactoring |
-| Plan 03 findings | `docs/research/phase-6/findings/03-separate-entry-point-design-patterns.md` | Barrel file structure, `package.json` exports format, TypeScript declaration file path mapping, consumer usage pattern |
-| Plan 04 findings | `docs/research/phase-6/findings/04-sub-module-api-design-patterns.md` | Recommended consumer API shape — does the changelist need a new factory file, or is the CSAPIQueryBuilder constructor the API? |
-| Plan 05 findings | `docs/research/phase-6/findings/05-module-decoupling-patterns.md` | Coupling level — does the changelist need adapter types or interface files? Type import strategy (`import type` from core). |
-| Plan 06 findings | `docs/research/phase-6/findings/06-endpoint-decoupling-architecture.md` | **Primary input.** Complete architecture: consumer API, `hasConnectedSystems` placement, `csapiCollections` placement, `scanCsapiLinks` resolution, barrel file contents, test migration plan, before/after code for every integration point, boundary verification matrix. |
-| Plan 07 findings | `docs/research/phase-6/findings/07-prettier-eslint-configuration-analysis.md` | Formatting impact scope (files/lines changed), ESLint error inventory, execution order recommendation (format-first/refactor-first/atomic), file-by-file impact matrix. |
+| Finding          | Path                                                                          | What to Use                                                                                                                                                                                                                                                                 |
+| ---------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plan 01 findings | `docs/research/phase-6/findings/01-build-system-entry-point-analysis.md`      | `package.json` `"exports"` configuration for `"./csapi"`, build script changes (if any), esbuild per-file output confirmation, DTS generation scope                                                                                                                         |
+| Plan 02 findings | `docs/research/phase-6/findings/02-edr-integration-pattern-analysis.md`       | EDR pattern comparison — what changes are acceptable, what EDR did that CSAPI must not, whether EDR also needs refactoring                                                                                                                                                  |
+| Plan 03 findings | `docs/research/phase-6/findings/03-separate-entry-point-design-patterns.md`   | Barrel file structure, `package.json` exports format, TypeScript declaration file path mapping, consumer usage pattern                                                                                                                                                      |
+| Plan 04 findings | `docs/research/phase-6/findings/04-sub-module-api-design-patterns.md`         | Recommended consumer API shape — does the changelist need a new factory file, or is the CSAPIQueryBuilder constructor the API?                                                                                                                                              |
+| Plan 05 findings | `docs/research/phase-6/findings/05-module-decoupling-patterns.md`             | Coupling level — does the changelist need adapter types or interface files? Type import strategy (`import type` from core).                                                                                                                                                 |
+| Plan 06 findings | `docs/research/phase-6/findings/06-endpoint-decoupling-architecture.md`       | **Primary input.** Complete architecture: consumer API, `hasConnectedSystems` placement, `csapiCollections` placement, `scanCsapiLinks` resolution, barrel file contents, test migration plan, before/after code for every integration point, boundary verification matrix. |
+| Plan 07 findings | `docs/research/phase-6/findings/07-prettier-eslint-configuration-analysis.md` | Formatting impact scope (files/lines changed), ESLint error inventory, execution order recommendation (format-first/refactor-first/atomic), file-by-file impact matrix.                                                                                                     |
 
 ---
 
@@ -243,6 +245,7 @@ This plan is also uniquely positioned: it must account for the *existing* 13-com
 **Objective:** Extract the concrete file-level implications from each prior plan's findings, resolving any gaps or ambiguities.
 
 **Tasks:**
+
 1. From Plan 01: Extract the exact `package.json` `"exports"` diff. Confirm whether `vite.node-config.js`, `vite.worker-config.js`, or `tsconfig.json` require changes.
 2. From Plan 02: Confirm whether any EDR-related files require changes as part of this refactoring. (Expected: no — EDR pattern is acceptable at its scale.)
 3. From Plan 03: Extract the barrel file path (`src/ogc-api/csapi/index.ts`), re-export pattern, and sub-path export format for `package.json`.
@@ -259,6 +262,7 @@ This plan is also uniquely positioned: it must account for the *existing* 13-com
 **Objective:** Produce the numbered changelist with every file operation, organized by category (create, modify, delete).
 
 **Tasks:**
+
 1. **Files to create:** List each new file with: path, purpose, approximate line count, which plan defines its contents. Include the barrel file and any factory/adapter files from Plan 06.
 2. **Files to modify:** List each modified file with: path, lines to remove, lines to add, net change, which plan defines the modification. Include `endpoint.ts`, `index.ts`, `endpoint.spec.ts`, `package.json`, and any build configs from Plan 01.
 3. **Files to move:** Inventory any files that relocate. (Expected: none — but confirm for MIME type functions if Plan 06 recommends moving them.)
@@ -274,6 +278,7 @@ This plan is also uniquely positioned: it must account for the *existing* 13-com
 **Objective:** Determine the optimal commit sequence, commit messages, and rebase strategy.
 
 **Tasks:**
+
 1. Evaluate three commit structure options:
    - **Option A (Amend):** Interactive rebase of `clean-pr`, amending commits 11, 12, and 13 to include the refactoring changes. The result is a 13-commit history that looks like CSAPI was never integrated into the endpoint. Pro: Clean history, as if the architecture was right from the start. Con: Force-push required, harder to review the refactoring diff in isolation.
    - **Option B (Append):** Add 1–3 new commits on top of the 13 existing commits. Pro: Refactoring changes are clearly visible as separate commits, easy to review. Con: Longer history, the "integrate into endpoint" commit (11) is followed by an "undo integration" commit.
@@ -291,6 +296,7 @@ This plan is also uniquely positioned: it must account for the *existing* 13-com
 **Objective:** Produce the final gate checklist that must pass before pushing.
 
 **Tasks:**
+
 1. Draft boundary condition verification commands (4 `git grep` patterns from Strategy § Boundary Conditions).
 2. Draft CI verification commands (5 `npm run` commands matching `qa.yml`).
 3. Draft the litmus test procedure (remove `csapi/`, verify core compiles and tests pass, restore `csapi/`).
@@ -304,6 +310,7 @@ This plan is also uniquely positioned: it must account for the *existing* 13-com
 **Objective:** Consolidate all phase outputs into the deliverable implementation spec.
 
 **Tasks:**
+
 1. Synthesize the file-level changelist, commit sequence, rebase strategy, and verification checklist into a single coherent document.
 2. Verify all 40 research questions are answered with specific, actionable answers.
 3. Validate the changelist against all boundary conditions — walk through each constraint and verify the changelist satisfies it.
@@ -376,16 +383,16 @@ This research is complete when:
 
 ## 9. Risks and Mitigation
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| A prior plan's finding is ambiguous, creating an unclear file operation in the changelist | Developer encounters ambiguity during implementation, must stop and re-research | Phase 1 explicitly identifies gaps in prior findings. Any ambiguity is flagged and resolved (or escalated to the appropriate plan for re-investigation) before proceeding to Phase 2. |
-| Commit sequence has a CI-failing intermediate state (e.g., barrel file doesn't exist yet but index.ts already removed CSAPI exports) | CI rejects the PR, or individual commits can't be cherry-picked | Phase 3 explicitly verifies each commit against CI compliance. Commits that create failing intermediate states are merged/squashed. The commit dependency graph from Phase 2 identifies ordering constraints. |
-| Interactive rebase introduces merge conflicts when amending commits 11 or 12 | Rebase fails, requiring manual conflict resolution that may introduce bugs | Phase 3 assesses conflict risk for each rebase option. If the amend strategy has high conflict risk, the append strategy is chosen instead. The git command runbook includes conflict resolution hints for predictable conflicts. |
-| Force-pushing to `clean-pr` loses work if the local branch is out of sync | PR branch diverges from local, causing confusion or data loss | The verification checklist includes a "backup" step: tag the current `clean-pr` state before force-pushing (`git tag pre-refactor-backup`). |
-| The changelist misses a file, and the omission isn't caught until CI runs | CI failure on push, requiring a fix commit that clutters the history | Phase 2 includes a completeness verification: walk through every boundary condition and verify the changelist satisfies it. Phase 4's litmus test catches missing changes before push. |
+| Risk                                                                                                                                                                                                           | Impact                                                                                  | Mitigation                                                                                                                                                                                                                                          |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A prior plan's finding is ambiguous, creating an unclear file operation in the changelist                                                                                                                      | Developer encounters ambiguity during implementation, must stop and re-research         | Phase 1 explicitly identifies gaps in prior findings. Any ambiguity is flagged and resolved (or escalated to the appropriate plan for re-investigation) before proceeding to Phase 2.                                                               |
+| Commit sequence has a CI-failing intermediate state (e.g., barrel file doesn't exist yet but index.ts already removed CSAPI exports)                                                                           | CI rejects the PR, or individual commits can't be cherry-picked                         | Phase 3 explicitly verifies each commit against CI compliance. Commits that create failing intermediate states are merged/squashed. The commit dependency graph from Phase 2 identifies ordering constraints.                                       |
+| Interactive rebase introduces merge conflicts when amending commits 11 or 12                                                                                                                                   | Rebase fails, requiring manual conflict resolution that may introduce bugs              | Phase 3 assesses conflict risk for each rebase option. If the amend strategy has high conflict risk, the append strategy is chosen instead. The git command runbook includes conflict resolution hints for predictable conflicts.                   |
+| Force-pushing to `clean-pr` loses work if the local branch is out of sync                                                                                                                                      | PR branch diverges from local, causing confusion or data loss                           | The verification checklist includes a "backup" step: tag the current `clean-pr` state before force-pushing (`git tag pre-refactor-backup`).                                                                                                         |
+| The changelist misses a file, and the omission isn't caught until CI runs                                                                                                                                      | CI failure on push, requiring a fix commit that clutters the history                    | Phase 2 includes a completeness verification: walk through every boundary condition and verify the changelist satisfies it. Phase 4's litmus test catches missing changes before push.                                                              |
 | Plan 07's formatting changes interact with Plan 06's architectural changes in unexpected ways (e.g., Prettier changes lines that the refactoring also changes, causing merge conflicts in the commit sequence) | Commit sequence becomes tangled, formatting and architecture can't be cleanly separated | Phase 3's formatting integration step explicitly addresses this: either formatting is applied in a separate commit before or after architecture (avoiding overlap), or commits are atomic (each commit includes formatting for its affected files). |
-| Upstream (`camptocamp/ogc-client` main branch) advances past our base commit (`53a6449`) between now and push time | Rebase against upstream introduces new conflicts | Phase 3's rebase strategy includes a step to check for upstream advancement and rebase against the latest `upstream/main` if needed. The 13 CSAPI commits (1–10 are pure additions, minimal conflict risk) should rebase cleanly. |
-| The 13-commit history is deemed too long by jahow — he may request squashing | All commit sequence work is wasted if the reviewer wants fewer commits | Phase 3 evaluates all three options (amend, append, squash). A fallback squash plan is documented regardless of the selected strategy, so a quick pivot is possible. |
+| Upstream (`camptocamp/ogc-client` main branch) advances past our base commit (`53a6449`) between now and push time                                                                                             | Rebase against upstream introduces new conflicts                                        | Phase 3's rebase strategy includes a step to check for upstream advancement and rebase against the latest `upstream/main` if needed. The 13 CSAPI commits (1–10 are pure additions, minimal conflict risk) should rebase cleanly.                   |
+| The 13-commit history is deemed too long by jahow — he may request squashing                                                                                                                                   | All commit sequence work is wasted if the reviewer wants fewer commits                  | Phase 3 evaluates all three options (amend, append, squash). A fallback squash plan is documented regardless of the selected strategy, so a quick pivot is possible.                                                                                |
 
 ---
 

@@ -113,16 +113,16 @@ Commit and push to the phase-6 branch.
 
 ## Quick Reference: Phase 6 Plans
 
-| # | Title | Type | Depends On | Blocks |
-|---|-------|------|------------|--------|
-| 01 | Upstream Build System and Entry Point Analysis | Internal analysis | — | 03 |
-| 02 | EDR Integration Pattern Analysis | Internal analysis | — | 06 |
-| 03 | Separate Entry Point Design Patterns | External (packaging) | 01 | 06 |
-| 04 | TypeScript Sub-Module API Design Patterns | External (industry) | — | 06 |
-| 05 | Module Decoupling Patterns in TypeScript | External (architecture) | — | 06 |
-| 06 | Endpoint Decoupling Architecture | Design synthesis | 02, 03, 04, 05 | 08 |
-| 07 | Prettier and ESLint Configuration Analysis | Mechanical | — | 08 |
-| 08 | File-Level Changelist and Commit Strategy | Implementation synthesis | 01–07 | — |
+| #   | Title                                          | Type                     | Depends On     | Blocks |
+| --- | ---------------------------------------------- | ------------------------ | -------------- | ------ |
+| 01  | Upstream Build System and Entry Point Analysis | Internal analysis        | —              | 03     |
+| 02  | EDR Integration Pattern Analysis               | Internal analysis        | —              | 06     |
+| 03  | Separate Entry Point Design Patterns           | External (packaging)     | 01             | 06     |
+| 04  | TypeScript Sub-Module API Design Patterns      | External (industry)      | —              | 06     |
+| 05  | Module Decoupling Patterns in TypeScript       | External (architecture)  | —              | 06     |
+| 06  | Endpoint Decoupling Architecture               | Design synthesis         | 02, 03, 04, 05 | 08     |
+| 07  | Prettier and ESLint Configuration Analysis     | Mechanical               | —              | 08     |
+| 08  | File-Level Changelist and Commit Strategy      | Implementation synthesis | 01–07          | —      |
 
 ---
 

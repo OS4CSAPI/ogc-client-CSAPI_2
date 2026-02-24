@@ -6,17 +6,17 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Research Plan** | [Plan 06: Endpoint Decoupling Architecture](../research-plans/06-endpoint-decoupling-architecture.md) |
-| **Plan Type** | Design synthesis |
-| **Date Started** | 2026-02-24 |
-| **Date Completed** | 2026-02-24 |
-| **Research Time** | ~4 hours (actual) |
-| **Estimated Time** | 3–4 hours (from plan) |
-| **Questions Answered** | 44 of 44 detailed questions |
-| **Depends On** | Plans 02, 03, 04, 05 |
-| **Blocks** | Plan 08 (File-Level Changelist and Commit Strategy) |
+| Field                  | Value                                                                                                 |
+| ---------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Research Plan**      | [Plan 06: Endpoint Decoupling Architecture](../research-plans/06-endpoint-decoupling-architecture.md) |
+| **Plan Type**          | Design synthesis                                                                                      |
+| **Date Started**       | 2026-02-24                                                                                            |
+| **Date Completed**     | 2026-02-24                                                                                            |
+| **Research Time**      | ~4 hours (actual)                                                                                     |
+| **Estimated Time**     | 3–4 hours (from plan)                                                                                 |
+| **Questions Answered** | 44 of 44 detailed questions                                                                           |
+| **Depends On**         | Plans 02, 03, 04, 05                                                                                  |
+| **Blocks**             | Plan 08 (File-Level Changelist and Commit Strategy)                                                   |
 
 ---
 
@@ -24,26 +24,26 @@
 
 ### Primary Sources Consulted
 
-| Source | Path / URL | What Was Extracted |
-|--------|------------|-------------------|
-| OGC API endpoint class | `src/ogc-api/endpoint.ts` (896 lines) | All CSAPI imports (lines 52–53), class fields, `csapi()` method (lines 385–413), `extractRootResourceUrls()` (lines 425–436), `getCollectionDocument()` (lines 438–468), `hasConnectedSystems` (lines 320–338), `csapiCollections` (lines 237–247), `edr()` method (lines 341–354), constructor (`private baseUrl: string`, line 155), private `root` getter (line 72) |
-| Root barrel file | `src/index.ts` (252 lines) | ~170 lines of CSAPI re-exports (lines 45–227): 1 default class, 3 value exports, ~27 function exports, ~110 type exports |
-| CSAPIQueryBuilder constructor | `src/ogc-api/csapi/url_builder.ts` (lines 106–174) | Constructor: `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` + optional `Map<string, string>`. Uses `import type`. |
-| `scanCsapiLinks` | `src/ogc-api/csapi/helpers.ts` (lines 129–174) | Accepts `Array<{rel?, href?}>`, returns `Map<string, string>`. Uses `CSAPIResourceTypes` internally. |
-| CSAPI endpoint tests | `src/ogc-api/endpoint.spec.ts` (lines 2836–2900) | 6 `it()` blocks in 2 describe blocks: nominal (4 tests) + non-CSAPI (2 tests) |
-| Info utilities | `src/ogc-api/info.ts` | `checkHasConnectedSystems` (lines 112–123): zero CSAPI imports, conformance URIs only. `parseCollections`: link regex only. |
-| CSAPI formats barrel | `src/ogc-api/csapi/formats/index.ts` (344 lines) | Complete re-exports from constants, GeoJSON, SensorML, SWE Common |
-| CSAPI model | `src/ogc-api/csapi/model.ts` (776 lines) | All type and value exports; imports are `import type` from `shared/` and `../model.js` |
-| EDR demo example | `app/examples/edr.ts` | EDR consumer pattern — uses `endpoint.edr(collection)` |
+| Source                        | Path / URL                                         | What Was Extracted                                                                                                                                                                                                                                                                                                                                                     |
+| ----------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OGC API endpoint class        | `src/ogc-api/endpoint.ts` (896 lines)              | All CSAPI imports (lines 52–53), class fields, `csapi()` method (lines 385–413), `extractRootResourceUrls()` (lines 425–436), `getCollectionDocument()` (lines 438–468), `hasConnectedSystems` (lines 320–338), `csapiCollections` (lines 237–247), `edr()` method (lines 341–354), constructor (`private baseUrl: string`, line 155), private `root` getter (line 72) |
+| Root barrel file              | `src/index.ts` (252 lines)                         | ~170 lines of CSAPI re-exports (lines 45–227): 1 default class, 3 value exports, ~27 function exports, ~110 type exports                                                                                                                                                                                                                                               |
+| CSAPIQueryBuilder constructor | `src/ogc-api/csapi/url_builder.ts` (lines 106–174) | Constructor: `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` + optional `Map<string, string>`. Uses `import type`.                                                                                                                                                                                                                                            |
+| `scanCsapiLinks`              | `src/ogc-api/csapi/helpers.ts` (lines 129–174)     | Accepts `Array<{rel?, href?}>`, returns `Map<string, string>`. Uses `CSAPIResourceTypes` internally.                                                                                                                                                                                                                                                                   |
+| CSAPI endpoint tests          | `src/ogc-api/endpoint.spec.ts` (lines 2836–2900)   | 6 `it()` blocks in 2 describe blocks: nominal (4 tests) + non-CSAPI (2 tests)                                                                                                                                                                                                                                                                                          |
+| Info utilities                | `src/ogc-api/info.ts`                              | `checkHasConnectedSystems` (lines 112–123): zero CSAPI imports, conformance URIs only. `parseCollections`: link regex only.                                                                                                                                                                                                                                            |
+| CSAPI formats barrel          | `src/ogc-api/csapi/formats/index.ts` (344 lines)   | Complete re-exports from constants, GeoJSON, SensorML, SWE Common                                                                                                                                                                                                                                                                                                      |
+| CSAPI model                   | `src/ogc-api/csapi/model.ts` (776 lines)           | All type and value exports; imports are `import type` from `shared/` and `../model.js`                                                                                                                                                                                                                                                                                 |
+| EDR demo example              | `app/examples/edr.ts`                              | EDR consumer pattern — uses `endpoint.edr(collection)`                                                                                                                                                                                                                                                                                                                 |
 
 ### Prior Findings Used
 
-| Finding | Path | What Was Consumed |
-|---------|------|-------------------|
-| Plan 02 | `findings/02-edr-integration-pattern-analysis.md` | EDR decoupling baseline: 1 import, 3 public members, 0 root exports, `edr()` uses `getCollectionInfo` (not raw doc). Why EDR is acceptable at 656 lines but CSAPI fails at 11,767 lines. Key takeaway: scale is the differentiator. |
-| Plan 03 | `findings/03-separate-entry-point-design-patterns.md` | `package.json` `"exports"` configuration: 4 conditions (`types`, `import`, `browser`, `default`), barrel file necessity, `"sideEffects": false`, no `typesVersions` needed. All bundlers compatible. |
-| Plan 04 | `findings/04-sub-module-api-design-patterns.md` | Two-layer API recommendation: sync constructor (unchanged) + async factory `createCSAPIBuilder(endpoint, collectionId)`. Constructor injection dominant for stateful sub-modules. No library has CSAPI's exact "async data from core" pattern. |
-| Plan 05 | `findings/05-module-decoupling-patterns.md` | Keep Level 3.5 coupling (`Pick<>` + `import type`). Generalize `scanCsapiLinks` into shared link scanner. One-shot extraction. Barrel file + `"exports"`. Factory function serves dual duty (consumer API + decoupling). |
+| Finding | Path                                                  | What Was Consumed                                                                                                                                                                                                                              |
+| ------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plan 02 | `findings/02-edr-integration-pattern-analysis.md`     | EDR decoupling baseline: 1 import, 3 public members, 0 root exports, `edr()` uses `getCollectionInfo` (not raw doc). Why EDR is acceptable at 656 lines but CSAPI fails at 11,767 lines. Key takeaway: scale is the differentiator.            |
+| Plan 03 | `findings/03-separate-entry-point-design-patterns.md` | `package.json` `"exports"` configuration: 4 conditions (`types`, `import`, `browser`, `default`), barrel file necessity, `"sideEffects": false`, no `typesVersions` needed. All bundlers compatible.                                           |
+| Plan 04 | `findings/04-sub-module-api-design-patterns.md`       | Two-layer API recommendation: sync constructor (unchanged) + async factory `createCSAPIBuilder(endpoint, collectionId)`. Constructor injection dominant for stateful sub-modules. No library has CSAPI's exact "async data from core" pattern. |
+| Plan 05 | `findings/05-module-decoupling-patterns.md`           | Keep Level 3.5 coupling (`Pick<>` + `import type`). Generalize `scanCsapiLinks` into shared link scanner. One-shot extraction. Barrel file + `"exports"`. Factory function serves dual duty (consumer API + decoupling).                       |
 
 ---
 
@@ -111,7 +111,7 @@ Plus `"sideEffects": false` on the root `package.json`. This fits the barrel fil
 import type { OgcApiCollectionInfo } from '../model.js';
 ```
 
-`import type` creates a compile-time dependency but zero runtime dependency. This does NOT violate constraint 3 — constraint 3 prohibits *core importing from CSAPI*, not *CSAPI importing types from core*. The `import type` direction (CSAPI → core) is the explicitly allowed dependency direction.
+`import type` creates a compile-time dependency but zero runtime dependency. This does NOT violate constraint 3 — constraint 3 prohibits _core importing from CSAPI_, not _CSAPI importing types from core_. The `import type` direction (CSAPI → core) is the explicitly allowed dependency direction.
 
 ### Question 5: What `scanCsapiLinks` placement did Plan 05 recommend?
 
@@ -134,6 +134,7 @@ The generalization solves a problem that no longer exists. `scanCsapiLinks` stay
 **Answer:** No library had CSAPI's exact "async data from core" challenge. Plan 04's findings: "No studied library has a sub-module that needs HTTP-resolved data from the core as a prerequisite."
 
 The recommended solution is the factory function pattern, which Plan 04 identifies as an "original contribution to the pattern catalog." The factory:
+
 1. Accepts the endpoint instance (runtime dependency via parameter, not import)
 2. Calls endpoint's public methods to resolve data asynchronously
 3. Passes resolved data to the synchronous constructor
@@ -148,13 +149,13 @@ The closest parallels are AWS SDK's `Upload` (sync constructor + async `done()`)
 
 **Answer:**
 
-| Operation | Currently (endpoint) | After (factory function) |
-|-----------|---------------------|-------------------------|
-| (a) Check `hasConnectedSystems` | `await this.hasConnectedSystems` | `await endpoint.hasConnectedSystems` |
-| (b) Check cache | `cache.has(collectionId)` | **Removed** — no automatic caching |
+| Operation                       | Currently (endpoint)                             | After (factory function)                             |
+| ------------------------------- | ------------------------------------------------ | ---------------------------------------------------- |
+| (a) Check `hasConnectedSystems` | `await this.hasConnectedSystems`                 | `await endpoint.hasConnectedSystems`                 |
+| (b) Check cache                 | `cache.has(collectionId)`                        | **Removed** — no automatic caching                   |
 | (c) Get raw collection document | `await this.getCollectionDocument(collectionId)` | `await endpoint.getCollectionDocument(collectionId)` |
-| (d) Extract root resource URLs | `await this.extractRootResourceUrls()` | `scanCsapiLinks((await endpoint.root)?.links ?? [])` |
-| Construct builder | `new CSAPIQueryBuilder(doc, urls)` | `new CSAPIQueryBuilder(doc, urls)` |
+| (d) Extract root resource URLs  | `await this.extractRootResourceUrls()`           | `scanCsapiLinks((await endpoint.root)?.links ?? [])` |
+| Construct builder               | `new CSAPIQueryBuilder(doc, urls)`               | `new CSAPIQueryBuilder(doc, urls)`                   |
 
 All operations move to the factory function in `csapi/factory.ts`. The factory calls endpoint methods that are being made public (`getCollectionDocument`, `root`). The `scanCsapiLinks` call is internal to CSAPI — no constraint violation.
 
@@ -165,6 +166,7 @@ All operations move to the factory function in `csapi/factory.ts`. The factory c
 `getCollectionDocument(collectionId)` is currently private (line 438). The factory function needs it to obtain the raw collection document with links intact (because `parseBaseCollectionInfo()` strips the `links` array, making `getCollectionInfo()` unsuitable for CSAPI).
 
 **Implications of making it public:**
+
 - **Positive:** Useful for any consumer who needs the raw collection JSON (not just CSAPI)
 - **Positive:** Already used by `getStyleMetadataDocument()` — a well-tested, stable method
 - **Neutral:** Return type `Promise<OgcApiDocument>` is generic, not CSAPI-specific
@@ -193,6 +195,7 @@ This requires `endpoint.root` to be public.
 **Answer:**
 
 **Before (current):**
+
 ```typescript
 import { OgcApiEndpoint } from '@camptocamp/ogc-client';
 
@@ -202,6 +205,7 @@ const url = builder.getSystems({ bbox: [-180, -90, 180, 90], limit: 50 });
 ```
 
 **After (recommended):**
+
 ```typescript
 import { OgcApiEndpoint } from '@camptocamp/ogc-client';
 import { createCSAPIBuilder } from '@camptocamp/ogc-client/csapi';
@@ -214,6 +218,7 @@ const url = builder.getSystems({ bbox: [-180, -90, 180, 90], limit: 50 });
 **Change for consumers:** One additional import line, and `endpoint.csapi(id)` becomes `createCSAPIBuilder(endpoint, id)`. The builder API is identical.
 
 **Advanced usage (direct construction, Layer 1):**
+
 ```typescript
 import CSAPIQueryBuilder from '@camptocamp/ogc-client/csapi';
 
@@ -229,15 +234,18 @@ const builder = new CSAPIQueryBuilder(
 **Answer:** **No automatic caching.** The `collection_id_to_csapi_builder_` Map is removed from the endpoint.
 
 **Why this is acceptable:**
+
 - The `CSAPIQueryBuilder` constructor is cheap — it only scans links and extracts a base URL (no HTTP requests)
 - The expensive operations (`getCollectionDocument`, `root`) are already cached internally by the endpoint (they return cached Promises)
 - Calling `createCSAPIBuilder(endpoint, 'weather-stations')` twice constructs two builder instances, but both reuse the same cached endpoint data
 
 **If consumers need instance caching:** They cache the builder themselves:
+
 ```typescript
 const builders = new Map<string, CSAPIQueryBuilder>();
 async function getBuilder(endpoint, id) {
-  if (!builders.has(id)) builders.set(id, await createCSAPIBuilder(endpoint, id));
+  if (!builders.has(id))
+    builders.set(id, await createCSAPIBuilder(endpoint, id));
   return builders.get(id);
 }
 ```
@@ -252,15 +260,14 @@ export async function createCSAPIBuilder(
   collectionId: string
 ): Promise<CSAPIQueryBuilder> {
   if (!(await endpoint.hasConnectedSystems)) {
-    throw new EndpointError(
-      'Endpoint does not support Connected Systems'
-    );
+    throw new EndpointError('Endpoint does not support Connected Systems');
   }
   // ... construct builder
 }
 ```
 
 This mirrors `csapi()`'s current guard. The consumer can also check beforehand:
+
 ```typescript
 if (await endpoint.hasConnectedSystems) {
   const builder = await createCSAPIBuilder(endpoint, 'weather-stations');
@@ -271,7 +278,7 @@ if (await endpoint.hasConnectedSystems) {
 
 **Answer:**
 
-```typescript
+````typescript
 import type OgcApiEndpoint from '../endpoint.js';
 import type { OgcApiCollectionInfo } from '../model.js';
 import { EndpointError } from '../../shared/errors.js';
@@ -317,9 +324,7 @@ export async function createCSAPIBuilder(
   collectionId: string
 ): Promise<CSAPIQueryBuilder> {
   if (!(await endpoint.hasConnectedSystems)) {
-    throw new EndpointError(
-      'Endpoint does not support Connected Systems'
-    );
+    throw new EndpointError('Endpoint does not support Connected Systems');
   }
 
   const collectionDoc = await endpoint.getCollectionDocument(collectionId);
@@ -335,9 +340,10 @@ export async function createCSAPIBuilder(
     resourceUrls
   );
 }
-```
+````
 
 **Import analysis:**
+
 - `import type OgcApiEndpoint` — type-only, erased at runtime. CSAPI → core direction (allowed).
 - `import type { OgcApiCollectionInfo }` — type-only, already exists in `url_builder.ts`. Used for the type assertion.
 - `import { EndpointError }` — value import from `shared/` (not from core `ogc-api/`). Acceptable per Plan 05 findings.
@@ -356,12 +362,12 @@ export async function createCSAPIBuilder(
 
 **Answer:** Yes. Explicit constraint verification:
 
-| Constraint | Status | Evidence |
-|-----------|--------|----------|
-| 1. No CSAPI in root exports | ✓ N/A | `hasConnectedSystems` is not an export in `index.ts` — it's a property on `OgcApiEndpoint` |
-| 2. Separate entry point | ✓ N/A | Not related to the `./csapi` entry point |
-| 3. No outward imports | ✓ Pass | `hasConnectedSystems` calls `checkHasConnectedSystems()` from `info.ts` (line 112), which checks conformance URI strings only: `cc.indexOf('ogcapi-connectedsystems-1') > -1`. Zero imports from `csapi/`. |
-| 4. One-way dependency | ✓ Pass | Removing `src/ogc-api/csapi/` entirely does not affect `hasConnectedSystems` — it has no reference to CSAPI code. |
+| Constraint                  | Status | Evidence                                                                                                                                                                                                   |
+| --------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. No CSAPI in root exports | ✓ N/A  | `hasConnectedSystems` is not an export in `index.ts` — it's a property on `OgcApiEndpoint`                                                                                                                 |
+| 2. Separate entry point     | ✓ N/A  | Not related to the `./csapi` entry point                                                                                                                                                                   |
+| 3. No outward imports       | ✓ Pass | `hasConnectedSystems` calls `checkHasConnectedSystems()` from `info.ts` (line 112), which checks conformance URI strings only: `cc.indexOf('ogcapi-connectedsystems-1') > -1`. Zero imports from `csapi/`. |
+| 4. One-way dependency       | ✓ Pass | Removing `src/ogc-api/csapi/` entirely does not affect `hasConnectedSystems` — it has no reference to CSAPI code.                                                                                          |
 
 **Precedent:** `hasEnvironmentalDataRetrieval` follows the identical pattern and was accepted by jahow in PR #114.
 
@@ -369,12 +375,12 @@ export async function createCSAPIBuilder(
 
 **Answer:** Yes. Explicit constraint verification:
 
-| Constraint | Status | Evidence |
-|-----------|--------|----------|
-| 1. No CSAPI in root exports | ✓ N/A | Property on `OgcApiEndpoint`, not a separate export |
-| 2. Separate entry point | ✓ N/A | Not related |
-| 3. No outward imports | ✓ Pass | `csapiCollections` calls `parseCollections()` from `info.ts`, which checks `collection.links?.some(link => /^ogc-cs:.+$/.test(link.rel ?? ''))`. Zero imports from `csapi/`. Uses string regex only. |
-| 4. One-way dependency | ✓ Pass | Removing `csapi/` does not affect `csapiCollections`. |
+| Constraint                  | Status | Evidence                                                                                                                                                                                             |
+| --------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. No CSAPI in root exports | ✓ N/A  | Property on `OgcApiEndpoint`, not a separate export                                                                                                                                                  |
+| 2. Separate entry point     | ✓ N/A  | Not related                                                                                                                                                                                          |
+| 3. No outward imports       | ✓ Pass | `csapiCollections` calls `parseCollections()` from `info.ts`, which checks `collection.links?.some(link => /^ogc-cs:.+$/.test(link.rel ?? ''))`. Zero imports from `csapi/`. Uses string regex only. |
+| 4. One-way dependency       | ✓ Pass | Removing `csapi/` does not affect `csapiCollections`.                                                                                                                                                |
 
 **Precedent:** `edrCollections` follows the identical pattern.
 
@@ -417,30 +423,30 @@ The JSDoc on `hasConnectedSystems` and `csapiCollections` should be updated to r
 
 **Answer:** Yes. It uses `CSAPIResourceTypes` from `csapi/model.ts` — the constant array of 9 resource type strings (`systems`, `deployments`, `samplingFeatures`, `procedures`, `properties`, `datastreams`, `observations`, `controlStreams`, `commands`). It also implements the `featuresOfInterest → samplingFeatures` normalization, which is CSAPI-specific domain knowledge.
 
-A generic version *could* be parameterized to accept a known-types set and prefix, but **this is unnecessary** — see Question 5 synthesis.
+A generic version _could_ be parameterized to accept a known-types set and prefix, but **this is unnecessary** — see Question 5 synthesis.
 
 ### Question 21: What are the options for eliminating the `scanCsapiLinks` constraint violation?
 
 **Five options were evaluated:**
 
-| Option | Description | Constraints ✓/✗ | Minimum-change? |
-|--------|-------------|-----------------|-----------------|
-| A | Inline `scanCsapiLinks` logic into endpoint (~40 lines duplicated) | ✓✓✓✓ | No — duplication |
-| B | Move `scanCsapiLinks` to shared utils | ✓✓✓✓ | No — pollutes shared with CSAPI-specific code |
-| C | Generalize into `scanResourceLinks` (Plan 05 recommendation) | ✓✓✓✓ | No — new shared code, CSAPI wrapper, resource type constant in endpoint |
-| D | **Remove `extractRootResourceUrls` from endpoint entirely** | ✓✓✓✓ | **Yes** — deletes code instead of moving it |
-| E | Move `CSAPIResourceTypes` to shared, then move `scanCsapiLinks` to shared | ✓✓✓✓ | No — moves CSAPI constants to shared |
+| Option | Description                                                               | Constraints ✓/✗ | Minimum-change?                                                         |
+| ------ | ------------------------------------------------------------------------- | --------------- | ----------------------------------------------------------------------- |
+| A      | Inline `scanCsapiLinks` logic into endpoint (~40 lines duplicated)        | ✓✓✓✓            | No — duplication                                                        |
+| B      | Move `scanCsapiLinks` to shared utils                                     | ✓✓✓✓            | No — pollutes shared with CSAPI-specific code                           |
+| C      | Generalize into `scanResourceLinks` (Plan 05 recommendation)              | ✓✓✓✓            | No — new shared code, CSAPI wrapper, resource type constant in endpoint |
+| D      | **Remove `extractRootResourceUrls` from endpoint entirely**               | ✓✓✓✓            | **Yes** — deletes code instead of moving it                             |
+| E      | Move `CSAPIResourceTypes` to shared, then move `scanCsapiLinks` to shared | ✓✓✓✓            | No — moves CSAPI constants to shared                                    |
 
 ### Question 22: Constraint verification for each option
 
 **Option D (selected) — remove from endpoint, let factory handle it:**
 
-| Constraint | Status | Evidence |
-|-----------|--------|----------|
-| 1. No CSAPI in root exports | ✓ | `extractRootResourceUrls` was never in root exports |
-| 2. Separate entry point | ✓ | Not affected |
-| 3. No outward imports | ✓ | `endpoint.ts` no longer calls `scanCsapiLinks`. The factory function in CSAPI calls it — that's internal CSAPI, not an outward import. |
-| 4. One-way dependency | ✓ | Removing `csapi/` removes the factory function too. The endpoint has no reference to `scanCsapiLinks` or `extractRootResourceUrls`. |
+| Constraint                  | Status | Evidence                                                                                                                               |
+| --------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. No CSAPI in root exports | ✓      | `extractRootResourceUrls` was never in root exports                                                                                    |
+| 2. Separate entry point     | ✓      | Not affected                                                                                                                           |
+| 3. No outward imports       | ✓      | `endpoint.ts` no longer calls `scanCsapiLinks`. The factory function in CSAPI calls it — that's internal CSAPI, not an outward import. |
+| 4. One-way dependency       | ✓      | Removing `csapi/` removes the factory function too. The endpoint has no reference to `scanCsapiLinks` or `extractRootResourceUrls`.    |
 
 ### Question 23: Which option has the lowest migration effort?
 
@@ -462,11 +468,11 @@ const resourceUrls = Array.isArray(links) ? scanCsapiLinks(links) : new Map();
 
 **Answer:** Minimal concern. The endpoint already exposes parsed views of the root document:
 
-| Existing public getter | Returns |
-|----------------------|---------|
-| `info` | `Promise<OgcApiEndpointInfo>` — parsed from root |
-| `conformanceClasses` | `Promise<ConformanceClass[]>` — parsed from conformance doc |
-| `allCollections` | `Promise<{name, hasRecords?, ...}[]>` — parsed from data doc |
+| Existing public getter | Returns                                                      |
+| ---------------------- | ------------------------------------------------------------ |
+| `info`                 | `Promise<OgcApiEndpointInfo>` — parsed from root             |
+| `conformanceClasses`   | `Promise<ConformanceClass[]>` — parsed from conformance doc  |
+| `allCollections`       | `Promise<{name, hasRecords?, ...}[]>` — parsed from data doc |
 
 Adding `root: Promise<OgcApiDocument>` follows the same pattern — it provides the raw document alongside the parsed views. There is precedent in the codebase for exposing raw documents (e.g., `conformance` returns a raw document internally; `root` would do the same publicly).
 
@@ -555,6 +561,7 @@ Consumer
 ```
 
 **Module boundary crossings:**
+
 - Before: 2 imports from `csapi/` INTO `endpoint.ts` (constraint violations)
 - After: 0 imports from `csapi/` in `endpoint.ts`. The factory function uses `import type OgcApiEndpoint` from core (CSAPI → core, allowed direction).
 
@@ -564,15 +571,15 @@ Consumer
 
 Every type crossing the CSAPI ↔ core boundary:
 
-| Type | Current Import | After Import | Strategy | Constraint OK? |
-|------|---------------|-------------|----------|----------------|
-| `OgcApiCollectionInfo` | `csapi/url_builder.ts`: `import type` from `../model.js` | **Unchanged** | `Pick<>` + `import type` (Level 3.5) | ✓ (erased, CSAPI→core) |
-| `OgcApiDocumentLink` | `csapi/model.ts`: `import type` from `../model.js` | **Unchanged** | `import type` | ✓ (erased, CSAPI→core) |
-| `BoundingBox`, `DateTimeParameter`, `CrsCode`, `MimeType` | `csapi/model.ts`: `import type` from `../../shared/models.js` | **Unchanged** | `import type` | ✓ (shared, not core) |
-| `BoundingBox` | `csapi/helpers.ts`: `import type` from `../../shared/models.js` | **Unchanged** | `import type` | ✓ (shared, not core) |
-| `EndpointError` | `csapi/url_builder.ts`: value import from `../../shared/errors.js` | **Unchanged** | Value import | ✓ (shared, not core) |
-| `OgcApiEndpoint` | N/A (not currently imported by CSAPI) | `csapi/factory.ts`: `import type` from `../endpoint.js` | `import type` (new) | ✓ (erased, CSAPI→core) |
-| `OgcApiCollectionInfo` | N/A | `csapi/factory.ts`: `import type` from `../model.js` | `import type` (new) | ✓ (erased, CSAPI→core) |
+| Type                                                      | Current Import                                                     | After Import                                            | Strategy                             | Constraint OK?         |
+| --------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------- | ------------------------------------ | ---------------------- |
+| `OgcApiCollectionInfo`                                    | `csapi/url_builder.ts`: `import type` from `../model.js`           | **Unchanged**                                           | `Pick<>` + `import type` (Level 3.5) | ✓ (erased, CSAPI→core) |
+| `OgcApiDocumentLink`                                      | `csapi/model.ts`: `import type` from `../model.js`                 | **Unchanged**                                           | `import type`                        | ✓ (erased, CSAPI→core) |
+| `BoundingBox`, `DateTimeParameter`, `CrsCode`, `MimeType` | `csapi/model.ts`: `import type` from `../../shared/models.js`      | **Unchanged**                                           | `import type`                        | ✓ (shared, not core)   |
+| `BoundingBox`                                             | `csapi/helpers.ts`: `import type` from `../../shared/models.js`    | **Unchanged**                                           | `import type`                        | ✓ (shared, not core)   |
+| `EndpointError`                                           | `csapi/url_builder.ts`: value import from `../../shared/errors.js` | **Unchanged**                                           | Value import                         | ✓ (shared, not core)   |
+| `OgcApiEndpoint`                                          | N/A (not currently imported by CSAPI)                              | `csapi/factory.ts`: `import type` from `../endpoint.js` | `import type` (new)                  | ✓ (erased, CSAPI→core) |
+| `OgcApiCollectionInfo`                                    | N/A                                                                | `csapi/factory.ts`: `import type` from `../model.js`    | `import type` (new)                  | ✓ (erased, CSAPI→core) |
 
 **Key principle:** `shared/` is a utility layer, not core. CSAPI's imports from `../../shared/` don't cross the core ↔ CSAPI boundary. Plan 05 confirmed: "shared is a legitimate import target for CSAPI."
 
@@ -586,7 +593,7 @@ Every type crossing the CSAPI ↔ core boundary:
 
 **Answer:** The barrel file re-exports everything currently in `src/index.ts` from CSAPI modules, with paths adjusted to relative imports. It also exports the new factory function.
 
-```typescript
+````typescript
 // src/ogc-api/csapi/index.ts
 
 /**
@@ -812,7 +819,7 @@ export type {
   BinaryBlock,
   ValidationError,
 } from './formats/index.js';
-```
+````
 
 ### Question 32: Should the barrel export CSAPI-internal utilities?
 
@@ -859,14 +866,14 @@ No module in this chain imports from `csapi/index.ts`. No cycle.
 
 ### Question 36: Classification of each test
 
-| Test | Tests What | Location Decision | Rationale |
-|------|-----------|-------------------|-----------|
-| `detects Connected Systems support` | `hasConnectedSystems` getter | **Stays** in `endpoint.spec.ts` | Tests endpoint behavior, not CSAPI internals. Zero CSAPI imports. |
-| `can list all CSAPI collections` | `csapiCollections` getter | **Stays** in `endpoint.spec.ts` | Tests endpoint behavior. Zero CSAPI imports. |
-| `can produce a CSAPI query builder` | `endpoint.csapi('iot-sensors')` | **Moves + rewrites** | Tests the factory pattern. Must use `createCSAPIBuilder` instead of `endpoint.csapi()`. |
-| `caches the CSAPI query builder` | `endpoint.csapi()` caching | **Removed** | No automatic caching in the new design. Caching is the consumer's responsibility. |
-| `reports no Connected Systems support` | `hasConnectedSystems` = false | **Stays** in `endpoint.spec.ts` | Tests endpoint behavior on non-CSAPI endpoint. |
-| `throws an error when calling csapi()` | `endpoint.csapi()` error handling | **Moves + rewrites** | Tests factory function error handling. `createCSAPIBuilder` throws when endpoint doesn't support CSAPI. |
+| Test                                   | Tests What                        | Location Decision               | Rationale                                                                                               |
+| -------------------------------------- | --------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `detects Connected Systems support`    | `hasConnectedSystems` getter      | **Stays** in `endpoint.spec.ts` | Tests endpoint behavior, not CSAPI internals. Zero CSAPI imports.                                       |
+| `can list all CSAPI collections`       | `csapiCollections` getter         | **Stays** in `endpoint.spec.ts` | Tests endpoint behavior. Zero CSAPI imports.                                                            |
+| `can produce a CSAPI query builder`    | `endpoint.csapi('iot-sensors')`   | **Moves + rewrites**            | Tests the factory pattern. Must use `createCSAPIBuilder` instead of `endpoint.csapi()`.                 |
+| `caches the CSAPI query builder`       | `endpoint.csapi()` caching        | **Removed**                     | No automatic caching in the new design. Caching is the consumer's responsibility.                       |
+| `reports no Connected Systems support` | `hasConnectedSystems` = false     | **Stays** in `endpoint.spec.ts` | Tests endpoint behavior on non-CSAPI endpoint.                                                          |
+| `throws an error when calling csapi()` | `endpoint.csapi()` error handling | **Moves + rewrites**            | Tests factory function error handling. `createCSAPIBuilder` throws when endpoint doesn't support CSAPI. |
 
 ### Question 37: CSAPI test fixtures
 
@@ -874,11 +881,11 @@ The CSAPI tests use the `http://local/csapi/sample-data-hub` fixture URL, which 
 
 ### Question 38: New tests needed for the CSAPI module boundary
 
-| Test | What It Verifies |
-|------|-----------------|
+| Test                                                                   | What It Verifies                                                                |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | `createCSAPIBuilder creates a builder with correct availableResources` | Factory produces a builder with expected resources from the collection document |
-| `createCSAPIBuilder throws on non-CSAPI endpoint` | Factory throws `EndpointError` when `hasConnectedSystems` is false |
-| `CSAPIQueryBuilder accepts manual construction` | Direct constructor still works without factory (Layer 1 API) |
+| `createCSAPIBuilder throws on non-CSAPI endpoint`                      | Factory throws `EndpointError` when `hasConnectedSystems` is false              |
+| `CSAPIQueryBuilder accepts manual construction`                        | Direct constructor still works without factory (Layer 1 API)                    |
 
 ### Question 39: Test configuration changes
 
@@ -887,6 +894,7 @@ The CSAPI tests use the `http://local/csapi/sample-data-hub` fixture URL, which 
 ### Question 40: Before/after for the endpoint CSAPI test block
 
 **Before (`endpoint.spec.ts`):**
+
 ```typescript
 describe('OgcApiEndpoint with CSAPI', () => {
   let endpoint: OgcApiEndpoint;
@@ -910,6 +918,7 @@ describe('OgcApiEndpoint with CSAPI', () => {
 ```
 
 **After (`endpoint.spec.ts`) — 4 tests remain:**
+
 ```typescript
 describe('OgcApiEndpoint with CSAPI', () => {
   let endpoint: OgcApiEndpoint;
@@ -936,6 +945,7 @@ describe('OgcApiEndpoint with CSAPI', () => {
 ```
 
 **After (new `csapi/factory.spec.ts`) — 2 migrated + rewritten tests:**
+
 ```typescript
 import OgcApiEndpoint from '../endpoint.js';
 import { createCSAPIBuilder } from './factory.js';
@@ -953,9 +963,9 @@ describe('createCSAPIBuilder', () => {
 
   it('throws on non-CSAPI endpoint', async () => {
     const endpoint = new OgcApiEndpoint('http://local/sample-data/');
-    await expect(createCSAPIBuilder(endpoint, 'any-collection')).rejects.toThrow(
-      EndpointError
-    );
+    await expect(
+      createCSAPIBuilder(endpoint, 'any-collection')
+    ).rejects.toThrow(EndpointError);
   });
 });
 ```
@@ -967,30 +977,35 @@ describe('createCSAPIBuilder', () => {
 ### Question 41: `src/ogc-api/endpoint.ts` before/after
 
 **Imports — REMOVED (lines 52–53):**
+
 ```diff
 - import CSAPIQueryBuilder from './csapi/url_builder.js';
 - import { scanCsapiLinks } from './csapi/helpers.js';
 ```
 
 **Class field — REMOVED (line 68):**
+
 ```diff
 - private collection_id_to_csapi_builder_: Map<string, CSAPIQueryBuilder> =
 -   new Map();
 ```
 
 **`root` getter — CHANGED (line 72):**
+
 ```diff
 - private get root(): Promise<OgcApiDocument> {
 + public get root(): Promise<OgcApiDocument> {
 ```
 
 **`getCollectionDocument` — CHANGED (line 438):**
+
 ```diff
 - private getCollectionDocument(collectionId: string): Promise<OgcApiDocument> {
 + public getCollectionDocument(collectionId: string): Promise<OgcApiDocument> {
 ```
 
 **`csapi()` method — REMOVED entirely (~lines 360–413, method + JSDoc):**
+
 ```diff
 - /**
 -  * Creates a {@link CSAPIQueryBuilder} for constructing Connected Systems
@@ -1019,6 +1034,7 @@ describe('createCSAPIBuilder', () => {
 ```
 
 **`extractRootResourceUrls` — REMOVED entirely (~lines 414–436, method + JSDoc):**
+
 ```diff
 - /**
 -  * Extracts absolute resource URLs from the root API document's links.
@@ -1033,6 +1049,7 @@ describe('createCSAPIBuilder', () => {
 ```
 
 **`hasConnectedSystems` JSDoc — UPDATED (remove `@see csapi` reference):**
+
 ```diff
   * @see {@link csapiCollections} to list available collections
 - * @see https://docs.ogc.org/is/23-001/23-001.html
@@ -1041,6 +1058,7 @@ describe('createCSAPIBuilder', () => {
 ```
 
 **Summary of `endpoint.ts` changes:**
+
 - 2 imports removed
 - 1 class field removed
 - 2 methods removed (~60 lines including JSDoc)
@@ -1051,6 +1069,7 @@ describe('createCSAPIBuilder', () => {
 ### Question 42: `src/index.ts` before/after
 
 **REMOVED — all CSAPI export lines (~lines 45–227):**
+
 ```diff
 - export { default as CSAPIQueryBuilder } from './ogc-api/csapi/url_builder.js';
 - export {
@@ -1079,20 +1098,20 @@ describe('createCSAPIBuilder', () => {
 
 ## 11. Post-Refactoring Verification Checklist
 
-| # | Verification | Command / Method | Expected Result |
-|---|-------------|-----------------|-----------------|
-| 1 | No CSAPI imports in endpoint | `git grep "from.*csapi" src/ogc-api/endpoint.ts` | 0 matches |
-| 2 | No CSAPI in root index | `git grep "csapi" src/index.ts` | 0 matches |
-| 3 | TypeScript compiles | `npm run typecheck` | Exit code 0 |
-| 4 | Browser tests pass | `npm run test:browser` | All pass |
-| 5 | Node tests pass | `npm run test:node` | All pass |
-| 6 | Formatting correct | `npm run format:check` | Exit code 0 |
-| 7 | Linting passes | `npm run lint` | Exit code 0 |
-| 8 | **Litmus test:** core builds without CSAPI | Temporarily exclude `csapi/` from tsconfig, run typecheck | Compiles (endpoint.ts has no CSAPI references) |
-| 9 | Barrel file resolves | `import { createCSAPIBuilder } from './csapi/index.js'` | No resolution errors |
-| 10 | No circular dependencies | Trace barrel import chain (§ 8 Q35) | No cycles |
-| 11 | Factory function works | Run factory.spec.ts tests | All pass |
-| 12 | `package.json` `"exports"` valid | Build project, verify `dist/ogc-api/csapi/index.js` and `.d.ts` exist | Files present |
+| #   | Verification                               | Command / Method                                                      | Expected Result                                |
+| --- | ------------------------------------------ | --------------------------------------------------------------------- | ---------------------------------------------- |
+| 1   | No CSAPI imports in endpoint               | `git grep "from.*csapi" src/ogc-api/endpoint.ts`                      | 0 matches                                      |
+| 2   | No CSAPI in root index                     | `git grep "csapi" src/index.ts`                                       | 0 matches                                      |
+| 3   | TypeScript compiles                        | `npm run typecheck`                                                   | Exit code 0                                    |
+| 4   | Browser tests pass                         | `npm run test:browser`                                                | All pass                                       |
+| 5   | Node tests pass                            | `npm run test:node`                                                   | All pass                                       |
+| 6   | Formatting correct                         | `npm run format:check`                                                | Exit code 0                                    |
+| 7   | Linting passes                             | `npm run lint`                                                        | Exit code 0                                    |
+| 8   | **Litmus test:** core builds without CSAPI | Temporarily exclude `csapi/` from tsconfig, run typecheck             | Compiles (endpoint.ts has no CSAPI references) |
+| 9   | Barrel file resolves                       | `import { createCSAPIBuilder } from './csapi/index.js'`               | No resolution errors                           |
+| 10  | No circular dependencies                   | Trace barrel import chain (§ 8 Q35)                                   | No cycles                                      |
+| 11  | Factory function works                     | Run factory.spec.ts tests                                             | All pass                                       |
+| 12  | `package.json` `"exports"` valid           | Build project, verify `dist/ogc-api/csapi/index.js` and `.d.ts` exist | Files present                                  |
 
 ---
 
@@ -1100,24 +1119,24 @@ describe('createCSAPIBuilder', () => {
 
 Master verification across all design decisions:
 
-| Design Decision | C1: No root exports | C2: Separate entry | C3: No outward imports | C4: One-way dep |
-|----------------|--------------------|--------------------|----------------------|-----------------|
-| Remove CSAPI exports from `index.ts` | ✓ Direct | ✓ N/A | ✓ N/A | ✓ N/A |
-| Create `csapi/index.ts` barrel | ✓ N/A | ✓ Direct | ✓ N/A | ✓ N/A |
-| Add `"./csapi"` to `package.json` exports | ✓ N/A | ✓ Direct | ✓ N/A | ✓ N/A |
-| Remove `CSAPIQueryBuilder` import from endpoint | ✓ N/A | ✓ N/A | ✓ Direct | ✓ Direct |
-| Remove `scanCsapiLinks` import from endpoint | ✓ N/A | ✓ N/A | ✓ Direct | ✓ Direct |
-| Remove `csapi()` method | ✓ N/A | ✓ N/A | ✓ Enables | ✓ Enables |
-| Remove `extractRootResourceUrls()` | ✓ N/A | ✓ N/A | ✓ Enables | ✓ Enables |
-| Remove `collection_id_to_csapi_builder_` cache | ✓ N/A | ✓ N/A | ✓ Enables | ✓ Enables |
-| Keep `hasConnectedSystems` on endpoint | ✓ Pass | ✓ N/A | ✓ Pass (zero csapi/ imports) | ✓ Pass |
-| Keep `csapiCollections` on endpoint | ✓ Pass | ✓ N/A | ✓ Pass (zero csapi/ imports) | ✓ Pass |
-| Make `root` public | ✓ N/A | ✓ N/A | ✓ N/A (no import change) | ✓ N/A |
-| Make `getCollectionDocument` public | ✓ N/A | ✓ N/A | ✓ N/A (no import change) | ✓ N/A |
-| Create `createCSAPIBuilder` factory | ✓ N/A | ✓ In barrel | ✓ N/A (lives in CSAPI) | ✓ CSAPI→core |
-| Factory uses `import type OgcApiEndpoint` | ✓ N/A | ✓ N/A | ✓ N/A (CSAPI→core) | ✓ Erased |
-| Factory uses `scanCsapiLinks` | ✓ N/A | ✓ N/A | ✓ Internal CSAPI | ✓ Internal |
-| Add `"sideEffects": false` to package.json | ✓ N/A | ✓ Supports | ✓ N/A | ✓ N/A |
+| Design Decision                                 | C1: No root exports | C2: Separate entry | C3: No outward imports       | C4: One-way dep |
+| ----------------------------------------------- | ------------------- | ------------------ | ---------------------------- | --------------- |
+| Remove CSAPI exports from `index.ts`            | ✓ Direct            | ✓ N/A              | ✓ N/A                        | ✓ N/A           |
+| Create `csapi/index.ts` barrel                  | ✓ N/A               | ✓ Direct           | ✓ N/A                        | ✓ N/A           |
+| Add `"./csapi"` to `package.json` exports       | ✓ N/A               | ✓ Direct           | ✓ N/A                        | ✓ N/A           |
+| Remove `CSAPIQueryBuilder` import from endpoint | ✓ N/A               | ✓ N/A              | ✓ Direct                     | ✓ Direct        |
+| Remove `scanCsapiLinks` import from endpoint    | ✓ N/A               | ✓ N/A              | ✓ Direct                     | ✓ Direct        |
+| Remove `csapi()` method                         | ✓ N/A               | ✓ N/A              | ✓ Enables                    | ✓ Enables       |
+| Remove `extractRootResourceUrls()`              | ✓ N/A               | ✓ N/A              | ✓ Enables                    | ✓ Enables       |
+| Remove `collection_id_to_csapi_builder_` cache  | ✓ N/A               | ✓ N/A              | ✓ Enables                    | ✓ Enables       |
+| Keep `hasConnectedSystems` on endpoint          | ✓ Pass              | ✓ N/A              | ✓ Pass (zero csapi/ imports) | ✓ Pass          |
+| Keep `csapiCollections` on endpoint             | ✓ Pass              | ✓ N/A              | ✓ Pass (zero csapi/ imports) | ✓ Pass          |
+| Make `root` public                              | ✓ N/A               | ✓ N/A              | ✓ N/A (no import change)     | ✓ N/A           |
+| Make `getCollectionDocument` public             | ✓ N/A               | ✓ N/A              | ✓ N/A (no import change)     | ✓ N/A           |
+| Create `createCSAPIBuilder` factory             | ✓ N/A               | ✓ In barrel        | ✓ N/A (lives in CSAPI)       | ✓ CSAPI→core    |
+| Factory uses `import type OgcApiEndpoint`       | ✓ N/A               | ✓ N/A              | ✓ N/A (CSAPI→core)           | ✓ Erased        |
+| Factory uses `scanCsapiLinks`                   | ✓ N/A               | ✓ N/A              | ✓ Internal CSAPI             | ✓ Internal      |
+| Add `"sideEffects": false` to package.json      | ✓ N/A               | ✓ Supports         | ✓ N/A                        | ✓ N/A           |
 
 **All 16 design decisions pass all 4 boundary conditions.**
 
@@ -1127,13 +1146,13 @@ Master verification across all design decisions:
 
 ### What Plan 08 Should Consume
 
-| Item | Section Reference |
-|------|------------------|
-| **Complete file list:** `endpoint.ts`, `index.ts`, `package.json`, new `csapi/index.ts`, new `csapi/factory.ts`, `endpoint.spec.ts`, new `csapi/factory.spec.ts` | §§ 10, 8, 9 |
-| **Exact changes per file:** Before/after diffs for endpoint.ts (§ 10 Q41), index.ts (§ 10 Q42), barrel file contents (§ 8 Q31), factory file contents (§ 3 Q13) | §§ 10, 8, 3 |
-| **Test migration plan:** 4 stay, 2 move+rewrite, 1 removed, before/after test code | § 9 Q36–Q40 |
-| **package.json changes:** `"./csapi"` sub-path + `"sideEffects": false` | § 2 Q3 (from Plan 03) |
-| **Verification checklist:** 12-item post-refactoring verification | § 11 |
+| Item                                                                                                                                                             | Section Reference     |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| **Complete file list:** `endpoint.ts`, `index.ts`, `package.json`, new `csapi/index.ts`, new `csapi/factory.ts`, `endpoint.spec.ts`, new `csapi/factory.spec.ts` | §§ 10, 8, 9           |
+| **Exact changes per file:** Before/after diffs for endpoint.ts (§ 10 Q41), index.ts (§ 10 Q42), barrel file contents (§ 8 Q31), factory file contents (§ 3 Q13)  | §§ 10, 8, 3           |
+| **Test migration plan:** 4 stay, 2 move+rewrite, 1 removed, before/after test code                                                                               | § 9 Q36–Q40           |
+| **package.json changes:** `"./csapi"` sub-path + `"sideEffects": false`                                                                                          | § 2 Q3 (from Plan 03) |
+| **Verification checklist:** 12-item post-refactoring verification                                                                                                | § 11                  |
 
 ### Decisions Now Final
 
@@ -1159,13 +1178,13 @@ Master verification across all design decisions:
 
 ## 14. Open Questions
 
-| # | Question | Status | Resolution |
-|---|----------|--------|------------|
-| 1 | Will jahow accept `hasConnectedSystems` and `csapiCollections` staying on the endpoint? | **Resolved as "likely yes"** | These properties follow the identical pattern as `hasEnvironmentalDataRetrieval` and `edrCollections`, with zero CSAPI imports. The argument is strong (§ 4 Q15–Q16). If jahow objects, the fallback is moving them to the CSAPI module as standalone functions accepting conformance classes / collection data. |
-| 2 | Will jahow accept the two new public methods (`root`, `getCollectionDocument`)? | **Resolved as "reasonable"** | Both expose data the endpoint already computes internally. `getCollectionDocument` is used by styles. `root` complements the existing `info` getter. These are useful general-purpose additions. If jahow objects, the alternative is to have the factory function fetch the root document independently (redundant HTTP possible, but `sharedFetch` caching may mitigate). |
-| 3 | Naming: `createCSAPIBuilder` vs `csapi` vs `buildCSAPI`? | **Resolved as `createCSAPIBuilder`** | Matches the class name `CSAPIQueryBuilder`, follows the `create*` factory naming convention seen in React (createContext), AWS SDK patterns (createMultipartUpload), and is explicit about what it returns. |
-| 4 | Should the factory function parameter be typed as `OgcApiEndpoint` or a narrow interface? | **Resolved as `OgcApiEndpoint` with `import type`** | Minimum change per scope gate. The `import type` is erased at runtime. Tests can use `as unknown as OgcApiEndpoint` for mocking. A narrow interface can be introduced later if needed. |
-| 5 | Is `shared/` considered "core" for constraint purposes? | **Resolved as NO** | `shared/` is a utility layer (`errors.js`, `models.js`, `http-utils.js`, `cache.js`). It is not part of `ogc-api/` core. CSAPI's value import of `EndpointError` from `../../shared/errors.js` is acceptable. |
+| #   | Question                                                                                  | Status                                              | Resolution                                                                                                                                                                                                                                                                                                                                                                  |
+| --- | ----------------------------------------------------------------------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Will jahow accept `hasConnectedSystems` and `csapiCollections` staying on the endpoint?   | **Resolved as "likely yes"**                        | These properties follow the identical pattern as `hasEnvironmentalDataRetrieval` and `edrCollections`, with zero CSAPI imports. The argument is strong (§ 4 Q15–Q16). If jahow objects, the fallback is moving them to the CSAPI module as standalone functions accepting conformance classes / collection data.                                                            |
+| 2   | Will jahow accept the two new public methods (`root`, `getCollectionDocument`)?           | **Resolved as "reasonable"**                        | Both expose data the endpoint already computes internally. `getCollectionDocument` is used by styles. `root` complements the existing `info` getter. These are useful general-purpose additions. If jahow objects, the alternative is to have the factory function fetch the root document independently (redundant HTTP possible, but `sharedFetch` caching may mitigate). |
+| 3   | Naming: `createCSAPIBuilder` vs `csapi` vs `buildCSAPI`?                                  | **Resolved as `createCSAPIBuilder`**                | Matches the class name `CSAPIQueryBuilder`, follows the `create*` factory naming convention seen in React (createContext), AWS SDK patterns (createMultipartUpload), and is explicit about what it returns.                                                                                                                                                                 |
+| 4   | Should the factory function parameter be typed as `OgcApiEndpoint` or a narrow interface? | **Resolved as `OgcApiEndpoint` with `import type`** | Minimum change per scope gate. The `import type` is erased at runtime. Tests can use `as unknown as OgcApiEndpoint` for mocking. A narrow interface can be introduced later if needed.                                                                                                                                                                                      |
+| 5   | Is `shared/` considered "core" for constraint purposes?                                   | **Resolved as NO**                                  | `shared/` is a utility layer (`errors.js`, `models.js`, `http-utils.js`, `cache.js`). It is not part of `ogc-api/` core. CSAPI's value import of `EndpointError` from `../../shared/errors.js` is acceptable.                                                                                                                                                               |
 
 **No unresolved questions remain.**
 
@@ -1175,25 +1194,25 @@ Master verification across all design decisions:
 
 ### Minimum-Change Test
 
-| Design Decision | Serves jahow's requirements? | Minimum-change? | Included? |
-|----------------|------------------------------|-----------------|-----------|
-| Remove CSAPI exports from `index.ts` | Yes — directly required | Yes | ✓ |
-| Create barrel file `csapi/index.ts` | Yes — required for `./csapi` entry | Yes | ✓ |
-| Add `"./csapi"` to `package.json` exports | Yes — directly required | Yes | ✓ |
-| Remove 2 CSAPI imports from `endpoint.ts` | Yes — directly required | Yes | ✓ |
-| Remove `csapi()` method from endpoint | Yes — enables import removal | Yes | ✓ |
-| Remove `extractRootResourceUrls()` from endpoint | Yes — enables import removal | Yes | ✓ |
-| Remove CSAPI cache from endpoint | Yes — consequence of method removal | Yes | ✓ |
-| Create `createCSAPIBuilder` factory | Yes — minimum replacement for removed `csapi()` | Yes — 1 new function | ✓ |
-| Make `getCollectionDocument` public | Yes — factory needs it | Yes — 1 word | ✓ |
-| Make `root` public | Yes — factory needs it | Yes — 1 word | ✓ |
-| Keep `hasConnectedSystems` on endpoint | Yes — follows EDR pattern, zero CSAPI imports | Yes — no change | ✓ |
-| Keep `csapiCollections` on endpoint | Yes — follows EDR pattern, zero CSAPI imports | Yes — no change | ✓ |
-| Add `"sideEffects": false` | Yes — enables tree-shaking per Plan 03 | Yes — 1 line | ✓ |
-| Generalize `scanCsapiLinks` (Plan 05 Option C) | **Not needed** — problem self-resolves | **N/A** | ✗ Skip |
-| ESLint boundary rule | No — enforcement, not requirement | No — tooling | ✗ Defer |
-| Boundary integration test | No — enforcement, not requirement | Borderline | ✗ Defer |
-| TypeScript Project References | No — architectural improvement | No — heavy refactor | ✗ Defer |
+| Design Decision                                  | Serves jahow's requirements?                    | Minimum-change?      | Included? |
+| ------------------------------------------------ | ----------------------------------------------- | -------------------- | --------- |
+| Remove CSAPI exports from `index.ts`             | Yes — directly required                         | Yes                  | ✓         |
+| Create barrel file `csapi/index.ts`              | Yes — required for `./csapi` entry              | Yes                  | ✓         |
+| Add `"./csapi"` to `package.json` exports        | Yes — directly required                         | Yes                  | ✓         |
+| Remove 2 CSAPI imports from `endpoint.ts`        | Yes — directly required                         | Yes                  | ✓         |
+| Remove `csapi()` method from endpoint            | Yes — enables import removal                    | Yes                  | ✓         |
+| Remove `extractRootResourceUrls()` from endpoint | Yes — enables import removal                    | Yes                  | ✓         |
+| Remove CSAPI cache from endpoint                 | Yes — consequence of method removal             | Yes                  | ✓         |
+| Create `createCSAPIBuilder` factory              | Yes — minimum replacement for removed `csapi()` | Yes — 1 new function | ✓         |
+| Make `getCollectionDocument` public              | Yes — factory needs it                          | Yes — 1 word         | ✓         |
+| Make `root` public                               | Yes — factory needs it                          | Yes — 1 word         | ✓         |
+| Keep `hasConnectedSystems` on endpoint           | Yes — follows EDR pattern, zero CSAPI imports   | Yes — no change      | ✓         |
+| Keep `csapiCollections` on endpoint              | Yes — follows EDR pattern, zero CSAPI imports   | Yes — no change      | ✓         |
+| Add `"sideEffects": false`                       | Yes — enables tree-shaking per Plan 03          | Yes — 1 line         | ✓         |
+| Generalize `scanCsapiLinks` (Plan 05 Option C)   | **Not needed** — problem self-resolves          | **N/A**              | ✗ Skip    |
+| ESLint boundary rule                             | No — enforcement, not requirement               | No — tooling         | ✗ Defer   |
+| Boundary integration test                        | No — enforcement, not requirement               | Borderline           | ✗ Defer   |
+| TypeScript Project References                    | No — architectural improvement                  | No — heavy refactor  | ✗ Defer   |
 
 ---
 
@@ -1226,6 +1245,7 @@ Master verification across all design decisions:
 ### A. Complete Import Graph After Refactoring
 
 **Core (`endpoint.ts`) imports:**
+
 ```
 endpoint.ts
   ├── ./info.js                      (core internal)
@@ -1236,11 +1256,12 @@ endpoint.ts
   ├── ../shared/mime-type.js         (shared utility)
   ├── ../shared/url-utils.js         (shared utility)
   └── ./edr/url_builder.js           (EDR — accepted pattern)
-  
+
   ✗ NO imports from ./csapi/*
 ```
 
 **CSAPI (`factory.ts`) imports:**
+
 ```
 csapi/factory.ts
   ├── import type ../endpoint.js     (core → type-only, erased)
@@ -1251,6 +1272,7 @@ csapi/factory.ts
 ```
 
 **CSAPI (`url_builder.ts`) imports — UNCHANGED:**
+
 ```
 csapi/url_builder.ts
   ├── import type ../model.js        (core → type-only, erased)
@@ -1260,32 +1282,33 @@ csapi/url_builder.ts
 ```
 
 **Direction verification:**
+
 - Core → CSAPI: **0 imports** ✓
 - CSAPI → Core: 2 `import type` (erased) + 0 value imports ✓
 - CSAPI → Shared: 2 value imports (acceptable) ✓
 
 ### B. Complete File Change Summary
 
-| File | Action | Lines Changed |
-|------|--------|--------------|
-| `src/ogc-api/endpoint.ts` | Edit: remove 2 imports, 1 field, 2 methods; change 2 visibilities; update 1 JSDoc | ~65 lines removed, 2 words changed |
-| `src/index.ts` | Edit: remove all CSAPI export lines | ~170 lines removed |
-| `src/ogc-api/csapi/index.ts` | **New file**: barrel with all CSAPI exports | ~190 lines added |
-| `src/ogc-api/csapi/factory.ts` | **New file**: `createCSAPIBuilder` function | ~60 lines added |
-| `src/ogc-api/csapi/factory.spec.ts` | **New file**: factory tests | ~30 lines added |
-| `src/ogc-api/endpoint.spec.ts` | Edit: remove 2 tests, trim describe blocks | ~20 lines removed |
-| `package.json` | Edit: add `"./csapi"` sub-path, add `"sideEffects": false` | ~8 lines added |
+| File                                | Action                                                                            | Lines Changed                      |
+| ----------------------------------- | --------------------------------------------------------------------------------- | ---------------------------------- |
+| `src/ogc-api/endpoint.ts`           | Edit: remove 2 imports, 1 field, 2 methods; change 2 visibilities; update 1 JSDoc | ~65 lines removed, 2 words changed |
+| `src/index.ts`                      | Edit: remove all CSAPI export lines                                               | ~170 lines removed                 |
+| `src/ogc-api/csapi/index.ts`        | **New file**: barrel with all CSAPI exports                                       | ~190 lines added                   |
+| `src/ogc-api/csapi/factory.ts`      | **New file**: `createCSAPIBuilder` function                                       | ~60 lines added                    |
+| `src/ogc-api/csapi/factory.spec.ts` | **New file**: factory tests                                                       | ~30 lines added                    |
+| `src/ogc-api/endpoint.spec.ts`      | Edit: remove 2 tests, trim describe blocks                                        | ~20 lines removed                  |
+| `package.json`                      | Edit: add `"./csapi"` sub-path, add `"sideEffects": false`                        | ~8 lines added                     |
 
 **Net: ~255 lines removed, ~288 lines added. Roughly neutral.**
 
 ### C. jahow's Requirements Traceability
 
-| jahow Requirement (PR #136) | Design Decision | Status |
-|------------------------------|-----------------|--------|
-| "anything part of `src/ogc-api/csapi` should not be included in the root `index.ts` file" | Remove all CSAPI exports from `src/index.ts` (§ 10 Q42) | ✓ Satisfied |
-| "imported through `@camptocamp/ogc-client/csapi`" | Create `csapi/index.ts` barrel + `"./csapi"` in `package.json` exports (§ 8, § 2 Q3) | ✓ Satisfied |
-| "anything not part of `src/ogc-api/csapi` should not import things from the CSAPI code at all" | Remove 2 CSAPI imports from `endpoint.ts` (§ 10 Q41) | ✓ Satisfied |
-| "anyone using the library as before do not end up with all this code in their bundle overnight" | `"sideEffects": false` + separate entry point ensures tree-shaking | ✓ Satisfied |
+| jahow Requirement (PR #136)                                                                     | Design Decision                                                                      | Status      |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------- |
+| "anything part of `src/ogc-api/csapi` should not be included in the root `index.ts` file"       | Remove all CSAPI exports from `src/index.ts` (§ 10 Q42)                              | ✓ Satisfied |
+| "imported through `@camptocamp/ogc-client/csapi`"                                               | Create `csapi/index.ts` barrel + `"./csapi"` in `package.json` exports (§ 8, § 2 Q3) | ✓ Satisfied |
+| "anything not part of `src/ogc-api/csapi` should not import things from the CSAPI code at all"  | Remove 2 CSAPI imports from `endpoint.ts` (§ 10 Q41)                                 | ✓ Satisfied |
+| "anyone using the library as before do not end up with all this code in their bundle overnight" | `"sideEffects": false` + separate entry point ensures tree-shaking                   | ✓ Satisfied |
 
 ---
 

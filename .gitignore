@@ -5,3 +5,6 @@ coverage
 .idea
 .vscode
 test-output*.txt
+browser-jest-results.json
+full-browser-output.txt
+run-browser-tests.ps1

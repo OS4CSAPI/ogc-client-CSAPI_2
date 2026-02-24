@@ -6,17 +6,17 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Status** | Not Started |
-| **Plan Type** | External research (build/packaging mechanics) |
-| **Date Created** | 2026-02-23 |
-| **Last Updated** | 2026-02-23 |
-| **Estimated Time** | 2–3 hours |
-| **Actual Time** | — |
-| **Depends On** | Plan 01 (Upstream Build System and Entry Point Analysis) |
-| **Blocks** | Plan 06 (Endpoint Decoupling Architecture), Plan 08 (File-Level Changelist and Commit Strategy) |
-| **Strategy Reference** | [research-strategy.md § Plan 03](../research-strategy.md) |
+| Field                  | Value                                                                                           |
+| ---------------------- | ----------------------------------------------------------------------------------------------- |
+| **Status**             | Not Started                                                                                     |
+| **Plan Type**          | External research (build/packaging mechanics)                                                   |
+| **Date Created**       | 2026-02-23                                                                                      |
+| **Last Updated**       | 2026-02-23                                                                                      |
+| **Estimated Time**     | 2–3 hours                                                                                       |
+| **Actual Time**        | —                                                                                               |
+| **Depends On**         | Plan 01 (Upstream Build System and Entry Point Analysis)                                        |
+| **Blocks**             | Plan 06 (Endpoint Decoupling Architecture), Plan 08 (File-Level Changelist and Commit Strategy) |
+| **Strategy Reference** | [research-strategy.md § Plan 03](../research-strategy.md)                                       |
 
 ---
 
@@ -148,40 +148,40 @@ Plan 02 (EDR pattern analysis) shows us what the _current_ integration looks lik
 
 ### Primary Sources (In Workspace)
 
-| Source | Path | What to Extract |
-|--------|------|-----------------|
-| Package configuration | `package.json` | Current `"exports"`, `"type"`, `"files"`, `"main"`, `"browser"`, `"types"` fields |
-| TypeScript config | `tsconfig.json` | `moduleResolution`, `declaration`, `outDir`, `declarationMap` settings |
-| CSAPI module directory | `src/ogc-api/csapi/` | File inventory, check for existing `index.ts` barrel file |
-| CSAPI formats barrel | `src/ogc-api/csapi/formats/index.ts` | Existing sub-barrel pattern to follow |
-| Root barrel file | `src/index.ts` | Current CSAPI exports to understand what the sub-path barrel must replace |
-| Vite worker config | `vite.worker-config.js` | `vite-plugin-dts` `include` config (affects `.d.ts` generation) |
-| Vite node config | `vite.node-config.js` | SSR entry point configuration |
+| Source                 | Path                                 | What to Extract                                                                   |
+| ---------------------- | ------------------------------------ | --------------------------------------------------------------------------------- |
+| Package configuration  | `package.json`                       | Current `"exports"`, `"type"`, `"files"`, `"main"`, `"browser"`, `"types"` fields |
+| TypeScript config      | `tsconfig.json`                      | `moduleResolution`, `declaration`, `outDir`, `declarationMap` settings            |
+| CSAPI module directory | `src/ogc-api/csapi/`                 | File inventory, check for existing `index.ts` barrel file                         |
+| CSAPI formats barrel   | `src/ogc-api/csapi/formats/index.ts` | Existing sub-barrel pattern to follow                                             |
+| Root barrel file       | `src/index.ts`                       | Current CSAPI exports to understand what the sub-path barrel must replace         |
+| Vite worker config     | `vite.worker-config.js`              | `vite-plugin-dts` `include` config (affects `.d.ts` generation)                   |
+| Vite node config       | `vite.node-config.js`                | SSR entry point configuration                                                     |
 
 ### External Sources
 
-| Source | URL/Reference | What to Extract |
-|--------|---------------|-----------------|
-| Node.js Packages documentation | https://nodejs.org/api/packages.html#exports | Sub-path exports syntax, conditional exports, pattern exports, condition ordering |
-| Node.js Package entry points | https://nodejs.org/api/packages.html#package-entry-points | Resolution algorithm, `"types"` condition, dual-package hazard |
-| TypeScript module resolution | https://www.typescriptlang.org/docs/handbook/modules/reference.html | How `"exports"` `"types"` condition is resolved; `moduleResolution` settings |
-| TypeScript `typesVersions` | https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html | Fallback for older `moduleResolution` settings |
-| Angular `package.json` | https://github.com/angular/angular (search `@angular/core/package.json`) | Sub-path exports pattern for `@angular/core/testing` |
-| RxJS `package.json` | https://github.com/ReactiveX/rxjs (search `package.json`) | Sub-path exports for `rxjs/operators`, `rxjs/ajax` |
-| AWS SDK v3 structure | https://github.com/aws/aws-sdk-js-v3 | Multi-package monorepo vs. sub-path approach |
-| date-fns `package.json` | https://github.com/date-fns/date-fns | Per-function sub-path exports pattern |
-| zod `package.json` | https://github.com/colinhacks/zod | Single entry vs. sub-path decision |
-| Vite dependency resolution | https://vite.dev/guide/dep-pre-bundling.html | How Vite resolves `"exports"` in dev vs. build mode |
-| webpack resolve.exports | https://webpack.js.org/configuration/resolve/#resolveexportsfields | webpack 5 `"exports"` support |
-| esbuild package resolution | https://esbuild.github.io/api/#resolve-extensions | esbuild's `"exports"` handling |
-| Rollup `@rollup/plugin-node-resolve` | https://github.com/rollup/plugins/tree/master/packages/node-resolve | Sub-path export resolution in Rollup |
-| Andrew Branch: TypeScript exports guide | https://github.com/andrewbranch/example-subpath-exports-ts-compat | Reference repo for TypeScript + `"exports"` compatibility patterns |
-| `resolve.exports` library | https://github.com/lukeed/resolve.exports | Small library implementing `"exports"` resolution — useful for understanding the algorithm |
+| Source                                  | URL/Reference                                                                  | What to Extract                                                                            |
+| --------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| Node.js Packages documentation          | https://nodejs.org/api/packages.html#exports                                   | Sub-path exports syntax, conditional exports, pattern exports, condition ordering          |
+| Node.js Package entry points            | https://nodejs.org/api/packages.html#package-entry-points                      | Resolution algorithm, `"types"` condition, dual-package hazard                             |
+| TypeScript module resolution            | https://www.typescriptlang.org/docs/handbook/modules/reference.html            | How `"exports"` `"types"` condition is resolved; `moduleResolution` settings               |
+| TypeScript `typesVersions`              | https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html | Fallback for older `moduleResolution` settings                                             |
+| Angular `package.json`                  | https://github.com/angular/angular (search `@angular/core/package.json`)       | Sub-path exports pattern for `@angular/core/testing`                                       |
+| RxJS `package.json`                     | https://github.com/ReactiveX/rxjs (search `package.json`)                      | Sub-path exports for `rxjs/operators`, `rxjs/ajax`                                         |
+| AWS SDK v3 structure                    | https://github.com/aws/aws-sdk-js-v3                                           | Multi-package monorepo vs. sub-path approach                                               |
+| date-fns `package.json`                 | https://github.com/date-fns/date-fns                                           | Per-function sub-path exports pattern                                                      |
+| zod `package.json`                      | https://github.com/colinhacks/zod                                              | Single entry vs. sub-path decision                                                         |
+| Vite dependency resolution              | https://vite.dev/guide/dep-pre-bundling.html                                   | How Vite resolves `"exports"` in dev vs. build mode                                        |
+| webpack resolve.exports                 | https://webpack.js.org/configuration/resolve/#resolveexportsfields             | webpack 5 `"exports"` support                                                              |
+| esbuild package resolution              | https://esbuild.github.io/api/#resolve-extensions                              | esbuild's `"exports"` handling                                                             |
+| Rollup `@rollup/plugin-node-resolve`    | https://github.com/rollup/plugins/tree/master/packages/node-resolve            | Sub-path export resolution in Rollup                                                       |
+| Andrew Branch: TypeScript exports guide | https://github.com/andrewbranch/example-subpath-exports-ts-compat              | Reference repo for TypeScript + `"exports"` compatibility patterns                         |
+| `resolve.exports` library               | https://github.com/lukeed/resolve.exports                                      | Small library implementing `"exports"` resolution — useful for understanding the algorithm |
 
 ### Prior Research Findings
 
-| Finding | Path | What to Use |
-|---------|------|-------------|
+| Finding          | Path                                                                     | What to Use                                                                                                                                 |
+| ---------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | Plan 01 findings | `docs/research/phase-6/findings/01-build-system-entry-point-analysis.md` | The `dist/` directory layout, candidate `"exports"` configs, `vite-plugin-dts` behavior, whether a barrel file is needed at the build level |
 
 ---
@@ -193,6 +193,7 @@ Plan 02 (EDR pattern analysis) shows us what the _current_ integration looks lik
 **Objective:** Collect and document the `package.json` `"exports"` configurations, barrel file structures, and declaration strategies from 5+ established libraries that use sub-path exports.
 
 **Tasks:**
+
 1. Fetch Angular's `@angular/core` `package.json` — document the `"exports"` field, specifically how `"./testing"` is configured (conditions, file paths, barrel structure)
 2. Fetch RxJS `package.json` — document how `rxjs/operators`, `rxjs/ajax`, and other sub-paths are configured; note whether these are sub-path exports or path-mapped separate packages
 3. Fetch date-fns `package.json` — document the per-function sub-path pattern (`date-fns/format`, `date-fns/locale/*`); note whether wild-card exports are used
@@ -208,6 +209,7 @@ Plan 02 (EDR pattern analysis) shows us what the _current_ integration looks lik
 **Objective:** Document the authoritative specification for how Node.js resolves `"exports"` and how TypeScript resolves types from `"exports"`, including edge cases and gotchas.
 
 **Tasks:**
+
 1. Read Node.js `"exports"` documentation — document the resolution algorithm step by step for sub-path exports with conditions
 2. Document the correct ordering of conditions in `"exports"` — does `"types"` always come first? Is `"browser"` before or after `"import"`?
 3. Read TypeScript's `moduleResolution` documentation — determine which settings (`"node"`, `"node16"`, `"bundler"`, `"nodenext"`) support the `"types"` condition in `"exports"`
@@ -222,6 +224,7 @@ Plan 02 (EDR pattern analysis) shows us what the _current_ integration looks lik
 **Objective:** Verify that the sub-path export pattern works correctly across all major consumer bundlers (Vite, webpack, esbuild, Rollup) and bare Node.js.
 
 **Tasks:**
+
 1. Research how Vite resolves sub-path exports — does it use `"browser"` condition in dev mode? Does it pre-bundle sub-path imports differently?
 2. Research how webpack 5 resolves sub-path exports — does `resolve.exports` support all conditions? Any known bugs?
 3. Research how esbuild (consumer-side) resolves sub-path exports — does it respect `"browser"` vs `"import"` conditions?
@@ -236,6 +239,7 @@ Plan 02 (EDR pattern analysis) shows us what the _current_ integration looks lik
 **Objective:** Determine the optimal barrel file structure and TypeScript declaration organization for the CSAPI sub-path export, informed by Plan 01 findings and the library survey.
 
 **Tasks:**
+
 1. Review Plan 01 findings — what does the `dist/` layout look like for CSAPI files? Does `vite-plugin-dts` already generate `.d.ts` for them?
 2. Check whether `src/ogc-api/csapi/index.ts` already exists as a barrel file, or needs to be created
 3. Design the barrel file contents — determine what should be re-exported (CSAPIQueryBuilder, types, format parsers, helpers?) based on what `index.ts` currently exports from CSAPI
@@ -250,6 +254,7 @@ Plan 02 (EDR pattern analysis) shows us what the _current_ integration looks lik
 **Objective:** Combine all prior phase outputs into a concrete, validated `package.json` `"exports"` configuration with supporting file changes.
 
 **Tasks:**
+
 1. Draft the complete `"exports"` field with both `"."` and `"./csapi"` entries, using the correct conditions and paths
 2. Validate the draft against: (a) the library case study patterns, (b) Node.js spec requirements, (c) TypeScript resolution rules, (d) bundler compatibility findings
 3. Draft consumer usage examples for each scenario: TypeScript browser app (Vite), TypeScript Node.js script, webpack app, tree-shaking verification
@@ -264,6 +269,7 @@ Plan 02 (EDR pattern analysis) shows us what the _current_ integration looks lik
 **Objective:** Consolidate all phase outputs into the deliverable document.
 
 **Tasks:**
+
 1. Synthesize findings from Phases 1–5 into the findings report structure
 2. Verify all 35 research questions are answered
 3. Validate findings against boundary conditions (Constraints 1, 2, 4, 5)
@@ -318,14 +324,14 @@ This research is complete when:
 
 ## 9. Risks and Mitigation
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Libraries studied may use monorepo multi-package structure rather than sub-path exports within a single package | Case studies may not be directly applicable to our single-package sub-path scenario | Distinguish clearly between multi-package patterns (AWS SDK v3) and single-package sub-path patterns (date-fns, Angular CDK); focus on the latter for direct applicability |
-| TypeScript `moduleResolution: "node"` (our current setting) may not resolve `"exports"` `"types"` conditions | Consumers or our own type checking may fail | Research `"typesVersions"` as a fallback; determine if we need to recommend `"node16"` or `"bundler"` to consumers; check if our own `tsconfig.json` needs updating |
-| Tree-shaking may not eliminate unused CSAPI format parsers when imported through a barrel file | Consumers who only want `CSAPIQueryBuilder` pull in SensorML, SWE Common, etc. | Research barrel file tree-shaking behavior in esbuild and Vite specifically; consider whether selective barrel exports or side-effects annotation (`"sideEffects": false`) is needed |
-| The `"browser"` condition may conflict with `"import"` in some bundlers, causing wrong file resolution | Consumer app loads Node-specific or browser-specific code incorrectly | Research exact condition priority in each bundler; align our condition set with ecosystem consensus from the library survey |
-| Plan 01 findings may not be available when Plan 03 executes (parallel execution allowed for Plans 01, 02, 04, 05, 07) | Barrel file design and `"exports"` paths can't be finalized without knowing `dist/` layout | Draft conditional recommendations ("if per-file output exists at `dist/ogc-api/csapi/`, then X; otherwise Y") and finalize when Plan 01 completes |
-| Dual-import scenario creates two module instances of shared code (OgcApiEndpoint loaded twice) | Runtime errors, type mismatches, doubled bundle size | Research how bundlers deduplicate within a single package; worst case, document the limitation and warn consumers |
+| Risk                                                                                                                  | Impact                                                                                     | Mitigation                                                                                                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Libraries studied may use monorepo multi-package structure rather than sub-path exports within a single package       | Case studies may not be directly applicable to our single-package sub-path scenario        | Distinguish clearly between multi-package patterns (AWS SDK v3) and single-package sub-path patterns (date-fns, Angular CDK); focus on the latter for direct applicability           |
+| TypeScript `moduleResolution: "node"` (our current setting) may not resolve `"exports"` `"types"` conditions          | Consumers or our own type checking may fail                                                | Research `"typesVersions"` as a fallback; determine if we need to recommend `"node16"` or `"bundler"` to consumers; check if our own `tsconfig.json` needs updating                  |
+| Tree-shaking may not eliminate unused CSAPI format parsers when imported through a barrel file                        | Consumers who only want `CSAPIQueryBuilder` pull in SensorML, SWE Common, etc.             | Research barrel file tree-shaking behavior in esbuild and Vite specifically; consider whether selective barrel exports or side-effects annotation (`"sideEffects": false`) is needed |
+| The `"browser"` condition may conflict with `"import"` in some bundlers, causing wrong file resolution                | Consumer app loads Node-specific or browser-specific code incorrectly                      | Research exact condition priority in each bundler; align our condition set with ecosystem consensus from the library survey                                                          |
+| Plan 01 findings may not be available when Plan 03 executes (parallel execution allowed for Plans 01, 02, 04, 05, 07) | Barrel file design and `"exports"` paths can't be finalized without knowing `dist/` layout | Draft conditional recommendations ("if per-file output exists at `dist/ogc-api/csapi/`, then X; otherwise Y") and finalize when Plan 01 completes                                    |
+| Dual-import scenario creates two module instances of shared code (OgcApiEndpoint loaded twice)                        | Runtime errors, type mismatches, doubled bundle size                                       | Research how bundlers deduplicate within a single package; worst case, document the limitation and warn consumers                                                                    |
 
 ---
 

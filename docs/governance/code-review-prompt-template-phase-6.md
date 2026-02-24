@@ -13,16 +13,16 @@
 
 Phase 6 code differs fundamentally from Phase 5 code:
 
-| Dimension | Phase 5 (Parser Completion) | Phase 6 (Upstream Acceptance Refactoring) |
-|-----------|---------------------------|-------------------------------------------|
-| Primary output | Typed objects from raw JSON (6 parsers) | Structural changes — barrel file, factory function, export reorganization |
-| Correctness check | "Does the parser produce the right typed output?" | "Is the module boundary clean? Do all 12 verification gates pass?" |
-| Test strategy | Fixture-based input → typed output assertions | 2 factory tests + `git grep` boundary checks + full CI suite regression |
-| Pattern reference | `parseDatastream()` gold standard | `formats/index.ts` barrel, EDR factory blueprint, existing `package.json` exports |
-| Validation concern | Tolerant extraction, time fields, cross-references | Export completeness, import direction, tree-shaking, visibility changes |
+| Dimension          | Phase 5 (Parser Completion)                                               | Phase 6 (Upstream Acceptance Refactoring)                                          |
+| ------------------ | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Primary output     | Typed objects from raw JSON (6 parsers)                                   | Structural changes — barrel file, factory function, export reorganization          |
+| Correctness check  | "Does the parser produce the right typed output?"                         | "Is the module boundary clean? Do all 12 verification gates pass?"                 |
+| Test strategy      | Fixture-based input → typed output assertions                             | 2 factory tests + `git grep` boundary checks + full CI suite regression            |
+| Pattern reference  | `parseDatastream()` gold standard                                         | `formats/index.ts` barrel, EDR factory blueprint, existing `package.json` exports  |
+| Validation concern | Tolerant extraction, time fields, cross-references                        | Export completeness, import direction, tree-shaking, visibility changes            |
 | Heatmap dimensions | Parser-specific (time handling, cross-ref exclusion, opaque pass-through) | Architecture-specific (boundary isolation, export coverage, formatting compliance) |
-| Spec references | OGC 23-002 Part 2 | jahow's PR #136 review requirements |
-| Risk profile | Runtime behavior correctness | Build/bundle correctness, import resolution |
+| Spec references    | OGC 23-002 Part 2                                                         | jahow's PR #136 review requirements                                                |
+| Risk profile       | Runtime behavior correctness                                              | Build/bundle correctness, import resolution                                        |
 
 The Phase 5 test checklists (resource parsers, schema parsers, recursive fix, integration wiring) do not apply. Phase 6 needs architecture-specific review dimensions.
 
@@ -51,7 +51,7 @@ Copy the prompt below and paste it into the conversation after completing coding
 
 ## Prompt
 
-```
+````
 Please perform a code review of the work completed since the last review.
 
 ### Scope
@@ -314,9 +314,10 @@ Use this exact structure (matching prior reviews):
 
 ## Overall Assessment
 {{2-3 paragraph assessment of code quality, boundary isolation, and readiness for upstream review}}
-```
+````
 
 Then commit the report, push, and confirm the file is at the expected path.
+
 ```
 
 ---
@@ -354,7 +355,9 @@ Every Phase 6 code review report MUST include:
 Reports follow the same naming pattern as prior phases:
 
 ```
+
 docs/implementation/phase-{major}.{minor}-code-review.md
+
 ```
 
 Where:
@@ -418,3 +421,4 @@ For reviewers familiar with the Phase 5 template, these are the substantive chan
 | Recommendation tiers | "Fix Before Phase 6" | "Fix Before Push" (to upstream) |
 | Export audit | Not applicable | Export completeness table (6 barrel sections) |
 | Boundary matrix | Not applicable | 4 `git grep` boundary verification gates |
+```

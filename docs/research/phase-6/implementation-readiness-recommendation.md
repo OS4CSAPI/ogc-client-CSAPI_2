@@ -34,15 +34,15 @@ Plan 08 defines ~15 commits, mostly file moves and re-exports. The actual code d
 
 We analyzed build system behavior, entry point patterns, module decoupling, sub-module design, and produced a verified file-level changelist. Any feedback jahow gives, we've already researched the surrounding design space:
 
-| Plan | Coverage |
-|------|----------|
-| 01 — Build System & Entry Point Analysis | How Vite/Rollup handles multi-entry, `package.json` exports |
-| 02 — EDR Integration Pattern Analysis | Precedent for how upstream integrates optional modules |
-| 03 — Separate Entry Point Design Patterns | `exports` map, conditional resolution, tree-shaking |
-| 04 — Sub-Module API Design Patterns | Barrel exports, public surface design |
-| 05 — Module Decoupling Patterns | Import inversion, shared types extraction |
-| 06 — Test Isolation Patterns | Test suite organization for decoupled modules |
-| 07 — CI/Build Verification Patterns | Build pipeline configuration for separate entry points |
+| Plan                                         | Coverage                                                     |
+| -------------------------------------------- | ------------------------------------------------------------ |
+| 01 — Build System & Entry Point Analysis     | How Vite/Rollup handles multi-entry, `package.json` exports  |
+| 02 — EDR Integration Pattern Analysis        | Precedent for how upstream integrates optional modules       |
+| 03 — Separate Entry Point Design Patterns    | `exports` map, conditional resolution, tree-shaking          |
+| 04 — Sub-Module API Design Patterns          | Barrel exports, public surface design                        |
+| 05 — Module Decoupling Patterns              | Import inversion, shared types extraction                    |
+| 06 — Test Isolation Patterns                 | Test suite organization for decoupled modules                |
+| 07 — CI/Build Verification Patterns          | Build pipeline configuration for separate entry points       |
 | 08 — File-Level Changelist & Commit Strategy | Complete implementation specification, 40 questions answered |
 
 ### 4. Waiting indefinitely is itself a risk
@@ -61,11 +61,11 @@ The implementation will **not** be performed directly on the `clean-pr` reposito
 
 ### Repository Roles
 
-| Repository | Branch | Role |
-|-----------|--------|------|
-| `ogc-client-CSAPI_2` | `main` | **Archive — untouched.** Preserves the complete Phase 5 state as-is. |
-| `ogc-client-CSAPI_2` | `phase-6` | **Implementation workspace.** All Phase 6 research docs and code changes happen here. |
-| `clean-pr` | `main` | **Contribution-ready fork.** 13 commits above `upstream/main` (`53a6449`), HEAD at `3061c68`. Receives the final, rebased implementation. |
+| Repository           | Branch    | Role                                                                                                                                      |
+| -------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `ogc-client-CSAPI_2` | `main`    | **Archive — untouched.** Preserves the complete Phase 5 state as-is.                                                                      |
+| `ogc-client-CSAPI_2` | `phase-6` | **Implementation workspace.** All Phase 6 research docs and code changes happen here.                                                     |
+| `clean-pr`           | `main`    | **Contribution-ready fork.** 13 commits above `upstream/main` (`53a6449`), HEAD at `3061c68`. Receives the final, rebased implementation. |
 
 ### Workflow
 

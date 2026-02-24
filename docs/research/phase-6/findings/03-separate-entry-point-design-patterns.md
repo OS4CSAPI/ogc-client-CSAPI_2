@@ -6,17 +6,17 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Research Plan** | [Plan 03: Separate Entry Point Design Patterns](../research-plans/03-separate-entry-point-design-patterns.md) |
-| **Plan Type** | External research (build/packaging mechanics) |
-| **Date Started** | 2026-02-24 |
-| **Date Completed** | 2026-02-24 |
-| **Research Time** | ~2.5 hours (actual) |
-| **Estimated Time** | 2–3 hours (from plan) |
-| **Questions Answered** | 35 of 35 detailed questions |
-| **Depends On** | Plan 01 (Upstream Build System and Entry Point Analysis) |
-| **Blocks** | Plan 06 (Endpoint Decoupling Architecture), Plan 08 (File-Level Changelist and Commit Strategy) |
+| Field                  | Value                                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Research Plan**      | [Plan 03: Separate Entry Point Design Patterns](../research-plans/03-separate-entry-point-design-patterns.md) |
+| **Plan Type**          | External research (build/packaging mechanics)                                                                 |
+| **Date Started**       | 2026-02-24                                                                                                    |
+| **Date Completed**     | 2026-02-24                                                                                                    |
+| **Research Time**      | ~2.5 hours (actual)                                                                                           |
+| **Estimated Time**     | 2–3 hours (from plan)                                                                                         |
+| **Questions Answered** | 35 of 35 detailed questions                                                                                   |
+| **Depends On**         | Plan 01 (Upstream Build System and Entry Point Analysis)                                                      |
+| **Blocks**             | Plan 06 (Endpoint Decoupling Architecture), Plan 08 (File-Level Changelist and Commit Strategy)               |
 
 ---
 
@@ -24,22 +24,22 @@
 
 ### Primary Sources Consulted
 
-| Source | Path / URL | What Was Extracted |
-|--------|------------|-------------------|
-| Package configuration | `package.json` | Current `"exports"` field structure, `"type": "module"`, `"files"` field, `"sideEffects"` absence |
-| TypeScript config | `tsconfig.json` | `moduleResolution: "node"`, `declaration: true`, `declarationMap: true` |
-| Node.js Packages documentation | https://nodejs.org/api/packages.html | Sub-path exports syntax, conditional exports, condition ordering rules, community conditions (`"types"` always first), resolution algorithm |
-| date-fns `package.json` | https://github.com/date-fns/date-fns | Per-function sub-path exports pattern; `require`/`import` conditions with nested `types`+`default`; `"type": "module"` with dual CJS/ESM; `"sideEffects": false` |
-| RxJS `package.json` | https://github.com/ReactiveX/rxjs | Sub-path exports for `./operators`, `./ajax`, `./testing`, `./webSocket`, `./fetch`; `typesVersions` fallback; `types`/`node`/`require`/`default` conditions |
-| zod `package.json` | https://github.com/colinhacks/zod | Sub-path exports for `./mini`, `./locales`, `./v3`, `./v4`, `./v4/core`; custom `@zod/source` condition; `types`/`import`/`require` ordering; `"type": "module"` |
-| @tanstack/react-query `package.json` | https://github.com/TanStack/query | Single-entry export with nested conditions; `@tanstack/custom-condition` → `import` → `require`; `"type": "module"` |
-| msw `package.json` | https://github.com/mswjs/msw | Complex multi-platform sub-path exports (`./browser`, `./node`, `./native`); `module-sync`/`module`/`import`/`node`/`browser`/`default` conditions; `null` to block paths per platform |
-| effect `package.json` | https://github.com/Effect-TS/effect | Source-first wildcard pattern `./*` → `./src/*.ts`; `./internal/*: null` to block internal paths; build tooling rewrites exports at publish time |
+| Source                               | Path / URL                           | What Was Extracted                                                                                                                                                                     |
+| ------------------------------------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Package configuration                | `package.json`                       | Current `"exports"` field structure, `"type": "module"`, `"files"` field, `"sideEffects"` absence                                                                                      |
+| TypeScript config                    | `tsconfig.json`                      | `moduleResolution: "node"`, `declaration: true`, `declarationMap: true`                                                                                                                |
+| Node.js Packages documentation       | https://nodejs.org/api/packages.html | Sub-path exports syntax, conditional exports, condition ordering rules, community conditions (`"types"` always first), resolution algorithm                                            |
+| date-fns `package.json`              | https://github.com/date-fns/date-fns | Per-function sub-path exports pattern; `require`/`import` conditions with nested `types`+`default`; `"type": "module"` with dual CJS/ESM; `"sideEffects": false`                       |
+| RxJS `package.json`                  | https://github.com/ReactiveX/rxjs    | Sub-path exports for `./operators`, `./ajax`, `./testing`, `./webSocket`, `./fetch`; `typesVersions` fallback; `types`/`node`/`require`/`default` conditions                           |
+| zod `package.json`                   | https://github.com/colinhacks/zod    | Sub-path exports for `./mini`, `./locales`, `./v3`, `./v4`, `./v4/core`; custom `@zod/source` condition; `types`/`import`/`require` ordering; `"type": "module"`                       |
+| @tanstack/react-query `package.json` | https://github.com/TanStack/query    | Single-entry export with nested conditions; `@tanstack/custom-condition` → `import` → `require`; `"type": "module"`                                                                    |
+| msw `package.json`                   | https://github.com/mswjs/msw         | Complex multi-platform sub-path exports (`./browser`, `./node`, `./native`); `module-sync`/`module`/`import`/`node`/`browser`/`default` conditions; `null` to block paths per platform |
+| effect `package.json`                | https://github.com/Effect-TS/effect  | Source-first wildcard pattern `./*` → `./src/*.ts`; `./internal/*: null` to block internal paths; build tooling rewrites exports at publish time                                       |
 
 ### Prior Findings Used
 
-| Finding | Path | What Was Consumed |
-|---------|------|-------------------|
+| Finding          | Path                                                                     | What Was Consumed                                                                                                                                                                                                                                                                                                                                                                   |
+| ---------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Plan 01 findings | `docs/research/phase-6/findings/01-build-system-entry-point-analysis.md` | Complete build pipeline analysis (esbuild per-file, Vite SSR, vite-plugin-dts glob), `dist/` layout with all 27 CSAPI files, current `"exports"` field, candidate `"./csapi"` configuration (§ 2 Q9–Q15), TypeScript declaration generation (§ 3 Q16–Q21), barrel file necessity (§ 4 Q22–Q26), impact on build stages (§ 5 Q27–Q31), `moduleResolution: "node"` limitation finding |
 
 ### Sources Not Available or Not Useful
@@ -60,15 +60,15 @@ The recommended configuration for `@camptocamp/ogc-client/csapi` is straightforw
 
 ### Key Metrics
 
-| Metric | Value | Significance |
-|--------|-------|-------------|
-| Libraries surveyed | 6 | Sufficient to identify ecosystem consensus |
-| Libraries using barrel files for sub-paths | 6/6 | Universal pattern — barrel files are standard |
-| Libraries with `"types"` condition first | 6/6 | Universal — `"types"` must always be first |
-| Libraries with `"sideEffects": false` | 5/6 | Near-universal — enables tree-shaking |
-| Libraries using `typesVersions` | 1/6 (RxJS) | Rare — only needed for legacy TypeScript consumers |
-| Bundlers supporting `"exports"` | 5/5 | Vite, webpack 5, esbuild, Rollup, Node.js all support it |
-| Conditions needed for ESM-only package | 3 minimum | `types` + `import` + `default` (our case needs `browser` too for parity) |
+| Metric                                     | Value      | Significance                                                             |
+| ------------------------------------------ | ---------- | ------------------------------------------------------------------------ |
+| Libraries surveyed                         | 6          | Sufficient to identify ecosystem consensus                               |
+| Libraries using barrel files for sub-paths | 6/6        | Universal pattern — barrel files are standard                            |
+| Libraries with `"types"` condition first   | 6/6        | Universal — `"types"` must always be first                               |
+| Libraries with `"sideEffects": false`      | 5/6        | Near-universal — enables tree-shaking                                    |
+| Libraries using `typesVersions`            | 1/6 (RxJS) | Rare — only needed for legacy TypeScript consumers                       |
+| Bundlers supporting `"exports"`            | 5/5        | Vite, webpack 5, esbuild, Rollup, Node.js all support it                 |
+| Conditions needed for ESM-only package     | 3 minimum  | `types` + `import` + `default` (our case needs `browser` too for parity) |
 
 ### Overall Assessment
 
@@ -189,14 +189,14 @@ zod uses `"type": "module"`, `"sideEffects": false`, and a custom `@zod/source` 
 
 **Answer:** Comparison of conditions across all studied libraries:
 
-| Library | `types` | `import` | `require` | `default` | `browser` | `node` | Custom | Notes |
-|---------|---------|----------|-----------|-----------|-----------|--------|--------|-------|
-| date-fns | ✓ (nested) | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | `types`+`default` nested under `require`/`import` |
-| RxJS | ✓ | ✗ | ✓ | ✓ | ✗ | ✓ | ✗ | `types` first, `node`=`require`, `default`=ESM |
-| zod | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | `@zod/source` | Custom condition for source-map dev |
-| @tanstack/react-query | ✓ (nested) | ✓ | ✓ | ✗ | ✗ | ✗ | `@tanstack/custom-condition` | Similar structure to zod |
-| msw | ✓ (nested) | ✓ | ✗ | ✓ | ✓ | ✓ | `module-sync`, `module`, `react-native` | Most complex — platform-aware sub-paths |
-| effect | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | Source-first with build rewrite; no conditions in source |
+| Library               | `types`    | `import` | `require` | `default` | `browser` | `node` | Custom                                  | Notes                                                    |
+| --------------------- | ---------- | -------- | --------- | --------- | --------- | ------ | --------------------------------------- | -------------------------------------------------------- |
+| date-fns              | ✓ (nested) | ✓        | ✓         | ✗         | ✗         | ✗      | ✗                                       | `types`+`default` nested under `require`/`import`        |
+| RxJS                  | ✓          | ✗        | ✓         | ✓         | ✗         | ✓      | ✗                                       | `types` first, `node`=`require`, `default`=ESM           |
+| zod                   | ✓          | ✓        | ✓         | ✗         | ✗         | ✗      | `@zod/source`                           | Custom condition for source-map dev                      |
+| @tanstack/react-query | ✓ (nested) | ✓        | ✓         | ✗         | ✗         | ✗      | `@tanstack/custom-condition`            | Similar structure to zod                                 |
+| msw                   | ✓ (nested) | ✓        | ✗         | ✓         | ✓         | ✓      | `module-sync`, `module`, `react-native` | Most complex — platform-aware sub-paths                  |
+| effect                | ✗          | ✗        | ✗         | ✗         | ✗         | ✗      | ✗                                       | Source-first with build rewrite; no conditions in source |
 
 **Standard conditions for an ESM-only package:** `types` (always first) + `import` + `default`. The `browser` condition is used only by msw (which has genuinely different browser vs. Node code). The `require` condition is irrelevant for ESM-only packages but is included by libraries that support dual CJS/ESM.
 
@@ -204,14 +204,14 @@ zod uses `"type": "module"`, `"sideEffects": false`, and a custom `@zod/source` 
 
 **Answer:**
 
-| Library | Sub-path Count | Category |
-|---------|---------------|----------|
-| @tanstack/react-query | 1 (`.` only) | Focused single-entry |
-| zod | 8 | Small focused set |
-| RxJS | 6 + wildcard | Small focused set with internal access |
-| msw | 7 | Platform-segmented |
-| date-fns | 200+ | Per-function maximum granularity |
-| effect | Wildcard `./*` | All source files exposed via pattern |
+| Library               | Sub-path Count | Category                               |
+| --------------------- | -------------- | -------------------------------------- |
+| @tanstack/react-query | 1 (`.` only)   | Focused single-entry                   |
+| zod                   | 8              | Small focused set                      |
+| RxJS                  | 6 + wildcard   | Small focused set with internal access |
+| msw                   | 7              | Platform-segmented                     |
+| date-fns              | 200+           | Per-function maximum granularity       |
+| effect                | Wildcard `./*` | All source files exposed via pattern   |
 
 **Our use case:** ogc-client needs exactly 1 sub-path (`./csapi`) alongside the root (`.`). This puts us in the "focused single-entry" category, similar to @tanstack/react-query's simplicity. A potential future `./csapi/formats` could be added later if needed, but the initial configuration should be minimal.
 
@@ -446,14 +446,15 @@ For our case, (1) is the primary mechanism. Plan 01 confirmed that both the `.js
 
 **Answer:** This is a critical finding from Plan 01, confirmed and expanded by this research:
 
-| `moduleResolution` | Reads `"exports"` `"types"`? | Target Consumer |
-|--------------------|-----------------------------|-----------------|
-| `"node"` (TS < 5.0 name) / `"node10"` (TS 5.0+) | **No** | Legacy TS projects |
-| `"node16"` | **Yes** | Node.js projects |
-| `"nodenext"` | **Yes** | Node.js projects (latest) |
-| `"bundler"` | **Yes** | Bundler-based projects (Vite, webpack) |
+| `moduleResolution`                              | Reads `"exports"` `"types"`? | Target Consumer                        |
+| ----------------------------------------------- | ---------------------------- | -------------------------------------- |
+| `"node"` (TS < 5.0 name) / `"node10"` (TS 5.0+) | **No**                       | Legacy TS projects                     |
+| `"node16"`                                      | **Yes**                      | Node.js projects                       |
+| `"nodenext"`                                    | **Yes**                      | Node.js projects (latest)              |
+| `"bundler"`                                     | **Yes**                      | Bundler-based projects (Vite, webpack) |
 
 Consumers using `moduleResolution: "node"` (the setting in ogc-client's own `tsconfig.json`) will NOT resolve types from `"exports"`. They would need to either:
+
 - Update their `moduleResolution` to `"node16"`, `"nodenext"`, or `"bundler"` (recommended)
 - Use a direct path import: `@camptocamp/ogc-client/dist/ogc-api/csapi/index` (not recommended)
 
@@ -545,6 +546,7 @@ webpack 5 resolves conditions in the order specified by the package's `"exports"
 **Answer:** esbuild has full support for `"exports"` fields. It uses the following conditions by default: `"browser"` (when `--platform=browser`), `"import"` (for ESM resolution), `"module"`, `"default"`. The `--conditions` flag allows adding custom conditions.
 
 For `@camptocamp/ogc-client/csapi`:
+
 - `--platform=browser`: Resolves via `"browser"` → `./dist/ogc-api/csapi/index.js`
 - `--platform=node`: Resolves via `"import"` → `./dist/ogc-api/csapi/index.js`
 - `--platform=neutral`: Resolves via `"import"` → `./dist/ogc-api/csapi/index.js`
@@ -558,6 +560,7 @@ For `@camptocamp/ogc-client/csapi`:
 **Answer:** Rollup uses `@rollup/plugin-node-resolve` (or modern built-in resolution) to handle `"exports"` fields. The plugin has an `exportConditions` option that defaults to `["default", "module", "import"]`. When the plugin sees `"exports"` in a package, it follows the standard Node.js resolution algorithm.
 
 For `@camptocamp/ogc-client/csapi`:
+
 - `exportConditions: ["default", "module", "import"]`: Resolves via `"import"` or `"default"` → `./dist/ogc-api/csapi/index.js`
 - With `browser: true`: Also includes `"browser"` condition
 
@@ -570,6 +573,7 @@ For `@camptocamp/ogc-client/csapi`:
 **Answer:** No. When a consumer imports from both `@camptocamp/ogc-client` (root) and `@camptocamp/ogc-client/csapi` (sub-path), modern bundlers correctly handle both as coming from the **same physical package**. Shared internal modules (like `shared/errors.js`) are loaded once and deduplicated.
 
 This works because:
+
 - Both `"."` and `"./csapi"` resolve to files within the same `node_modules/@camptocamp/ogc-client/` directory
 - Bundlers track module identity by filesystem path, not by import specifier
 - The `"exports"` field is a mapping layer — it doesn't create separate package instances
@@ -588,6 +592,7 @@ This works because:
 4. Loads the file as ESM (because `"type": "module"` is set)
 
 **Edge cases:**
+
 - `--experimental-specifier-resolution=node`: This flag (deprecated in Node.js 20+) is irrelevant — it affects resolution of relative imports without extensions, not `"exports"` resolution
 - Import maps: Do not interfere with `"exports"` — they operate at a different layer of resolution
 
@@ -595,15 +600,15 @@ This works because:
 
 ### Bundler Compatibility Matrix
 
-| Bundler / Runtime | Supports `"exports"`? | Conditions Applied | Result | Notes |
-|-------------------|----------------------|-------------------|--------|-------|
-| **Vite (dev)** | ✅ Yes (via esbuild) | `browser`, `import`, `default` | ✅ Pass | Pre-bundled in dev mode |
-| **Vite (prod)** | ✅ Yes (via Rollup) | `browser`, `import`, `default` | ✅ Pass | — |
-| **webpack 5** | ✅ Yes (native) | `browser`, `module`, `import`, `default` | ✅ Pass | Supported since webpack 5.0 |
-| **esbuild** | ✅ Yes | `browser`/`import`/`default` (platform-dependent) | ✅ Pass | — |
-| **Rollup** | ✅ Yes (via plugin) | `module`, `import`, `default` | ✅ Pass | Needs `@rollup/plugin-node-resolve` |
-| **Node.js ≥ 20** | ✅ Yes | `node`, `import`, `default` | ✅ Pass | Full ESM support |
-| **Node.js 12.7–16** | ✅ Yes (basic) | `import`, `default` | ✅ Pass | Conditional exports from 12.11 |
+| Bundler / Runtime   | Supports `"exports"`? | Conditions Applied                                | Result  | Notes                               |
+| ------------------- | --------------------- | ------------------------------------------------- | ------- | ----------------------------------- |
+| **Vite (dev)**      | ✅ Yes (via esbuild)  | `browser`, `import`, `default`                    | ✅ Pass | Pre-bundled in dev mode             |
+| **Vite (prod)**     | ✅ Yes (via Rollup)   | `browser`, `import`, `default`                    | ✅ Pass | —                                   |
+| **webpack 5**       | ✅ Yes (native)       | `browser`, `module`, `import`, `default`          | ✅ Pass | Supported since webpack 5.0         |
+| **esbuild**         | ✅ Yes                | `browser`/`import`/`default` (platform-dependent) | ✅ Pass | —                                   |
+| **Rollup**          | ✅ Yes (via plugin)   | `module`, `import`, `default`                     | ✅ Pass | Needs `@rollup/plugin-node-resolve` |
+| **Node.js ≥ 20**    | ✅ Yes                | `node`, `import`, `default`                       | ✅ Pass | Full ESM support                    |
+| **Node.js 12.7–16** | ✅ Yes (basic)        | `import`, `default`                               | ✅ Pass | Conditional exports from 12.11      |
 
 ### Sub-topic Synthesis
 
@@ -615,17 +620,18 @@ This works because:
 
 ### Constraint Compliance Matrix
 
-| # | Constraint | Status | Evidence | Notes |
-|---|-----------|--------|----------|-------|
-| 1 | No CSAPI in root exports | ✓ Compliant | The `"./csapi"` sub-path is independent of the `"."` root entry. Removing CSAPI from `src/index.ts` removes it from the root export path. | Plan 01 Q24 confirmed this is a source-level change |
-| 2 | Separate entry point `"./csapi"` | ✓ Compliant | The recommended configuration adds `"./csapi"` as a sub-path export, resolving to `dist/ogc-api/csapi/index.js`. Consumers write `import { CSAPIQueryBuilder } from '@camptocamp/ogc-client/csapi'` | Matches jahow's explicit requirement |
-| 3 | One-way dependency (core → CSAPI not allowed) | ✓ Compliant | The `"exports"` configuration is purely declarative — it doesn't affect import direction. CSAPI depends on `shared/` and `ogc-api/model`, not the reverse. | Confirmed by Plan 01 cross-module dependency analysis |
-| 4 | CI must pass | ✓ Compliant | No build configuration changes needed. esbuild file glob, vite-plugin-dts glob, and typecheck glob all continue to include CSAPI files. Only source changes and `package.json` update. | Confirmed by Plan 01 Q27–Q31 |
-| 5 | Existing tooling only | ✓ Compliant | The solution uses only existing tools (esbuild, Vite, vite-plugin-dts, TypeScript). No new build tools or monorepo migration. | All file generation is automatic |
+| #   | Constraint                                    | Status      | Evidence                                                                                                                                                                                            | Notes                                                 |
+| --- | --------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| 1   | No CSAPI in root exports                      | ✓ Compliant | The `"./csapi"` sub-path is independent of the `"."` root entry. Removing CSAPI from `src/index.ts` removes it from the root export path.                                                           | Plan 01 Q24 confirmed this is a source-level change   |
+| 2   | Separate entry point `"./csapi"`              | ✓ Compliant | The recommended configuration adds `"./csapi"` as a sub-path export, resolving to `dist/ogc-api/csapi/index.js`. Consumers write `import { CSAPIQueryBuilder } from '@camptocamp/ogc-client/csapi'` | Matches jahow's explicit requirement                  |
+| 3   | One-way dependency (core → CSAPI not allowed) | ✓ Compliant | The `"exports"` configuration is purely declarative — it doesn't affect import direction. CSAPI depends on `shared/` and `ogc-api/model`, not the reverse.                                          | Confirmed by Plan 01 cross-module dependency analysis |
+| 4   | CI must pass                                  | ✓ Compliant | No build configuration changes needed. esbuild file glob, vite-plugin-dts glob, and typecheck glob all continue to include CSAPI files. Only source changes and `package.json` update.              | Confirmed by Plan 01 Q27–Q31                          |
+| 5   | Existing tooling only                         | ✓ Compliant | The solution uses only existing tools (esbuild, Vite, vite-plugin-dts, TypeScript). No new build tools or monorepo migration.                                                                       | All file generation is automatic                      |
 
 ### Scope Boundary Adherence
 
 - **In scope — explored:**
+
   - Library case studies (6 libraries surveyed)
   - `"exports"` configuration patterns and condition ordering
   - Barrel file design (naming, contents, tree-shaking)
@@ -634,6 +640,7 @@ This works because:
   - Dual-import deduplication analysis
 
 - **Out of scope — respected:**
+
   - Consumer API design (class shape, method signatures) → deferred to Plan 04 and Plan 06
   - Module decoupling architecture for `endpoint.ts` → deferred to Plan 06
   - EDR integration analysis → covered by Plan 02
@@ -650,17 +657,17 @@ This works because:
 
 ### Minimum-Change Test
 
-| Finding / Recommendation | Serves jahow's requirements? | Minimum-change? | Include in implementation? |
-|--------------------------|------------------------------|-----------------|---------------------------|
-| Add `"./csapi"` to `"exports"` with 4 conditions | Yes — directly required | Yes | ✓ Include |
-| Create `src/ogc-api/csapi/index.ts` barrel file | Yes — directly required for entry point | Yes | ✓ Include |
-| Point all conditions to `dist/ogc-api/csapi/index.js` | Yes — correct resolution target | Yes | ✓ Include |
-| Add `"sideEffects": false` to `package.json` | Yes — enables tree-shaking for consumers | Yes — single field addition | ✓ Include |
-| `"typesVersions"` fallback | No — nice-to-have for legacy TS consumers | No — adds maintenance burden | ✗ Defer |
-| `"./csapi/formats"` sub-path | No — nice-to-have for advanced consumers | No — not minimum change | ✗ Defer |
-| Wildcard `"./csapi/*"` pattern | No — exposes internals unnecessarily | No — increases API surface | ✗ Defer |
-| Reorder root `"."` conditions (move `browser` before `import`) | No — existing ordering works (same file) | No — unnecessary change | ✗ Defer |
-| Document `moduleResolution` requirement for consumers | No — consumer responsibility | No — documentation not code | ✗ Defer |
+| Finding / Recommendation                                       | Serves jahow's requirements?              | Minimum-change?              | Include in implementation? |
+| -------------------------------------------------------------- | ----------------------------------------- | ---------------------------- | -------------------------- |
+| Add `"./csapi"` to `"exports"` with 4 conditions               | Yes — directly required                   | Yes                          | ✓ Include                  |
+| Create `src/ogc-api/csapi/index.ts` barrel file                | Yes — directly required for entry point   | Yes                          | ✓ Include                  |
+| Point all conditions to `dist/ogc-api/csapi/index.js`          | Yes — correct resolution target           | Yes                          | ✓ Include                  |
+| Add `"sideEffects": false` to `package.json`                   | Yes — enables tree-shaking for consumers  | Yes — single field addition  | ✓ Include                  |
+| `"typesVersions"` fallback                                     | No — nice-to-have for legacy TS consumers | No — adds maintenance burden | ✗ Defer                    |
+| `"./csapi/formats"` sub-path                                   | No — nice-to-have for advanced consumers  | No — not minimum change      | ✗ Defer                    |
+| Wildcard `"./csapi/*"` pattern                                 | No — exposes internals unnecessarily      | No — increases API surface   | ✗ Defer                    |
+| Reorder root `"."` conditions (move `browser` before `import`) | No — existing ordering works (same file)  | No — unnecessary change      | ✗ Defer                    |
+| Document `moduleResolution` requirement for consumers          | No — consumer responsibility              | No — documentation not code  | ✗ Defer                    |
 
 ### Deferred Insights
 
@@ -675,10 +682,10 @@ This works because:
 
 ### What Downstream Plans Should Consume
 
-| Downstream Plan | What to consume from this report | Section reference |
-|-----------------|----------------------------------|-------------------|
-| **Plan 06** (Endpoint Decoupling Architecture) | Final `"./csapi"` sub-path configuration confirms consumer import path: `import { CSAPIQueryBuilder } from '@camptocamp/ogc-client/csapi'`; barrel file will re-export all CSAPI public API; no separate `"./csapi/formats"` sub-path initially | § 2 (Q11, Q15), § 3 (Q18, Q20) |
-| **Plan 08** (File-Level Changelist) | Exact file changes: (1) create `src/ogc-api/csapi/index.ts`, (2) add `"./csapi"` to `package.json` `"exports"`, (3) add `"sideEffects": false` to `package.json`, (4) remove CSAPI re-exports from `src/index.ts` | § 10 (Impact on Implementation) |
+| Downstream Plan                                | What to consume from this report                                                                                                                                                                                                                | Section reference               |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| **Plan 06** (Endpoint Decoupling Architecture) | Final `"./csapi"` sub-path configuration confirms consumer import path: `import { CSAPIQueryBuilder } from '@camptocamp/ogc-client/csapi'`; barrel file will re-export all CSAPI public API; no separate `"./csapi/formats"` sub-path initially | § 2 (Q11, Q15), § 3 (Q18, Q20)  |
+| **Plan 08** (File-Level Changelist)            | Exact file changes: (1) create `src/ogc-api/csapi/index.ts`, (2) add `"./csapi"` to `package.json` `"exports"`, (3) add `"sideEffects": false` to `package.json`, (4) remove CSAPI re-exports from `src/index.ts`                               | § 10 (Impact on Implementation) |
 
 ### Decisions Now Final
 
@@ -727,6 +734,7 @@ This works because:
 1. **Create `src/ogc-api/csapi/index.ts`** — barrel file re-exporting all public CSAPI types, classes, and functions. Content is the CSAPI-specific export lines currently in `src/index.ts`, with import paths adjusted to relative (`./model.js`, `./url_builder.js`, etc.).
 
 2. **Update `package.json` `"exports"`** — add the `"./csapi"` sub-path:
+
    ```json
    "exports": {
      ".": {
@@ -760,12 +768,12 @@ This works because:
 
 ## 11. Open Questions
 
-| # | Question | Why Unresolved | Resolution Path |
-|---|----------|----------------|-----------------|
-| 1 | What is the exact public API surface of the CSAPI barrel file? | This is a consumer API design decision — should all ~170 lines of exports from `src/index.ts` be re-exported, or should some be considered internal? | Plan 06 should finalize. Default recommendation: re-export everything `src/index.ts` currently exports from CSAPI. |
-| 2 | Should `"sideEffects": false` apply to the whole package or just CSAPI? | Requires analysis of whether any module in the package has import-triggered side effects | Plan 08 should verify. The `worker/` module may register self as side effect — needs investigation. |
-| 3 | Will the CSAPI barrel file be used by tests, or only by consumers? | Tests may continue importing from individual CSAPI modules directly | Plan 08 should document test import patterns. No change needed — tests can use either path. |
-| 4 | Should the README or package documentation mention the new `"./csapi"` sub-path? | Documentation is outside the file-level changelist scope but important for adoption | Deferred — not needed for upstream PR, but should be addressed before npm publish. |
+| #   | Question                                                                         | Why Unresolved                                                                                                                                       | Resolution Path                                                                                                    |
+| --- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| 1   | What is the exact public API surface of the CSAPI barrel file?                   | This is a consumer API design decision — should all ~170 lines of exports from `src/index.ts` be re-exported, or should some be considered internal? | Plan 06 should finalize. Default recommendation: re-export everything `src/index.ts` currently exports from CSAPI. |
+| 2   | Should `"sideEffects": false` apply to the whole package or just CSAPI?          | Requires analysis of whether any module in the package has import-triggered side effects                                                             | Plan 08 should verify. The `worker/` module may register self as side effect — needs investigation.                |
+| 3   | Will the CSAPI barrel file be used by tests, or only by consumers?               | Tests may continue importing from individual CSAPI modules directly                                                                                  | Plan 08 should document test import patterns. No change needed — tests can use either path.                        |
+| 4   | Should the README or package documentation mention the new `"./csapi"` sub-path? | Documentation is outside the file-level changelist scope but important for adoption                                                                  | Deferred — not needed for upstream PR, but should be addressed before npm publish.                                 |
 
 ---
 
@@ -773,14 +781,14 @@ This works because:
 
 ### A. Library Case Study Comparison Table
 
-| Library | Sub-path Example | # Sub-paths | Conditions Used | Barrel or Direct | typesVersions | `"type"` | `"sideEffects"` |
-|---------|-----------------|-------------|-----------------|-----------------|--------------|---------|-----------------|
-| date-fns v4 | `./format` | 200+ | `require` → { types, default }, `import` → { types, default } | Barrel (per-function `.js` files effectively act as single-export barrels) | No | `"module"` | `false` |
-| RxJS v8 | `./operators` | 6 + wildcard | `types`, `node`, `require`, `default` | Barrel (`index.js` in each sub-dir) | Yes (`">=4.2"`) | Not set | `false` |
-| zod v4 | `./mini` | 8 | `@zod/source`, `types`, `import`, `require` | Barrel (`index.js`) | No | `"module"` | `false` |
-| @tanstack/react-query v5 | `.` (single entry) | 1 | `@tanstack/custom-condition`, `import` → { types, default }, `require` → { types, default } | Barrel | No | `"module"` | `false` |
-| msw v2 | `./browser`, `./node` | 7 | `module-sync`, `module`, `browser`, `node`, `import`, `default` (nested types+default) | Barrel | No | `"commonjs"` | `false` |
-| effect v3 | `./*` (wildcard) | All via `*` | None (source-first pattern) | Direct + wildcard | No | `"module"` | Not set |
+| Library                  | Sub-path Example      | # Sub-paths  | Conditions Used                                                                             | Barrel or Direct                                                           | typesVersions   | `"type"`     | `"sideEffects"` |
+| ------------------------ | --------------------- | ------------ | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | --------------- | ------------ | --------------- |
+| date-fns v4              | `./format`            | 200+         | `require` → { types, default }, `import` → { types, default }                               | Barrel (per-function `.js` files effectively act as single-export barrels) | No              | `"module"`   | `false`         |
+| RxJS v8                  | `./operators`         | 6 + wildcard | `types`, `node`, `require`, `default`                                                       | Barrel (`index.js` in each sub-dir)                                        | Yes (`">=4.2"`) | Not set      | `false`         |
+| zod v4                   | `./mini`              | 8            | `@zod/source`, `types`, `import`, `require`                                                 | Barrel (`index.js`)                                                        | No              | `"module"`   | `false`         |
+| @tanstack/react-query v5 | `.` (single entry)    | 1            | `@tanstack/custom-condition`, `import` → { types, default }, `require` → { types, default } | Barrel                                                                     | No              | `"module"`   | `false`         |
+| msw v2                   | `./browser`, `./node` | 7            | `module-sync`, `module`, `browser`, `node`, `import`, `default` (nested types+default)      | Barrel                                                                     | No              | `"commonjs"` | `false`         |
+| effect v3                | `./*` (wildcard)      | All via `*`  | None (source-first pattern)                                                                 | Direct + wildcard                                                          | No              | `"module"`   | Not set         |
 
 ### B. Recommended `package.json` Diff
 
@@ -809,14 +817,18 @@ This works because:
 ### C. Consumer Usage Examples
 
 **TypeScript browser app (Vite):**
+
 ```typescript
 // Consumer's tsconfig.json must have moduleResolution: "bundler" (Vite default)
 import { CSAPIQueryBuilder } from '@camptocamp/ogc-client/csapi';
 
-const builder = new CSAPIQueryBuilder('https://api.example.com/collections/stations');
+const builder = new CSAPIQueryBuilder(
+  'https://api.example.com/collections/stations'
+);
 ```
 
 **TypeScript Node.js script:**
+
 ```typescript
 // Consumer's tsconfig.json must have moduleResolution: "node16" or "nodenext"
 import { CSAPIQueryBuilder } from '@camptocamp/ogc-client/csapi';
@@ -824,12 +836,14 @@ import type { CSAPIObservation } from '@camptocamp/ogc-client/csapi';
 ```
 
 **webpack app:**
+
 ```javascript
 // webpack 5 resolves "exports" natively — no configuration needed
 import { CSAPIQueryBuilder } from '@camptocamp/ogc-client/csapi';
 ```
 
 **Dual import (root + sub-path):**
+
 ```typescript
 // Safe — bundlers deduplicate shared internal modules
 import { OgcApiEndpoint } from '@camptocamp/ogc-client';

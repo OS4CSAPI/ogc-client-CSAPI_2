@@ -6,17 +6,17 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Status** | Not Started |
-| **Plan Type** | [Internal analysis / External research (industry) / External research (architecture) / External research (standards) / Design synthesis / Implementation synthesis / Mechanical analysis] |
-| **Date Created** | [YYYY-MM-DD] |
-| **Last Updated** | [YYYY-MM-DD] |
-| **Estimated Time** | [X–Y hours] |
-| **Actual Time** | — |
-| **Depends On** | [Plan numbers, or "None"] |
-| **Blocks** | [Plan numbers that cannot start until this completes] |
-| **Strategy Reference** | [research-strategy.md § Plan NN](../research-strategy.md) |
+| Field                  | Value                                                                                                                                                                                     |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**             | Not Started                                                                                                                                                                               |
+| **Plan Type**          | [Internal analysis / External research (industry) / External research (architecture) / External research (standards) / Design synthesis / Implementation synthesis / Mechanical analysis] |
+| **Date Created**       | [YYYY-MM-DD]                                                                                                                                                                              |
+| **Last Updated**       | [YYYY-MM-DD]                                                                                                                                                                              |
+| **Estimated Time**     | [X–Y hours]                                                                                                                                                                               |
+| **Actual Time**        | —                                                                                                                                                                                         |
+| **Depends On**         | [Plan numbers, or "None"]                                                                                                                                                                 |
+| **Blocks**             | [Plan numbers that cannot start until this completes]                                                                                                                                     |
+| **Strategy Reference** | [research-strategy.md § Plan NN](../research-strategy.md)                                                                                                                                 |
 
 ---
 
@@ -106,8 +106,8 @@
 
 [Files in the repository that are the main inputs for this research. Include relative paths.]
 
-| Source | Path | What to Extract |
-|--------|------|-----------------|
+| Source        | Path                        | What to Extract                 |
+| ------------- | --------------------------- | ------------------------------- |
 | [Description] | [relative/path/to/file.ext] | [What specifically to look for] |
 | [Description] | [relative/path/to/file.ext] | [What specifically to look for] |
 
@@ -115,8 +115,8 @@
 
 [URLs, documentation sites, GitHub repositories, specifications, etc.]
 
-| Source | URL/Reference | What to Extract |
-|--------|---------------|-----------------|
+| Source        | URL/Reference      | What to Extract                 |
+| ------------- | ------------------ | ------------------------------- |
 | [Description] | [URL or reference] | [What specifically to look for] |
 | [Description] | [URL or reference] | [What specifically to look for] |
 
@@ -124,8 +124,8 @@
 
 [Findings from earlier plans that this plan builds on.]
 
-| Finding | Path | What to Use |
-|---------|------|-------------|
+| Finding            | Path                                | What to Use                      |
+| ------------------ | ----------------------------------- | -------------------------------- |
 | [Plan NN findings] | [relative/path/to/findings/NN-*.md] | [What specifically to reference] |
 
 ---
@@ -137,6 +137,7 @@
 **Objective:** [One sentence]
 
 **Tasks:**
+
 1. [Concrete, verifiable task]
 2. [Concrete, verifiable task]
 3. [Concrete, verifiable task]
@@ -148,6 +149,7 @@
 **Objective:** [One sentence]
 
 **Tasks:**
+
 1. [Concrete, verifiable task]
 2. [Concrete, verifiable task]
 3. [Concrete, verifiable task]
@@ -159,6 +161,7 @@
 **Objective:** [One sentence]
 
 **Tasks:**
+
 1. [Concrete, verifiable task]
 2. [Concrete, verifiable task]
 3. [Concrete, verifiable task]
@@ -170,6 +173,7 @@
 **Objective:** Consolidate all phase outputs into the deliverable document
 
 **Tasks:**
+
 1. Synthesize findings from Phases 1–3
 2. Verify all [N] research questions are answered
 3. Validate findings against boundary conditions
@@ -214,10 +218,10 @@ This research is complete when:
 
 ## 9. Risks and Mitigation
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
+| Risk                  | Impact                                        | Mitigation         |
+| --------------------- | --------------------------------------------- | ------------------ |
 | [What could go wrong] | [How it affects the plan or downstream plans] | [How to handle it] |
-| [What could go wrong] | [How it affects the plan] | [How to handle it] |
+| [What could go wrong] | [How it affects the plan]                     | [How to handle it] |
 
 ---
 

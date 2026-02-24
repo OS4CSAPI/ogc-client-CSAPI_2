@@ -6,16 +6,16 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Status** | Not Started |
-| **Plan Type** | Mechanical analysis |
-| **Date Created** | 2026-02-23 |
-| **Last Updated** | 2026-02-23 |
-| **Estimated Time** | 1–2 hours |
-| **Actual Time** | — |
-| **Depends On** | None |
-| **Blocks** | Plan 08 (File-Level Changelist and Commit Strategy) |
+| Field                  | Value                                                     |
+| ---------------------- | --------------------------------------------------------- |
+| **Status**             | Not Started                                               |
+| **Plan Type**          | Mechanical analysis                                       |
+| **Date Created**       | 2026-02-23                                                |
+| **Last Updated**       | 2026-02-23                                                |
+| **Estimated Time**     | 1–2 hours                                                 |
+| **Actual Time**        | —                                                         |
+| **Depends On**         | None                                                      |
+| **Blocks**             | Plan 08 (File-Level Changelist and Commit Strategy)       |
 | **Strategy Reference** | [research-strategy.md § Plan 07](../research-strategy.md) |
 
 ---
@@ -26,7 +26,7 @@ Produce a complete formatting and linting impact assessment that documents: (a) 
 
 The key output is a **file-by-file impact matrix** that Plan 08 can consume directly to determine whether formatting changes should be a separate commit, interleaved with architectural changes, or applied as a final pass.
 
-This plan is mechanical — it runs tools and documents results rather than making design decisions. However, the findings are critical because a single Prettier or ESLint failure will block CI, and understanding the *scope* of changes is essential for commit strategy. If Prettier reformats 2,000 lines across 56 files, that affects the diff readability of the PR and may need to be isolated in its own commit. If ESLint flags real code issues (not just formatting), those must be addressed as part of the refactoring.
+This plan is mechanical — it runs tools and documents results rather than making design decisions. However, the findings are critical because a single Prettier or ESLint failure will block CI, and understanding the _scope_ of changes is essential for commit strategy. If Prettier reformats 2,000 lines across 56 files, that affects the diff readability of the PR and may need to be isolated in its own commit. If ESLint flags real code issues (not just formatting), those must be addressed as part of the refactoring.
 
 ---
 
@@ -91,7 +91,7 @@ This plan is positioned late in the sequence because its findings are purely mec
 
 #### Prettier Configuration and Defaults (8 questions)
 
-1. What version of Prettier is configured in the upstream repository? The `package.json` specifies `"prettier": "2.8.8"`. What are the *default* settings for this specific version, since only `semi` and `singleQuote` are explicitly configured in `.prettierrc.json`?
+1. What version of Prettier is configured in the upstream repository? The `package.json` specifies `"prettier": "2.8.8"`. What are the _default_ settings for this specific version, since only `semi` and `singleQuote` are explicitly configured in `.prettierrc.json`?
 2. What is the effective `trailingComma` setting? Prettier 2.8.8 defaults to `"all"` for trailing commas. Is this the active setting, or did an earlier Prettier version default to `"es5"`? (Prettier 2.x defaults to `"all"` since 2.0, but confirm for 2.8.8 specifically.)
 3. What is the effective `printWidth` setting? The default is 80. Are there lines in our CSAPI files that exceed 80 characters? If so, how many files and lines are affected?
 4. What is the effective `tabWidth` setting? Default is 2. Do our files use 2-space indentation consistently?
@@ -132,7 +132,7 @@ This plan is positioned late in the sequence because its findings are purely mec
 
 #### Formatting Impact on Modified Core Files (5 questions)
 
-30. The architectural refactoring will modify `src/ogc-api/endpoint.ts` (remove CSAPI imports, `csapi()` method, cache field) and `src/index.ts` (remove ~170 lines of CSAPI exports). Will Prettier format the *remaining* code in these files differently after the removals? (e.g., if a line was at 79 characters and removing a nearby line causes Prettier to reflow.)
+30. The architectural refactoring will modify `src/ogc-api/endpoint.ts` (remove CSAPI imports, `csapi()` method, cache field) and `src/index.ts` (remove ~170 lines of CSAPI exports). Will Prettier format the _remaining_ code in these files differently after the removals? (e.g., if a line was at 79 characters and removing a nearby line causes Prettier to reflow.)
 31. Will ESLint's `no-unused-vars` flag any new unused imports in `src/ogc-api/endpoint.ts` after removing the `csapi()` method and related code? Specifically: after removing `import CSAPIQueryBuilder from './csapi/url_builder.js'` and `import { scanCsapiLinks } from './csapi/helpers.js'` (the two constraint violations), are there other imports that become unused?
 32. Will ESLint's `import/extensions` rule require `.js` extensions in the new barrel file's re-exports? For example: `export { CSAPIQueryBuilder } from './url_builder.js'` — is the `.js` extension required here?
 33. After removing CSAPI exports from `src/index.ts`, will the remaining exports still comply with all ESLint rules? Are there any imports in `src/index.ts` that exist solely to support CSAPI re-exports and will become unused?
@@ -153,46 +153,46 @@ This plan is positioned late in the sequence because its findings are purely mec
 
 ### Primary Sources (In Workspace)
 
-| Source | Path | What to Extract |
-|--------|------|-----------------|
-| Prettier configuration | `.prettierrc.json` | Explicit rules: `semi: true`, `singleQuote: true`. All other options are Prettier 2.8.8 defaults. |
-| Prettier ignore patterns | `.prettierignore` | Excluded paths: `fixtures/**/*.xml`, `fixtures/**/notjson.json`, `dist`, `app/dist`, `node_modules`, `app/node_modules` |
-| ESLint flat config | `eslint.config.js` | Complete rule configuration: `import/extensions`, `no-explicit-any: off`, `no-unused-vars` with `^_` pattern. Extends `js.configs.recommended` + `typescriptEslint.configs.recommended`. Plugins: `eslint-plugin-import`. |
-| Package metadata | `package.json` | Prettier version (`2.8.8`), ESLint version (`^9.38.0`), all ESLint plugins (`eslint-plugin-import ^2.32.0`, `eslint-plugin-require-extensions ^0.1.3`, `typescript-eslint ^8.46.2`). Scripts: `format:write`, `format:check`, `lint`, `lint:fix`. |
-| TypeScript config | `tsconfig.json` | Compiler options affecting lint: `target: ESNext`, `module: ESNext`, `moduleResolution: node`, `declaration: true` |
-| CSAPI url_builder imports | `src/ogc-api/csapi/url_builder.ts` (lines 1–11) | Import style: single quotes, semicolons, `.js` extensions, `import type` for type-only imports |
-| CSAPI model imports | `src/ogc-api/csapi/model.ts` (lines 1–3) | Import style: `import type` for all imports (type-only module), `.js` extensions on local, no ext on `'geojson'` |
-| CSAPI helpers imports | `src/ogc-api/csapi/helpers.ts` (lines 1–3) | Import style: consistent with url_builder and model |
-| CSAPI formats barrel | `src/ogc-api/csapi/formats/index.ts` | 344-line barrel file — re-export style with `.js` extensions |
-| CSAPI command routing | `src/ogc-api/csapi/command-routing.ts` (lines 26–28) | Import pattern: `import type` for default imports |
-| Core endpoint imports | `src/ogc-api/endpoint.ts` (lines 1–54) | Upstream import style — baseline for comparison with CSAPI |
-| Core model imports | `src/ogc-api/model.ts` (lines 1–2) | Upstream import style |
-| Core info imports | `src/ogc-api/info.ts` (lines 1–21) | Upstream import style |
-| EDR url_builder imports | `src/ogc-api/edr/url_builder.ts` (lines 1–20) | EDR import style — baseline for consistency check |
-| Root exports | `src/index.ts` (lines 45–252) | ~170 lines of CSAPI exports that will be removed — ESLint impact of removal |
-| CSAPI test file example | `src/ogc-api/csapi/url_builder.spec.ts` (lines 1–20) | Test file import style and formatting |
-| Endpoint CSAPI tests | `src/ogc-api/endpoint.spec.ts` (lines 2836–2888) | CSAPI test block — formatting and lint compliance |
-| CSAPI fixture files | `fixtures/ogc-api/csapi/` | JSON fixture files — Prettier may format these |
+| Source                    | Path                                                 | What to Extract                                                                                                                                                                                                                                   |
+| ------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prettier configuration    | `.prettierrc.json`                                   | Explicit rules: `semi: true`, `singleQuote: true`. All other options are Prettier 2.8.8 defaults.                                                                                                                                                 |
+| Prettier ignore patterns  | `.prettierignore`                                    | Excluded paths: `fixtures/**/*.xml`, `fixtures/**/notjson.json`, `dist`, `app/dist`, `node_modules`, `app/node_modules`                                                                                                                           |
+| ESLint flat config        | `eslint.config.js`                                   | Complete rule configuration: `import/extensions`, `no-explicit-any: off`, `no-unused-vars` with `^_` pattern. Extends `js.configs.recommended` + `typescriptEslint.configs.recommended`. Plugins: `eslint-plugin-import`.                         |
+| Package metadata          | `package.json`                                       | Prettier version (`2.8.8`), ESLint version (`^9.38.0`), all ESLint plugins (`eslint-plugin-import ^2.32.0`, `eslint-plugin-require-extensions ^0.1.3`, `typescript-eslint ^8.46.2`). Scripts: `format:write`, `format:check`, `lint`, `lint:fix`. |
+| TypeScript config         | `tsconfig.json`                                      | Compiler options affecting lint: `target: ESNext`, `module: ESNext`, `moduleResolution: node`, `declaration: true`                                                                                                                                |
+| CSAPI url_builder imports | `src/ogc-api/csapi/url_builder.ts` (lines 1–11)      | Import style: single quotes, semicolons, `.js` extensions, `import type` for type-only imports                                                                                                                                                    |
+| CSAPI model imports       | `src/ogc-api/csapi/model.ts` (lines 1–3)             | Import style: `import type` for all imports (type-only module), `.js` extensions on local, no ext on `'geojson'`                                                                                                                                  |
+| CSAPI helpers imports     | `src/ogc-api/csapi/helpers.ts` (lines 1–3)           | Import style: consistent with url_builder and model                                                                                                                                                                                               |
+| CSAPI formats barrel      | `src/ogc-api/csapi/formats/index.ts`                 | 344-line barrel file — re-export style with `.js` extensions                                                                                                                                                                                      |
+| CSAPI command routing     | `src/ogc-api/csapi/command-routing.ts` (lines 26–28) | Import pattern: `import type` for default imports                                                                                                                                                                                                 |
+| Core endpoint imports     | `src/ogc-api/endpoint.ts` (lines 1–54)               | Upstream import style — baseline for comparison with CSAPI                                                                                                                                                                                        |
+| Core model imports        | `src/ogc-api/model.ts` (lines 1–2)                   | Upstream import style                                                                                                                                                                                                                             |
+| Core info imports         | `src/ogc-api/info.ts` (lines 1–21)                   | Upstream import style                                                                                                                                                                                                                             |
+| EDR url_builder imports   | `src/ogc-api/edr/url_builder.ts` (lines 1–20)        | EDR import style — baseline for consistency check                                                                                                                                                                                                 |
+| Root exports              | `src/index.ts` (lines 45–252)                        | ~170 lines of CSAPI exports that will be removed — ESLint impact of removal                                                                                                                                                                       |
+| CSAPI test file example   | `src/ogc-api/csapi/url_builder.spec.ts` (lines 1–20) | Test file import style and formatting                                                                                                                                                                                                             |
+| Endpoint CSAPI tests      | `src/ogc-api/endpoint.spec.ts` (lines 2836–2888)     | CSAPI test block — formatting and lint compliance                                                                                                                                                                                                 |
+| CSAPI fixture files       | `fixtures/ogc-api/csapi/`                            | JSON fixture files — Prettier may format these                                                                                                                                                                                                    |
 
 ### External Sources
 
-| Source | URL/Reference | What to Extract |
-|--------|---------------|-----------------|
-| Prettier 2.8.8 documentation | https://prettier.io/docs/en/options.html | Complete default options for Prettier 2.8.8: `trailingComma` default, `printWidth` default (80), `tabWidth` default (2), `endOfLine` default (`"lf"`), `arrowParens` default (`"always"`), `bracketSpacing` default (`true`), `proseWrap` default (`"preserve"`) |
-| Prettier 2.x changelog | https://prettier.io/blog/2020/03/21/2.0.0 | Confirm `trailingComma` default changed to `"all"` in 2.0.0 — verify this is the behavior in 2.8.8 |
-| ESLint `@eslint/js` recommended rules | https://eslint.org/docs/latest/rules/ | Complete list of rules in `js.configs.recommended` — all rules marked ✓ (recommended) |
-| `typescript-eslint` recommended rules | https://typescript-eslint.io/rules/ | Complete list of rules in `typescriptEslint.configs.recommended` — identify which rules may affect our code |
-| `eslint-plugin-import` rules | https://github.com/import-js/eslint-plugin-import | `import/extensions` detailed behavior, `import/order` if active, `import/no-cycle` if active |
-| `eslint-plugin-require-extensions` docs | https://github.com/nicolo-ribaudo/eslint-plugin-require-extensions | What this plugin does, whether it overlaps with `import/extensions`, why it might be installed but unconfigured |
-| Prettier + ESLint integration guide | https://prettier.io/docs/en/integrating-with-linters.html | Best practices for running Prettier and ESLint together without conflicts. Note: upstream does NOT use `eslint-config-prettier` — confirm whether this causes rule conflicts. |
-| Upstream CI workflow | `https://github.com/camptocamp/ogc-client/blob/master/.github/workflows/qa.yml` | How `format:check`, `lint`, and `typecheck` are run in CI — order, per-commit vs final-state |
+| Source                                  | URL/Reference                                                                   | What to Extract                                                                                                                                                                                                                                                  |
+| --------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prettier 2.8.8 documentation            | https://prettier.io/docs/en/options.html                                        | Complete default options for Prettier 2.8.8: `trailingComma` default, `printWidth` default (80), `tabWidth` default (2), `endOfLine` default (`"lf"`), `arrowParens` default (`"always"`), `bracketSpacing` default (`true`), `proseWrap` default (`"preserve"`) |
+| Prettier 2.x changelog                  | https://prettier.io/blog/2020/03/21/2.0.0                                       | Confirm `trailingComma` default changed to `"all"` in 2.0.0 — verify this is the behavior in 2.8.8                                                                                                                                                               |
+| ESLint `@eslint/js` recommended rules   | https://eslint.org/docs/latest/rules/                                           | Complete list of rules in `js.configs.recommended` — all rules marked ✓ (recommended)                                                                                                                                                                            |
+| `typescript-eslint` recommended rules   | https://typescript-eslint.io/rules/                                             | Complete list of rules in `typescriptEslint.configs.recommended` — identify which rules may affect our code                                                                                                                                                      |
+| `eslint-plugin-import` rules            | https://github.com/import-js/eslint-plugin-import                               | `import/extensions` detailed behavior, `import/order` if active, `import/no-cycle` if active                                                                                                                                                                     |
+| `eslint-plugin-require-extensions` docs | https://github.com/nicolo-ribaudo/eslint-plugin-require-extensions              | What this plugin does, whether it overlaps with `import/extensions`, why it might be installed but unconfigured                                                                                                                                                  |
+| Prettier + ESLint integration guide     | https://prettier.io/docs/en/integrating-with-linters.html                       | Best practices for running Prettier and ESLint together without conflicts. Note: upstream does NOT use `eslint-config-prettier` — confirm whether this causes rule conflicts.                                                                                    |
+| Upstream CI workflow                    | `https://github.com/camptocamp/ogc-client/blob/master/.github/workflows/qa.yml` | How `format:check`, `lint`, and `typecheck` are run in CI — order, per-commit vs final-state                                                                                                                                                                     |
 
 ### Prior Research Findings
 
-| Finding | Path | What to Use |
-|---------|------|-------------|
-| Plan 01 findings | `docs/research/phase-6/findings/01-build-system-entry-point-analysis.md` | Build output structure — which files in `dist/` are affected by Prettier (source maps, declarations) |
-| Plan 06 findings | `docs/research/phase-6/findings/06-endpoint-decoupling-architecture.md` | File-level modifications — which files will be created/modified/deleted, informing the Prettier/ESLint impact scope |
+| Finding          | Path                                                                     | What to Use                                                                                                         |
+| ---------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| Plan 01 findings | `docs/research/phase-6/findings/01-build-system-entry-point-analysis.md` | Build output structure — which files in `dist/` are affected by Prettier (source maps, declarations)                |
+| Plan 06 findings | `docs/research/phase-6/findings/06-endpoint-decoupling-architecture.md`  | File-level modifications — which files will be created/modified/deleted, informing the Prettier/ESLint impact scope |
 
 ---
 
@@ -203,6 +203,7 @@ This plan is positioned late in the sequence because its findings are purely mec
 **Objective:** Determine the full effective Prettier and ESLint configuration including all defaults, inherited rules, and plugin interactions.
 
 **Tasks:**
+
 1. Document the complete Prettier 2.8.8 effective configuration — combine the two explicit settings (`semi: true`, `singleQuote: true`) with all Prettier 2.8.8 defaults. Produce a full settings table showing every option and its effective value.
 2. Document the complete ESLint effective configuration — enumerate every rule from `js.configs.recommended`, every rule from `typescriptEslint.configs.recommended`, and the three custom rules (`import/extensions`, `no-explicit-any: off`, `no-unused-vars`). For each rule, note: name, severity (error/warn/off), and brief description.
 3. Determine the status of `eslint-plugin-require-extensions` — confirm it is inactive (installed but not configured). Research whether it overlaps with `import/extensions` and whether its presence signals upstream intent.
@@ -216,6 +217,7 @@ This plan is positioned late in the sequence because its findings are purely mec
 **Objective:** Execute Prettier and ESLint against the CSAPI codebase and capture every error, warning, and formatting change.
 
 **Tasks:**
+
 1. Run `npx prettier --check src/ogc-api/csapi/` and capture all files that fail the check. Record the count and categorize by change type.
 2. Run `npx prettier --check src/ogc-api/endpoint.ts src/index.ts` to check the two core files that will be modified.
 3. Run `npx prettier --check fixtures/ogc-api/` to check if any CSAPI-related JSON fixtures fail formatting.
@@ -232,6 +234,7 @@ This plan is positioned late in the sequence because its findings are purely mec
 **Objective:** Identify cross-tool interactions, refactoring-specific impacts, and edge cases that affect the commit strategy.
 
 **Tasks:**
+
 1. Cross-reference Prettier changes with ESLint errors — are there files where both tools flag the same line? Are there files where fixing one introduces a violation for the other?
 2. Analyze the refactoring impact on ESLint: after removing CSAPI imports from `endpoint.ts` (lines 52–53), CSAPI exports from `index.ts` (lines 45–252), and the `csapi()` method (lines 385–413), identify any new unused imports or variables that `no-unused-vars` will flag.
 3. Analyze the barrel file requirements: the new `src/ogc-api/csapi/index.ts` will contain `export { ... } from './url_builder.js'` and similar re-exports. Verify that `import/extensions` requires `.js` on these re-exports. Check the existing barrel file (`csapi/formats/index.ts`, 344 lines) as a reference — does it pass ESLint?
@@ -246,6 +249,7 @@ This plan is positioned late in the sequence because its findings are purely mec
 **Objective:** Recommend the formatting/linting execution order relative to the architectural refactoring, with rationale.
 
 **Tasks:**
+
 1. Estimate the total Prettier diff scope (files changed, lines changed) from Phase 2 results.
 2. Evaluate three execution orders:
    - **Option A: Format First** — Run Prettier on all CSAPI files in a dedicated commit, then apply architectural changes. Pro: Formatting diff is isolated, reviewers can skip it. Con: Some formatted code will be deleted or moved by the refactoring.
@@ -262,6 +266,7 @@ This plan is positioned late in the sequence because its findings are purely mec
 **Objective:** Consolidate all phase outputs into the deliverable findings document.
 
 **Tasks:**
+
 1. Synthesize findings from Phases 1–4 into the findings report structure.
 2. Produce the file-by-file impact matrix: for each CSAPI file, record: (a) Prettier status (pass/fail, change categories), (b) ESLint status (errors, warnings, rule names), (c) refactoring interaction (will the file be modified by Plan 06?).
 3. Verify all 38 research questions are answered with specific, evidenced results.
@@ -321,15 +326,15 @@ This research is complete when:
 
 ## 9. Risks and Mitigation
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Prettier reformats a large number of lines (1,000+), creating a noisy diff that obscures the architectural refactoring | Reviewers struggle to distinguish formatting changes from logic changes, increasing review burden and risk of missed issues | Measure the diff scope in Phase 2. If large, recommend a dedicated formatting commit in the execution order. Provide a clear commit message ("formatting only — no logic changes") so reviewers can skip. |
-| ESLint flags real code issues (not just formatting) that require logic changes | Additional code changes beyond the architectural refactoring, affecting the scope and timeline of Plan 08 | Capture every ESLint error in Phase 2 and classify as "formatting" vs "logic." Logic issues are added to Plan 08's changelist as additional tasks. |
-| Prettier and ESLint conflict on a rule (e.g., ESLint enforces a format that Prettier overrides) | Files that pass `npm run lint` fail `npm run format:check`, or vice versa — creating an impossible-to-satisfy state | Check for the absence of `eslint-config-prettier` in Phase 1. If conflicts exist, document them and recommend adding `eslint-config-prettier` as a separate upstream discussion (not part of our PR). Workaround: run Prettier *after* ESLint fix. |
-| `endOfLine` differences between Windows (CRLF) and upstream (LF) cause Prettier to rewrite every line in every file | Massive diff consisting entirely of line ending changes, drowning out real changes | Check `endOfLine` setting in Phase 1. If CRLF files exist, fix line endings in a dedicated commit before any other changes. Configure Git to handle line endings correctly (`git config --global core.autocrlf input`). |
-| The `eslint-plugin-require-extensions` plugin is activated by upstream between now and PR submission, introducing new rules our code must comply with | Our code may fail CI if the plugin is activated and our imports don't comply | Document the plugin's rules in Phase 1. Since our files already use `.js` extensions consistently, the risk is low. Note: `import/extensions` already enforces the same requirement. |
-| Running `prettier --write` or `eslint --fix` corrupts a file or introduces a subtle bug | Code breakage that may not be caught until tests run | Always run on a throwaway branch or use `git stash`. Verify with `npm run test:browser` and `npm run test:node` after any automated formatting. Never commit formatting changes without a test run. |
-| Trailing comma differences between Prettier 2.8.8 and a newer version upstream might adopt | Formatting changes that work locally but fail upstream CI if Prettier versions diverge | Pin to the exact Prettier version in `package.json` (`"prettier": "2.8.8"` — already pinned, no caret/tilde). Verify by running the pinned version, not a globally installed one. |
+| Risk                                                                                                                                                  | Impact                                                                                                                      | Mitigation                                                                                                                                                                                                                                         |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prettier reformats a large number of lines (1,000+), creating a noisy diff that obscures the architectural refactoring                                | Reviewers struggle to distinguish formatting changes from logic changes, increasing review burden and risk of missed issues | Measure the diff scope in Phase 2. If large, recommend a dedicated formatting commit in the execution order. Provide a clear commit message ("formatting only — no logic changes") so reviewers can skip.                                          |
+| ESLint flags real code issues (not just formatting) that require logic changes                                                                        | Additional code changes beyond the architectural refactoring, affecting the scope and timeline of Plan 08                   | Capture every ESLint error in Phase 2 and classify as "formatting" vs "logic." Logic issues are added to Plan 08's changelist as additional tasks.                                                                                                 |
+| Prettier and ESLint conflict on a rule (e.g., ESLint enforces a format that Prettier overrides)                                                       | Files that pass `npm run lint` fail `npm run format:check`, or vice versa — creating an impossible-to-satisfy state         | Check for the absence of `eslint-config-prettier` in Phase 1. If conflicts exist, document them and recommend adding `eslint-config-prettier` as a separate upstream discussion (not part of our PR). Workaround: run Prettier _after_ ESLint fix. |
+| `endOfLine` differences between Windows (CRLF) and upstream (LF) cause Prettier to rewrite every line in every file                                   | Massive diff consisting entirely of line ending changes, drowning out real changes                                          | Check `endOfLine` setting in Phase 1. If CRLF files exist, fix line endings in a dedicated commit before any other changes. Configure Git to handle line endings correctly (`git config --global core.autocrlf input`).                            |
+| The `eslint-plugin-require-extensions` plugin is activated by upstream between now and PR submission, introducing new rules our code must comply with | Our code may fail CI if the plugin is activated and our imports don't comply                                                | Document the plugin's rules in Phase 1. Since our files already use `.js` extensions consistently, the risk is low. Note: `import/extensions` already enforces the same requirement.                                                               |
+| Running `prettier --write` or `eslint --fix` corrupts a file or introduces a subtle bug                                                               | Code breakage that may not be caught until tests run                                                                        | Always run on a throwaway branch or use `git stash`. Verify with `npm run test:browser` and `npm run test:node` after any automated formatting. Never commit formatting changes without a test run.                                                |
+| Trailing comma differences between Prettier 2.8.8 and a newer version upstream might adopt                                                            | Formatting changes that work locally but fail upstream CI if Prettier versions diverge                                      | Pin to the exact Prettier version in `package.json` (`"prettier": "2.8.8"` — already pinned, no caret/tilde). Verify by running the pinned version, not a globally installed one.                                                                  |
 
 ---
 

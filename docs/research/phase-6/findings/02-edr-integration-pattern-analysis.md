@@ -6,17 +6,17 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Research Plan** | [Plan 02: EDR Integration Pattern Analysis](../research-plans/02-edr-integration-pattern-analysis.md) |
-| **Plan Type** | Internal analysis |
-| **Date Started** | 2026-02-23 |
-| **Date Completed** | 2026-02-23 |
-| **Research Time** | ~2 hours (actual) |
-| **Estimated Time** | 1–2 hours (from plan) |
-| **Questions Answered** | 35 of 35 detailed questions |
-| **Depends On** | None |
-| **Blocks** | Plan 06 (Endpoint Decoupling Architecture), Plan 08 (File-Level Changelist) |
+| Field                  | Value                                                                                                 |
+| ---------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Research Plan**      | [Plan 02: EDR Integration Pattern Analysis](../research-plans/02-edr-integration-pattern-analysis.md) |
+| **Plan Type**          | Internal analysis                                                                                     |
+| **Date Started**       | 2026-02-23                                                                                            |
+| **Date Completed**     | 2026-02-23                                                                                            |
+| **Research Time**      | ~2 hours (actual)                                                                                     |
+| **Estimated Time**     | 1–2 hours (from plan)                                                                                 |
+| **Questions Answered** | 35 of 35 detailed questions                                                                           |
+| **Depends On**         | None                                                                                                  |
+| **Blocks**             | Plan 06 (Endpoint Decoupling Architecture), Plan 08 (File-Level Changelist)                           |
 
 ---
 
@@ -24,32 +24,32 @@
 
 ### Primary Sources Consulted
 
-| Source | Path / URL | What Was Extracted |
-|--------|------------|-------------------|
-| OGC API endpoint class | `src/ogc-api/endpoint.ts` (896 lines) | All EDR and CSAPI imports, properties, methods, cache maps, private helpers; `edr()` and `csapi()` method bodies |
-| Info utilities | `src/ogc-api/info.ts` (~350 lines) | `checkHasEnvironmentalDataRetrieval`, `checkHasConnectedSystems`, `parseCollections` — confirmed zero imports from either `edr/` or `csapi/` |
-| OGC API model types | `src/ogc-api/model.ts` (279 lines) | EDR-specific types (~45 lines): `DataQueryTypes`, `DataQueryType`, `EdrParameterInfo`, `data_queries` and `parameter_names` on `OgcApiCollectionInfo`. Zero CSAPI-specific types |
-| Root barrel file | `src/index.ts` (252 lines) | Zero EDR exports; ~183 lines of CSAPI exports (lines 45–227) |
-| EDR module | `src/ogc-api/edr/` (3 non-spec files, 656 lines) | `url_builder.ts` (529), `model.ts` (110), `helpers.ts` (17) — constructor signature, module structure |
-| CSAPI module | `src/ogc-api/csapi/` (27 non-spec files, 11,767 lines) | Module structure, constructor signature, `scanCsapiLinks()` implementation, format parser hierarchy |
-| Endpoint tests | `src/ogc-api/endpoint.spec.ts` | EDR test block (lines 2543–2835, 11 `it()` blocks, ~293 lines); CSAPI test block (lines 2836–2900, 6 `it()` blocks, ~64 lines) |
-| CSAPIQueryBuilder | `src/ogc-api/csapi/url_builder.ts` (2,307 lines) | Constructor: 2 params (`OgcApiCollectionInfo` + `Map<string, string>`), link scanning, resource discovery |
-| EDRQueryBuilder | `src/ogc-api/edr/url_builder.ts` (529 lines) | Constructor: 1 param (`OgcApiCollectionInfo`), data query extraction |
-| CSAPI helpers | `src/ogc-api/csapi/helpers.ts` (200 lines) | `scanCsapiLinks()` (lines 129–174): scans link relations for `ogc-cs:` prefixed, plain resource name, and `items` href patterns |
+| Source                 | Path / URL                                             | What Was Extracted                                                                                                                                                               |
+| ---------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OGC API endpoint class | `src/ogc-api/endpoint.ts` (896 lines)                  | All EDR and CSAPI imports, properties, methods, cache maps, private helpers; `edr()` and `csapi()` method bodies                                                                 |
+| Info utilities         | `src/ogc-api/info.ts` (~350 lines)                     | `checkHasEnvironmentalDataRetrieval`, `checkHasConnectedSystems`, `parseCollections` — confirmed zero imports from either `edr/` or `csapi/`                                     |
+| OGC API model types    | `src/ogc-api/model.ts` (279 lines)                     | EDR-specific types (~45 lines): `DataQueryTypes`, `DataQueryType`, `EdrParameterInfo`, `data_queries` and `parameter_names` on `OgcApiCollectionInfo`. Zero CSAPI-specific types |
+| Root barrel file       | `src/index.ts` (252 lines)                             | Zero EDR exports; ~183 lines of CSAPI exports (lines 45–227)                                                                                                                     |
+| EDR module             | `src/ogc-api/edr/` (3 non-spec files, 656 lines)       | `url_builder.ts` (529), `model.ts` (110), `helpers.ts` (17) — constructor signature, module structure                                                                            |
+| CSAPI module           | `src/ogc-api/csapi/` (27 non-spec files, 11,767 lines) | Module structure, constructor signature, `scanCsapiLinks()` implementation, format parser hierarchy                                                                              |
+| Endpoint tests         | `src/ogc-api/endpoint.spec.ts`                         | EDR test block (lines 2543–2835, 11 `it()` blocks, ~293 lines); CSAPI test block (lines 2836–2900, 6 `it()` blocks, ~64 lines)                                                   |
+| CSAPIQueryBuilder      | `src/ogc-api/csapi/url_builder.ts` (2,307 lines)       | Constructor: 2 params (`OgcApiCollectionInfo` + `Map<string, string>`), link scanning, resource discovery                                                                        |
+| EDRQueryBuilder        | `src/ogc-api/edr/url_builder.ts` (529 lines)           | Constructor: 1 param (`OgcApiCollectionInfo`), data query extraction                                                                                                             |
+| CSAPI helpers          | `src/ogc-api/csapi/helpers.ts` (200 lines)             | `scanCsapiLinks()` (lines 129–174): scans link relations for `ogc-cs:` prefixed, plain resource name, and `items` href patterns                                                  |
 
 ### External Sources Consulted
 
-| Source | URL | What Was Extracted |
-|--------|-----|-------------------|
-| PR #114 (EDR) | https://github.com/camptocamp/ogc-client/pull/114 | jahow's review comments, approval rationale, composition-over-inheritance guidance, merge decision |
-| PR #136 (CSAPI) | https://github.com/camptocamp/ogc-client/pull/136 | jahow's two requirements: (1) CSAPI must not be in root `index.ts`, (2) nothing outside `csapi/` should import from it |
-| Issue #118 | https://github.com/camptocamp/ogc-client/issues/118 | jahow's original guidance pointing to PR #114 as the integration model |
+| Source          | URL                                                 | What Was Extracted                                                                                                     |
+| --------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| PR #114 (EDR)   | https://github.com/camptocamp/ogc-client/pull/114   | jahow's review comments, approval rationale, composition-over-inheritance guidance, merge decision                     |
+| PR #136 (CSAPI) | https://github.com/camptocamp/ogc-client/pull/136   | jahow's two requirements: (1) CSAPI must not be in root `index.ts`, (2) nothing outside `csapi/` should import from it |
+| Issue #118      | https://github.com/camptocamp/ogc-client/issues/118 | jahow's original guidance pointing to PR #114 as the integration model                                                 |
 
 ### Prior Findings Used
 
-| Finding | Path | What Was Consumed |
-|---------|------|-------------------|
-| None | — | Plan 02 has no upstream dependencies |
+| Finding | Path | What Was Consumed                    |
+| ------- | ---- | ------------------------------------ |
+| None    | —    | Plan 02 has no upstream dependencies |
 
 ### Sources Not Available or Not Useful
 
@@ -63,23 +63,23 @@ This report documents the complete integration touchpoints of both EDR and CSAPI
 
 **The core finding is that EDR and CSAPI follow the exact same integration pattern** — a URL builder class in a sub-folder, a factory method on `OgcApiEndpoint`, a conformance check in `info.ts`, and collection detection in `parseCollections()`. The pattern itself is not the problem. The problem is that CSAPI is **18× larger than EDR** (11,767 vs 656 non-spec lines), exports **183 lines of types and functions into the root `index.ts`** (EDR exports zero), and introduces **2 imports from `csapi/` into `endpoint.ts`** where EDR only introduces 1. At CSAPI's scale, the same pattern that works for EDR causes two concrete problems: bundle pollution (anyone importing ogc-client gets ~12K lines of CSAPI code whether they use it or not) and reverse dependency (core files importing from the CSAPI module).
 
-jahow's feedback on PR #136 was precise: *"anything part of `src/ogc-api/csapi` should not be included in the root `index.ts` file"* and *"anything not part of `src/ogc-api/csapi` should not import things from the CSAPI code at all."* These two statements define the exact changes required.
+jahow's feedback on PR #136 was precise: _"anything part of `src/ogc-api/csapi` should not be included in the root `index.ts` file"_ and _"anything not part of `src/ogc-api/csapi` should not import things from the CSAPI code at all."_ These two statements define the exact changes required.
 
 Critically, `hasConnectedSystems`, `csapiCollections`, and `checkHasConnectedSystems()` in `info.ts` do **not** import from `csapi/` — they use only conformance URI strings and link relation regex. They follow the identical pattern as their EDR equivalents and may be safe to keep. The only files that actually import from `csapi/` are `endpoint.ts` (2 imports) and `index.ts` (~183 lines of exports).
 
 ### Key Metrics
 
-| Metric | EDR | CSAPI | Ratio |
-|--------|-----|-------|-------|
-| Non-spec source lines | 656 | 11,767 | 18× |
-| Non-spec source files | 3 | 27 | 9× |
-| Sub-directories | 0 | 4 | ∞ |
-| Imports into `endpoint.ts` | 1 | 2 | 2× |
-| New methods/properties on `OgcApiEndpoint` | 3 | 4 (+1 private) | 1.7× |
-| Root exports in `index.ts` (lines) | 0 | 183 | ∞ |
-| Types in shared `model.ts` (lines) | ~45 | 0 | — |
-| Constructor params | 1 | 2 | 2× |
-| Test lines in `endpoint.spec.ts` | 293 | 64 | 0.2× |
+| Metric                                     | EDR | CSAPI          | Ratio |
+| ------------------------------------------ | --- | -------------- | ----- |
+| Non-spec source lines                      | 656 | 11,767         | 18×   |
+| Non-spec source files                      | 3   | 27             | 9×    |
+| Sub-directories                            | 0   | 4              | ∞     |
+| Imports into `endpoint.ts`                 | 1   | 2              | 2×    |
+| New methods/properties on `OgcApiEndpoint` | 3   | 4 (+1 private) | 1.7×  |
+| Root exports in `index.ts` (lines)         | 0   | 183            | ∞     |
+| Types in shared `model.ts` (lines)         | ~45 | 0              | —     |
+| Constructor params                         | 1   | 2              | 2×    |
+| Test lines in `endpoint.spec.ts`           | 293 | 64             | 0.2×  |
 
 ### Overall Assessment
 
@@ -112,6 +112,7 @@ This section documents every point where EDR code touches files outside `src/ogc
 **Answer:** Exactly one import statement.
 
 **Evidence:** `endpoint.ts` line 51:
+
 ```typescript
 import EDRQueryBuilder from './edr/url_builder.js';
 ```
@@ -122,12 +123,12 @@ No other file outside `src/ogc-api/edr/` imports from the EDR module. This is th
 
 **Answer:** Four touchpoints — 2 public getters, 1 public method, 1 private cache:
 
-| Member | Type | Line | Visibility |
-|--------|------|------|------------|
-| `edrCollections` | getter → `Promise<string[]>` | 209 | public |
-| `hasEnvironmentalDataRetrieval` | getter → `Promise<boolean>` | 307 | public |
-| `edr(collection_id)` | async method → `Promise<EDRQueryBuilder>` | 342 | public |
-| `collection_id_to_edr_builder_` | `Map<string, EDRQueryBuilder>` | 66 | private |
+| Member                          | Type                                      | Line | Visibility |
+| ------------------------------- | ----------------------------------------- | ---- | ---------- |
+| `edrCollections`                | getter → `Promise<string[]>`              | 209  | public     |
+| `hasEnvironmentalDataRetrieval` | getter → `Promise<boolean>`               | 307  | public     |
+| `edr(collection_id)`            | async method → `Promise<EDRQueryBuilder>` | 342  | public     |
+| `collection_id_to_edr_builder_` | `Map<string, EDRQueryBuilder>`            | 66   | private    |
 
 ### Question 3: How does the `edr()` method work internally?
 
@@ -150,6 +151,7 @@ public async edr(collection_id: string): Promise<EDRQueryBuilder> {
 ```
 
 Key characteristics:
+
 - Uses `getCollectionInfo()` — the standard parsed collection info (same as features, records, tiles)
 - Constructor takes **one** parameter: `OgcApiCollectionInfo`
 - No private helpers needed beyond the existing `getCollectionInfo()`
@@ -160,16 +162,18 @@ Key characteristics:
 **Answer:** Zero. `info.ts` does not import anything from the EDR module.
 
 **Evidence:** `info.ts` imports only from:
+
 - `./model.js` (shared OGC API types)
 - `./link-utils.js` (shared link utilities)
 - `../shared/errors.js`
 - `../shared/mime-type.js`
 
 `checkHasEnvironmentalDataRetrieval()` (line 96) checks conformance URI strings only:
+
 ```typescript
-export function checkHasEnvironmentalDataRetrieval(
-  [conformanceClasses]: [ConformanceClass[]]
-): boolean {
+export function checkHasEnvironmentalDataRetrieval([conformanceClasses]: [
+  ConformanceClass[]
+]): boolean {
   return conformanceClasses.some(
     (conformanceClass) =>
       conformanceClass.indexOf('ogcapi-edr-1/1.0/conf/core') > -1
@@ -182,8 +186,9 @@ export function checkHasEnvironmentalDataRetrieval(
 **Answer:** It checks for the `data_queries` property on the collection object — a property defined on `OgcApiCollectionInfo` in the shared `model.ts`. No EDR module import needed.
 
 **Evidence:** In `parseCollections()`, the `hasDataQueries` flag is set by checking:
+
 ```typescript
-hasDataQueries: !!collection.data_queries
+hasDataQueries: !!collection.data_queries;
 ```
 
 The `data_queries` property and its type `DataQueryType` are defined in `src/ogc-api/model.ts` (lines 12–24), not in `edr/model.ts`. This means EDR detection is entirely self-contained within shared types.
@@ -198,14 +203,14 @@ The `data_queries` property and its type `DataQueryType` are defined in `src/ogc
 
 **Answer:** EDR types are split between the shared `model.ts` and the EDR module's own `model.ts`:
 
-| Type | Location | Lines |
-|------|----------|-------|
-| `DataQueryTypes` (array of constants) | `src/ogc-api/model.ts` line 12 | 11 |
-| `DataQueryType` (union type) | `src/ogc-api/model.ts` line 24 | 1 |
-| `EdrParameterInfo` (interface) | `src/ogc-api/model.ts` lines 43–62 | 20 |
-| `data_queries` property on `OgcApiCollectionInfo` | `src/ogc-api/model.ts` ~line 130 | 7 |
-| `parameter_names` property on `OgcApiCollectionInfo` | `src/ogc-api/model.ts` ~line 138 | 1 |
-| **EDR-specific model types** (bbox params, corridor params, etc.) | `src/ogc-api/edr/model.ts` (110 lines) | 110 |
+| Type                                                              | Location                               | Lines |
+| ----------------------------------------------------------------- | -------------------------------------- | ----- |
+| `DataQueryTypes` (array of constants)                             | `src/ogc-api/model.ts` line 12         | 11    |
+| `DataQueryType` (union type)                                      | `src/ogc-api/model.ts` line 24         | 1     |
+| `EdrParameterInfo` (interface)                                    | `src/ogc-api/model.ts` lines 43–62     | 20    |
+| `data_queries` property on `OgcApiCollectionInfo`                 | `src/ogc-api/model.ts` ~line 130       | 7     |
+| `parameter_names` property on `OgcApiCollectionInfo`              | `src/ogc-api/model.ts` ~line 138       | 1     |
+| **EDR-specific model types** (bbox params, corridor params, etc.) | `src/ogc-api/edr/model.ts` (110 lines) | 110   |
 
 **~45 lines of EDR-specific types live in the shared `model.ts`**, absorbed directly into `OgcApiCollectionInfo`. This is architecturally significant — it means `info.ts` and `endpoint.ts` can detect and work with EDR data without importing from the EDR module.
 
@@ -214,6 +219,7 @@ The `data_queries` property and its type `DataQueryType` are defined in `src/ogc
 **Answer:** 11 `it()` blocks across ~293 lines (lines 2543–2835).
 
 **Test coverage:**
+
 1. Returns endpoint info
 2. Supports EDR (conformance detection)
 3. Lists all EDR collections
@@ -229,6 +235,7 @@ The `data_queries` property and its type `DataQueryType` are defined in `src/ogc
 ### Sub-topic Synthesis
 
 EDR's integration is minimal and clean:
+
 - **1 import** into `endpoint.ts`
 - **3 public members** added to `OgcApiEndpoint` (following the exact same pattern as features, records, tiles)
 - **0 imports** into `info.ts` — detection uses shared types only
@@ -248,6 +255,7 @@ This section documents every point where CSAPI code touches files outside `src/o
 **Answer:** Two import statements.
 
 **Evidence:** `endpoint.ts` lines 52–53:
+
 ```typescript
 import CSAPIQueryBuilder from './csapi/url_builder.js';
 import { scanCsapiLinks } from './csapi/helpers.js';
@@ -259,13 +267,13 @@ The second import (`scanCsapiLinks`) is notably absent from the EDR pattern. It 
 
 **Answer:** Five touchpoints — 2 public getters, 1 public method, 1 private cache, 1 private helper:
 
-| Member | Type | Line | Visibility |
-|--------|------|------|------------|
-| `csapiCollections` | getter → `Promise<string[]>` | 234 | public |
-| `hasConnectedSystems` | getter → `Promise<boolean>` | ~315 | public |
-| `csapi(collectionId)` | async method → `Promise<CSAPIQueryBuilder>` | ~370 | public |
-| `collection_id_to_csapi_builder_` | `Map<string, CSAPIQueryBuilder>` | 68 | private |
-| `extractRootResourceUrls()` | async method → `Promise<Map<string, string>>` | 431 | **private** |
+| Member                            | Type                                          | Line | Visibility  |
+| --------------------------------- | --------------------------------------------- | ---- | ----------- |
+| `csapiCollections`                | getter → `Promise<string[]>`                  | 234  | public      |
+| `hasConnectedSystems`             | getter → `Promise<boolean>`                   | ~315 | public      |
+| `csapi(collectionId)`             | async method → `Promise<CSAPIQueryBuilder>`   | ~370 | public      |
+| `collection_id_to_csapi_builder_` | `Map<string, CSAPIQueryBuilder>`              | 68   | private     |
+| `extractRootResourceUrls()`       | async method → `Promise<Map<string, string>>` | 431  | **private** |
 
 The private helper `extractRootResourceUrls()` is CSAPI-specific — EDR has no equivalent. It exists because CSAPI servers may advertise resources at the API root level (e.g., `/api/systems`) rather than under collections.
 
@@ -304,10 +312,11 @@ public async csapi(collectionId: string): Promise<CSAPIQueryBuilder> {
 **Answer:** Zero. `info.ts` does not import anything from the CSAPI module.
 
 **Evidence:** Same import list as documented in Question 4. `checkHasConnectedSystems()` (line 112) checks conformance URI strings only:
+
 ```typescript
-export function checkHasConnectedSystems(
-  [conformanceClasses]: [ConformanceClass[]]
-): boolean {
+export function checkHasConnectedSystems([conformanceClasses]: [
+  ConformanceClass[]
+]): boolean {
   return conformanceClasses.some(
     (cc) =>
       cc.indexOf('ogcapi-connectedsystems-1') > -1 ||
@@ -321,10 +330,11 @@ export function checkHasConnectedSystems(
 **Answer:** It checks link relations using a regex pattern `/^ogc-cs:.+$/` against the collection's `links` array. No CSAPI module import is needed.
 
 **Evidence:** In `parseCollections()`, the `hasConnectedSystems` flag is set by:
+
 ```typescript
-hasConnectedSystems: collection.links?.some(
-  (link: { rel?: string }) => /^ogc-cs:.+$/.test(link.rel ?? '')
-)
+hasConnectedSystems: collection.links?.some((link: { rel?: string }) =>
+  /^ogc-cs:.+$/.test(link.rel ?? '')
+);
 ```
 
 This uses the `links` property that is already on the raw collection document (a core OGC API type). The regex `ogc-cs:` is a string constant, not imported from CSAPI. This is architecturally identical to how EDR detection checks `collection.data_queries` — both use data already present in the shared types.
@@ -334,10 +344,12 @@ This uses the `links` property that is already on the raw collection document (a
 **Answer:** ~183 lines of exports (lines 45–227 of `index.ts`), categorized as:
 
 **(a) Value exports (4 items):**
+
 - `CSAPIQueryBuilder` (default from `csapi/url_builder.js`)
 - `CSAPIResourceTypes`, `CommandStatusCodes`, `SystemTypeUris` (from `csapi/model.js`)
 
 **(b) Function exports (~27 items from `csapi/formats/index.js`):**
+
 - `SOSA_NS`, `SSN_NS`, `SENSORML_NS` (namespace constants)
 - `isCSAPIFeature`, `getCSAPIResourceType`, `parseValidTime`, `isValidUri`, `extractCSAPIFeature`
 - `parseSensorML30`, `parseSWEComponent`, `parseVector`, `parseMatrix`, `parseDataChoice`, `parseGeometry`
@@ -347,6 +359,7 @@ This uses the `links` property that is already on the raw collection document (a
 - `normalizeStatusCode`, `parseDatastreamSchemaResponse`, `parseControlStreamSchemaResponse`
 
 **(c) Type exports (~110+ types):**
+
 - From `csapi/model.js`: 42 types (resource types, query options, resource interfaces, collection types, schema response types)
 - From `csapi/formats/index.js` — `CSAPIResourceTypeName`: 1 type
 - From `csapi/formats/index.js` — SensorML types: ~40 types (process types, component types, constraints, etc.)
@@ -358,13 +371,13 @@ This uses the `links` property that is already on the raw collection document (a
 
 **Answer:** All CSAPI types live in CSAPI module files. Zero CSAPI-specific types exist in the shared `model.ts`.
 
-| Location | Lines | Content |
-|----------|-------|---------|
-| `csapi/model.ts` | 730 | All 9 resource type interfaces, query option types, collection types, constants |
-| `csapi/formats/index.ts` | 298 | Re-exports from sub-modules, format pipeline types |
-| `csapi/formats/sensorml/types.ts` | 863 | SensorML process model types |
-| `csapi/formats/swecommon/types.ts` | 669 | SWE Common data model types |
-| Other `csapi/formats/*.ts` | various | Format-specific types |
+| Location                           | Lines   | Content                                                                         |
+| ---------------------------------- | ------- | ------------------------------------------------------------------------------- |
+| `csapi/model.ts`                   | 730     | All 9 resource type interfaces, query option types, collection types, constants |
+| `csapi/formats/index.ts`           | 298     | Re-exports from sub-modules, format pipeline types                              |
+| `csapi/formats/sensorml/types.ts`  | 863     | SensorML process model types                                                    |
+| `csapi/formats/swecommon/types.ts` | 669     | SWE Common data model types                                                     |
+| Other `csapi/formats/*.ts`         | various | Format-specific types                                                           |
 
 This is the architectural opposite of EDR, which absorbs ~45 lines of types into the shared `model.ts`. CSAPI's types are fully encapsulated in its own module — which is actually the correct architectural choice for its size, but creates the problem of needing to re-export them all through `index.ts`.
 
@@ -375,20 +388,20 @@ This is the architectural opposite of EDR, which absorbs ~45 lines of types into
 **Test coverage:**
 
 Nominal case (using `http://local/csapi/sample-data-hub`):
+
 1. Detects Connected Systems support
 2. Lists all CSAPI collections
 3. Produces a CSAPI query builder (checks `availableResources`)
 4. Caches the CSAPI query builder
 
-Non-CSAPI endpoint (using `http://local/sample-data/`):
-5. Reports no Connected Systems support
-6. Throws an error when calling `csapi()`
+Non-CSAPI endpoint (using `http://local/sample-data/`): 5. Reports no Connected Systems support 6. Throws an error when calling `csapi()`
 
 **Note:** This is significantly fewer tests than EDR's 11 blocks (~293 lines), but CSAPI's URL builder has its own extensive test suite (`csapi/url_builder.spec.ts`, 2,862 lines). The endpoint integration tests only verify the discovery and factory pattern, not query building.
 
 ### Sub-topic Synthesis
 
 CSAPI follows the same structural pattern as EDR but with greater complexity at every touchpoint:
+
 - **2 imports** into `endpoint.ts` (vs EDR's 1) — the extra import (`scanCsapiLinks`) is needed for root resource URL discovery
 - **4 public members + 1 private helper** added to `OgcApiEndpoint` (vs EDR's 3 public + 0 private)
 - **0 imports** into `info.ts` — detection uses conformance URIs and link regex only (same as EDR)
@@ -405,19 +418,21 @@ CSAPI follows the same structural pattern as EDR but with greater complexity at 
 
 **Answer:**
 
-| Dimension | EDR | CSAPI | Ratio |
-|-----------|-----|-------|-------|
-| Non-spec source lines | 656 | 11,767 | **18×** |
-| Non-spec source files | 3 | 27 | **9×** |
+| Dimension                 | EDR | CSAPI  | Ratio   |
+| ------------------------- | --- | ------ | ------- |
+| Non-spec source lines     | 656 | 11,767 | **18×** |
+| Non-spec source files     | 3   | 27     | **9×**  |
 | Total lines (incl. specs) | 721 | 26,042 | **36×** |
-| Total files (incl. specs) | 5 | 57 | **11×** |
+| Total files (incl. specs) | 5   | 57     | **11×** |
 
 **EDR file breakdown (non-spec):**
+
 - `url_builder.ts` — 529 lines
 - `model.ts` — 110 lines
 - `helpers.ts` — 17 lines
 
 **CSAPI file breakdown (non-spec, 27 files across 4 sub-directories):**
+
 - Root: `url_builder.ts` (2,307), `model.ts` (730), `helpers.ts` (200), `command-routing.ts` (144) — subtotal 3,381
 - `formats/`: 8 files — subtotal 2,009
 - `formats/sensorml/`: 8 files — subtotal 2,690
@@ -427,11 +442,11 @@ CSAPI follows the same structural pattern as EDR but with greater complexity at 
 
 **Answer:**
 
-| Dimension | EDR | CSAPI |
-|-----------|-----|-------|
-| Types exported from `index.ts` | 0 | ~110 |
-| Values/functions exported from `index.ts` | 0 | ~31 |
-| Types in shared `model.ts` | ~45 lines (4 type definitions) | 0 |
+| Dimension                                 | EDR                            | CSAPI |
+| ----------------------------------------- | ------------------------------ | ----- |
+| Types exported from `index.ts`            | 0                              | ~110  |
+| Values/functions exported from `index.ts` | 0                              | ~31   |
+| Types in shared `model.ts`                | ~45 lines (4 type definitions) | 0     |
 
 EDR types live in the shared `model.ts` and are exported via `export * from './ogc-api/model.js'` — they ride along with all other OGC API types. They are not separately identifiable as "EDR exports."
 
@@ -447,19 +462,20 @@ The single EDR import is structural (the builder class). The two CSAPI imports a
 
 **Answer:** EDR: 3 public. CSAPI: 4 public + 1 private.
 
-| Member | EDR | CSAPI |
-|--------|-----|-------|
-| `has*` conformance getter | `hasEnvironmentalDataRetrieval` | `hasConnectedSystems` |
-| `*Collections` getter | `edrCollections` | `csapiCollections` |
-| Factory method | `edr()` | `csapi()` |
-| Private helper | — | `extractRootResourceUrls()` |
-| Cache map | `collection_id_to_edr_builder_` | `collection_id_to_csapi_builder_` |
+| Member                    | EDR                             | CSAPI                             |
+| ------------------------- | ------------------------------- | --------------------------------- |
+| `has*` conformance getter | `hasEnvironmentalDataRetrieval` | `hasConnectedSystems`             |
+| `*Collections` getter     | `edrCollections`                | `csapiCollections`                |
+| Factory method            | `edr()`                         | `csapi()`                         |
+| Private helper            | —                               | `extractRootResourceUrls()`       |
+| Cache map                 | `collection_id_to_edr_builder_` | `collection_id_to_csapi_builder_` |
 
 ### Question 21: Does EDR add any private helper methods? Does CSAPI?
 
 **Answer:** EDR: No. CSAPI: Yes — `extractRootResourceUrls()` (line 431).
 
 This private method reads the root API document's links and calls `scanCsapiLinks()`:
+
 ```typescript
 private async extractRootResourceUrls(): Promise<Map<string, string>> {
   const rootDoc = await this.root;
@@ -475,9 +491,9 @@ This is the **only reason** `endpoint.ts` imports `scanCsapiLinks` from `csapi/h
 
 **Answer:**
 
-| Builder | Parameters | Complexity |
-|---------|-----------|------------|
-| `EDRQueryBuilder` | `collection: OgcApiCollectionInfo` | 1 param, shared type only |
+| Builder             | Parameters                                                                                                  | Complexity                                             |
+| ------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `EDRQueryBuilder`   | `collection: OgcApiCollectionInfo`                                                                          | 1 param, shared type only                              |
 | `CSAPIQueryBuilder` | `collection_: Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>`, `resourceUrls?: Map<string, string>` | 2 params, includes resource URL map from root document |
 
 The CSAPIQueryBuilder's second parameter (`resourceUrls`) is what drives the need for `extractRootResourceUrls()` in `endpoint.ts`, which in turn drives the need for `scanCsapiLinks` import.
@@ -487,6 +503,7 @@ The CSAPIQueryBuilder's second parameter (`resourceUrls`) is what drives the nee
 **Answer:** EDR: 0. CSAPI: 4.
 
 CSAPI sub-directories:
+
 - `formats/` — format pipeline, GeoJSON, classification, constants, property, response, schema-response, Part 2
 - `formats/sensorml/` — SensorML process parsers (physical system, aggregate, simple process)
 - `formats/swecommon/` — SWE Common data model parsers (components, data arrays, records)
@@ -495,6 +512,7 @@ CSAPI sub-directories:
 ### Sub-topic Synthesis
 
 The quantitative comparison reveals that the EDR pattern scaled from 656 lines to 11,767 lines — an 18× increase — without any change to the integration architecture. The integration touchpoints only increased modestly (1→2 imports, 3→4 public members, 0→1 private helpers), but the **public API surface** exploded from 0 exports to 183 lines of exports in `index.ts`. The scale difference is most dramatic in:
+
 1. **Root export pollution**: 0 → 183 lines (the primary problem jahow identified)
 2. **Module complexity**: 0 sub-directories → 4 sub-directories with format parsers
 3. **Code volume**: 656 → 11,767 non-spec lines (18× larger than EDR, or roughly equal to the entire rest of the ogc-client library)
@@ -527,13 +545,13 @@ The quantitative comparison reveals that the EDR pattern scaled from 656 lines t
 
 **Answer:** Yes, approximately 45 lines:
 
-| Type | Lines | Purpose |
-|------|-------|---------|
-| `DataQueryTypes` (const array) | 12–22 | Enumeration of EDR query type strings |
-| `DataQueryType` (type) | 24 | Union type derived from `DataQueryTypes` |
-| `EdrParameterInfo` (interface) | 43–62 | Structure defining an EDR parameter |
-| `data_queries?` on `OgcApiCollectionInfo` | ~130 | Optional property mapping query types to links |
-| `parameter_names?` on `OgcApiCollectionInfo` | ~138 | Optional property mapping parameter names to info |
+| Type                                         | Lines | Purpose                                           |
+| -------------------------------------------- | ----- | ------------------------------------------------- |
+| `DataQueryTypes` (const array)               | 12–22 | Enumeration of EDR query type strings             |
+| `DataQueryType` (type)                       | 24    | Union type derived from `DataQueryTypes`          |
+| `EdrParameterInfo` (interface)               | 43–62 | Structure defining an EDR parameter               |
+| `data_queries?` on `OgcApiCollectionInfo`    | ~130  | Optional property mapping query types to links    |
+| `parameter_names?` on `OgcApiCollectionInfo` | ~138  | Optional property mapping parameter names to info |
 
 **Is this pattern acceptable?** Yes — and it is architecturally intentional. By placing EDR detection types in the shared model, `info.ts` can detect EDR collections without importing from the EDR module. This is what enables the clean separation: the shared `OgcApiCollectionInfo` type carries EDR metadata naturally because EDR data comes embedded in the standard OGC API collection response.
 
@@ -576,6 +594,7 @@ EDR types being in the shared `model.ts` is architecturally appropriate because 
 ### Question 31: At what point would EDR need the same treatment as CSAPI?
 
 **Answer:** If EDR grew to have:
+
 - Its own type system (currently ~45 lines in shared model → would need hundreds of lines in own module)
 - Format parsers (SensorML equivalent, SWE Common equivalent)
 - Sub-directories with deep hierarchies
@@ -583,6 +602,7 @@ EDR types being in the shared `model.ts` is architecturally appropriate because 
 - Multiple imports into `endpoint.ts`
 
 The threshold is not a single number but a composite:
+
 - When the module has **its own public API** that consumers need to import directly (not just via the endpoint class)
 - When the module **requires its own entry point** because tree-shaking can't eliminate it from bundles of non-EDR consumers
 - When the integration footprint grows beyond "a few lines of glue code" into "dedicated helper methods and additional data extraction"
@@ -591,26 +611,26 @@ The threshold is not a single number but a composite:
 
 **Answer:** **Both, but `index.ts` is primary.** jahow's exact words:
 
-> *"I would request one major thing: that all things related to the CS API not be part of the main `index.ts` file, but instead imported through `@camptocamp/ogc-client/csapi`."*
+> _"I would request one major thing: that all things related to the CS API not be part of the main `index.ts` file, but instead imported through `@camptocamp/ogc-client/csapi`."_
 
-> *"Basically I want to make sure that anyone using the library as before do not end up with all this code in their bundle overnight."*
+> _"Basically I want to make sure that anyone using the library as before do not end up with all this code in their bundle overnight."_
 
 The bundle size concern is the primary driver — and that's `index.ts`. But then he added:
 
-> *"This means that: anything part of the `src/ogc-api/csapi` should not be included in the root `index.ts` file."*
+> _"This means that: anything part of the `src/ogc-api/csapi` should not be included in the root `index.ts` file."_
 
-> *"anything not part of the `src/ogc-api/csapi` should not import things from the CSAPI code at all"*
+> _"anything not part of the `src/ogc-api/csapi` should not import things from the CSAPI code at all"_
 
 The second bullet — "should not import things from the CSAPI code at all" — is the `endpoint.ts` constraint. It requires removing the 2 CSAPI imports from `endpoint.ts`.
 
-jahow also said: *"(unless we find a better way to handle tree-shaking)"* — leaving open the possibility that if tree-shaking could solve the bundle problem, the import constraint might be relaxed.
+jahow also said: _"(unless we find a better way to handle tree-shaking)"_ — leaving open the possibility that if tree-shaking could solve the bundle problem, the import constraint might be relaxed.
 
 ### Question 33: Did jahow say anything about `endpoint.ts` integration specifically?
 
 **Answer:** jahow's feedback on PR #136 focused on the export/import boundary, not on specific properties:
 
-1. He said *"anything not part of the `src/ogc-api/csapi` should not import things from the CSAPI code at all"* — this covers `endpoint.ts`'s 2 imports
-2. He said *"I'm going to review the changes to the existing code and give you a more thorough feedback"* — suggesting he plans further review of the endpoint integration
+1. He said _"anything not part of the `src/ogc-api/csapi` should not import things from the CSAPI code at all"_ — this covers `endpoint.ts`'s 2 imports
+2. He said _"I'm going to review the changes to the existing code and give you a more thorough feedback"_ — suggesting he plans further review of the endpoint integration
 3. He did NOT specifically mention `hasConnectedSystems`, `csapiCollections`, or the `csapi()` method by name
 4. He did NOT say whether conformance-only checks (which don't import from CSAPI) are acceptable
 
@@ -622,12 +642,12 @@ The constraint is stated in terms of import direction, not in terms of specific 
 
 **Technical analysis:**
 
-| Property | Imports from `csapi/`? | Uses `info.ts` function? | Pattern matches EDR? |
-|----------|----------------------|-------------------------|---------------------|
-| `hasConnectedSystems` | No | Yes — `checkHasConnectedSystems()` | Identical to `hasEnvironmentalDataRetrieval` |
-| `csapiCollections` | No | Yes — `parseCollections()` | Identical to `edrCollections` |
-| `hasEnvironmentalDataRetrieval` | No | Yes — `checkHasEnvironmentalDataRetrieval()` | — (reference) |
-| `edrCollections` | No | Yes — `parseCollections()` | — (reference) |
+| Property                        | Imports from `csapi/`? | Uses `info.ts` function?                     | Pattern matches EDR?                         |
+| ------------------------------- | ---------------------- | -------------------------------------------- | -------------------------------------------- |
+| `hasConnectedSystems`           | No                     | Yes — `checkHasConnectedSystems()`           | Identical to `hasEnvironmentalDataRetrieval` |
+| `csapiCollections`              | No                     | Yes — `parseCollections()`                   | Identical to `edrCollections`                |
+| `hasEnvironmentalDataRetrieval` | No                     | Yes — `checkHasEnvironmentalDataRetrieval()` | — (reference)                                |
+| `edrCollections`                | No                     | Yes — `parseCollections()`                   | — (reference)                                |
 
 Both CSAPI properties follow the exact same implementation pattern as their EDR equivalents. They use `info.ts` functions that check conformance URIs and link relations — never importing from the CSAPI module.
 
@@ -635,9 +655,10 @@ However, jahow's intent may go further than the technical constraint. He may pre
 
 ### Question 35: Can the `csapi()` method stay on `OgcApiEndpoint`?
 
-**Answer:** **Not in its current form.** The `csapi()` method creates `new CSAPIQueryBuilder(...)` and calls `scanCsapiLinks()` — both imported from `csapi/`. This directly violates jahow's constraint: *"anything not part of the `src/ogc-api/csapi` should not import things from the CSAPI code at all."*
+**Answer:** **Not in its current form.** The `csapi()` method creates `new CSAPIQueryBuilder(...)` and calls `scanCsapiLinks()` — both imported from `csapi/`. This directly violates jahow's constraint: _"anything not part of the `src/ogc-api/csapi` should not import things from the CSAPI code at all."_
 
 **Options for Plan 06:**
+
 1. **Move `csapi()` to the CSAPI module entirely** — consumers would import a factory function from `@camptocamp/ogc-client/csapi` instead of calling `endpoint.csapi()`
 2. **Keep `csapi()` on the endpoint but use dependency injection** — the CSAPI module registers a factory at import time, and `endpoint.csapi()` delegates to it without importing CSAPI code directly
 3. **Use a plugin/extension pattern** — the CSAPI module extends `OgcApiEndpoint` at runtime
@@ -660,11 +681,11 @@ The architectural boundary analysis reveals that:
 
 ### Constraint Compliance Matrix
 
-| # | Constraint | Status | Evidence | Notes |
-|---|-----------|--------|----------|-------|
-| 1 | No CSAPI in root exports (Constraint 1) | ✗ Currently Violated | `index.ts` lines 45–227: 183 lines of CSAPI exports | EDR has zero root exports — this asymmetry is the primary problem |
-| 3 | No outward imports (Constraint 3) | ✗ Currently Violated | `endpoint.ts` lines 52–53: 2 imports from `csapi/` | EDR has 1 import (same pattern, tolerated at small scale) |
-| 4 | One-way dependency (Constraint 4) | ✗ Currently Violated | `endpoint.ts` (core) imports from `csapi/` (reverse direction) | `info.ts` does NOT violate this — zero CSAPI imports |
+| #   | Constraint                              | Status               | Evidence                                                       | Notes                                                             |
+| --- | --------------------------------------- | -------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------- |
+| 1   | No CSAPI in root exports (Constraint 1) | ✗ Currently Violated | `index.ts` lines 45–227: 183 lines of CSAPI exports            | EDR has zero root exports — this asymmetry is the primary problem |
+| 3   | No outward imports (Constraint 3)       | ✗ Currently Violated | `endpoint.ts` lines 52–53: 2 imports from `csapi/`             | EDR has 1 import (same pattern, tolerated at small scale)         |
+| 4   | One-way dependency (Constraint 4)       | ✗ Currently Violated | `endpoint.ts` (core) imports from `csapi/` (reverse direction) | `info.ts` does NOT violate this — zero CSAPI imports              |
 
 ### Scope Boundary Adherence
 
@@ -678,16 +699,16 @@ The architectural boundary analysis reveals that:
 
 ### Minimum-Change Test
 
-| Finding / Recommendation | Serves jahow's requirements? | Minimum-change? | Include in implementation? |
-|--------------------------|------------------------------|-----------------|---------------------------|
-| Remove CSAPI exports from `index.ts` | Yes — directly required by jahow | Yes | ✓ Include |
-| Create separate entry point `@camptocamp/ogc-client/csapi` | Yes — directly required by jahow | Yes | ✓ Include |
-| Remove 2 CSAPI imports from `endpoint.ts` | Yes — directly required: "should not import things from the CSAPI code" | Yes | ✓ Include |
-| Remove `extractRootResourceUrls()` from `endpoint.ts` | Yes — necessary consequence of removing CSAPI imports | Yes | ✓ Include |
-| Restructure `csapi()` method | Yes — necessary consequence of removing CSAPI imports | Yes | ✓ Include |
-| Keep `hasConnectedSystems` and `csapiCollections` on endpoint | Yes — they serve discovery without CSAPI imports | Yes | ⚠️ Discuss — jahow's intent unclear |
-| Move EDR types out of shared `model.ts` | No — not requested, EDR is accepted | No | ✗ Defer |
-| Standardize EDR to also have separate entry point | No — not requested, EDR is accepted | No | ✗ Defer |
+| Finding / Recommendation                                      | Serves jahow's requirements?                                            | Minimum-change? | Include in implementation?          |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------- | --------------- | ----------------------------------- |
+| Remove CSAPI exports from `index.ts`                          | Yes — directly required by jahow                                        | Yes             | ✓ Include                           |
+| Create separate entry point `@camptocamp/ogc-client/csapi`    | Yes — directly required by jahow                                        | Yes             | ✓ Include                           |
+| Remove 2 CSAPI imports from `endpoint.ts`                     | Yes — directly required: "should not import things from the CSAPI code" | Yes             | ✓ Include                           |
+| Remove `extractRootResourceUrls()` from `endpoint.ts`         | Yes — necessary consequence of removing CSAPI imports                   | Yes             | ✓ Include                           |
+| Restructure `csapi()` method                                  | Yes — necessary consequence of removing CSAPI imports                   | Yes             | ✓ Include                           |
+| Keep `hasConnectedSystems` and `csapiCollections` on endpoint | Yes — they serve discovery without CSAPI imports                        | Yes             | ⚠️ Discuss — jahow's intent unclear |
+| Move EDR types out of shared `model.ts`                       | No — not requested, EDR is accepted                                     | No              | ✗ Defer                             |
+| Standardize EDR to also have separate entry point             | No — not requested, EDR is accepted                                     | No              | ✗ Defer                             |
 
 ### Deferred Insights
 
@@ -700,10 +721,10 @@ The architectural boundary analysis reveals that:
 
 ### What Downstream Plans Should Consume
 
-| Downstream Plan | What to consume from this report | Section reference |
-|-----------------|----------------------------------|-------------------|
+| Downstream Plan                            | What to consume from this report                                                                                                                                                                                                                                            | Section reference           |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
 | Plan 06 (Endpoint Decoupling Architecture) | Complete touchpoint inventories (§ 1, § 2); scale comparison table (§ 3); the three boundary dimensions (§ 5); the specific constraint violations (§ 6); the three options for restructuring `csapi()` (Q35); the open question about `hasConnectedSystems` placement (Q34) | §§ 1–5, Key Takeaways #1–10 |
-| Plan 08 (File-Level Changelist) | The exact files and line ranges that must change: `index.ts` lines 45–227, `endpoint.ts` lines 52–53 (imports) and lines 370–437 (`csapi()` + `extractRootResourceUrls()`); the files that are safe: `info.ts` (zero CSAPI imports) | §§ 1–2, Key Takeaway #6 |
+| Plan 08 (File-Level Changelist)            | The exact files and line ranges that must change: `index.ts` lines 45–227, `endpoint.ts` lines 52–53 (imports) and lines 370–437 (`csapi()` + `extractRootResourceUrls()`); the files that are safe: `info.ts` (zero CSAPI imports)                                         | §§ 1–2, Key Takeaway #6     |
 
 ### Decisions Now Final
 
@@ -747,9 +768,9 @@ The architectural boundary analysis reveals that:
 
 ### Must Change (Required by Findings)
 
-1. **Remove all CSAPI exports from `src/index.ts`** (lines 45–227, ~183 lines) — jahow: *"anything part of `src/ogc-api/csapi` should not be included in the root `index.ts` file."*
-2. **Create a separate CSAPI entry point** (e.g., `src/ogc-api/csapi/index.ts`) exportable as `@camptocamp/ogc-client/csapi` — jahow: *"imported through `@camptocamp/ogc-client/csapi`"*
-3. **Remove 2 CSAPI imports from `endpoint.ts`** (lines 52–53) — jahow: *"anything not part of `src/ogc-api/csapi` should not import things from the CSAPI code at all"*
+1. **Remove all CSAPI exports from `src/index.ts`** (lines 45–227, ~183 lines) — jahow: _"anything part of `src/ogc-api/csapi` should not be included in the root `index.ts` file."_
+2. **Create a separate CSAPI entry point** (e.g., `src/ogc-api/csapi/index.ts`) exportable as `@camptocamp/ogc-client/csapi` — jahow: _"imported through `@camptocamp/ogc-client/csapi`"_
+3. **Remove 2 CSAPI imports from `endpoint.ts`** (lines 52–53) — jahow: _"anything not part of `src/ogc-api/csapi` should not import things from the CSAPI code at all"_
 4. **Restructure or remove the `csapi()` method** from `OgcApiEndpoint` — it cannot exist in its current form without the CSAPI imports
 5. **Remove `extractRootResourceUrls()`** from `endpoint.ts` — it is CSAPI-specific and depends on `scanCsapiLinks`
 
@@ -766,13 +787,13 @@ The architectural boundary analysis reveals that:
 
 ## 11. Open Questions
 
-| # | Question | Why Unresolved | Resolution Path |
-|---|----------|----------------|-----------------|
-| 1 | Can `hasConnectedSystems` and `csapiCollections` stay on `OgcApiEndpoint`? | jahow's feedback constrains imports, not properties. His intent regarding conformance-only properties is ambiguous. | Plan 06 should decide; may need jahow clarification |
-| 2 | Which restructuring pattern should `csapi()` use — move to module, dependency injection, or plugin? | Multiple valid approaches exist; choice affects consumer API, bundle behavior, and implementation complexity. | Plan 06 must evaluate trade-offs against all boundary conditions |
-| 3 | Should `extractRootResourceUrls()` logic move into `CSAPIQueryBuilder` constructor or into the CSAPI entry point factory? | Both are valid; depends on the chosen factory pattern. | Plan 06 decides as part of the `csapi()` restructuring |
-| 4 | Does jahow's parenthetical "(unless we find a better way to handle tree-shaking)" open a path that avoids the separate entry point? | Tree-shaking of `index.ts` was not investigated in this plan (build system analysis is Plan 01's territory). | Plan 06 should consider Plan 01 findings on tree-shaking |
-| 5 | Would jahow also want `allCollections` modified to exclude `hasConnectedSystems` from its return type? | `allCollections` getter returns objects with `hasConnectedSystems?: boolean` — this is set by `parseCollections()` in `info.ts` with zero CSAPI imports. | Likely safe (same as EDR's `hasDataQueries`) but should be confirmed |
+| #   | Question                                                                                                                            | Why Unresolved                                                                                                                                           | Resolution Path                                                      |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 1   | Can `hasConnectedSystems` and `csapiCollections` stay on `OgcApiEndpoint`?                                                          | jahow's feedback constrains imports, not properties. His intent regarding conformance-only properties is ambiguous.                                      | Plan 06 should decide; may need jahow clarification                  |
+| 2   | Which restructuring pattern should `csapi()` use — move to module, dependency injection, or plugin?                                 | Multiple valid approaches exist; choice affects consumer API, bundle behavior, and implementation complexity.                                            | Plan 06 must evaluate trade-offs against all boundary conditions     |
+| 3   | Should `extractRootResourceUrls()` logic move into `CSAPIQueryBuilder` constructor or into the CSAPI entry point factory?           | Both are valid; depends on the chosen factory pattern.                                                                                                   | Plan 06 decides as part of the `csapi()` restructuring               |
+| 4   | Does jahow's parenthetical "(unless we find a better way to handle tree-shaking)" open a path that avoids the separate entry point? | Tree-shaking of `index.ts` was not investigated in this plan (build system analysis is Plan 01's territory).                                             | Plan 06 should consider Plan 01 findings on tree-shaking             |
+| 5   | Would jahow also want `allCollections` modified to exclude `hasConnectedSystems` from its return type?                              | `allCollections` getter returns objects with `hasConnectedSystems?: boolean` — this is set by `parseCollections()` in `info.ts` with zero CSAPI imports. | Likely safe (same as EDR's `hasDataQueries`) but should be confirmed |
 
 ---
 
@@ -781,14 +802,16 @@ The architectural boundary analysis reveals that:
 ### A. Complete Import Comparison
 
 **`endpoint.ts` EDR imports (1 line):**
+
 ```typescript
-import EDRQueryBuilder from './edr/url_builder.js';  // line 51
+import EDRQueryBuilder from './edr/url_builder.js'; // line 51
 ```
 
 **`endpoint.ts` CSAPI imports (2 lines):**
+
 ```typescript
-import CSAPIQueryBuilder from './csapi/url_builder.js';   // line 52
-import { scanCsapiLinks } from './csapi/helpers.js';      // line 53
+import CSAPIQueryBuilder from './csapi/url_builder.js'; // line 52
+import { scanCsapiLinks } from './csapi/helpers.js'; // line 53
 ```
 
 **`info.ts` EDR and CSAPI imports: ZERO from either module.**

@@ -144,18 +144,18 @@ package.json "exports": {
 
 ### Key Architectural Decisions
 
-| Decision | Rationale | Research Source |
-|----------|-----------|----------------|
-| Separate sub-path export (`"./csapi"`) | Ecosystem standard — 6/6 surveyed libraries use conditional sub-path exports | Plan 01, Plan 03 |
-| Barrel file at `csapi/index.ts` | Universal pattern (6/6 libraries). Single source of truth for CSAPI public API | Plan 01, Plan 03 |
-| Factory function `createCSAPIBuilder()` | Replaces `endpoint.csapi()`. Constructor injection is 4/7 dominant pattern for stateful sub-modules | Plan 04, Plan 06 |
-| `hasConnectedSystems`/`csapiCollections` stay on endpoint | Zero CSAPI imports — use `info.ts` functions with conformance URI strings. Identical to EDR's `hasEnvironmentalDataRetrieval`/`edrCollections` | Plan 02 |
-| Level 3.5 coupling (`Pick<>` + `import type`) | Constructor already uses `Pick<OgcApiCollectionInfo, ...>`. `import type` is erased at compile time. Zero runtime coupling | Plan 05 |
-| `scanCsapiLinks` stays in CSAPI | Problem self-resolves when endpoint stops calling it. Factory calls it directly. Minimum-change | Plan 05 → Plan 06 override |
-| `root`/`getCollectionDocument` made public | Factory needs access. Both already called by multiple endpoint features internally. 1-word change each | Plan 06 |
-| Format First commit strategy | 3,023-insertion Prettier diff MUST be separated from logic changes. Upstream has 5+ formatting-only commit precedents | Plan 07 |
-| `"sideEffects": false` | 5/6 surveyed libraries declare this. Enables tree-shaking through barrel files | Plan 03 |
-| Append commits (not amend/squash) | Safest path, best reviewability, zero rebase conflict risk | Plan 08 |
+| Decision                                                  | Rationale                                                                                                                                      | Research Source            |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| Separate sub-path export (`"./csapi"`)                    | Ecosystem standard — 6/6 surveyed libraries use conditional sub-path exports                                                                   | Plan 01, Plan 03           |
+| Barrel file at `csapi/index.ts`                           | Universal pattern (6/6 libraries). Single source of truth for CSAPI public API                                                                 | Plan 01, Plan 03           |
+| Factory function `createCSAPIBuilder()`                   | Replaces `endpoint.csapi()`. Constructor injection is 4/7 dominant pattern for stateful sub-modules                                            | Plan 04, Plan 06           |
+| `hasConnectedSystems`/`csapiCollections` stay on endpoint | Zero CSAPI imports — use `info.ts` functions with conformance URI strings. Identical to EDR's `hasEnvironmentalDataRetrieval`/`edrCollections` | Plan 02                    |
+| Level 3.5 coupling (`Pick<>` + `import type`)             | Constructor already uses `Pick<OgcApiCollectionInfo, ...>`. `import type` is erased at compile time. Zero runtime coupling                     | Plan 05                    |
+| `scanCsapiLinks` stays in CSAPI                           | Problem self-resolves when endpoint stops calling it. Factory calls it directly. Minimum-change                                                | Plan 05 → Plan 06 override |
+| `root`/`getCollectionDocument` made public                | Factory needs access. Both already called by multiple endpoint features internally. 1-word change each                                         | Plan 06                    |
+| Format First commit strategy                              | 3,023-insertion Prettier diff MUST be separated from logic changes. Upstream has 5+ formatting-only commit precedents                          | Plan 07                    |
+| `"sideEffects": false`                                    | 5/6 surveyed libraries declare this. Enables tree-shaking through barrel files                                                                 | Plan 03                    |
+| Append commits (not amend/squash)                         | Safest path, best reviewability, zero rebase conflict risk                                                                                     | Plan 08                    |
 
 ---
 
@@ -180,6 +180,7 @@ Adding 2 commits on top of the existing 13 is safer than rewriting history. The 
 ### 3.5 Comply with Upstream Code Style
 
 All new files must be Prettier-compliant from inception:
+
 - Single quotes, semicolons, 80-char `printWidth`, 2-space indent
 - Trailing commas ES5-style (objects/arrays, NOT function params)
 - `.js` extensions on all local imports/re-exports
@@ -199,37 +200,37 @@ All new files must be Prettier-compliant from inception:
 **CSAPI source files (20 of 27):**
 
 | File | Path (relative to `src/ogc-api/csapi/`) |
-|------|----------------------------------------|
-| 1 | `command-routing.ts` |
-| 2 | `helpers.ts` |
-| 3 | `model.ts` |
-| 4 | `url_builder.ts` |
-| 5 | `formats/geojson.ts` |
-| 6 | `formats/index.ts` |
-| 7 | `formats/part2.ts` |
-| 8 | `formats/property.ts` |
-| 9 | `formats/response.ts` |
-| 10 | `formats/sensorml/_helpers.ts` |
-| 11 | `formats/sensorml/aggregate-process.ts` |
-| 12 | `formats/sensorml/parser.ts` |
-| 13 | `formats/sensorml/physical-system.ts` |
-| 14 | `formats/swecommon/_helpers.ts` |
-| 15 | `formats/swecommon/components.ts` |
-| 16 | `formats/swecommon/data-array.ts` |
-| 17 | `formats/swecommon/data-record.ts` |
-| 18 | `formats/swecommon/index.ts` |
-| 19 | `formats/swecommon/parser.ts` |
-| 20 | `formats/swecommon/types.ts` |
+| ---- | --------------------------------------- |
+| 1    | `command-routing.ts`                    |
+| 2    | `helpers.ts`                            |
+| 3    | `model.ts`                              |
+| 4    | `url_builder.ts`                        |
+| 5    | `formats/geojson.ts`                    |
+| 6    | `formats/index.ts`                      |
+| 7    | `formats/part2.ts`                      |
+| 8    | `formats/property.ts`                   |
+| 9    | `formats/response.ts`                   |
+| 10   | `formats/sensorml/_helpers.ts`          |
+| 11   | `formats/sensorml/aggregate-process.ts` |
+| 12   | `formats/sensorml/parser.ts`            |
+| 13   | `formats/sensorml/physical-system.ts`   |
+| 14   | `formats/swecommon/_helpers.ts`         |
+| 15   | `formats/swecommon/components.ts`       |
+| 16   | `formats/swecommon/data-array.ts`       |
+| 17   | `formats/swecommon/data-record.ts`      |
+| 18   | `formats/swecommon/index.ts`            |
+| 19   | `formats/swecommon/parser.ts`           |
+| 20   | `formats/swecommon/types.ts`            |
 
 **CSAPI test files (26 of 29):** All test files except `formats/index.spec.ts`, `sensorml/index.spec.ts`, and `swecommon/index.spec.ts` (those 3 already pass Prettier).
 
 **CSAPI fixture JSON files (4):**
 
-| File |
-|------|
-| `fixtures/ogc-api/csapi/sample-data-hub.json` |
-| `fixtures/ogc-api/csapi/sample-data-hub/collections.json` |
-| `fixtures/ogc-api/csapi/sample-data-hub/conformance.json` |
+| File                                                                  |
+| --------------------------------------------------------------------- |
+| `fixtures/ogc-api/csapi/sample-data-hub.json`                         |
+| `fixtures/ogc-api/csapi/sample-data-hub/collections.json`             |
+| `fixtures/ogc-api/csapi/sample-data-hub/conformance.json`             |
 | `fixtures/ogc-api/csapi/sample-data-hub/collections/iot-sensors.json` |
 
 **Core file (1):** `src/ogc-api/endpoint.ts` — 8-line formatting diff only.
@@ -242,28 +243,28 @@ All new files must be Prettier-compliant from inception:
 
 **Source files (5 files, 9 errors):**
 
-| File | Errors |
-|------|--------|
-| `url_builder.ts` | 1 |
-| `formats/sensorml/aggregate-process.ts` | 2 |
-| `formats/sensorml/parser.ts` | 2 |
-| `formats/sensorml/physical-system.ts` | 3 |
-| `formats/sensorml/simple-process.ts` | 1 |
+| File                                    | Errors |
+| --------------------------------------- | ------ |
+| `url_builder.ts`                        | 1      |
+| `formats/sensorml/aggregate-process.ts` | 2      |
+| `formats/sensorml/parser.ts`            | 2      |
+| `formats/sensorml/physical-system.ts`   | 3      |
+| `formats/sensorml/simple-process.ts`    | 1      |
 
 **Test files (10 files, 90 errors):**
 
-| File | Errors |
-|------|--------|
-| `formats/sensorml/aggregate-process.spec.ts` | 1 |
-| `formats/sensorml/parser.spec.ts` | 1 |
-| `formats/sensorml/physical-system.spec.ts` | 2 |
-| `formats/sensorml/simple-process.spec.ts` | 1 |
-| `formats/sensorml/types.spec.ts` | **32** |
-| `formats/swecommon/data-record.spec.ts` | **14** |
-| `formats/swecommon/index.spec.ts` | 1 |
-| `formats/swecommon/parser.spec.ts` | 1 |
-| `formats/swecommon/types.spec.ts` | **27** |
-| `integration/observation.spec.ts` | 3 |
+| File                                         | Errors |
+| -------------------------------------------- | ------ |
+| `formats/sensorml/aggregate-process.spec.ts` | 1      |
+| `formats/sensorml/parser.spec.ts`            | 1      |
+| `formats/sensorml/physical-system.spec.ts`   | 2      |
+| `formats/sensorml/simple-process.spec.ts`    | 1      |
+| `formats/sensorml/types.spec.ts`             | **32** |
+| `formats/swecommon/data-record.spec.ts`      | **14** |
+| `formats/swecommon/index.spec.ts`            | 1      |
+| `formats/swecommon/parser.spec.ts`           | 1      |
+| `formats/swecommon/types.spec.ts`            | **27** |
+| `integration/observation.spec.ts`            | 3      |
 
 **Fix approach:** Remove unused imports entirely, or convert `import { X }` to `import type { X }` where the import is used only as a type. Do NOT prefix with `_` unless it is a function parameter (not an import). All fixes are mechanical — removing an unused import cannot change runtime behavior.
 
@@ -311,32 +312,32 @@ Required to pass upstream CI: npm run format:check and npm run lint.
 
 ### 5.1 Files Created
 
-| # | Path | Purpose | Approx Lines |
-|---|------|---------|-------------|
-| C1 | `src/ogc-api/csapi/index.ts` | Barrel file — re-exports all public CSAPI symbols | ~190 |
-| C2 | `src/ogc-api/csapi/factory.ts` | `createCSAPIBuilder` async factory function | ~55 |
-| C3 | `src/ogc-api/csapi/factory.spec.ts` | Tests for factory function | ~30 |
+| #   | Path                                | Purpose                                           | Approx Lines |
+| --- | ----------------------------------- | ------------------------------------------------- | ------------ |
+| C1  | `src/ogc-api/csapi/index.ts`        | Barrel file — re-exports all public CSAPI symbols | ~190         |
+| C2  | `src/ogc-api/csapi/factory.ts`      | `createCSAPIBuilder` async factory function       | ~55          |
+| C3  | `src/ogc-api/csapi/factory.spec.ts` | Tests for factory function                        | ~30          |
 
 ### 5.2 Files Modified
 
-| # | Path | Nature of Change | Lines Removed | Lines Added | Net |
-|---|------|-----------------|---------------|-------------|-----|
-| M1 | `src/ogc-api/endpoint.ts` | Remove 2 CSAPI imports, 1 cache field, 2 methods; change 2 methods to public | ~65 | ~2 | −63 |
-| M2 | `src/index.ts` | Remove all CSAPI export lines (lines 45–227) | ~183 | 0 | −183 |
-| M3 | `src/ogc-api/endpoint.spec.ts` | Remove 3 tests (2 migrated to factory.spec.ts, 1 caching test removed) | ~30 | 0 | −30 |
-| M4 | `package.json` | Add `"./csapi"` sub-path export; add `"sideEffects": false` | 0 | ~8 | +8 |
+| #   | Path                           | Nature of Change                                                             | Lines Removed | Lines Added | Net  |
+| --- | ------------------------------ | ---------------------------------------------------------------------------- | ------------- | ----------- | ---- |
+| M1  | `src/ogc-api/endpoint.ts`      | Remove 2 CSAPI imports, 1 cache field, 2 methods; change 2 methods to public | ~65           | ~2          | −63  |
+| M2  | `src/index.ts`                 | Remove all CSAPI export lines (lines 45–227)                                 | ~183          | 0           | −183 |
+| M3  | `src/ogc-api/endpoint.spec.ts` | Remove 3 tests (2 migrated to factory.spec.ts, 1 caching test removed)       | ~30           | 0           | −30  |
+| M4  | `package.json`                 | Add `"./csapi"` sub-path export; add `"sideEffects": false`                  | 0             | ~8          | +8   |
 
 ### 5.3 Files NOT Changed
 
-| File | Why |
-|------|-----|
-| `src/ogc-api/info.ts` | Zero CSAPI imports — uses only conformance URI strings inline |
-| `src/shared/mime-type.ts` | CSAPI MIME functions live in `shared/`, not `csapi/` — constraint 3 does not apply |
-| All 56 existing CSAPI files | Zero business logic changes — only formatting in Commit 14 |
-| `vite.node-config.js` | Node build uses `src-node/index.ts`, not CSAPI |
-| `vite.worker-config.js` | `vite-plugin-dts` uses glob `src/**/*.ts` — already covers `csapi/` |
-| `tsconfig.json` | `include: ["src"]` already covers `csapi/` |
-| `jest.config.cjs` / `jest.node.config.cjs` | Test pattern `**/*.spec.ts` matches any location |
+| File                                       | Why                                                                                |
+| ------------------------------------------ | ---------------------------------------------------------------------------------- |
+| `src/ogc-api/info.ts`                      | Zero CSAPI imports — uses only conformance URI strings inline                      |
+| `src/shared/mime-type.ts`                  | CSAPI MIME functions live in `shared/`, not `csapi/` — constraint 3 does not apply |
+| All 56 existing CSAPI files                | Zero business logic changes — only formatting in Commit 14                         |
+| `vite.node-config.js`                      | Node build uses `src-node/index.ts`, not CSAPI                                     |
+| `vite.worker-config.js`                    | `vite-plugin-dts` uses glob `src/**/*.ts` — already covers `csapi/`                |
+| `tsconfig.json`                            | `include: ["src"]` already covers `csapi/`                                         |
+| `jest.config.cjs` / `jest.node.config.cjs` | Test pattern `**/*.spec.ts` matches any location                                   |
 
 ### 5.4 Commit Message
 
@@ -375,7 +376,7 @@ Boundary conditions verified:
 
 **Organization (6 sections):**
 
-```typescript
+````typescript
 /**
  * OGC API — Connected Systems (CSAPI) module.
  *
@@ -434,9 +435,10 @@ export type {
   DataEncoding,
   // ... (~75 types from formats/index.js)
 } from './formats/index.js';
-```
+````
 
 **Key rules:**
+
 - All paths use `.js` extensions (`'./model.js'`, NOT `'./model'`)
 - Values use `export { ... }`; types use `export type { ... }`
 - Does NOT export internal utilities (`scanCsapiLinks`, `formatDateTimeParameter`, etc.)
@@ -449,7 +451,7 @@ export type {
 **Path:** `src/ogc-api/csapi/factory.ts`
 **Approx Lines:** ~55
 
-```typescript
+````typescript
 import type OgcApiEndpoint from '../endpoint.js';
 import type { OgcApiCollectionInfo } from '../model.js';
 import { EndpointError } from '../../shared/errors.js';
@@ -481,12 +483,10 @@ import { scanCsapiLinks } from './helpers.js';
  */
 export async function createCSAPIBuilder(
   endpoint: OgcApiEndpoint,
-  collectionId: string,
+  collectionId: string
 ): Promise<CSAPIQueryBuilder> {
   if (!(await endpoint.hasConnectedSystems)) {
-    throw new EndpointError(
-      'Endpoint does not support Connected Systems',
-    );
+    throw new EndpointError('Endpoint does not support Connected Systems');
   }
 
   const collectionDoc = await endpoint.getCollectionDocument(collectionId);
@@ -498,20 +498,20 @@ export async function createCSAPIBuilder(
 
   return new CSAPIQueryBuilder(
     collectionDoc as unknown as OgcApiCollectionInfo,
-    resourceUrls,
+    resourceUrls
   );
 }
-```
+````
 
 **Import pattern analysis:**
 
-| Import | Type | Direction | Runtime? |
-|--------|------|-----------|----------|
-| `OgcApiEndpoint` | `import type` | CSAPI → core | No (erased at compile) |
-| `OgcApiCollectionInfo` | `import type` | CSAPI → core model | No (erased at compile) |
-| `EndpointError` | `import` (value) | CSAPI → shared | Yes — but `shared/` is common infrastructure, not core |
-| `CSAPIQueryBuilder` | `import` (value) | CSAPI → CSAPI | Internal |
-| `scanCsapiLinks` | `import` (value) | CSAPI → CSAPI | Internal |
+| Import                 | Type             | Direction          | Runtime?                                               |
+| ---------------------- | ---------------- | ------------------ | ------------------------------------------------------ |
+| `OgcApiEndpoint`       | `import type`    | CSAPI → core       | No (erased at compile)                                 |
+| `OgcApiCollectionInfo` | `import type`    | CSAPI → core model | No (erased at compile)                                 |
+| `EndpointError`        | `import` (value) | CSAPI → shared     | Yes — but `shared/` is common infrastructure, not core |
+| `CSAPIQueryBuilder`    | `import` (value) | CSAPI → CSAPI      | Internal                                               |
+| `scanCsapiLinks`       | `import` (value) | CSAPI → CSAPI      | Internal                                               |
 
 **No runtime imports from core.** The `import type` statements are erased during TypeScript compilation, creating zero runtime dependency from CSAPI to `endpoint.ts`.
 
@@ -525,10 +525,10 @@ export async function createCSAPIBuilder(
 
 Two tests, migrated and rewritten from `endpoint.spec.ts`:
 
-| # | Test | Origin | Behavior |
-|---|------|--------|----------|
-| 1 | Creates a builder for a CSAPI-capable endpoint | Migrated from `can produce a CSAPI query builder` | Calls `createCSAPIBuilder(endpoint, 'iot-sensors')`, verifies `availableResources` is populated |
-| 2 | Throws on non-CSAPI endpoint | Migrated from `throws an error when calling csapi()` | Calls `createCSAPIBuilder(nonCsapiEndpoint, collectionId)`, expects `EndpointError` |
+| #   | Test                                           | Origin                                               | Behavior                                                                                        |
+| --- | ---------------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| 1   | Creates a builder for a CSAPI-capable endpoint | Migrated from `can produce a CSAPI query builder`    | Calls `createCSAPIBuilder(endpoint, 'iot-sensors')`, verifies `availableResources` is populated |
+| 2   | Throws on non-CSAPI endpoint                   | Migrated from `throws an error when calling csapi()` | Calls `createCSAPIBuilder(nonCsapiEndpoint, collectionId)`, expects `EndpointError`             |
 
 **Not migrated:** The `caches the CSAPI query builder` test (lines 2862–2869 in endpoint.spec.ts) is removed entirely — the factory has no auto-caching; this behavior no longer exists.
 
@@ -542,20 +542,20 @@ Two tests, migrated and rewritten from `endpoint.spec.ts`:
 
 #### Removals
 
-| What | Location | Lines |
-|------|----------|-------|
-| `import CSAPIQueryBuilder from './csapi/url_builder.js'` | Line 52 | 1 |
-| `import { scanCsapiLinks } from './csapi/helpers.js'` | Line 53 | 1 |
-| `private collection_id_to_csapi_builder_: Map<...>` | Lines 70–71 | 2 |
-| `csapi()` method + JSDoc | ~Lines 363–411 | ~49 |
-| `extractRootResourceUrls()` + JSDoc | ~Lines 424–437 | ~14 |
+| What                                                     | Location       | Lines |
+| -------------------------------------------------------- | -------------- | ----- |
+| `import CSAPIQueryBuilder from './csapi/url_builder.js'` | Line 52        | 1     |
+| `import { scanCsapiLinks } from './csapi/helpers.js'`    | Line 53        | 1     |
+| `private collection_id_to_csapi_builder_: Map<...>`      | Lines 70–71    | 2     |
+| `csapi()` method + JSDoc                                 | ~Lines 363–411 | ~49   |
+| `extractRootResourceUrls()` + JSDoc                      | ~Lines 424–437 | ~14   |
 
 #### Changes
 
-| What | Before | After |
-|------|--------|-------|
-| Root accessor | `private get root()` | `public get root()` |
-| Collection doc method | `private getCollectionDocument(` | `public getCollectionDocument(` |
+| What                        | Before                                         | After                                                                |
+| --------------------------- | ---------------------------------------------- | -------------------------------------------------------------------- |
+| Root accessor               | `private get root()`                           | `public get root()`                                                  |
+| Collection doc method       | `private getCollectionDocument(`               | `public getCollectionDocument(`                                      |
 | `hasConnectedSystems` JSDoc | `@see {@link csapi} to create a query builder` | `@see Import createCSAPIBuilder from '@camptocamp/ogc-client/csapi'` |
 
 #### What Stays (Confirmed Safe)
@@ -571,6 +571,7 @@ Two tests, migrated and rewritten from `endpoint.spec.ts`:
 **Action:** Remove all CSAPI export lines (lines 45–227).
 
 **What stays:**
+
 - Lines 1–43: WFS, WMS, WMTS, shared model exports
 - Line 44: `export * from './ogc-api/model.js'` (OGC API shared types — NOT CSAPI)
 - Lines 228+: TMS, STAC, cache, shared utilities, worker exports (renumbered after removal)
@@ -585,14 +586,14 @@ Two tests, migrated and rewritten from `endpoint.spec.ts`:
 
 **Test disposition (6 tests in CSAPI block, lines 2836–2887):**
 
-| Test | Line | Decision | Destination |
-|------|------|----------|-------------|
-| `detects Connected Systems support` | 2845 | **Stays** | endpoint.spec.ts |
-| `can list all CSAPI collections` | 2849 | **Stays** | endpoint.spec.ts |
-| `can produce a CSAPI query builder` | 2854 | **Moves** | factory.spec.ts (rewritten) |
-| `caches the CSAPI query builder` | 2862 | **Removed** | N/A (no auto-caching) |
-| `reports no Connected Systems support` | 2877 | **Stays** | endpoint.spec.ts |
-| `throws an error when calling csapi()` | 2881 | **Moves** | factory.spec.ts (rewritten) |
+| Test                                   | Line | Decision    | Destination                 |
+| -------------------------------------- | ---- | ----------- | --------------------------- |
+| `detects Connected Systems support`    | 2845 | **Stays**   | endpoint.spec.ts            |
+| `can list all CSAPI collections`       | 2849 | **Stays**   | endpoint.spec.ts            |
+| `can produce a CSAPI query builder`    | 2854 | **Moves**   | factory.spec.ts (rewritten) |
+| `caches the CSAPI query builder`       | 2862 | **Removed** | N/A (no auto-caching)       |
+| `reports no Connected Systems support` | 2877 | **Stays**   | endpoint.spec.ts            |
+| `throws an error when calling csapi()` | 2881 | **Moves**   | factory.spec.ts (rewritten) |
 
 **Remaining CSAPI block in endpoint.spec.ts (3 tests):**
 
@@ -607,9 +608,7 @@ describe('OgcApiEndpoint with CSAPI', () => {
       await expect(endpoint.hasConnectedSystems).resolves.toBe(true);
     });
     it('can list all CSAPI collections', async () => {
-      await expect(endpoint.csapiCollections).resolves.toEqual([
-        'iot-sensors',
-      ]);
+      await expect(endpoint.csapiCollections).resolves.toEqual(['iot-sensors']);
     });
   });
   describe('non-CSAPI endpoint', () => {
@@ -630,6 +629,7 @@ describe('OgcApiEndpoint with CSAPI', () => {
 #### 1. Add `"./csapi"` sub-path to `"exports"`
 
 **Before:**
+
 ```json
 "exports": {
   ".": {
@@ -642,6 +642,7 @@ describe('OgcApiEndpoint with CSAPI', () => {
 ```
 
 **After:**
+
 ```json
 "exports": {
   ".": {
@@ -705,6 +706,7 @@ const url = builder.getSystems({ limit: 50 });
 ```
 
 **What does NOT change:**
+
 - `OgcApiEndpoint` import path (still `@camptocamp/ogc-client`)
 - `endpoint.hasConnectedSystems` (still works, stays on endpoint)
 - `endpoint.csapiCollections` (still works, stays on endpoint)
@@ -722,22 +724,22 @@ const url = builder.getSystems({ limit: 50 });
 
 ### 9.1 Boundary Verification
 
-| # | Command | Expected | Constraint |
-|---|---------|----------|------------|
-| V1 | `git grep "from.*csapi" src/ogc-api/endpoint.ts` | 0 matches | No outward CSAPI imports from endpoint |
-| V2 | `git grep "csapi\|CSAPI" src/index.ts` | 0 matches | No CSAPI in root exports |
-| V3 | `git grep "import.*from.*csapi" -- "src/" ":!src/ogc-api/csapi/"` | 0 matches | No outward imports (full scan) |
-| V4 | `git grep "from.*csapi" -- "src/" ":!src/ogc-api/csapi/" ":!src/index.ts"` | 0 matches | No remaining cross-boundary imports |
+| #   | Command                                                                    | Expected  | Constraint                             |
+| --- | -------------------------------------------------------------------------- | --------- | -------------------------------------- |
+| V1  | `git grep "from.*csapi" src/ogc-api/endpoint.ts`                           | 0 matches | No outward CSAPI imports from endpoint |
+| V2  | `git grep "csapi\|CSAPI" src/index.ts`                                     | 0 matches | No CSAPI in root exports               |
+| V3  | `git grep "import.*from.*csapi" -- "src/" ":!src/ogc-api/csapi/"`          | 0 matches | No outward imports (full scan)         |
+| V4  | `git grep "from.*csapi" -- "src/" ":!src/ogc-api/csapi/" ":!src/index.ts"` | 0 matches | No remaining cross-boundary imports    |
 
 ### 9.2 CI Verification
 
-| # | Command | Expected |
-|---|---------|----------|
-| V5 | `npm run format:check` | Exit code 0 |
-| V6 | `npm run typecheck` | Exit code 0 |
-| V7 | `npm run lint` | Exit code 0 |
-| V8 | `npm run test:browser` | All tests pass |
-| V9 | `npm run test:node` | All tests pass |
+| #   | Command                | Expected       |
+| --- | ---------------------- | -------------- |
+| V5  | `npm run format:check` | Exit code 0    |
+| V6  | `npm run typecheck`    | Exit code 0    |
+| V7  | `npm run lint`         | Exit code 0    |
+| V8  | `npm run test:browser` | All tests pass |
+| V9  | `npm run test:node`    | All tests pass |
 
 ### 9.3 Litmus Test
 
@@ -875,11 +877,11 @@ git push origin phase-6
 
 ### Repository Roles
 
-| Repository | Branch | Role |
-|-----------|--------|------|
-| `ogc-client-CSAPI_2` | `main` | **Archive — untouched.** Preserves complete Phase 1–5 state. |
-| `ogc-client-CSAPI_2` | `phase-6` | **Implementation workspace.** Research docs + implementation commits. |
-| `clean-pr` | `main` | **Contribution-ready fork.** 13 commits above `upstream/main`, HEAD at `3061c68`. |
+| Repository           | Branch    | Role                                                                              |
+| -------------------- | --------- | --------------------------------------------------------------------------------- |
+| `ogc-client-CSAPI_2` | `main`    | **Archive — untouched.** Preserves complete Phase 1–5 state.                      |
+| `ogc-client-CSAPI_2` | `phase-6` | **Implementation workspace.** Research docs + implementation commits.             |
+| `clean-pr`           | `main`    | **Contribution-ready fork.** 13 commits above `upstream/main`, HEAD at `3061c68`. |
 
 ### Rebase Path (Post-Implementation)
 
@@ -898,6 +900,7 @@ ogc-client-CSAPI_2 phase-6 branch
 ```
 
 **Key points:**
+
 - Research documents stay on `phase-6` — they are NOT rebased to `clean-pr`
 - Only code-change commits (14 + 15) move to `clean-pr`
 - `--force-with-lease` prevents accidental overwrites
@@ -918,17 +921,17 @@ Before force-pushing to `clean-fork/clean-pr`:
 
 ## 12. Risk Register
 
-| # | Risk | Likelihood | Impact | Mitigation | Rollback |
-|---|------|-----------|--------|------------|----------|
-| 1 | Line numbers shift after Prettier | Certain | Low | Apply formatting FIRST (Commit 14), base architecture on formatted code | N/A — ordering prevents this |
-| 2 | TypeScript fails after removing CSAPI from index.ts | Low | High | Create barrel file in SAME commit as removal | `git reset --hard HEAD~1` |
-| 3 | Factory tests use incorrect fixtures | Low | Low | Use same fixture URLs as existing endpoint tests | Fix fixture paths |
-| 4 | Force-push overwrites remote changes | Low | High | `pre-refactor-backup` tag + `--force-with-lease` | `git push clean-fork pre-refactor-backup:clean-pr` |
-| 5 | Prettier reformats new files unexpectedly | Low | Low | Write new files Prettier-compliant from start | `npx prettier --write <file>` |
-| 6 | `url_builder.spec.ts` formatting diff surprises reviewer | Certain | Low | Note in commit message (55% of formatting diff) | N/A — informational |
-| 7 | `"sideEffects": false` breaks worker-fallback | Low | Medium | Tests will catch immediately. Alternative: `"sideEffects": ["./dist/index.js"]` | Revert to array form |
-| 8 | `getCollectionDocument` public exposes internal API | Low | Low | Already used by multiple internal features — it's a general-purpose method | Can revert to private if needed |
-| 9 | ESLint fixes accidentally change behavior | Near-zero | High | All fixes are `no-unused-vars` — removing unused imports cannot change runtime behavior | Review each removal |
+| #   | Risk                                                     | Likelihood | Impact | Mitigation                                                                              | Rollback                                           |
+| --- | -------------------------------------------------------- | ---------- | ------ | --------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| 1   | Line numbers shift after Prettier                        | Certain    | Low    | Apply formatting FIRST (Commit 14), base architecture on formatted code                 | N/A — ordering prevents this                       |
+| 2   | TypeScript fails after removing CSAPI from index.ts      | Low        | High   | Create barrel file in SAME commit as removal                                            | `git reset --hard HEAD~1`                          |
+| 3   | Factory tests use incorrect fixtures                     | Low        | Low    | Use same fixture URLs as existing endpoint tests                                        | Fix fixture paths                                  |
+| 4   | Force-push overwrites remote changes                     | Low        | High   | `pre-refactor-backup` tag + `--force-with-lease`                                        | `git push clean-fork pre-refactor-backup:clean-pr` |
+| 5   | Prettier reformats new files unexpectedly                | Low        | Low    | Write new files Prettier-compliant from start                                           | `npx prettier --write <file>`                      |
+| 6   | `url_builder.spec.ts` formatting diff surprises reviewer | Certain    | Low    | Note in commit message (55% of formatting diff)                                         | N/A — informational                                |
+| 7   | `"sideEffects": false` breaks worker-fallback            | Low        | Medium | Tests will catch immediately. Alternative: `"sideEffects": ["./dist/index.js"]`         | Revert to array form                               |
+| 8   | `getCollectionDocument` public exposes internal API      | Low        | Low    | Already used by multiple internal features — it's a general-purpose method              | Can revert to private if needed                    |
+| 9   | ESLint fixes accidentally change behavior                | Near-zero  | High   | All fixes are `no-unused-vars` — removing unused imports cannot change runtime behavior | Review each removal                                |
 
 ---
 
@@ -936,32 +939,32 @@ Before force-pushing to `clean-fork/clean-pr`:
 
 ### In Scope
 
-| Item | Justification |
-|------|---------------|
-| Remove CSAPI exports from `index.ts` | Directly required by jahow |
-| Create barrel file `csapi/index.ts` | Required for `./csapi` sub-path entry point |
-| Add `"./csapi"` to `package.json` exports | Directly required by jahow |
-| Add `"sideEffects": false` | Enables tree-shaking (1 line) |
-| Remove 2 CSAPI imports from `endpoint.ts` | Directly required by jahow |
-| Remove `csapi()` method and related code | Enables import removal |
-| Create `createCSAPIBuilder` factory | Replacement API for removed `csapi()` |
-| Make `root`/`getCollectionDocument` public | Factory needs access (1-word each) |
-| Create `factory.spec.ts` | Tests for new code |
-| Migrate 3 endpoint tests | Tests reference removed method |
-| Apply Prettier to 51 files | CI compliance |
-| Fix 99 ESLint errors | CI compliance |
+| Item                                       | Justification                               |
+| ------------------------------------------ | ------------------------------------------- |
+| Remove CSAPI exports from `index.ts`       | Directly required by jahow                  |
+| Create barrel file `csapi/index.ts`        | Required for `./csapi` sub-path entry point |
+| Add `"./csapi"` to `package.json` exports  | Directly required by jahow                  |
+| Add `"sideEffects": false`                 | Enables tree-shaking (1 line)               |
+| Remove 2 CSAPI imports from `endpoint.ts`  | Directly required by jahow                  |
+| Remove `csapi()` method and related code   | Enables import removal                      |
+| Create `createCSAPIBuilder` factory        | Replacement API for removed `csapi()`       |
+| Make `root`/`getCollectionDocument` public | Factory needs access (1-word each)          |
+| Create `factory.spec.ts`                   | Tests for new code                          |
+| Migrate 3 endpoint tests                   | Tests reference removed method              |
+| Apply Prettier to 51 files                 | CI compliance                               |
+| Fix 99 ESLint errors                       | CI compliance                               |
 
 ### Out of Scope (Deferred)
 
-| Item | Why Not |
-|------|---------|
-| ESLint `import/no-restricted-paths` boundary rule | Enforcement, not requirement. jahow didn't ask for it |
-| Custom boundary integration test | Enforcement tooling — `git grep` verification suffices |
-| TypeScript Project References | Heavyweight for one sub-module. No surveyed library uses this for one sub-path |
-| `typesVersions` fallback | 5/6 libraries skip it. Only needed for TypeScript <4.7 |
-| Move CSAPI MIME functions from `shared/` | Constraint 3 does not apply to `shared/` utilities |
-| Generalized link scanner utility | Problem self-resolves with factory pattern (Plan 06) |
-| Any CSAPI business logic changes | Zero changes — types, builders, parsers all preserved |
+| Item                                              | Why Not                                                                        |
+| ------------------------------------------------- | ------------------------------------------------------------------------------ |
+| ESLint `import/no-restricted-paths` boundary rule | Enforcement, not requirement. jahow didn't ask for it                          |
+| Custom boundary integration test                  | Enforcement tooling — `git grep` verification suffices                         |
+| TypeScript Project References                     | Heavyweight for one sub-module. No surveyed library uses this for one sub-path |
+| `typesVersions` fallback                          | 5/6 libraries skip it. Only needed for TypeScript <4.7                         |
+| Move CSAPI MIME functions from `shared/`          | Constraint 3 does not apply to `shared/` utilities                             |
+| Generalized link scanner utility                  | Problem self-resolves with factory pattern (Plan 06)                           |
+| Any CSAPI business logic changes                  | Zero changes — types, builders, parsers all preserved                          |
 
 ---
 
@@ -969,22 +972,23 @@ Before force-pushing to `clean-fork/clean-pr`:
 
 Phase 6 is backed by an 8-plan research arc. Each plan investigated a specific aspect of the refactoring. The findings are consolidated into an executable implementation specification in [Plan 08](../../research/phase-6/findings/08-file-level-changelist-and-commit-strategy.md).
 
-| Plan | Title | Questions | Key Decision |
-|------|-------|-----------|-------------|
-| 01 | Build System & Entry Point Analysis | 31 | No build config changes needed; esbuild per-file output covers CSAPI |
-| 02 | EDR Integration Pattern Analysis | 35 | EDR is accepted precedent; `hasConnectedSystems`/`csapiCollections` follow EDR pattern |
-| 03 | Separate Entry Point Design Patterns | 35 | 4-condition `"exports"` + barrel + `"sideEffects": false`; 6 library survey |
-| 04 | Sub-Module API Design Patterns | 38 | Two-layer API: sync constructor + async factory; 7 library survey |
-| 05 | Module Decoupling Patterns | 37 | Level 3.5 coupling (`Pick<>` + `import type`); one-shot extraction |
-| 06 | Endpoint Decoupling Architecture | 42 | Factory signature, barrel contents, test migration, public method changes |
-| 07 | Prettier & ESLint Configuration Analysis | 27 | Format First strategy; 46 files need Prettier; 99 ESLint errors |
-| 08 | File-Level Changelist & Commit Strategy | 40 | Complete implementation spec: 2 commits, 7 files, 12 gates |
+| Plan | Title                                    | Questions | Key Decision                                                                           |
+| ---- | ---------------------------------------- | --------- | -------------------------------------------------------------------------------------- |
+| 01   | Build System & Entry Point Analysis      | 31        | No build config changes needed; esbuild per-file output covers CSAPI                   |
+| 02   | EDR Integration Pattern Analysis         | 35        | EDR is accepted precedent; `hasConnectedSystems`/`csapiCollections` follow EDR pattern |
+| 03   | Separate Entry Point Design Patterns     | 35        | 4-condition `"exports"` + barrel + `"sideEffects": false`; 6 library survey            |
+| 04   | Sub-Module API Design Patterns           | 38        | Two-layer API: sync constructor + async factory; 7 library survey                      |
+| 05   | Module Decoupling Patterns               | 37        | Level 3.5 coupling (`Pick<>` + `import type`); one-shot extraction                     |
+| 06   | Endpoint Decoupling Architecture         | 42        | Factory signature, barrel contents, test migration, public method changes              |
+| 07   | Prettier & ESLint Configuration Analysis | 27        | Format First strategy; 46 files need Prettier; 99 ESLint errors                        |
+| 08   | File-Level Changelist & Commit Strategy  | 40        | Complete implementation spec: 2 commits, 7 files, 12 gates                             |
 
 **Total: 285 questions answered, ~8,000 lines of findings.**
 
 All findings available at [`docs/research/phase-6/findings/`](../../research/phase-6/findings/).
 
 **Supplementary documents:**
+
 - [P6 Contribution Goal and Definition](P6-contribution-goal-and-definition.md) — Phase 6 scope, acceptance criteria, and success condition
 - [Deferred Issues Scope Assessment](../../research/phase-6/deferred-issues-scope-assessment.md) — 5 deferred issues evaluated, all remain deferred
 - [Implementation Readiness Recommendation](../../research/phase-6/implementation-readiness-recommendation.md) — Rationale for proceeding with implementation

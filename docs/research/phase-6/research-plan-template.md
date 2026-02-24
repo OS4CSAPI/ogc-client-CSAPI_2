@@ -2,11 +2,11 @@
 
 > **Section [N] of [Total]** | **Status:** Not Started | **Branch:** `phase-6`
 
-| Field | Value |
-|-------|-------|
-| **Estimated Time** | [X–Y hours] |
-| **Actual Time** | — |
-| **Depends On** | [Plan numbers, or "None"] |
+| Field                            | Value                      |
+| -------------------------------- | -------------------------- |
+| **Estimated Time**               | [X–Y hours]                |
+| **Actual Time**                  | —                          |
+| **Depends On**                   | [Plan numbers, or "None"]  |
 | **Related Work Assessment Tier** | [Tier 1 / Tier 2 / Tier 3] |
 
 ---
@@ -31,15 +31,18 @@
 ### Detailed Questions
 
 #### [Sub-topic A]
+
 1. [Specific, answerable question]
 2. [Follow-up question]
 3. [Verification question]
 
 #### [Sub-topic B]
+
 1. [Specific question]
 2. [Follow-up question]
 
 #### [Sub-topic C]
+
 1. [Specific question]
 2. [Follow-up question]
 
@@ -57,10 +60,12 @@
 ## Sources
 
 ### Primary Sources (in workspace)
+
 - [File path and description]
 - [File path and description]
 
 ### External Sources
+
 - [URL or documentation reference]
 - [URL or documentation reference]
 

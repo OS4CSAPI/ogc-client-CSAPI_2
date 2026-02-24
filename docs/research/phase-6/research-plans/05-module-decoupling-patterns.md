@@ -6,16 +6,16 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Status** | Not Started |
-| **Plan Type** | External research (architectural patterns) |
-| **Date Created** | 2026-02-23 |
-| **Last Updated** | 2026-02-23 |
-| **Estimated Time** | 2–3 hours |
-| **Actual Time** | — |
-| **Depends On** | None |
-| **Blocks** | Plan 06 (Endpoint Decoupling Architecture) |
+| Field                  | Value                                                     |
+| ---------------------- | --------------------------------------------------------- |
+| **Status**             | Not Started                                               |
+| **Plan Type**          | External research (architectural patterns)                |
+| **Date Created**       | 2026-02-23                                                |
+| **Last Updated**       | 2026-02-23                                                |
+| **Estimated Time**     | 2–3 hours                                                 |
+| **Actual Time**        | —                                                         |
+| **Depends On**         | None                                                      |
+| **Blocks**             | Plan 06 (Endpoint Decoupling Architecture)                |
 | **Strategy Reference** | [research-strategy.md § Plan 05](../research-strategy.md) |
 
 ---
@@ -87,7 +87,7 @@ This is particularly important because our codebase already uses structural typi
 1. How does TypeScript's structural type system affect adapter and dependency inversion patterns compared to nominal type systems (Java, C#)?
 2. What are the concrete coupling levels available when a TypeScript sub-module depends on a core module, and what are the tradeoffs of each?
 3. How do TypeScript projects define and enforce module boundaries within a single package?
-4. What is the recommended approach for extracting a tightly-coupled module into a separately-importable sub-module *within the same package* in TypeScript?
+4. What is the recommended approach for extracting a tightly-coupled module into a separately-importable sub-module _within the same package_ in TypeScript?
 5. How should shared types (interfaces used by both core and sub-module) be managed to maintain one-way dependency flow?
 6. What is the role of `import type` in maintaining clean module boundaries, and what are its limitations?
 
@@ -107,7 +107,7 @@ This is particularly important because our codebase already uses structural typi
 
 8. What does dependency inversion (DIP) look like in TypeScript without a DI container? Provide concrete examples of how a sub-module defines an abstraction that the core satisfies, without the core importing the sub-module's abstraction.
 9. In nominal type systems, DIP requires the core to `implement SubModule.IFoo`. In TypeScript's structural type system, the core doesn't need to reference the sub-module at all — it just needs to have a compatible shape. How does this change the pattern? Is explicit DIP even necessary?
-10. For our specific case: `endpoint.ts` currently imports `CSAPIQueryBuilder` and `scanCsapiLinks`. What does inverting this dependency look like? The endpoint currently *creates* the builder — after inversion, who creates it?
+10. For our specific case: `endpoint.ts` currently imports `CSAPIQueryBuilder` and `scanCsapiLinks`. What does inverting this dependency look like? The endpoint currently _creates_ the builder — after inversion, who creates it?
 11. Is there a standard TypeScript pattern for "the core provides data, the sub-module consumes it, and neither imports the other's code"? (Not dependency injection — more like "data handoff at the boundary")
 12. How does the "Hollywood Principle" (don't call us, we'll call you) apply to our scenario? Currently the endpoint calls `new CSAPIQueryBuilder(...)`. After decoupling, should the consumer be responsible for getting endpoint data and passing it to CSAPI?
 13. What are the tradeoffs between "sub-module accepts core instance" (sub-module calls core methods) vs. "sub-module accepts extracted data" (consumer extracts data, passes to sub-module)? Which produces a cleaner module boundary?
@@ -134,7 +134,7 @@ This is particularly important because our codebase already uses structural typi
 
 #### Module Extraction Case Studies (5 questions)
 
-28. Are there documented case studies of extracting a tightly-coupled TypeScript module into a separately-importable sub-module *within the same package*? (Not a separate npm package — a sub-path export.)
+28. Are there documented case studies of extracting a tightly-coupled TypeScript module into a separately-importable sub-module _within the same package_? (Not a separate npm package — a sub-path export.)
 29. What migration patterns are recommended when extracting a module? (Strangler fig, branch-by-abstraction, feature flags, one-shot extraction)
 30. How does one verify that the extraction is complete — that no residual coupling remains? (Import graphs, static analysis tools, manual grep, TypeScript project references)
 31. What are common mistakes when extracting modules in TypeScript? (Forgetting type-only imports, leaving transitive dependencies, barrel file circular references, breaking tree-shaking)
@@ -156,41 +156,41 @@ This is particularly important because our codebase already uses structural typi
 
 ### Primary Sources (In Workspace)
 
-| Source | Path | What to Extract |
-|--------|------|-----------------|
-| CSAPIQueryBuilder constructor | `src/ogc-api/csapi/url_builder.ts` (lines 106–180) | Current coupling: `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` + `Map<string, string>`. The existing structural typing pattern. |
-| CSAPI imports from core | `src/ogc-api/csapi/url_builder.ts` (line 1), `csapi/model.ts` (lines 1–2), `csapi/helpers.ts` (line 3) | Complete list of type imports from core: `OgcApiCollectionInfo`, `OgcApiDocumentLink`, `BoundingBox`, `DateTimeParameter`, `CrsCode`, `MimeType`, `EndpointError` |
-| Endpoint CSAPI imports (the violations) | `src/ogc-api/endpoint.ts` (lines 52–53) | `import CSAPIQueryBuilder from './csapi/url_builder.js'` and `import { scanCsapiLinks } from './csapi/helpers.js'` — these two imports must be eliminated |
-| Endpoint `csapi()` method | `src/ogc-api/endpoint.ts` (lines 385–413) | Current data flow: `getCollectionDocument()` → `extractRootResourceUrls()` → `new CSAPIQueryBuilder(doc, urls)`. What data the endpoint currently provides. |
-| Endpoint `extractRootResourceUrls()` | `src/ogc-api/endpoint.ts` (lines 431–436) | Uses `scanCsapiLinks(rootDoc.links)` — the second constraint violation. Simple delegation that could be inlined or moved. |
-| Core model types | `src/ogc-api/model.ts` (lines 85–155) | `OgcApiCollectionInfo` (full interface, 30+ properties), `OgcApiDocumentLink` (4 properties), `OgcApiDocument` (generic document type) |
-| CSAPI model types | `src/ogc-api/csapi/model.ts` | All types exported by CSAPI — what crosses the module boundary |
-| `scanCsapiLinks` function | `src/ogc-api/csapi/helpers.ts` (lines 129–170) | The shared utility problem: imported by both `endpoint.ts` and `url_builder.ts`. Accepts `Array<{rel?: string, href?: string}>` — already uses structural typing in its parameter. |
-| `checkHasConnectedSystems` | `src/ogc-api/info.ts` (lines 112–120) | Confirms: no CSAPI imports. Uses only conformance URIs. Candidate to stay on endpoint. |
-| Root exports (current) | `src/index.ts` (lines 45–252) | ~170 lines of CSAPI re-exports that must move to the `./csapi` barrel |
-| EDR pattern (for comparison) | `src/ogc-api/endpoint.ts` (line 51), `src/ogc-api/edr/url_builder.ts` | How EDR decouples from endpoint — direct `import` from core, no reverse. Same structural pattern we need. |
+| Source                                  | Path                                                                                                   | What to Extract                                                                                                                                                                    |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CSAPIQueryBuilder constructor           | `src/ogc-api/csapi/url_builder.ts` (lines 106–180)                                                     | Current coupling: `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` + `Map<string, string>`. The existing structural typing pattern.                                        |
+| CSAPI imports from core                 | `src/ogc-api/csapi/url_builder.ts` (line 1), `csapi/model.ts` (lines 1–2), `csapi/helpers.ts` (line 3) | Complete list of type imports from core: `OgcApiCollectionInfo`, `OgcApiDocumentLink`, `BoundingBox`, `DateTimeParameter`, `CrsCode`, `MimeType`, `EndpointError`                  |
+| Endpoint CSAPI imports (the violations) | `src/ogc-api/endpoint.ts` (lines 52–53)                                                                | `import CSAPIQueryBuilder from './csapi/url_builder.js'` and `import { scanCsapiLinks } from './csapi/helpers.js'` — these two imports must be eliminated                          |
+| Endpoint `csapi()` method               | `src/ogc-api/endpoint.ts` (lines 385–413)                                                              | Current data flow: `getCollectionDocument()` → `extractRootResourceUrls()` → `new CSAPIQueryBuilder(doc, urls)`. What data the endpoint currently provides.                        |
+| Endpoint `extractRootResourceUrls()`    | `src/ogc-api/endpoint.ts` (lines 431–436)                                                              | Uses `scanCsapiLinks(rootDoc.links)` — the second constraint violation. Simple delegation that could be inlined or moved.                                                          |
+| Core model types                        | `src/ogc-api/model.ts` (lines 85–155)                                                                  | `OgcApiCollectionInfo` (full interface, 30+ properties), `OgcApiDocumentLink` (4 properties), `OgcApiDocument` (generic document type)                                             |
+| CSAPI model types                       | `src/ogc-api/csapi/model.ts`                                                                           | All types exported by CSAPI — what crosses the module boundary                                                                                                                     |
+| `scanCsapiLinks` function               | `src/ogc-api/csapi/helpers.ts` (lines 129–170)                                                         | The shared utility problem: imported by both `endpoint.ts` and `url_builder.ts`. Accepts `Array<{rel?: string, href?: string}>` — already uses structural typing in its parameter. |
+| `checkHasConnectedSystems`              | `src/ogc-api/info.ts` (lines 112–120)                                                                  | Confirms: no CSAPI imports. Uses only conformance URIs. Candidate to stay on endpoint.                                                                                             |
+| Root exports (current)                  | `src/index.ts` (lines 45–252)                                                                          | ~170 lines of CSAPI re-exports that must move to the `./csapi` barrel                                                                                                              |
+| EDR pattern (for comparison)            | `src/ogc-api/endpoint.ts` (line 51), `src/ogc-api/edr/url_builder.ts`                                  | How EDR decouples from endpoint — direct `import` from core, no reverse. Same structural pattern we need.                                                                          |
 
 ### External Sources
 
-| Source | URL/Reference | What to Extract |
-|--------|---------------|-----------------|
-| TypeScript Handbook — Structural Typing | https://www.typescriptlang.org/docs/handbook/type-compatibility.html | How structural compatibility works, implications for adapter patterns |
-| TypeScript Handbook — Module Resolution | https://www.typescriptlang.org/docs/handbook/modules/theory.html | How `import type` works, module boundary semantics |
-| TypeScript Handbook — Utility Types | https://www.typescriptlang.org/docs/handbook/utility-types.html | `Pick<>`, `Partial<>`, `Required<>` — utility types as implicit adapters |
-| Martin Fowler — Refactoring Catalog | https://refactoring.guru/refactoring/catalog | Extract Module, Replace Dependency with Interface, Move Function — adapted to TypeScript |
-| Adapter Pattern in TypeScript | https://refactoring.guru/design-patterns/adapter/typescript/example | Classic adapter implementation, how to adapt for structural typing |
-| Facade Pattern in TypeScript | https://refactoring.guru/design-patterns/facade/typescript/example | Simplifying complex module interfaces — relevant to the "data record" coupling level |
-| TypeScript Project References | https://www.typescriptlang.org/docs/handbook/project-references.html | Enforcing module boundaries with separate `tsconfig` per module |
-| Nx / Turborepo module boundary enforcement | https://nx.dev/concepts/module-boundaries | How monorepo tools enforce boundaries — applicable patterns for single-package sub-modules |
-| `@internal` tag behavior in TypeScript | https://www.typescriptlang.org/tsconfig/#stripInternal | Hiding internal types from public API declarations |
-| Node.js subpath exports documentation | https://nodejs.org/api/packages.html#subpath-exports | Canonical reference for `"exports"` field behavior — context for barrel file design |
+| Source                                     | URL/Reference                                                        | What to Extract                                                                            |
+| ------------------------------------------ | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| TypeScript Handbook — Structural Typing    | https://www.typescriptlang.org/docs/handbook/type-compatibility.html | How structural compatibility works, implications for adapter patterns                      |
+| TypeScript Handbook — Module Resolution    | https://www.typescriptlang.org/docs/handbook/modules/theory.html     | How `import type` works, module boundary semantics                                         |
+| TypeScript Handbook — Utility Types        | https://www.typescriptlang.org/docs/handbook/utility-types.html      | `Pick<>`, `Partial<>`, `Required<>` — utility types as implicit adapters                   |
+| Martin Fowler — Refactoring Catalog        | https://refactoring.guru/refactoring/catalog                         | Extract Module, Replace Dependency with Interface, Move Function — adapted to TypeScript   |
+| Adapter Pattern in TypeScript              | https://refactoring.guru/design-patterns/adapter/typescript/example  | Classic adapter implementation, how to adapt for structural typing                         |
+| Facade Pattern in TypeScript               | https://refactoring.guru/design-patterns/facade/typescript/example   | Simplifying complex module interfaces — relevant to the "data record" coupling level       |
+| TypeScript Project References              | https://www.typescriptlang.org/docs/handbook/project-references.html | Enforcing module boundaries with separate `tsconfig` per module                            |
+| Nx / Turborepo module boundary enforcement | https://nx.dev/concepts/module-boundaries                            | How monorepo tools enforce boundaries — applicable patterns for single-package sub-modules |
+| `@internal` tag behavior in TypeScript     | https://www.typescriptlang.org/tsconfig/#stripInternal               | Hiding internal types from public API declarations                                         |
+| Node.js subpath exports documentation      | https://nodejs.org/api/packages.html#subpath-exports                 | Canonical reference for `"exports"` field behavior — context for barrel file design        |
 
 ### Prior Research Findings
 
-| Finding | Path | What to Use |
-|---------|------|-------------|
-| Plan 02 findings (when available) | `docs/research/phase-6/findings/02-edr-integration-pattern-analysis.md` | EDR decoupling pattern as baseline comparison — EDR is already cleanly decoupled |
-| Plan 04 findings (when available) | `docs/research/phase-6/findings/04-sub-module-api-design-patterns.md` | Industry consumer API patterns — this plan complements Plan 04's external perspective with internal architecture |
+| Finding                           | Path                                                                    | What to Use                                                                                                      |
+| --------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Plan 02 findings (when available) | `docs/research/phase-6/findings/02-edr-integration-pattern-analysis.md` | EDR decoupling pattern as baseline comparison — EDR is already cleanly decoupled                                 |
+| Plan 04 findings (when available) | `docs/research/phase-6/findings/04-sub-module-api-design-patterns.md`   | Industry consumer API patterns — this plan complements Plan 04's external perspective with internal architecture |
 
 ---
 
@@ -201,6 +201,7 @@ This is particularly important because our codebase already uses structural typi
 **Objective:** Establish how TypeScript's structural type system changes classical adapter and dependency inversion patterns compared to nominal languages (Java, C#).
 
 **Tasks:**
+
 1. Review TypeScript handbook on structural typing — document how type compatibility works without explicit `implements` or `extends` declarations
 2. Create concrete TypeScript examples demonstrating: (a) implicit structural compatibility (Module B accepts any object matching shape), (b) explicit interface adaptation (Module B defines `FooLike`), (c) `Pick<>` utility types as partial adapters, (d) inline type literals eliminating imports
 3. Analyze `import type` erasure behavior — confirm that `import type { X } from 'module'` creates no runtime dependency, and document exactly what appears in the compiled JavaScript output
@@ -215,6 +216,7 @@ This is particularly important because our codebase already uses structural typi
 **Objective:** Analyze all four coupling levels (concrete class, explicit interface, data record, individual parameters) with tradeoffs specific to our boundary conditions and existing codebase.
 
 **Tasks:**
+
 1. **Level 1 — Concrete class:** Draft code example where CSAPI accepts `OgcApiEndpoint`. Analyze: (a) compile-time coupling (CSAPI imports the class), (b) runtime coupling (CSAPI calls endpoint methods), (c) testability (CSAPI tests must instantiate or mock `OgcApiEndpoint`), (d) constraint compliance (does the endpoint import CSAPI? — if CSAPI only receives endpoint as a parameter, core still doesn't import CSAPI ✓), (e) migration effort from current code
 2. **Level 2 — Explicit interface:** Draft code example where CSAPI defines `interface CSAPIEndpoint { getCollectionDocument(id: string): Promise<...>; conformance: Promise<string[]>; root: Promise<...> }`. Analyze: (a) does `OgcApiEndpoint` satisfy this structurally? (b) does CSAPI still import core types for the return types (`OgcApiDocument`)? (c) testability (easy to create mock implementing the interface), (d) interface maintenance burden, (e) constraint compliance
 3. **Level 3 — Data record:** Draft code example where CSAPI accepts `{ collectionDoc: { id: string, title: string, links: Array<{rel?: string, href?: string}> }, rootLinks: Array<{rel?: string, href?: string}> }`. Analyze: (a) zero type imports from core (full independence), (b) consumer burden (who assembles the record?), (c) loss of type safety (inline literals vs named types), (d) current state analysis (CSAPIQueryBuilder already uses this level via `Pick<>`)
@@ -230,6 +232,7 @@ This is particularly important because our codebase already uses structural typi
 **Objective:** Research how TypeScript projects define and enforce module boundaries within a single package, with focus on barrel files, `@internal` tags, and the "shared utility" problem.
 
 **Tasks:**
+
 1. Research barrel file patterns for sub-path exports — document the standard `index.ts` barrel file structure, what to export (all symbols vs curated public API), and how it relates to `package.json` `"exports"`
 2. Analyze the `scanCsapiLinks` shared utility problem: (a) document all callers (endpoint.ts line 435, url_builder.ts via `extractAvailableResources`), (b) document all options (duplicate, move to shared, inline, expose from CSAPI barrel), (c) recommend placement based on the function's actual dependencies (it only uses `CSAPIResourceTypes` from `./model.js`)
 3. Research `@internal` tag and `stripInternal` tsconfig option — can we mark CSAPI-internal types that shouldn't appear in the public `.d.ts` files?
@@ -243,6 +246,7 @@ This is particularly important because our codebase already uses structural typi
 **Objective:** Research documented strategies for extracting a tightly-coupled module into a separately-importable sub-module within the same TypeScript package.
 
 **Tasks:**
+
 1. Search for case studies of TypeScript module extraction within a single package (blog posts, conference talks, GitHub issues/PRs documenting module splits)
 2. Document migration strategies applicable to our scenario: (a) one-shot extraction (change all files in one commit), (b) strangler fig (gradual replacement), (c) branch-by-abstraction (introduce interface, then swap implementation)
 3. Determine if intermediate steps are needed — can we go directly from "endpoint imports CSAPI" to "endpoint has zero CSAPI imports", or do we need an adapter layer in between?
@@ -256,6 +260,7 @@ This is particularly important because our codebase already uses structural typi
 **Objective:** Consolidate all phase outputs into the deliverable document.
 
 **Tasks:**
+
 1. Synthesize findings from Phases 1–4 into the findings report structure
 2. Produce the final coupling level recommendation with complete rationale
 3. Verify all 37 research questions are answered with specific, evidenced answers
@@ -313,14 +318,14 @@ This research is complete when:
 
 ## 9. Risks and Mitigation
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| TypeScript structural typing may make all coupling levels practically equivalent for our small boundary surface | Decision matrix may not clearly differentiate levels | Focus on second-order tradeoffs: testability, refactoring safety, migration effort. Even if structural typing makes them compile-time equivalent, the developer experience differs. |
-| `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` creates a compile-time dependency on `OgcApiCollectionInfo` even though the runtime shape is structurally independent | May need to eliminate `Pick<>` in favor of inline types to achieve full decoupling | Determine if `import type` + `Pick<>` is acceptable (no runtime dependency) or if the compile-time dependency violates the spirit of constraint 3. Provide both options. |
-| The `scanCsapiLinks` shared utility has no clean placement — it uses CSAPI-specific constants (`CSAPIResourceTypes`) but is needed by core's `extractRootResourceUrls` | May require code duplication, which is a maintenance risk | Analyze all four placement options with honest tradeoffs. Prefer the option that keeps CSAPI self-contained even if it means core loses some convenience. |
-| Module extraction case studies may be sparse — most documented examples involve separate npm packages, not sub-path exports within a single package | Limited external evidence for our exact scenario | Extrapolate from multi-package extraction patterns. Our scenario is simpler (same repo, same build, same tsconfig) — patterns that work across packages certainly work within one. |
-| Recommended coupling level from this plan may conflict with Plan 04's recommended consumer API pattern | Plans 05 and 06 may need to reconcile different recommendations | This plan produces a coupling level recommendation; Plan 04 produces a consumer API recommendation. Plan 06 is explicitly designed to synthesize both. Flag any obvious conflicts for Plan 06 to resolve. |
-| `EndpointError` import from `../../shared/errors.js` may be considered an outward import that violates constraint 3 | Unclear whether `shared/` counts as "core" for constraint purposes | Research whether `shared/` is considered part of the core module boundary or a shared utility layer. If shared, the import is fine. If core, CSAPI may need its own error class. |
+| Risk                                                                                                                                                                           | Impact                                                                             | Mitigation                                                                                                                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TypeScript structural typing may make all coupling levels practically equivalent for our small boundary surface                                                                | Decision matrix may not clearly differentiate levels                               | Focus on second-order tradeoffs: testability, refactoring safety, migration effort. Even if structural typing makes them compile-time equivalent, the developer experience differs.                       |
+| `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` creates a compile-time dependency on `OgcApiCollectionInfo` even though the runtime shape is structurally independent | May need to eliminate `Pick<>` in favor of inline types to achieve full decoupling | Determine if `import type` + `Pick<>` is acceptable (no runtime dependency) or if the compile-time dependency violates the spirit of constraint 3. Provide both options.                                  |
+| The `scanCsapiLinks` shared utility has no clean placement — it uses CSAPI-specific constants (`CSAPIResourceTypes`) but is needed by core's `extractRootResourceUrls`         | May require code duplication, which is a maintenance risk                          | Analyze all four placement options with honest tradeoffs. Prefer the option that keeps CSAPI self-contained even if it means core loses some convenience.                                                 |
+| Module extraction case studies may be sparse — most documented examples involve separate npm packages, not sub-path exports within a single package                            | Limited external evidence for our exact scenario                                   | Extrapolate from multi-package extraction patterns. Our scenario is simpler (same repo, same build, same tsconfig) — patterns that work across packages certainly work within one.                        |
+| Recommended coupling level from this plan may conflict with Plan 04's recommended consumer API pattern                                                                         | Plans 05 and 06 may need to reconcile different recommendations                    | This plan produces a coupling level recommendation; Plan 04 produces a consumer API recommendation. Plan 06 is explicitly designed to synthesize both. Flag any obvious conflicts for Plan 06 to resolve. |
+| `EndpointError` import from `../../shared/errors.js` may be considered an outward import that violates constraint 3                                                            | Unclear whether `shared/` counts as "core" for constraint purposes                 | Research whether `shared/` is considered part of the core module boundary or a shared utility layer. If shared, the import is fine. If core, CSAPI may need its own error class.                          |
 
 ---
 

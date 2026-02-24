@@ -44,10 +44,10 @@ Tasks were classified as "safe for one pass" or "recommend splitting." A subsequ
 
 The 99 errors span two distinct file populations with different error patterns:
 
-| Sub-task | Files | Errors | Pattern |
-|----------|-------|--------|---------|
-| **2a: Source files** | 5 | 9 | Mix of `import type` conversions + unused import removals |
-| **2b: Test files** | 10 | 90 | Almost entirely unused import removals (bulk delete) |
+| Sub-task             | Files | Errors | Pattern                                                   |
+| -------------------- | ----- | ------ | --------------------------------------------------------- |
+| **2a: Source files** | 5     | 9      | Mix of `import type` conversions + unused import removals |
+| **2b: Test files**   | 10    | 90     | Almost entirely unused import removals (bulk delete)      |
 
 **Why split:** Source files require judgment (is the import used as a type annotation? → convert to `import type`. Is it truly unused? → remove entirely). Test files are mechanical bulk removal. Mixing them invites applying the wrong fix pattern to the wrong file. The split also provides a natural verification checkpoint — run `npx tsc --noEmit` after 2a to confirm source files still compile before touching tests.
 
@@ -55,10 +55,10 @@ The 99 errors span two distinct file populations with different error patterns:
 
 The barrel file requires tracing every CSAPI symbol currently in `src/index.ts` (lines 45–227) back to its source module, then writing ~190 lines of organized re-exports.
 
-| Sub-task | Deliverable | Risk |
-|----------|-------------|------|
-| **4a: Audit and build export list** | Complete inventory of every CSAPI public symbol, its source module, and whether it's a value or type | Zero code changes — pure research |
-| **4b: Write barrel file** | `csapi/index.ts` with all re-exports, JSDoc sections, `.js` extensions | New file creation from the 4a inventory |
+| Sub-task                            | Deliverable                                                                                          | Risk                                    |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| **4a: Audit and build export list** | Complete inventory of every CSAPI public symbol, its source module, and whether it's a value or type | Zero code changes — pure research       |
+| **4b: Write barrel file**           | `csapi/index.ts` with all re-exports, JSDoc sections, `.js` extensions                               | New file creation from the 4a inventory |
 
 **Why split:** The barrel file is the most content-dense new file (~190 lines). Errors in mapping symbols to source modules cascade downstream — if a re-export points to the wrong path, TypeScript fails at compile time but the error message may point to the consumer, not the barrel. Separating the audit from the write ensures the mapping is verified before committing to code.
 
@@ -70,10 +70,10 @@ When challenged with "are you sure we shouldn't break them up any further?", a s
 
 **Task 10: Boundary verification, litmus test, and rebase → Split into 10a + 10b**
 
-| Sub-task | Actions | Reversibility |
-|----------|---------|---------------|
-| **10a: Verification + litmus test** | Run V1–V4 boundary checks, litmus test (mv/compile/restore), diff review | Fully reversible — read-only checks + temp rename |
-| **10b: Rebase + push to upstream** | Cherry-pick to `clean-pr`, force-push to upstream fork, update PR #136 | **Irreversible** — changes remote state visible to reviewer |
+| Sub-task                            | Actions                                                                  | Reversibility                                               |
+| ----------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| **10a: Verification + litmus test** | Run V1–V4 boundary checks, litmus test (mv/compile/restore), diff review | Fully reversible — read-only checks + temp rename           |
+| **10b: Rebase + push to upstream**  | Cherry-pick to `clean-pr`, force-push to upstream fork, update PR #136   | **Irreversible** — changes remote state visible to reviewer |
 
 **Why split:** Everything in 10a is local and reversible. Everything in 10b modifies remote branches that the upstream maintainer (jahow) can see. If verification reveals an issue, the natural response is "go fix it" — which is easier if you haven't already pushed. The split creates a gate: only cross to 10b when 10a confirms everything is green.
 
@@ -117,21 +117,21 @@ Adding a third split to any of these would increase coordination overhead withou
 
 ## Final Execution Unit Plan
 
-| # | Unit | Est. Time | Complexity | Split From |
-|---|------|-----------|------------|------------|
-| 1 | Task 1: Apply Prettier to 51 files | ~0.5h | Low | — |
-| 2a | Task 2a: Fix 9 ESLint errors in 5 source files | ~0.5h | Low | Task 2 |
-| 2b | Task 2b: Fix 90 ESLint errors in 10 test files | ~0.5–1h | Low | Task 2 |
-| 3 | Task 3: Verify formatting + lint, commit (Commit 14) | ~0.5h | Low | — |
-| 4a | Task 4a: Audit and build CSAPI export inventory | ~0.5h | Medium | Task 4 |
-| 4b | Task 4b: Write barrel file `csapi/index.ts` | ~0.5–1h | Medium | Task 4 |
-| 5 | Task 5: Create `factory.ts` + `factory.spec.ts` | ~1–1.5h | Medium | — |
-| 6 | Task 6: Modify `endpoint.ts` | ~0.5–1h | Medium | — |
-| 7 | Task 7: Modify `index.ts` + `endpoint.spec.ts` | ~0.5h | Low | — |
-| 8 | Task 8: Modify `package.json` | ~0.25h | Low | — |
-| 9 | Task 9: Run all CI gates, commit (Commit 15) | ~0.5–1h | Low | — |
-| 10a | Task 10a: Boundary verification + litmus test | ~0.5–1h | Medium | Task 10 |
-| 10b | Task 10b: Rebase to clean-pr + push to upstream | ~0.5h | Medium | Task 10 |
+| #   | Unit                                                 | Est. Time | Complexity | Split From |
+| --- | ---------------------------------------------------- | --------- | ---------- | ---------- |
+| 1   | Task 1: Apply Prettier to 51 files                   | ~0.5h     | Low        | —          |
+| 2a  | Task 2a: Fix 9 ESLint errors in 5 source files       | ~0.5h     | Low        | Task 2     |
+| 2b  | Task 2b: Fix 90 ESLint errors in 10 test files       | ~0.5–1h   | Low        | Task 2     |
+| 3   | Task 3: Verify formatting + lint, commit (Commit 14) | ~0.5h     | Low        | —          |
+| 4a  | Task 4a: Audit and build CSAPI export inventory      | ~0.5h     | Medium     | Task 4     |
+| 4b  | Task 4b: Write barrel file `csapi/index.ts`          | ~0.5–1h   | Medium     | Task 4     |
+| 5   | Task 5: Create `factory.ts` + `factory.spec.ts`      | ~1–1.5h   | Medium     | —          |
+| 6   | Task 6: Modify `endpoint.ts`                         | ~0.5–1h   | Medium     | —          |
+| 7   | Task 7: Modify `index.ts` + `endpoint.spec.ts`       | ~0.5h     | Low        | —          |
+| 8   | Task 8: Modify `package.json`                        | ~0.25h    | Low        | —          |
+| 9   | Task 9: Run all CI gates, commit (Commit 15)         | ~0.5–1h   | Low        | —          |
+| 10a | Task 10a: Boundary verification + litmus test        | ~0.5–1h   | Medium     | Task 10    |
+| 10b | Task 10b: Rebase to clean-pr + push to upstream      | ~0.5h     | Medium     | Task 10    |
 
 **Total: 10 tasks → 13 execution units, ~6–10 hours estimated**
 

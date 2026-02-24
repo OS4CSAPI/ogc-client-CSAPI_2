@@ -6,17 +6,17 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Status** | Not Started |
-| **Plan Type** | Internal analysis |
-| **Date Created** | 2026-02-23 |
-| **Last Updated** | 2026-02-23 |
-| **Estimated Time** | 2–3 hours |
-| **Actual Time** | — |
-| **Depends On** | None |
-| **Blocks** | Plan 03 (Separate Entry Point Design Patterns), Plan 08 (File-Level Changelist and Commit Strategy) |
-| **Strategy Reference** | [research-strategy.md § Plan 01](../research-strategy.md) |
+| Field                  | Value                                                                                               |
+| ---------------------- | --------------------------------------------------------------------------------------------------- |
+| **Status**             | Not Started                                                                                         |
+| **Plan Type**          | Internal analysis                                                                                   |
+| **Date Created**       | 2026-02-23                                                                                          |
+| **Last Updated**       | 2026-02-23                                                                                          |
+| **Estimated Time**     | 2–3 hours                                                                                           |
+| **Actual Time**        | —                                                                                                   |
+| **Depends On**         | None                                                                                                |
+| **Blocks**             | Plan 03 (Separate Entry Point Design Patterns), Plan 08 (File-Level Changelist and Commit Strategy) |
+| **Strategy Reference** | [research-strategy.md § Plan 01](../research-strategy.md)                                           |
 
 ---
 
@@ -137,33 +137,33 @@ Additionally, this plan reveals whether there are hidden constraints — for exa
 
 ### Primary Sources (In Workspace)
 
-| Source | Path | What to Extract |
-|--------|------|-----------------|
-| Package configuration | `package.json` | `exports`, `main`, `browser`, `types`, `files`, `scripts` (build commands), dependency versions |
-| Browser build config | (inline in `package.json` scripts) | esbuild command flags: `--outdir`, `--platform`, `--format`, file glob pattern |
-| Node build config | `vite.node-config.js` | Rollup input, output config, `emptyOutDir`, SSR settings |
-| Worker build config | `vite.worker-config.js` | Entry point, `vite-plugin-dts` config (`include`, `exclude`), lib settings |
-| TypeScript config | `tsconfig.json` | `outDir`, `declaration`, `declarationMap`, `include` patterns |
-| Root barrel file | `src/index.ts` | Current CSAPI exports (lines ~46–80) — what needs to be removed |
-| Node entry point | `src-node/index.ts` | Re-export pattern from `src/index.ts` |
-| CSAPI module files | `src/ogc-api/csapi/` | File inventory: `url_builder.ts`, `model.ts`, `helpers.ts`, `command-routing.ts`, `formats/`, `integration/` |
-| Worker entry point | `src/worker/index.ts` | Whether it imports CSAPI code |
+| Source                | Path                               | What to Extract                                                                                              |
+| --------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Package configuration | `package.json`                     | `exports`, `main`, `browser`, `types`, `files`, `scripts` (build commands), dependency versions              |
+| Browser build config  | (inline in `package.json` scripts) | esbuild command flags: `--outdir`, `--platform`, `--format`, file glob pattern                               |
+| Node build config     | `vite.node-config.js`              | Rollup input, output config, `emptyOutDir`, SSR settings                                                     |
+| Worker build config   | `vite.worker-config.js`            | Entry point, `vite-plugin-dts` config (`include`, `exclude`), lib settings                                   |
+| TypeScript config     | `tsconfig.json`                    | `outDir`, `declaration`, `declarationMap`, `include` patterns                                                |
+| Root barrel file      | `src/index.ts`                     | Current CSAPI exports (lines ~46–80) — what needs to be removed                                              |
+| Node entry point      | `src-node/index.ts`                | Re-export pattern from `src/index.ts`                                                                        |
+| CSAPI module files    | `src/ogc-api/csapi/`               | File inventory: `url_builder.ts`, `model.ts`, `helpers.ts`, `command-routing.ts`, `formats/`, `integration/` |
+| Worker entry point    | `src/worker/index.ts`              | Whether it imports CSAPI code                                                                                |
 
 ### External Sources
 
-| Source | URL/Reference | What to Extract |
-|--------|---------------|-----------------|
-| esbuild documentation | https://esbuild.github.io/api/#outdir | Per-file output behavior, `--outdir` vs `--bundle`, `--platform=neutral` semantics |
-| Node.js package exports | https://nodejs.org/api/packages.html#exports | Conditional exports syntax, sub-path exports, `"types"` condition |
-| Vite library mode docs | https://vite.dev/guide/build.html#library-mode | How `build.lib.entry` works, multiple entry points |
-| vite-plugin-dts docs | https://github.com/qmhc/vite-plugin-dts | `include`/`exclude` behavior, how declarations are generated |
-| TypeScript moduleResolution | https://www.typescriptlang.org/docs/handbook/modules/reference.html | How `"exports"` with `"types"` condition is resolved by TypeScript |
+| Source                      | URL/Reference                                                       | What to Extract                                                                    |
+| --------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| esbuild documentation       | https://esbuild.github.io/api/#outdir                               | Per-file output behavior, `--outdir` vs `--bundle`, `--platform=neutral` semantics |
+| Node.js package exports     | https://nodejs.org/api/packages.html#exports                        | Conditional exports syntax, sub-path exports, `"types"` condition                  |
+| Vite library mode docs      | https://vite.dev/guide/build.html#library-mode                      | How `build.lib.entry` works, multiple entry points                                 |
+| vite-plugin-dts docs        | https://github.com/qmhc/vite-plugin-dts                             | `include`/`exclude` behavior, how declarations are generated                       |
+| TypeScript moduleResolution | https://www.typescriptlang.org/docs/handbook/modules/reference.html | How `"exports"` with `"types"` condition is resolved by TypeScript                 |
 
 ### Prior Research Findings
 
-| Finding | Path | What to Use |
-|---------|------|-------------|
-| None | — | This is Plan 1 — no prior findings exist |
+| Finding | Path | What to Use                              |
+| ------- | ---- | ---------------------------------------- |
+| None    | —    | This is Plan 1 — no prior findings exist |
 
 ---
 
@@ -174,6 +174,7 @@ Additionally, this plan reveals whether there are hidden constraints — for exa
 **Objective:** Run the full build locally and inspect the resulting `dist/` directory to understand exactly what each build stage produces.
 
 **Tasks:**
+
 1. Run `npm run build` (full build: `build:worker` → `build:node` → `build:browser`)
 2. List the complete `dist/` directory tree and document every file and directory
 3. Identify which files come from which build stage by running each stage individually:
@@ -192,6 +193,7 @@ Additionally, this plan reveals whether there are hidden constraints — for exa
 **Objective:** Read and document every build configuration file, understanding each option's effect.
 
 **Tasks:**
+
 1. Analyze the `build:browser` esbuild command flag by flag — what does each flag do and how does it affect CSAPI files?
 2. Analyze `vite.node-config.js` — trace the SSR build from `src-node/index.ts` through to `dist-node.js`
 3. Analyze `vite.worker-config.js` — document the `vite-plugin-dts` configuration and its `include` pattern
@@ -205,6 +207,7 @@ Additionally, this plan reveals whether there are hidden constraints — for exa
 **Objective:** Determine the correct `package.json` `"exports"` configuration for adding `"./csapi"`.
 
 **Tasks:**
+
 1. Read Node.js documentation on sub-path exports with conditional exports
 2. Read TypeScript documentation on how `"types"` condition in `"exports"` works with `moduleResolution`
 3. Study how esbuild's per-file output maps to sub-path exports (do we point to individual files or a barrel?)
@@ -219,6 +222,7 @@ Additionally, this plan reveals whether there are hidden constraints — for exa
 **Objective:** Verify that the proposed changes don't break existing builds or consumer patterns.
 
 **Tasks:**
+
 1. Simulate removing CSAPI from `src/index.ts` — would the build still compile CSAPI files? (Answer: yes, esbuild uses file glob, not import graph)
 2. Check whether `npm run typecheck` would still pass with CSAPI files present but not exported from root
 3. Determine if `build:node` output (`dist-node.js`) would automatically exclude CSAPI after it's removed from the import chain
@@ -232,6 +236,7 @@ Additionally, this plan reveals whether there are hidden constraints — for exa
 **Objective:** Consolidate all phase outputs into the deliverable document.
 
 **Tasks:**
+
 1. Synthesize findings from Phases 1–4
 2. Verify all 31 research questions are answered
 3. Validate findings against boundary conditions (Constraints 1, 2, 5)
@@ -281,13 +286,13 @@ This research is complete when:
 
 ## 9. Risks and Mitigation
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| esbuild per-file output doesn't preserve directory structure for CSAPI files | `"./csapi"` can't point to correct dist paths | Run the build and inspect `dist/` before designing the exports config (Phase 1 task) |
-| `vite-plugin-dts` only generates declarations for files reachable from worker entry point | No `.d.ts` files for CSAPI in `dist/` | Check `dist/` for CSAPI `.d.ts` files; if missing, research `vite-plugin-dts` `include` config or alternative DTS generation |
-| `build:node` SSR bundle inlines all code, making CSAPI inseparable for Node consumers | Node consumers can't import CSAPI separately from the core | Determine if Node consumers should use the per-file esbuild output instead of the SSR bundle; may need a different `"import"` target in `"exports"` |
-| TypeScript `moduleResolution: "node"` doesn't resolve `"exports"` sub-paths | Consumers get type errors when importing `@camptocamp/ogc-client/csapi` | Research TypeScript 5.x `"exports"` support; may need `moduleResolution: "bundler"` or `"node16"` recommendation in docs |
-| Removing CSAPI from `src/index.ts` breaks the `build:node` output in unexpected ways | Build fails or produces incorrect output | Test the removal locally before documenting; validate with `npm run build && npm run typecheck` |
+| Risk                                                                                      | Impact                                                                  | Mitigation                                                                                                                                          |
+| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| esbuild per-file output doesn't preserve directory structure for CSAPI files              | `"./csapi"` can't point to correct dist paths                           | Run the build and inspect `dist/` before designing the exports config (Phase 1 task)                                                                |
+| `vite-plugin-dts` only generates declarations for files reachable from worker entry point | No `.d.ts` files for CSAPI in `dist/`                                   | Check `dist/` for CSAPI `.d.ts` files; if missing, research `vite-plugin-dts` `include` config or alternative DTS generation                        |
+| `build:node` SSR bundle inlines all code, making CSAPI inseparable for Node consumers     | Node consumers can't import CSAPI separately from the core              | Determine if Node consumers should use the per-file esbuild output instead of the SSR bundle; may need a different `"import"` target in `"exports"` |
+| TypeScript `moduleResolution: "node"` doesn't resolve `"exports"` sub-paths               | Consumers get type errors when importing `@camptocamp/ogc-client/csapi` | Research TypeScript 5.x `"exports"` support; may need `moduleResolution: "bundler"` or `"node16"` recommendation in docs                            |
+| Removing CSAPI from `src/index.ts` breaks the `build:node` output in unexpected ways      | Build fails or produces incorrect output                                | Test the removal locally before documenting; validate with `npm run build && npm run typecheck`                                                     |
 
 ---
 

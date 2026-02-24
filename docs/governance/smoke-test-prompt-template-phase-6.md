@@ -13,16 +13,16 @@
 
 Phase 5 smoke tests validated **runtime behavior** — parsers producing correct typed output from real server JSON. Phase 6 changes **zero runtime behavior**. It restructures the integration boundary (imports, exports, entry points). The correct validation is structural, not behavioral:
 
-| Dimension | Phase 5 Smoke Test | Phase 6 Architecture Verification |
-|-----------|-------------------|-------------------------------------|
-| What's tested | Parser correctness against live data | Module boundary isolation and build correctness |
-| Requires servers | Yes (OSH + 52North) | No — entirely local |
-| HTTP requests | 100+ per test | Zero |
-| Primary tool | `Invoke-RestMethod` | `git grep`, `npx tsc`, `npm run test`, `node --conditions` |
-| Risk being mitigated | Parsers disagree with real server data | Consumer imports break, bundle includes unwanted code, TypeScript resolution fails |
-| Success criteria | All parsers handle all server response shapes | All 12 verification gates pass, litmus test passes, consumer simulation succeeds |
+| Dimension            | Phase 5 Smoke Test                            | Phase 6 Architecture Verification                                                  |
+| -------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------- |
+| What's tested        | Parser correctness against live data          | Module boundary isolation and build correctness                                    |
+| Requires servers     | Yes (OSH + 52North)                           | No — entirely local                                                                |
+| HTTP requests        | 100+ per test                                 | Zero                                                                               |
+| Primary tool         | `Invoke-RestMethod`                           | `git grep`, `npx tsc`, `npm run test`, `node --conditions`                         |
+| Risk being mitigated | Parsers disagree with real server data        | Consumer imports break, bundle includes unwanted code, TypeScript resolution fails |
+| Success criteria     | All parsers handle all server response shapes | All 12 verification gates pass, litmus test passes, consumer simulation succeeds   |
 
-All Phase 5 smoke test findings (F1–F90, P4-F1–F5, P5-F*) remain valid and unchanged — Phase 6 did not modify any parser, URL builder, or format handler behavior.
+All Phase 5 smoke test findings (F1–F90, P4-F1–F5, P5-F\*) remain valid and unchanged — Phase 6 did not modify any parser, URL builder, or format handler behavior.
 
 ---
 
@@ -47,7 +47,7 @@ Copy the **Prompt** section below and paste it into the conversation after compl
 
 ## Prompt
 
-```
+````
 Please perform a Phase 6 architecture verification test of the module boundary refactoring.
 
 ### Scope
@@ -86,10 +86,11 @@ Before running any verification, establish the starting state:
    # Commit 14 (formatting)
    git diff --stat HEAD~1..HEAD    # if HEAD is Commit 15
    git diff --stat HEAD~2..HEAD~1  # Commit 14 only
-   
+
    # Commit 15 (architecture)
    git diff --stat HEAD~1..HEAD    # architecture only
-   ```
+````
+
 5. Verify exactly 7 files changed in Commit 15:
    - 3 created: `csapi/index.ts`, `csapi/factory.ts`, `csapi/factory.spec.ts`
    - 4 modified: `endpoint.ts`, `index.ts`, `endpoint.spec.ts`, `package.json`
@@ -100,12 +101,12 @@ Before running any verification, establish the starting state:
 
 Run all 4 boundary gates. Every one must return 0 matches.
 
-| # | Gate | Command | Expected |
-|---|------|---------|----------|
-| V1 | Endpoint has zero CSAPI imports | `git grep "from.*csapi" src/ogc-api/endpoint.ts` | 0 matches |
-| V2 | Root index has zero CSAPI references | `git grep "csapi\|CSAPI" src/index.ts` | 0 matches |
-| V3 | No cross-module CSAPI imports | `git grep "import.*from.*csapi" -- "src/" ":!src/ogc-api/csapi/"` | 0 matches |
-| V4 | No non-index CSAPI imports | `git grep "from.*csapi" -- "src/" ":!src/ogc-api/csapi/" ":!src/index.ts"` | 0 matches |
+| #   | Gate                                 | Command                                                                    | Expected  |
+| --- | ------------------------------------ | -------------------------------------------------------------------------- | --------- |
+| V1  | Endpoint has zero CSAPI imports      | `git grep "from.*csapi" src/ogc-api/endpoint.ts`                           | 0 matches |
+| V2  | Root index has zero CSAPI references | `git grep "csapi\|CSAPI" src/index.ts`                                     | 0 matches |
+| V3  | No cross-module CSAPI imports        | `git grep "import.*from.*csapi" -- "src/" ":!src/ogc-api/csapi/"`          | 0 matches |
+| V4  | No non-index CSAPI imports           | `git grep "from.*csapi" -- "src/" ":!src/ogc-api/csapi/" ":!src/index.ts"` | 0 matches |
 
 **Record:** For each gate, record the exact command run and the output (including "no matches" if clean).
 
@@ -126,12 +127,14 @@ npm run test:node        # C5 — Node test suite
 ```
 
 **Record for each gate:**
+
 - Exit code (0 = pass)
 - For C4: total passing tests, total suites, any failures
 - For C5: total passing tests, any failures
 - Note any pre-existing issues (e.g., `@types/node` errors, WMTS/WFS timeouts)
 
 **Expected baseline (from Phase 5):**
+
 - C4: 1,282+ tests passing, 29+ suites
 - C5: All non-browser tests passing
 
@@ -163,6 +166,7 @@ npx tsc --noEmit
 ```
 
 **Record:**
+
 - Compilation result with CSAPI removed
 - Any errors that appear (expected: zero from core files)
 - Compilation result after restoration (must be clean)
@@ -176,11 +180,13 @@ npx tsc --noEmit
 Verify that the barrel file re-exports every symbol that was previously in `src/index.ts`:
 
 1. **Count symbols in barrel file:**
+
    ```bash
    git grep "export " src/ogc-api/csapi/index.ts | wc -l
    ```
 
 2. **Count CSAPI symbols removed from root index:**
+
    ```bash
    git diff HEAD~1..HEAD -- src/index.ts | grep "^-export" | wc -l
    # or if Commit 15 is HEAD:
@@ -190,6 +196,7 @@ Verify that the barrel file re-exports every symbol that was previously in `src/
 3. **Cross-reference:** Every CSAPI symbol removed from `src/index.ts` must appear in `src/ogc-api/csapi/index.ts`.
 
 4. **Verify barrel sections** — the barrel file should have 6 organized sections:
+
    - [ ] Factory function (`createCSAPIBuilder`)
    - [ ] Query builder (`CSAPIQueryBuilder` and related)
    - [ ] Model values (enums, constants)
@@ -206,21 +213,27 @@ Verify that the barrel file re-exports every symbol that was previously in `src/
 #### Step 6: Factory Function Verification
 
 1. **Verify factory function signature:**
+
    ```bash
    git grep "createCSAPIBuilder" src/ogc-api/csapi/factory.ts
    ```
+
    Expected: `async function createCSAPIBuilder(endpoint, collectionId)`
 
 2. **Verify factory uses type-only endpoint import:**
+
    ```bash
    git grep "import type.*endpoint\|import type.*Endpoint" src/ogc-api/csapi/factory.ts
    ```
+
    Expected: `import type OgcApiEndpoint` (type-only — erased at compile)
 
 3. **Verify factory tests exist and pass:**
+
    ```bash
    npm run test:browser -- --testPathPattern factory
    ```
+
    Expected: 2 tests passing (builder creation + error case)
 
 4. **Verify factory is re-exported from barrel:**
@@ -234,18 +247,22 @@ Verify that the barrel file re-exports every symbol that was previously in `src/
 #### Step 7: Package.json Verification
 
 1. **Verify sub-path export exists:**
+
    ```bash
    node -e "const pkg = require('./package.json'); console.log(JSON.stringify(pkg.exports['./csapi'], null, 2))"
    ```
+
    Expected: `types`, `import`, `browser`, `default` conditions pointing to `dist/ogc-api/csapi/index.*`
 
 2. **Verify `"types"` is first condition:**
    Inspect `package.json` — `"types"` must appear before `"import"` in the `"./csapi"` object.
 
 3. **Verify `sideEffects` declaration:**
+
    ```bash
    node -e "const pkg = require('./package.json'); console.log(pkg.sideEffects)"
    ```
+
    Expected: `false`
 
 4. **Verify existing exports unchanged:**
@@ -261,6 +278,7 @@ Verify that the barrel file re-exports every symbol that was previously in `src/
 Simulate how a real consumer would import from both entry points:
 
 1. **Core import (should have zero CSAPI):**
+
    ```bash
    # Check that the root index.ts has no CSAPI references
    node -e "
@@ -271,13 +289,16 @@ Simulate how a real consumer would import from both entry points:
      if (csapiLines.length > 0) csapiLines.forEach(l => console.log('  ', l.trim()));
    "
    ```
+
    Expected: 0 CSAPI lines
 
 2. **CSAPI import (should resolve all symbols):**
+
    ```bash
    # Verify barrel file compiles independently
    npx tsc --noEmit src/ogc-api/csapi/index.ts
    ```
+
    Expected: Clean compilation
 
 3. **Verify the consumer API migration pattern works:**
@@ -294,16 +315,20 @@ Simulate how a real consumer would import from both entry points:
 Review the actual changes to confirm they match the Implementation Guide specifications:
 
 1. **Commit 14 diff summary:**
+
    ```bash
    git diff --stat HEAD~2..HEAD~1  # Formatting only
    ```
+
    - Expected: ~51 files changed, ~3,023 insertions, minimal deletions
    - Verify: Zero logic changes — only whitespace and import removal
 
 2. **Commit 15 diff summary:**
+
    ```bash
    git diff --stat HEAD~1..HEAD    # Architecture only
    ```
+
    - Expected: Exactly 7 files (3 created, 4 modified)
    - Expected net change: ~+5 lines (excluding the 3 new files)
 
@@ -319,20 +344,20 @@ Review the actual changes to confirm they match the Implementation Guide specifi
 
 Fill in the complete 12-gate acceptance matrix from the [Contribution Goal](../planning/phase-6/P6-contribution-goal-and-definition.md):
 
-| # | Category | Criterion | Verification | Result |
-|---|----------|-----------|-------------|--------|
-| A1 | Architecture | Zero CSAPI in `index.ts` | `git grep` | ✅/❌ |
-| A2 | Architecture | `"./csapi"` sub-path in exports | Inspect `package.json` | ✅/❌ |
-| A3 | Architecture | Zero outward CSAPI imports | `git grep` | ✅/❌ |
-| A4 | Architecture | Core compiles without CSAPI | Litmus test | ✅/❌ |
-| C1 | CI | Prettier passes | `npm run format:check` | ✅/❌ |
-| C2 | CI | TypeScript compiles | `npm run typecheck` | ✅/❌ |
-| C3 | CI | ESLint passes | `npm run lint` | ✅/❌ |
-| C4 | CI | Browser tests pass | `npm run test:browser` | ✅/❌ |
-| C5 | CI | Node tests pass | `npm run test:node` | ✅/❌ |
-| B1 | Behavioral | `hasConnectedSystems` works | Existing test passes | ✅/❌ |
-| B2 | Behavioral | `csapiCollections` works | Existing test passes | ✅/❌ |
-| B3 | Behavioral | All non-CSAPI unchanged | Full test suite passes | ✅/❌ |
+| #   | Category     | Criterion                       | Verification           | Result |
+| --- | ------------ | ------------------------------- | ---------------------- | ------ |
+| A1  | Architecture | Zero CSAPI in `index.ts`        | `git grep`             | ✅/❌  |
+| A2  | Architecture | `"./csapi"` sub-path in exports | Inspect `package.json` | ✅/❌  |
+| A3  | Architecture | Zero outward CSAPI imports      | `git grep`             | ✅/❌  |
+| A4  | Architecture | Core compiles without CSAPI     | Litmus test            | ✅/❌  |
+| C1  | CI           | Prettier passes                 | `npm run format:check` | ✅/❌  |
+| C2  | CI           | TypeScript compiles             | `npm run typecheck`    | ✅/❌  |
+| C3  | CI           | ESLint passes                   | `npm run lint`         | ✅/❌  |
+| C4  | CI           | Browser tests pass              | `npm run test:browser` | ✅/❌  |
+| C5  | CI           | Node tests pass                 | `npm run test:node`    | ✅/❌  |
+| B1  | Behavioral   | `hasConnectedSystems` works     | Existing test passes   | ✅/❌  |
+| B2  | Behavioral   | `csapiCollections` works        | Existing test passes   | ✅/❌  |
+| B3  | Behavioral   | All non-CSAPI unchanged         | Full test suite passes | ✅/❌  |
 
 **All 12 gates must be ✅ for the verification to pass.**
 
@@ -380,35 +405,36 @@ Use this exact structure:
 **Verifier:** GitHub Copilot (Claude Opus 4.6)
 **Branch:** phase-6
 **Commits verified:**
+
 - `{sha}` — Commit 14: `style(csapi): apply prettier formatting and fix eslint errors`
 - `{sha}` — Commit 15: `refactor(csapi): decouple from endpoint with separate entry point`
 
 ## Pre-Verification State
 
-| Property | Value |
-|----------|-------|
-| Branch | phase-6 |
-| HEAD | {{SHA}} |
-| Working tree | Clean |
+| Property        | Value               |
+| --------------- | ------------------- |
+| Branch          | phase-6             |
+| HEAD            | {{SHA}}             |
+| Working tree    | Clean               |
 | Commit 14 files | {{N}} files changed |
 | Commit 15 files | {{N}} files changed |
 
 ## Acceptance Criteria Matrix
 
-| # | Category | Criterion | Command/Method | Expected | Actual | Status |
-|---|----------|-----------|---------------|----------|--------|--------|
-| A1 | Architecture | Zero CSAPI in index.ts | git grep | 0 | {{N}} | ✅/❌ |
-| A2 | Architecture | ./csapi sub-path | Inspect pkg | Present | {{Y/N}} | ✅/❌ |
-| A3 | Architecture | Zero outward imports | git grep | 0 | {{N}} | ✅/❌ |
-| A4 | Architecture | Core compiles alone | Litmus test | Clean | {{result}} | ✅/❌ |
-| C1 | CI | Prettier | format:check | exit 0 | {{result}} | ✅/❌ |
-| C2 | CI | TypeScript | typecheck | exit 0 | {{result}} | ✅/❌ |
-| C3 | CI | ESLint | lint | exit 0 | {{result}} | ✅/❌ |
-| C4 | CI | Browser tests | test:browser | all pass | {{N}} pass | ✅/❌ |
-| C5 | CI | Node tests | test:node | all pass | {{N}} pass | ✅/❌ |
-| B1 | Behavioral | hasConnectedSystems | test pass | ✅ | {{result}} | ✅/❌ |
-| B2 | Behavioral | csapiCollections | test pass | ✅ | {{result}} | ✅/❌ |
-| B3 | Behavioral | Non-CSAPI unchanged | full suite | ✅ | {{result}} | ✅/❌ |
+| #   | Category     | Criterion              | Command/Method | Expected | Actual     | Status |
+| --- | ------------ | ---------------------- | -------------- | -------- | ---------- | ------ |
+| A1  | Architecture | Zero CSAPI in index.ts | git grep       | 0        | {{N}}      | ✅/❌  |
+| A2  | Architecture | ./csapi sub-path       | Inspect pkg    | Present  | {{Y/N}}    | ✅/❌  |
+| A3  | Architecture | Zero outward imports   | git grep       | 0        | {{N}}      | ✅/❌  |
+| A4  | Architecture | Core compiles alone    | Litmus test    | Clean    | {{result}} | ✅/❌  |
+| C1  | CI           | Prettier               | format:check   | exit 0   | {{result}} | ✅/❌  |
+| C2  | CI           | TypeScript             | typecheck      | exit 0   | {{result}} | ✅/❌  |
+| C3  | CI           | ESLint                 | lint           | exit 0   | {{result}} | ✅/❌  |
+| C4  | CI           | Browser tests          | test:browser   | all pass | {{N}} pass | ✅/❌  |
+| C5  | CI           | Node tests             | test:node      | all pass | {{N}} pass | ✅/❌  |
+| B1  | Behavioral   | hasConnectedSystems    | test pass      | ✅       | {{result}} | ✅/❌  |
+| B2  | Behavioral   | csapiCollections       | test pass      | ✅       | {{result}} | ✅/❌  |
+| B3  | Behavioral   | Non-CSAPI unchanged    | full suite     | ✅       | {{result}} | ✅/❌  |
 
 **Result: {{N}}/12 gates passing**
 
@@ -416,26 +442,34 @@ Use this exact structure:
 
 ### V1: Endpoint CSAPI Imports
 ```
-$ git grep "from.*csapi" src/ogc-api/endpoint.ts
+
+$ git grep "from.\*csapi" src/ogc-api/endpoint.ts
 {{output or "no matches"}}
+
 ```
 
 ### V2: Root Index CSAPI References
 ```
+
 $ git grep "csapi\|CSAPI" src/index.ts
 {{output or "no matches"}}
+
 ```
 
 ### V3: Cross-Module CSAPI Imports
 ```
+
 $ git grep "import.*from.*csapi" -- "src/" ":!src/ogc-api/csapi/"
 {{output or "no matches"}}
+
 ```
 
 ### V4: Non-Index CSAPI Imports
 ```
-$ git grep "from.*csapi" -- "src/" ":!src/ogc-api/csapi/" ":!src/index.ts"
+
+$ git grep "from.\*csapi" -- "src/" ":!src/ogc-api/csapi/" ":!src/index.ts"
 {{output or "no matches"}}
+
 ```
 
 ## Litmus Test (Core Independence)
@@ -512,6 +546,7 @@ Match: ✅/❌
 ```
 
 Then commit the report, push, and confirm the file is at the expected path.
+
 ```
 
 ---
@@ -556,3 +591,4 @@ Phase 6 architecture verification does NOT replace Phase 5 smoke tests. They tes
 | CI pipeline passes | **Phase 6 verification** (this template) |
 
 If a Phase 5 smoke test is needed after Phase 6, use `smoke-test-prompt-template-phase-5.md` — it remains fully valid since Phase 6 changed zero runtime behavior.
+```

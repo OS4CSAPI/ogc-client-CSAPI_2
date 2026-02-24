@@ -2845,9 +2845,7 @@ describe('OgcApiEndpoint with CSAPI', () => {
     });
 
     it('can list all CSAPI collections', async () => {
-      await expect(endpoint.csapiCollections).resolves.toEqual([
-        'iot-sensors',
-      ]);
+      await expect(endpoint.csapiCollections).resolves.toEqual(['iot-sensors']);
     });
 
     it('can produce a CSAPI query builder', async () => {

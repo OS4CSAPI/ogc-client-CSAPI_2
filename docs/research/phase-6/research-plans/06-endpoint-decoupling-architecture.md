@@ -6,16 +6,16 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Status** | Not Started |
-| **Plan Type** | Design synthesis |
-| **Date Created** | 2026-02-23 |
-| **Last Updated** | 2026-02-23 |
-| **Estimated Time** | 3–4 hours |
-| **Actual Time** | — |
-| **Depends On** | 02, 03, 04, 05 |
-| **Blocks** | 08 (File-Level Changelist and Commit Strategy) |
+| Field                  | Value                                                     |
+| ---------------------- | --------------------------------------------------------- |
+| **Status**             | Not Started                                               |
+| **Plan Type**          | Design synthesis                                          |
+| **Date Created**       | 2026-02-23                                                |
+| **Last Updated**       | 2026-02-23                                                |
+| **Estimated Time**     | 3–4 hours                                                 |
+| **Actual Time**        | —                                                         |
+| **Depends On**         | 02, 03, 04, 05                                            |
+| **Blocks**             | 08 (File-Level Changelist and Commit Strategy)            |
 | **Strategy Reference** | [research-strategy.md § Plan 06](../research-strategy.md) |
 
 ---
@@ -34,8 +34,8 @@ This is the single most consequential plan in the research phase. Every architec
 
 This is the critical synthesis plan. It cannot begin until Plans 02–05 are complete because each contributes essential input:
 
-- **Plan 02 (EDR)** provides the proven precedent — EDR is already cleanly decoupled. Its `edr()` method on `endpoint.ts` (line 341) imports `EDRQueryBuilder` directly, but EDR is small (656 lines / 3 files) and was never flagged by jahow. Understanding *why* EDR's pattern is acceptable at its scale but not at CSAPI's scale (11,767 lines / 27 files) is critical context for the coupling level decision.
-- **Plan 03 (Entry Point)** provides the `package.json` `"exports"` configuration and barrel file mechanics. Plan 06 must design the barrel file *contents* — Plan 03 tells us the barrel file *structure* works.
+- **Plan 02 (EDR)** provides the proven precedent — EDR is already cleanly decoupled. Its `edr()` method on `endpoint.ts` (line 341) imports `EDRQueryBuilder` directly, but EDR is small (656 lines / 3 files) and was never flagged by jahow. Understanding _why_ EDR's pattern is acceptable at its scale but not at CSAPI's scale (11,767 lines / 27 files) is critical context for the coupling level decision.
+- **Plan 03 (Entry Point)** provides the `package.json` `"exports"` configuration and barrel file mechanics. Plan 06 must design the barrel file _contents_ — Plan 03 tells us the barrel file _structure_ works.
 - **Plan 04 (Industry API)** provides the consumer API pattern catalog. Plan 06 selects from that catalog based on our specific constraints and codebase realities.
 - **Plan 05 (Decoupling Patterns)** provides the coupling level analysis and structural typing implications. Plan 06 selects the coupling level and resolves the `scanCsapiLinks` placement problem using Plan 05's analysis.
 
@@ -60,7 +60,7 @@ This is the critical synthesis plan. It cannot begin until Plans 02–05 are com
 3. **No outward imports (Constraint 3):** The two CSAPI imports in `endpoint.ts` must be eliminated:
    - Line 52: `import CSAPIQueryBuilder from './csapi/url_builder.js'` — **must go**
    - Line 53: `import { scanCsapiLinks } from './csapi/helpers.js'` — **must go**
-   After refactoring, `git grep "from.*csapi" src/ogc-api/endpoint.ts` must return zero matches.
+     After refactoring, `git grep "from.*csapi" src/ogc-api/endpoint.ts` must return zero matches.
 4. **One-way dependency (Constraint 4):** After refactoring, removing the entire `src/ogc-api/csapi/` directory must leave core fully functional — zero type errors, zero test failures, zero import resolution errors. This is the litmus test for every design choice.
 5. **CI compliance:** Prettier, TypeScript typecheck, ESLint, browser tests, and Node.js tests must all pass.
 
@@ -68,13 +68,14 @@ This is the critical synthesis plan. It cannot begin until Plans 02–05 are com
 
 > **Research broadly, implement minimally.**
 >
-> Plans 04 and 05 provide industry best practices and architectural theory to *inform* design decisions. However, every design decision produced by this plan must pass the **minimum-change test:**
+> Plans 04 and 05 provide industry best practices and architectural theory to _inform_ design decisions. However, every design decision produced by this plan must pass the **minimum-change test:**
 >
 > **"Does this change directly serve jahow's two requirements (CSAPI out of root index.ts, non-CSAPI code stops importing CSAPI), or are we adding work he didn't request?"**
 >
-> If a design choice is informed by industry best practice but increases the implementation scope beyond what jahow requires, prefer the simpler approach that still satisfies all boundary conditions. Use the industry research to *validate* that the simpler approach is sound — not to justify a more complex one.
+> If a design choice is informed by industry best practice but increases the implementation scope beyond what jahow requires, prefer the simpler approach that still satisfies all boundary conditions. Use the industry research to _validate_ that the simpler approach is sound — not to justify a more complex one.
 >
 > Specifically:
+>
 > - Do NOT introduce adapter interfaces, factory patterns, or data record types unless they are strictly necessary to satisfy the boundary conditions. If the existing code can be relocated without restructuring, that is preferred.
 > - Do NOT refactor `CSAPIQueryBuilder`'s constructor signature unless the current signature violates a boundary condition.
 > - Do NOT suggest changes to EDR or other upstream modules — that is not our scope.
@@ -150,18 +151,20 @@ These are the genuine design decisions this plan must resolve:
 15. `hasConnectedSystems` (endpoint.ts line 334) calls `checkHasConnectedSystems()` from `info.ts` (line 112), which checks conformance URIs `ogcapi-connectedsystems-1/1.0/conf/core` and `ogcapi-connectedsystems-2/1.0/conf/dynamic-data`. Neither `checkHasConnectedSystems` nor `hasConnectedSystems` imports anything from `csapi/`. Does this mean `hasConnectedSystems` can stay on the endpoint without violating constraint 3 or 4? Write the explicit constraint verification.
 16. `csapiCollections` (endpoint.ts line 237) calls `parseCollections()` from `info.ts` (line 248), which checks `collection.links.some(link => /^ogc-cs:.+$/.test(link.rel))` (info.ts line 300–303). Neither `parseCollections` nor `csapiCollections` imports from `csapi/`. Does `csapiCollections` satisfy all boundary conditions? Write the explicit constraint verification.
 17. If both `hasConnectedSystems` and `csapiCollections` stay on the endpoint, how does a consumer discover the CSAPI module? The endpoint has these two properties, but no method that creates a builder. What is the discoverability story?
-18. Should `hasConnectedSystems` and `csapiCollections` be *also* available from the CSAPI module (as standalone functions that accept conformance classes or collection data), creating a dual-availability pattern? Or should they exist in exactly one place?
+18. Should `hasConnectedSystems` and `csapiCollections` be _also_ available from the CSAPI module (as standalone functions that accept conformance classes or collection data), creating a dual-availability pattern? Or should they exist in exactly one place?
 19. If Plan 04 recommends a pattern where the sub-module provides its own capability checks (e.g., `CSAPIClient.isSupported(endpoint)`), does that conflict with keeping `hasConnectedSystems` on the endpoint?
 
 #### `scanCsapiLinks` and `extractRootResourceUrls` Resolution (6 questions)
 
 20. `scanCsapiLinks` (helpers.ts line 129) has these dependencies: it imports `CSAPIResourceTypes` from `./model.js` (the constant array of 9 resource type strings) and `CSAPIResourceType` type from `./model.js`. It accepts `Array<{rel?: string, href?: string}>` — a structural type. It returns `Map<string, string>`. Analyze: is this function fundamentally CSAPI-specific (it knows the 9 resource type strings), or could a generic version work?
 21. `endpoint.extractRootResourceUrls()` (line 431–436) does: `const rootDoc = await this.root; const links = rootDoc?.links; return scanCsapiLinks(links)`. This is 6 lines of code that delegates to `scanCsapiLinks`. What are the options for eliminating this constraint violation?
-   - Option A: Inline `scanCsapiLinks` logic into endpoint (duplicate the ~40 lines).
-   - Option B: Move `scanCsapiLinks` to `shared/` or core utils (but it uses `CSAPIResourceTypes`).
-   - Option C: Make `extractRootResourceUrls` generic — scan for *any* link patterns, not CSAPI-specific ones.
-   - Option D: Remove `extractRootResourceUrls` from endpoint entirely — let the consumer (or CSAPI factory) scan the root document links.
-   - Option E: Move just the `CSAPIResourceTypes` constant to a shared location, then move `scanCsapiLinks` to shared utils.
+
+- Option A: Inline `scanCsapiLinks` logic into endpoint (duplicate the ~40 lines).
+- Option B: Move `scanCsapiLinks` to `shared/` or core utils (but it uses `CSAPIResourceTypes`).
+- Option C: Make `extractRootResourceUrls` generic — scan for _any_ link patterns, not CSAPI-specific ones.
+- Option D: Remove `extractRootResourceUrls` from endpoint entirely — let the consumer (or CSAPI factory) scan the root document links.
+- Option E: Move just the `CSAPIResourceTypes` constant to a shared location, then move `scanCsapiLinks` to shared utils.
+
 22. For each option in Q21, verify against all four boundary conditions with explicit ✓/✗.
 23. Which option has the lowest migration effort while satisfying all constraints?
 24. If Option D is chosen (remove from endpoint), how does the CSAPI factory/constructor get the root document links? Does `endpoint.root` need to be public? (Currently `root` is a private getter on line 72.)
@@ -192,7 +195,7 @@ These are the genuine design decisions this plan must resolve:
     - `caches the CSAPI query builder` — tests `endpoint.csapi()` caching. Must be migrated or rewritten.
     - `reports no Connected Systems support` — tests `hasConnectedSystems` === false. Stays on endpoint.
     - `throws an error when calling csapi()` — tests `endpoint.csapi()` throwing. Must be migrated or rewritten.
-    Draft the concrete migration plan for each test.
+      Draft the concrete migration plan for each test.
 37. The CSAPI test fixtures are in `fixtures/ogc-api/csapi/`. Are there fixture files specifically for the `endpoint.spec.ts` CSAPI tests (e.g., `sample-data-hub`)? What happens to them after migration?
 38. After test migration, what is the test coverage for the CSAPI module boundary? Are there new tests needed to verify: (a) the factory/constructor works with endpoint-provided data, (b) the factory/constructor works with manually-provided data (no endpoint), (c) error handling when data is insufficient?
 39. Does the test migration change `jest.config.cjs` or test file patterns?
@@ -213,50 +216,50 @@ These are the genuine design decisions this plan must resolve:
 
 ### Primary Sources (In Workspace)
 
-| Source | Path | What to Extract |
-|--------|------|-----------------|
-| Endpoint CSAPI imports (violations) | `src/ogc-api/endpoint.ts` (lines 52–53) | The two imports that must be eliminated: `CSAPIQueryBuilder` and `scanCsapiLinks` |
-| Endpoint class declaration and cache | `src/ogc-api/endpoint.ts` (lines 57–70) | Class fields: `collection_id_to_csapi_builder_: Map<string, CSAPIQueryBuilder>`, `root_`, `conformance_`, private getters |
-| Endpoint `hasConnectedSystems` | `src/ogc-api/endpoint.ts` (lines 320–338) | Calls `checkHasConnectedSystems()` from `info.ts` — no CSAPI imports |
-| Endpoint `csapiCollections` | `src/ogc-api/endpoint.ts` (lines 218–244) | Calls `parseCollections()` from `info.ts` — no CSAPI imports |
-| Endpoint `csapi()` method | `src/ogc-api/endpoint.ts` (lines 385–413) | 4-step data flow: hasConnectedSystems check → cache → getCollectionDocument → extractRootResourceUrls → new CSAPIQueryBuilder |
-| Endpoint `extractRootResourceUrls()` | `src/ogc-api/endpoint.ts` (lines 425–436) | Calls `scanCsapiLinks(rootDoc.links)` — the second violation |
-| Endpoint `getCollectionDocument()` | `src/ogc-api/endpoint.ts` (lines 438–468) | Private method returning raw OgcApiDocument with links intact |
-| Endpoint EDR pattern (precedent) | `src/ogc-api/endpoint.ts` (lines 341–354) | `edr()` method: checks `hasEnvironmentalDataRetrieval`, gets `getCollectionInfo` (not raw doc), constructs `new EDRQueryBuilder(collection)` — a simpler data flow than CSAPI |
-| CSAPIQueryBuilder constructor | `src/ogc-api/csapi/url_builder.ts` (lines 106–180) | Accepts `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` + optional `Map<string, string>`. Already uses structural typing via `Pick<>`. |
-| CSAPIQueryBuilder imports from core | `src/ogc-api/csapi/url_builder.ts` (line 1) | `import type { OgcApiCollectionInfo } from '../model.js'` — type-only import |
-| CSAPI model imports from core | `src/ogc-api/csapi/model.ts` (lines 1–2) | `import type { BoundingBox, DateTimeParameter, CrsCode, MimeType } from '../../shared/models.js'` and `import type { OgcApiDocumentLink } from '../model.js'` |
-| CSAPI helpers imports from core | `src/ogc-api/csapi/helpers.ts` (line 3) | `import type { BoundingBox } from '../../shared/models.js'` |
-| `scanCsapiLinks` full implementation | `src/ogc-api/csapi/helpers.ts` (lines 129–170) | 40 lines, uses `CSAPIResourceTypes` constant, accepts structural `Array<{rel?, href?}>`, returns `Map<string, string>` |
-| `checkHasConnectedSystems` | `src/ogc-api/info.ts` (lines 112–123) | Checks conformance URIs only — zero CSAPI imports |
-| `parseCollections` with `hasConnectedSystems` | `src/ogc-api/info.ts` (lines 248–309) | Sets `hasConnectedSystems = true` when `link.rel` matches `/^ogc-cs:.+$/` — zero CSAPI imports, uses regex only |
-| Root CSAPI exports | `src/index.ts` (lines 45–252) | ~170 lines of CSAPI exports from `csapi/url_builder.ts`, `csapi/model.ts`, `csapi/formats/index.ts` |
-| CSAPI tests in endpoint | `src/ogc-api/endpoint.spec.ts` (lines 2836–2888) | 6 tests in 2 describe blocks: nominal (4 tests) + non-CSAPI (2 tests) |
-| EDR query builder imports | `src/ogc-api/edr/url_builder.ts` (lines 1–20) | EDR imports `OgcApiCollectionInfo` from `../model.js` — same pattern as CSAPI |
-| CSAPI formats barrel | `src/ogc-api/csapi/formats/index.ts` | What the formats sub-module exports — needed for barrel file design |
-| CSAPI directory structure | `src/ogc-api/csapi/` | 10 source files + `formats/` (8 files) + `integration/` (test files) + `formats/sensorml/` + `formats/swecommon/` |
+| Source                                        | Path                                               | What to Extract                                                                                                                                                               |
+| --------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Endpoint CSAPI imports (violations)           | `src/ogc-api/endpoint.ts` (lines 52–53)            | The two imports that must be eliminated: `CSAPIQueryBuilder` and `scanCsapiLinks`                                                                                             |
+| Endpoint class declaration and cache          | `src/ogc-api/endpoint.ts` (lines 57–70)            | Class fields: `collection_id_to_csapi_builder_: Map<string, CSAPIQueryBuilder>`, `root_`, `conformance_`, private getters                                                     |
+| Endpoint `hasConnectedSystems`                | `src/ogc-api/endpoint.ts` (lines 320–338)          | Calls `checkHasConnectedSystems()` from `info.ts` — no CSAPI imports                                                                                                          |
+| Endpoint `csapiCollections`                   | `src/ogc-api/endpoint.ts` (lines 218–244)          | Calls `parseCollections()` from `info.ts` — no CSAPI imports                                                                                                                  |
+| Endpoint `csapi()` method                     | `src/ogc-api/endpoint.ts` (lines 385–413)          | 4-step data flow: hasConnectedSystems check → cache → getCollectionDocument → extractRootResourceUrls → new CSAPIQueryBuilder                                                 |
+| Endpoint `extractRootResourceUrls()`          | `src/ogc-api/endpoint.ts` (lines 425–436)          | Calls `scanCsapiLinks(rootDoc.links)` — the second violation                                                                                                                  |
+| Endpoint `getCollectionDocument()`            | `src/ogc-api/endpoint.ts` (lines 438–468)          | Private method returning raw OgcApiDocument with links intact                                                                                                                 |
+| Endpoint EDR pattern (precedent)              | `src/ogc-api/endpoint.ts` (lines 341–354)          | `edr()` method: checks `hasEnvironmentalDataRetrieval`, gets `getCollectionInfo` (not raw doc), constructs `new EDRQueryBuilder(collection)` — a simpler data flow than CSAPI |
+| CSAPIQueryBuilder constructor                 | `src/ogc-api/csapi/url_builder.ts` (lines 106–180) | Accepts `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` + optional `Map<string, string>`. Already uses structural typing via `Pick<>`.                               |
+| CSAPIQueryBuilder imports from core           | `src/ogc-api/csapi/url_builder.ts` (line 1)        | `import type { OgcApiCollectionInfo } from '../model.js'` — type-only import                                                                                                  |
+| CSAPI model imports from core                 | `src/ogc-api/csapi/model.ts` (lines 1–2)           | `import type { BoundingBox, DateTimeParameter, CrsCode, MimeType } from '../../shared/models.js'` and `import type { OgcApiDocumentLink } from '../model.js'`                 |
+| CSAPI helpers imports from core               | `src/ogc-api/csapi/helpers.ts` (line 3)            | `import type { BoundingBox } from '../../shared/models.js'`                                                                                                                   |
+| `scanCsapiLinks` full implementation          | `src/ogc-api/csapi/helpers.ts` (lines 129–170)     | 40 lines, uses `CSAPIResourceTypes` constant, accepts structural `Array<{rel?, href?}>`, returns `Map<string, string>`                                                        |
+| `checkHasConnectedSystems`                    | `src/ogc-api/info.ts` (lines 112–123)              | Checks conformance URIs only — zero CSAPI imports                                                                                                                             |
+| `parseCollections` with `hasConnectedSystems` | `src/ogc-api/info.ts` (lines 248–309)              | Sets `hasConnectedSystems = true` when `link.rel` matches `/^ogc-cs:.+$/` — zero CSAPI imports, uses regex only                                                               |
+| Root CSAPI exports                            | `src/index.ts` (lines 45–252)                      | ~170 lines of CSAPI exports from `csapi/url_builder.ts`, `csapi/model.ts`, `csapi/formats/index.ts`                                                                           |
+| CSAPI tests in endpoint                       | `src/ogc-api/endpoint.spec.ts` (lines 2836–2888)   | 6 tests in 2 describe blocks: nominal (4 tests) + non-CSAPI (2 tests)                                                                                                         |
+| EDR query builder imports                     | `src/ogc-api/edr/url_builder.ts` (lines 1–20)      | EDR imports `OgcApiCollectionInfo` from `../model.js` — same pattern as CSAPI                                                                                                 |
+| CSAPI formats barrel                          | `src/ogc-api/csapi/formats/index.ts`               | What the formats sub-module exports — needed for barrel file design                                                                                                           |
+| CSAPI directory structure                     | `src/ogc-api/csapi/`                               | 10 source files + `formats/` (8 files) + `integration/` (test files) + `formats/sensorml/` + `formats/swecommon/`                                                             |
 
 ### External Sources
 
-| Source | URL/Reference | What to Extract |
-|--------|---------------|-----------------|
-| TypeScript Handbook — Structural Typing | https://www.typescriptlang.org/docs/handbook/type-compatibility.html | Applied context for the `Pick<OgcApiCollectionInfo, ...>` pattern — does structural compatibility allow the type import to be eliminated? |
-| TypeScript Handbook — `import type` | https://www.typescriptlang.org/docs/handbook/modules/reference.html#type-only-imports-and-exports | Whether `import type` creates any dependency that violates constraints |
-| Node.js subpath exports | https://nodejs.org/api/packages.html#subpath-exports | Reference for barrel file → `"exports"` field mapping |
-| ESLint `no-restricted-imports` rule | https://eslint.org/docs/latest/rules/no-restricted-imports | Enforcing module boundary via linting |
-| TypeScript Project References | https://www.typescriptlang.org/docs/handbook/project-references.html | Enforcing module boundary at compile time |
-| Martin Fowler — Extract Module | https://refactoring.guru/refactoring/catalog | Migration strategy patterns |
-| OGC API - Connected Systems Part 1 | https://docs.ogc.org/is/23-001/23-001.html | Conformance URIs used by `checkHasConnectedSystems` |
-| OGC API - Connected Systems Part 2 | https://docs.ogc.org/is/23-002/23-002.html | Conformance URIs used by `checkHasConnectedSystems` |
+| Source                                  | URL/Reference                                                                                     | What to Extract                                                                                                                           |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| TypeScript Handbook — Structural Typing | https://www.typescriptlang.org/docs/handbook/type-compatibility.html                              | Applied context for the `Pick<OgcApiCollectionInfo, ...>` pattern — does structural compatibility allow the type import to be eliminated? |
+| TypeScript Handbook — `import type`     | https://www.typescriptlang.org/docs/handbook/modules/reference.html#type-only-imports-and-exports | Whether `import type` creates any dependency that violates constraints                                                                    |
+| Node.js subpath exports                 | https://nodejs.org/api/packages.html#subpath-exports                                              | Reference for barrel file → `"exports"` field mapping                                                                                     |
+| ESLint `no-restricted-imports` rule     | https://eslint.org/docs/latest/rules/no-restricted-imports                                        | Enforcing module boundary via linting                                                                                                     |
+| TypeScript Project References           | https://www.typescriptlang.org/docs/handbook/project-references.html                              | Enforcing module boundary at compile time                                                                                                 |
+| Martin Fowler — Extract Module          | https://refactoring.guru/refactoring/catalog                                                      | Migration strategy patterns                                                                                                               |
+| OGC API - Connected Systems Part 1      | https://docs.ogc.org/is/23-001/23-001.html                                                        | Conformance URIs used by `checkHasConnectedSystems`                                                                                       |
+| OGC API - Connected Systems Part 2      | https://docs.ogc.org/is/23-002/23-002.html                                                        | Conformance URIs used by `checkHasConnectedSystems`                                                                                       |
 
 ### Prior Research Findings
 
-| Finding | Path | What to Use |
-|---------|------|-------------|
-| Plan 02 findings | `docs/research/phase-6/findings/02-edr-integration-pattern-analysis.md` | EDR decoupling pattern as baseline: how `edr()` works, why it's acceptable at EDR's scale, what patterns carry over to CSAPI and what doesn't |
-| Plan 03 findings | `docs/research/phase-6/findings/03-separate-entry-point-design-patterns.md` | `package.json` `"exports"` configuration, barrel file mechanics, TypeScript declaration generation for sub-paths |
-| Plan 04 findings | `docs/research/phase-6/findings/04-sub-module-api-design-patterns.md` | Recommended consumer API pattern, coupling level precedent from industry, async data handling patterns |
-| Plan 05 findings | `docs/research/phase-6/findings/05-module-decoupling-patterns.md` | Coupling level recommendation, `scanCsapiLinks` placement analysis, `import type` strategy, structural typing implications, module boundary enforcement |
+| Finding          | Path                                                                        | What to Use                                                                                                                                             |
+| ---------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plan 02 findings | `docs/research/phase-6/findings/02-edr-integration-pattern-analysis.md`     | EDR decoupling pattern as baseline: how `edr()` works, why it's acceptable at EDR's scale, what patterns carry over to CSAPI and what doesn't           |
+| Plan 03 findings | `docs/research/phase-6/findings/03-separate-entry-point-design-patterns.md` | `package.json` `"exports"` configuration, barrel file mechanics, TypeScript declaration generation for sub-paths                                        |
+| Plan 04 findings | `docs/research/phase-6/findings/04-sub-module-api-design-patterns.md`       | Recommended consumer API pattern, coupling level precedent from industry, async data handling patterns                                                  |
+| Plan 05 findings | `docs/research/phase-6/findings/05-module-decoupling-patterns.md`           | Coupling level recommendation, `scanCsapiLinks` placement analysis, `import type` strategy, structural typing implications, module boundary enforcement |
 
 ---
 
@@ -267,6 +270,7 @@ These are the genuine design decisions this plan must resolve:
 **Objective:** Extract the concrete recommendations from Plans 02–05 and identify any conflicts that must be resolved before design can begin.
 
 **Tasks:**
+
 1. Extract Plan 02's EDR pattern summary — document the exact `edr()` data flow and compare point-by-point with `csapi()`: What does EDR do that CSAPI can reuse? Where does CSAPI diverge? (EDR uses `getCollectionInfo` which strips links; CSAPI uses `getCollectionDocument` which preserves links.)
 2. Extract Plan 03's recommended `package.json` `"exports"` configuration — verify it supports the barrel file design needed for CSAPI's ~170 exported symbols.
 3. Extract Plan 04's recommended consumer API pattern — document the exact pattern name, which industry libraries use it, and what it looks like in code.
@@ -281,6 +285,7 @@ These are the genuine design decisions this plan must resolve:
 **Objective:** Produce the exact consumer API with TypeScript signatures, before/after code, and data flow diagrams.
 
 **Tasks:**
+
 1. Draft the recommended consumer API function/class with complete TypeScript signature, JSDoc, parameter types, return type, and usage example.
 2. Draft the before/after consumer code comparison:
    - **Before:** `const builder = await endpoint.csapi('weather-stations');`
@@ -299,6 +304,7 @@ These are the genuine design decisions this plan must resolve:
 **Objective:** Make a placement decision for every function, property, and type currently straddling the core ↔ CSAPI boundary.
 
 **Tasks:**
+
 1. **`hasConnectedSystems`:** Verify import graph (endpoint → info.ts → no CSAPI). Write explicit ✓/✗ for each constraint. Decision: stays on endpoint? Also available from CSAPI?
 2. **`csapiCollections`:** Same analysis as #1. Verify `parseCollections` in `info.ts` uses only `link.rel` regex, no CSAPI constant imports. Decision: stays on endpoint?
 3. **`scanCsapiLinks`:** Apply Plan 05's recommendation. Evaluate all 5 options from Q21 against constraints. Select the option. Draft the before/after code for `endpoint.ts` and `csapi/helpers.ts`.
@@ -321,6 +327,7 @@ These are the genuine design decisions this plan must resolve:
 **Objective:** Draft the exact `src/ogc-api/csapi/index.ts` barrel file and verify it covers all symbols currently exported from root.
 
 **Tasks:**
+
 1. Inventory all CSAPI symbols currently exported from `src/index.ts` — categorize by source file and export kind (value, type, class)
 2. Draft the barrel file contents — every `export` and `export type` statement, organized by category
 3. Determine if additional symbols should be exported (factory function, `scanCsapiLinks`, helper utilities) that aren't in root today
@@ -334,6 +341,7 @@ These are the genuine design decisions this plan must resolve:
 **Objective:** Draft the complete test migration plan and post-refactoring verification checklist.
 
 **Tasks:**
+
 1. Classify each of the 6 CSAPI tests in `endpoint.spec.ts` — stays, moves, or rewrites
 2. For tests that move: draft the destination file, the before/after test code, and any fixture changes
 3. For tests that stay: document why they don't violate constraints (they test endpoint behavior, not CSAPI internals)
@@ -355,6 +363,7 @@ These are the genuine design decisions this plan must resolve:
 **Objective:** Consolidate all phase outputs into the deliverable architectural document.
 
 **Tasks:**
+
 1. Synthesize findings from Phases 1–5 into the findings report structure
 2. Verify all 44 research questions are answered with specific, evidenced answers
 3. Validate every design decision against all four boundary conditions — explicit ✓/✗ for each
@@ -375,7 +384,7 @@ This research is complete when:
 - [ ] All 44 detailed research questions have specific, evidenced answers
 - [ ] Findings respect all boundary conditions listed in Section 3
 - [ ] Prior findings from Plans 02–05 are synthesized with explicit conflict resolution where recommendations diverge
-- [ ] Consumer API is *fully specified* — exact TypeScript function/class signature, JSDoc, parameter types, return type, usage example, before/after comparison
+- [ ] Consumer API is _fully specified_ — exact TypeScript function/class signature, JSDoc, parameter types, return type, usage example, before/after comparison
 - [ ] Every integration point currently straddling the module boundary has a concrete placement decision with before/after code
 - [ ] `scanCsapiLinks` placement is resolved with a selected option and before/after code
 - [ ] `hasConnectedSystems` and `csapiCollections` placement is resolved with explicit constraint verification (✓/✗ for each)
@@ -418,15 +427,15 @@ This research is complete when:
 
 ## 9. Risks and Mitigation
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Plan 04 recommends constructor injection (sub-module accepts core instance) but Plan 05 recommends data record coupling (zero core imports) — these are fundamentally incompatible | Must choose one, sacrificing the other's benefits | Phase 1 explicitly cross-references both recommendations. If they conflict, this plan resolves by evaluating both against boundary conditions + migration effort + developer ergonomics. The option that satisfies all 4 constraints wins; if both satisfy, the lower-migration-effort option wins. |
-| `getCollectionDocument` may need to become public, expanding the `OgcApiEndpoint` API surface | jahow may object to new public methods on the endpoint class | Evaluate whether the factory function can use existing public getters instead. `endpoint.root` is private; `endpoint.conformanceClasses` is public. If a new public method is unavoidable, minimize its surface (return a narrow type, not the full raw document). |
-| The `scanCsapiLinks` resolution may require code duplication, which is a maintenance risk | If duplicated, changes to link scanning conventions must be applied in two places | Assess all 5 options honestly. If duplication is selected, document a linting rule or code comment that flags the twin as needing synchronized updates. |
-| `hasConnectedSystems` and `csapiCollections` may be controversial to keep on the endpoint — jahow may consider them "CSAPI in core" | Could be rejected in PR review | Prepare the explicit import graph analysis showing these properties have zero CSAPI imports. `checkHasConnectedSystems` uses conformance URI strings only; `parseCollections` uses `link.rel` regex only. Neither imports from `csapi/`. If jahow still objects, the fallback plan (move to CSAPI module as standalone functions) is designed in Q18. |
-| The 6 CSAPI tests use a `sample-data-hub` fixture that may have CSAPI-specific content | Fixture files may need to be duplicated or restructured | Inventory the fixture files used by the CSAPI tests. Determine if they can be shared or must move with the tests. |
-| The barrel file with ~170 re-exports may affect tree-shaking | Consumers importing one CSAPI symbol may pull in the entire module | Plan 05's findings on tree-shaking inform this. If the barrel file hurts tree-shaking, consider per-file deep imports as an alternative (e.g., `@camptocamp/ogc-client/csapi/url_builder`). |
-| The architecture may look clean on paper but fail TypeScript compilation due to subtle circular references or module resolution issues | Wasted implementation time | Phase 6 includes a barrel file circular dependency verification task. Plan 08 should include a "build and verify" step before committing. |
+| Risk                                                                                                                                                                               | Impact                                                                            | Mitigation                                                                                                                                                                                                                                                                                                                                            |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plan 04 recommends constructor injection (sub-module accepts core instance) but Plan 05 recommends data record coupling (zero core imports) — these are fundamentally incompatible | Must choose one, sacrificing the other's benefits                                 | Phase 1 explicitly cross-references both recommendations. If they conflict, this plan resolves by evaluating both against boundary conditions + migration effort + developer ergonomics. The option that satisfies all 4 constraints wins; if both satisfy, the lower-migration-effort option wins.                                                   |
+| `getCollectionDocument` may need to become public, expanding the `OgcApiEndpoint` API surface                                                                                      | jahow may object to new public methods on the endpoint class                      | Evaluate whether the factory function can use existing public getters instead. `endpoint.root` is private; `endpoint.conformanceClasses` is public. If a new public method is unavoidable, minimize its surface (return a narrow type, not the full raw document).                                                                                    |
+| The `scanCsapiLinks` resolution may require code duplication, which is a maintenance risk                                                                                          | If duplicated, changes to link scanning conventions must be applied in two places | Assess all 5 options honestly. If duplication is selected, document a linting rule or code comment that flags the twin as needing synchronized updates.                                                                                                                                                                                               |
+| `hasConnectedSystems` and `csapiCollections` may be controversial to keep on the endpoint — jahow may consider them "CSAPI in core"                                                | Could be rejected in PR review                                                    | Prepare the explicit import graph analysis showing these properties have zero CSAPI imports. `checkHasConnectedSystems` uses conformance URI strings only; `parseCollections` uses `link.rel` regex only. Neither imports from `csapi/`. If jahow still objects, the fallback plan (move to CSAPI module as standalone functions) is designed in Q18. |
+| The 6 CSAPI tests use a `sample-data-hub` fixture that may have CSAPI-specific content                                                                                             | Fixture files may need to be duplicated or restructured                           | Inventory the fixture files used by the CSAPI tests. Determine if they can be shared or must move with the tests.                                                                                                                                                                                                                                     |
+| The barrel file with ~170 re-exports may affect tree-shaking                                                                                                                       | Consumers importing one CSAPI symbol may pull in the entire module                | Plan 05's findings on tree-shaking inform this. If the barrel file hurts tree-shaking, consider per-file deep imports as an alternative (e.g., `@camptocamp/ogc-client/csapi/url_builder`).                                                                                                                                                           |
+| The architecture may look clean on paper but fail TypeScript compilation due to subtle circular references or module resolution issues                                             | Wasted implementation time                                                        | Phase 6 includes a barrel file circular dependency verification task. Plan 08 should include a "build and verify" step before committing.                                                                                                                                                                                                             |
 
 ---
 

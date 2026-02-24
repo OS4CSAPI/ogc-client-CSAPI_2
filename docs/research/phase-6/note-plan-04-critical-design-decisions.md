@@ -9,7 +9,7 @@
 
 **Plan 04: Endpoint Decoupling Architecture** is the most consequential research plan — by a wide margin.
 
-Plans 01, 02, 03, and 05 are all *informational* — they gather facts about how things work. Plan 06 is *synthesis* — it assembles prior findings into a checklist. None of them involve design choices.
+Plans 01, 02, 03, and 05 are all _informational_ — they gather facts about how things work. Plan 06 is _synthesis_ — it assembles prior findings into a checklist. None of them involve design choices.
 
 Plan 04 is where every consequential decision lives.
 
@@ -41,4 +41,4 @@ The 6 CSAPI tests in `endpoint.spec.ts` either stay there (testing a thin delega
 
 ## Why This Matters
 
-Every other plan feeds *into* Plan 04, and Plan 06 simply *executes* what Plan 04 decides. If we get Plan 04 wrong, we'll either break the public API, create a coupling that jahow rejects, or paint ourselves into a corner that requires another refactor.
+Every other plan feeds _into_ Plan 04, and Plan 06 simply _executes_ what Plan 04 decides. If we get Plan 04 wrong, we'll either break the public API, create a coupling that jahow rejects, or paint ourselves into a corner that requires another refactor.

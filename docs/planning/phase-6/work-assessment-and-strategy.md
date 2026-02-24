@@ -26,6 +26,7 @@ After Tier 1, our upstream file modifications shrink from 5 files to essentially
 This is the central design question: **if `endpoint.ts` can't import CSAPI code, how do consumers access CSAPI functionality?**
 
 Right now the flow is:
+
 ```
 endpoint.csapi('collection') → CSAPIQueryBuilder
 ```
@@ -33,6 +34,7 @@ endpoint.csapi('collection') → CSAPIQueryBuilder
 The endpoint reaches into the CSAPI module to create the query builder. That has to be inverted — the CSAPI module needs to reach into the endpoint instead.
 
 **The likely new pattern:**
+
 ```ts
 import { OgcApiEndpoint } from '@camptocamp/ogc-client';
 import { CSAPIQueryBuilder } from '@camptocamp/ogc-client/csapi';
@@ -43,6 +45,7 @@ const csapi = await CSAPIQueryBuilder.fromEndpoint(endpoint, 'collection-id');
 ```
 
 Or a helper function:
+
 ```ts
 import { csapi } from '@camptocamp/ogc-client/csapi';
 const qb = await csapi(endpoint, 'collection-id');
@@ -51,6 +54,7 @@ const qb = await csapi(endpoint, 'collection-id');
 This works because `CSAPIQueryBuilder` already receives its constructor arguments (base URL, available resources, resource URLs) — it doesn't care where they came from. We just need to extract that setup logic from `endpoint.ts` and move it into a factory function inside the CSAPI module that reads the endpoint's existing public properties (`allCollections`, `conformanceClasses`, etc.).
 
 This also requires:
+
 - A new `src/ogc-api/csapi/index.ts` barrel file as the public entry point
 - An addition to `package.json`'s `"exports"` field mapping `"./csapi"` to the right dist path
 - Possibly build config adjustments (though the esbuild command already compiles all `.ts` files individually, so this might just work)
@@ -68,7 +72,7 @@ This also requires:
 
 ## Strategic Timing
 
-jahow said *"I'm going to review the changes to the existing code and give you a more thorough feedback."* This review hasn't arrived yet. He's going to look at our modifications to `endpoint.ts`, `info.ts`, and `mime-type.ts` — which are exactly the files we'll be refactoring.
+jahow said _"I'm going to review the changes to the existing code and give you a more thorough feedback."_ This review hasn't arrived yet. He's going to look at our modifications to `endpoint.ts`, `info.ts`, and `mime-type.ts` — which are exactly the files we'll be refactoring.
 
 **Recommendation:** Wait for his detailed review before implementing. Reasons:
 
@@ -78,6 +82,7 @@ jahow said *"I'm going to review the changes to the existing code and give you a
 4. Responding to his architecture comment now (the draft response we prepared) opens the door for him to clarify before we build.
 
 ### What we CAN do right now
+
 - Post the response to jahow (gets the dialogue going)
 - Research how the build system handles multiple entry points
 - Research how EDR (PR #114) integrated — since jahow pointed to it as a reference, understanding where it deviates from what he wants for CSAPI is valuable
@@ -85,6 +90,7 @@ jahow said *"I'm going to review the changes to the existing code and give you a
 - Draft the new `package.json` exports configuration
 
 ### What we should NOT do yet
+
 - Start coding the refactor
 - Fix formatting (it'll just need redoing after the refactor anyway)
 

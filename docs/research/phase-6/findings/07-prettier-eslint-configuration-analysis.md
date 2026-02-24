@@ -6,17 +6,17 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Research Plan** | [Plan 07: Prettier and ESLint Configuration Analysis](../research-plans/07-prettier-eslint-configuration-analysis.md) |
-| **Plan Type** | Mechanical analysis |
-| **Date Started** | 2026-02-25 |
-| **Date Completed** | 2026-02-25 |
-| **Research Time** | ~3 hours (actual) |
-| **Estimated Time** | 1–2 hours (from plan) |
-| **Questions Answered** | 38 of 38 detailed questions |
-| **Depends On** | None |
-| **Blocks** | Plan 08 (File-Level Changelist and Commit Strategy) |
+| Field                  | Value                                                                                                                 |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Research Plan**      | [Plan 07: Prettier and ESLint Configuration Analysis](../research-plans/07-prettier-eslint-configuration-analysis.md) |
+| **Plan Type**          | Mechanical analysis                                                                                                   |
+| **Date Started**       | 2026-02-25                                                                                                            |
+| **Date Completed**     | 2026-02-25                                                                                                            |
+| **Research Time**      | ~3 hours (actual)                                                                                                     |
+| **Estimated Time**     | 1–2 hours (from plan)                                                                                                 |
+| **Questions Answered** | 38 of 38 detailed questions                                                                                           |
+| **Depends On**         | None                                                                                                                  |
+| **Blocks**             | Plan 08 (File-Level Changelist and Commit Strategy)                                                                   |
 
 ---
 
@@ -24,20 +24,20 @@
 
 ### Primary Sources Consulted
 
-| Source | Path / URL | What Was Extracted |
-|--------|------------|-------------------|
-| Prettier configuration | `.prettierrc.json` | 2 explicit settings: `semi: true`, `singleQuote: true` |
-| Prettier ignore patterns | `.prettierignore` | 6 exclusion patterns; no CSAPI files excluded |
-| ESLint flat config | `eslint.config.js` (71 lines) | Complete rule config: 3 custom rules + 2 recommended presets + 2 overrides |
-| Package metadata | `package.json` | Prettier `2.8.8` (exact pin), ESLint `^9.38.0`, all plugin versions |
-| TypeScript config | `tsconfig.json` | target/module ESNext, moduleResolution node |
-| CI workflow | `.github/workflows/qa.yml` (upstream) | Single job, sequential: format:check → typecheck → lint → tests |
-| Upstream commit history | `git log upstream/main` | 5+ formatting-only commits (precedent for dedicated formatting commits) |
+| Source                   | Path / URL                            | What Was Extracted                                                         |
+| ------------------------ | ------------------------------------- | -------------------------------------------------------------------------- |
+| Prettier configuration   | `.prettierrc.json`                    | 2 explicit settings: `semi: true`, `singleQuote: true`                     |
+| Prettier ignore patterns | `.prettierignore`                     | 6 exclusion patterns; no CSAPI files excluded                              |
+| ESLint flat config       | `eslint.config.js` (71 lines)         | Complete rule config: 3 custom rules + 2 recommended presets + 2 overrides |
+| Package metadata         | `package.json`                        | Prettier `2.8.8` (exact pin), ESLint `^9.38.0`, all plugin versions        |
+| TypeScript config        | `tsconfig.json`                       | target/module ESNext, moduleResolution node                                |
+| CI workflow              | `.github/workflows/qa.yml` (upstream) | Single job, sequential: format:check → typecheck → lint → tests            |
+| Upstream commit history  | `git log upstream/main`               | 5+ formatting-only commits (precedent for dedicated formatting commits)    |
 
 ### Prior Findings Used
 
-| Finding | Path | What Was Consumed |
-|---------|------|-------------------|
+| Finding          | Path                                              | What Was Consumed                                                                                       |
+| ---------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | Plan 06 findings | `findings/06-endpoint-decoupling-architecture.md` | File-level modifications: which files will be created/modified/deleted by the architectural refactoring |
 
 ### Sources Not Available or Not Useful
@@ -61,15 +61,15 @@ Prettier and ESLint do **not conflict** — ESLint enforces no formatting rules,
 
 ### Key Metrics
 
-| Metric | Value | Significance |
-|--------|-------|-------------|
-| CSAPI files with real Prettier changes | 46 of 56 (82%) | Large majority need formatting |
-| Total Prettier diff scope | 3,023 insertions / 1,036 deletions | Too large for inline — needs own commit |
-| ESLint errors | 99 errors, 0 warnings | All `no-unused-vars`, all fixable |
-| ESLint-affected files | 15 of 56 (27%) | Concentrated in sensorml/ and swecommon/ test files |
-| CSAPI fixture files needing formatting | 4 of 4 JSON files | Minor — small JSON formatting changes |
-| Core file Prettier changes | `endpoint.ts`: 8-line diff; `index.ts`: none | Minimal core file impact |
-| Core file ESLint errors | 0 | No ESLint issues in core files |
+| Metric                                 | Value                                        | Significance                                        |
+| -------------------------------------- | -------------------------------------------- | --------------------------------------------------- |
+| CSAPI files with real Prettier changes | 46 of 56 (82%)                               | Large majority need formatting                      |
+| Total Prettier diff scope              | 3,023 insertions / 1,036 deletions           | Too large for inline — needs own commit             |
+| ESLint errors                          | 99 errors, 0 warnings                        | All `no-unused-vars`, all fixable                   |
+| ESLint-affected files                  | 15 of 56 (27%)                               | Concentrated in sensorml/ and swecommon/ test files |
+| CSAPI fixture files needing formatting | 4 of 4 JSON files                            | Minor — small JSON formatting changes               |
+| Core file Prettier changes             | `endpoint.ts`: 8-line diff; `index.ts`: none | Minimal core file impact                            |
+| Core file ESLint errors                | 0                                            | No ESLint issues in core files                      |
 
 ### Overall Assessment
 
@@ -113,21 +113,21 @@ Prettier and ESLint do **not conflict** — ESLint enforces no formatting rules,
 
 All other options use Prettier 2.8.8 defaults. The complete effective configuration:
 
-| Option | Effective Value | Source | Impact on CSAPI |
-|--------|----------------|--------|-----------------|
-| `printWidth` | **80** | Default | **HIGH** — dominant change; many lines exceed 80 chars |
-| `tabWidth` | **2** | Default | None — our files already use 2-space indentation |
-| `useTabs` | **false** | Default | None — our files use spaces |
-| `semi` | **true** | Explicit | None — our files already use semicolons |
-| `singleQuote` | **true** | Explicit | None — our files already use single quotes |
-| `trailingComma` | **"es5"** | Default | Low — trailing commas in objects/arrays where ES5 allows them |
-| `bracketSpacing` | **true** | Default | None — our files already use `{ key: value }` |
-| `arrowParens` | **"always"** | Default | None — our arrow functions already use parentheses |
-| `endOfLine` | **"lf"** | Default | **CRITICAL on Windows** — see Q5 |
-| `proseWrap` | **"preserve"** | Default | None — affects markdown only |
-| `htmlWhitespaceSensitivity` | **"css"** | Default | N/A — no HTML files |
-| `quoteProps` | **"as-needed"** | Default | None — our files quote props only when needed |
-| `jsxSingleQuote` | **false** | Default | N/A — no JSX files |
+| Option                      | Effective Value | Source   | Impact on CSAPI                                               |
+| --------------------------- | --------------- | -------- | ------------------------------------------------------------- |
+| `printWidth`                | **80**          | Default  | **HIGH** — dominant change; many lines exceed 80 chars        |
+| `tabWidth`                  | **2**           | Default  | None — our files already use 2-space indentation              |
+| `useTabs`                   | **false**       | Default  | None — our files use spaces                                   |
+| `semi`                      | **true**        | Explicit | None — our files already use semicolons                       |
+| `singleQuote`               | **true**        | Explicit | None — our files already use single quotes                    |
+| `trailingComma`             | **"es5"**       | Default  | Low — trailing commas in objects/arrays where ES5 allows them |
+| `bracketSpacing`            | **true**        | Default  | None — our files already use `{ key: value }`                 |
+| `arrowParens`               | **"always"**    | Default  | None — our arrow functions already use parentheses            |
+| `endOfLine`                 | **"lf"**        | Default  | **CRITICAL on Windows** — see Q5                              |
+| `proseWrap`                 | **"preserve"**  | Default  | None — affects markdown only                                  |
+| `htmlWhitespaceSensitivity` | **"css"**       | Default  | N/A — no HTML files                                           |
+| `quoteProps`                | **"as-needed"** | Default  | None — our files quote props only when needed                 |
+| `jsxSingleQuote`            | **false**       | Default  | N/A — no JSX files                                            |
 
 **Evidence:** `trailingComma` default verified via `npx prettier --support-info`, which returns `"default": "es5"` for Prettier 2.8.8. The research plan incorrectly asserted `"all"` — that is the Prettier 3.0+ default.
 
@@ -136,6 +136,7 @@ All other options use Prettier 2.8.8 defaults. The complete effective configurat
 **Answer:** `"es5"` — confirmed via `npx prettier --support-info`. This means trailing commas are added in objects and arrays (where ES5 syntax allows) but **NOT** in function parameter lists or function call arguments (which require ES2017+). The research plan's assertion that Prettier 2.x defaults to `"all"` since 2.0 was **incorrect** — the `"all"` default was introduced in Prettier 3.0.0.
 
 **Evidence:**
+
 ```
 > npx prettier --support-info | select "trailingComma"
 "default": "es5",
@@ -146,6 +147,7 @@ All other options use Prettier 2.8.8 defaults. The complete effective configurat
 ### Question 3: What is the effective `printWidth` setting?
 
 **Answer:** **80** (default). This is the dominant cause of formatting changes in CSAPI files. Many lines exceed 80 characters, particularly:
+
 - Object literals in test files (inline link objects like `{ rel: 'items', href: '/api/...' }`)
 - Import statements with multiple named imports
 - Union type definitions in `model.ts`
@@ -172,10 +174,12 @@ Prettier wraps these onto multiple lines, expanding single-line expressions into
 **This is a non-issue for CI.** The upstream CI runs on `ubuntu-latest`, where files are natively LF. The CI's `npm run format:check` passes because there are no CRLF line endings.
 
 **Verification:** Running with `--end-of-line auto` (which accepts any line ending) on a known upstream file:
+
 ```
 > npx prettier --check --end-of-line auto "src/worker/worker.ts"
 All matched files use Prettier code style!
 ```
+
 This confirms: the file is formatted correctly — only the line ending causes the failure.
 
 **Impact on CSAPI analysis:** When measuring CSAPI formatting changes, `--end-of-line auto` was used to isolate real formatting issues from CRLF artifacts. Git's `core.autocrlf` normalizes line endings on commit, so CRLF changes are invisible in `git diff`.
@@ -202,6 +206,7 @@ app/node_modules
 ### Question 8: How many CSAPI files fail `prettier --check`?
 
 **Answer:**
+
 - **With default settings:** All 56 CSAPI files fail (due to CRLF line endings on Windows)
 - **With `--end-of-line auto`:** **46 of 56 files** fail (real formatting issues)
   - 20 of 27 source files fail
@@ -209,6 +214,7 @@ app/node_modules
   - 10 files are already Prettier-compliant (7 source, 3 test)
 
 **Nature of failures (ranked by frequency):**
+
 1. **Line wrapping at 80 chars** — dominant change (object literals, imports, union types, ternaries)
 2. **Object literal expansion** — single-line `{ key: value, key: value }` expanded to multi-line when exceeding 80 chars
 3. **Import statement wrapping** — multi-import statements broken across lines
@@ -235,19 +241,19 @@ For TypeScript files, `typescript-eslint/recommended` disables JavaScript-specif
 
 **Answer:** The `recommended` config enables these TypeScript-specific rules:
 
-| Rule | Status | Relevance to CSAPI |
-|------|--------|---------------------|
-| `@typescript-eslint/no-unused-vars` | error | **99 errors** — the only ESLint issue in CSAPI |
-| `@typescript-eslint/no-explicit-any` | **off** (custom override) | No impact — explicitly disabled |
-| `@typescript-eslint/ban-ts-comment` | error | No violations in CSAPI |
-| `@typescript-eslint/no-require-imports` | error | No violations (all CSAPI uses ES imports) |
-| `@typescript-eslint/no-namespace` | error | No violations |
-| `@typescript-eslint/no-non-null-asserted-optional-chain` | error | No violations |
-| `@typescript-eslint/no-empty-object-type` | error | No violations |
-| `@typescript-eslint/no-unsafe-function-type` | error | No violations |
-| `@typescript-eslint/no-wrapper-object-types` | error | No violations |
-| `@typescript-eslint/prefer-as-const` | error | No violations |
-| `@typescript-eslint/no-unused-expressions` | error | No violations |
+| Rule                                                     | Status                    | Relevance to CSAPI                             |
+| -------------------------------------------------------- | ------------------------- | ---------------------------------------------- |
+| `@typescript-eslint/no-unused-vars`                      | error                     | **99 errors** — the only ESLint issue in CSAPI |
+| `@typescript-eslint/no-explicit-any`                     | **off** (custom override) | No impact — explicitly disabled                |
+| `@typescript-eslint/ban-ts-comment`                      | error                     | No violations in CSAPI                         |
+| `@typescript-eslint/no-require-imports`                  | error                     | No violations (all CSAPI uses ES imports)      |
+| `@typescript-eslint/no-namespace`                        | error                     | No violations                                  |
+| `@typescript-eslint/no-non-null-asserted-optional-chain` | error                     | No violations                                  |
+| `@typescript-eslint/no-empty-object-type`                | error                     | No violations                                  |
+| `@typescript-eslint/no-unsafe-function-type`             | error                     | No violations                                  |
+| `@typescript-eslint/no-wrapper-object-types`             | error                     | No violations                                  |
+| `@typescript-eslint/prefer-as-const`                     | error                     | No violations                                  |
+| `@typescript-eslint/no-unused-expressions`               | error                     | No violations                                  |
 
 **Not enabled** (addressing plan's specific questions): `consistent-type-imports` (NOT in recommended), `no-non-null-assertion` (NOT in recommended — that's in `strict`), `prefer-const` (from base ESLint, already in recommended), `no-inferrable-types` (NOT in recommended).
 
@@ -256,20 +262,24 @@ For TypeScript files, `typescript-eslint/recommended` disables JavaScript-specif
 **Answer:** The rule is `['error', 'always', { ignorePackages: true }]`. This requires `.js` extensions on all local imports and allows bare imports for packages.
 
 **No CSAPI files violate this rule.** All local imports already use `.js` extensions:
+
 ```typescript
 import type { OgcApiCollectionInfo } from '../model.js';
 import { scanCsapiLinks } from './helpers.js';
 ```
 
 Package imports correctly omit extensions:
+
 ```typescript
 import type { GeoJSON } from 'geojson';
 ```
 
 **The new barrel file** (`csapi/index.ts`) will need `.js` extensions on re-exports:
+
 ```typescript
-export { CSAPIQueryBuilder } from './url_builder.js';  // .js required
+export { CSAPIQueryBuilder } from './url_builder.js'; // .js required
 ```
+
 This is confirmed by the existing barrel file `csapi/formats/index.ts` (344 lines), which uses `.js` extensions on all re-exports and passes ESLint.
 
 ### Question 12: Does `no-unused-vars` flag issues in CSAPI files?
@@ -292,12 +302,12 @@ This is confirmed by the existing barrel file `csapi/formats/index.ts` (344 line
 
 **Error categories:**
 
-| Category | Count | Files | Fix |
-|----------|-------|-------|-----|
-| Unused type imports in test files | ~90 | 13 spec files in sensorml/ and swecommon/ | Convert to `import type` or prefix with `_` |
-| Unused destructured import | 4 | 4 sensorml source files | Remove or prefix with `_` |
-| Unused value import | 1 | `url_builder.ts` | Remove `CSAPIResourceTypes` import |
-| Unused `result` variable | 1 | 1 integration test file | Remove or assert on the value |
+| Category                          | Count | Files                                     | Fix                                         |
+| --------------------------------- | ----- | ----------------------------------------- | ------------------------------------------- |
+| Unused type imports in test files | ~90   | 13 spec files in sensorml/ and swecommon/ | Convert to `import type` or prefix with `_` |
+| Unused destructured import        | 4     | 4 sensorml source files                   | Remove or prefix with `_`                   |
+| Unused value import               | 1     | `url_builder.ts`                          | Remove `CSAPIResourceTypes` import          |
+| Unused `result` variable          | 1     | 1 integration test file                   | Remove or assert on the value               |
 
 **Will the architectural refactoring create new unused-var issues?** No. The two CSAPI imports removed from `endpoint.ts` (lines 52-53) are **deleted entirely** — they don't become unused, they are removed. No other imports in `endpoint.ts` exist solely to support CSAPI functionality.
 
@@ -329,23 +339,23 @@ This is confirmed by the existing barrel file `csapi/formats/index.ts` (344 line
 
 **Affected files (15 of 56):**
 
-| File | Error Count | Primary Issue |
-|------|-------------|---------------|
-| `sensorml/types.spec.ts` | 32 | Unused type imports (SensorML type definitions) |
-| `swecommon/types.spec.ts` | 27 | Unused type imports (SWE Common type definitions) |
-| `swecommon/data-record.spec.ts` | 14 | Unused type imports |
-| `swecommon/parser.spec.ts` | 1 | Unused `AnyComponent` import |
-| `swecommon/index.spec.ts` | 1 | Unused `AnyComponent` import |
-| `integration/observation.spec.ts` | 3 | Unused `CollectionResponse`, `AnyComponent`, `result` |
-| `sensorml/aggregate-process.spec.ts` | 1 | Unused `AggregateProcess` import |
-| `sensorml/parser.spec.ts` | 1 | Unused `SensorMLProcess` import |
-| `sensorml/physical-system.spec.ts` | 2 | Unused `PhysicalSystem`, `PhysicalComponent` |
-| `sensorml/simple-process.spec.ts` | 1 | Unused `SimpleProcess` import |
-| `sensorml/aggregate-process.ts` | 2 | Unused `ComponentEntry`, `parseIOComponentChoice` |
-| `sensorml/parser.ts` | 2 | Unused `Position`, `parseIOComponentChoice` |
-| `sensorml/physical-system.ts` | 3 | Unused `ComponentEntry`, `parseIOComponentChoice`, `parseMode` |
-| `sensorml/simple-process.ts` | 1 | Unused `parseIOComponentChoice` |
-| `url_builder.ts` | 1 | Unused `CSAPIResourceTypes` import |
+| File                                 | Error Count | Primary Issue                                                  |
+| ------------------------------------ | ----------- | -------------------------------------------------------------- |
+| `sensorml/types.spec.ts`             | 32          | Unused type imports (SensorML type definitions)                |
+| `swecommon/types.spec.ts`            | 27          | Unused type imports (SWE Common type definitions)              |
+| `swecommon/data-record.spec.ts`      | 14          | Unused type imports                                            |
+| `swecommon/parser.spec.ts`           | 1           | Unused `AnyComponent` import                                   |
+| `swecommon/index.spec.ts`            | 1           | Unused `AnyComponent` import                                   |
+| `integration/observation.spec.ts`    | 3           | Unused `CollectionResponse`, `AnyComponent`, `result`          |
+| `sensorml/aggregate-process.spec.ts` | 1           | Unused `AggregateProcess` import                               |
+| `sensorml/parser.spec.ts`            | 1           | Unused `SensorMLProcess` import                                |
+| `sensorml/physical-system.spec.ts`   | 2           | Unused `PhysicalSystem`, `PhysicalComponent`                   |
+| `sensorml/simple-process.spec.ts`    | 1           | Unused `SimpleProcess` import                                  |
+| `sensorml/aggregate-process.ts`      | 2           | Unused `ComponentEntry`, `parseIOComponentChoice`              |
+| `sensorml/parser.ts`                 | 2           | Unused `Position`, `parseIOComponentChoice`                    |
+| `sensorml/physical-system.ts`        | 3           | Unused `ComponentEntry`, `parseIOComponentChoice`, `parseMode` |
+| `sensorml/simple-process.ts`         | 1           | Unused `parseIOComponentChoice`                                |
+| `url_builder.ts`                     | 1           | Unused `CSAPIResourceTypes` import                             |
 
 **Pattern:** The majority of errors (90+) are in test files that import types solely for TypeScript type-checking context during development. These types are never referenced in the test code itself. The fix is to either remove them, convert to `import type` (which the `no-unused-vars` rule respects when configured correctly), or add test assertions that reference them.
 
@@ -370,6 +380,7 @@ ESLint's configuration is clean and non-conflicting. The `recommended` presets a
 `eslint-config-prettier` is NOT installed. This package disables ESLint rules that conflict with Prettier. Its absence is **not a problem** because there are no conflicting rules to disable. The upstream configuration follows the best practice of separating concerns: Prettier for formatting, ESLint for logic.
 
 **Evidence:** Reviewing `eslint.config.js` — the only rules configured are:
+
 1. `import/extensions` — import paths, not formatting
 2. `@typescript-eslint/no-explicit-any` — type safety, not formatting
 3. `@typescript-eslint/no-unused-vars` — variable usage, not formatting
@@ -386,11 +397,11 @@ None of these interact with Prettier's formatting domain.
 
 ```yaml
 steps:
-  - run: npm run format:check    # Prettier check (exit 1 if any file unformatted)
-  - run: npm run typecheck       # tsc --noEmit
-  - run: npm run lint            # ESLint
-  - run: npm run test:browser    # Jest (jsdom)
-  - run: npm run test:node       # Jest (node)
+  - run: npm run format:check # Prettier check (exit 1 if any file unformatted)
+  - run: npm run typecheck # tsc --noEmit
+  - run: npm run lint # ESLint
+  - run: npm run test:browser # Jest (jsdom)
+  - run: npm run test:node # Jest (node)
 ```
 
 **Order matters:** `format:check` runs first. If Prettier fails, the entire job fails and subsequent steps don't run. This means a PR with Prettier failures will never reach the ESLint check or tests. The practical implication: **Prettier compliance is the first gate**.
@@ -420,20 +431,20 @@ Prettier and ESLint are cleanly separated in the upstream toolchain. There are n
 
 **Answer:** **20 of 27 source files** need Prettier formatting changes. 7 source files are already compliant.
 
-| Category | Count | Files |
-|----------|-------|-------|
-| Already formatted (zero changes) | 7 | `classification.ts`, `constants.ts`, `schema-response.ts`, `sensorml/errors.ts`, `sensorml/index.ts`, `sensorml/simple-process.ts`, `sensorml/types.ts` |
-| Structural changes (line wrapping, object expansion) | 20 | All other source files |
-| Whitespace-only changes (no structural) | 0 | N/A |
+| Category                                             | Count | Files                                                                                                                                                   |
+| ---------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Already formatted (zero changes)                     | 7     | `classification.ts`, `constants.ts`, `schema-response.ts`, `sensorml/errors.ts`, `sensorml/index.ts`, `sensorml/simple-process.ts`, `sensorml/types.ts` |
+| Structural changes (line wrapping, object expansion) | 20    | All other source files                                                                                                                                  |
+| Whitespace-only changes (no structural)              | 0     | N/A                                                                                                                                                     |
 
 ### Question 25: How many of the 29 test files will Prettier modify?
 
 **Answer:** **26 of 29 test files** need formatting changes. 3 test files are already compliant.
 
-| Category | Count | Files |
-|----------|-------|-------|
-| Already formatted (zero changes) | 3 | `formats/index.spec.ts`, `sensorml/index.spec.ts`, `swecommon/index.spec.ts` |
-| Structural changes (line wrapping, object expansion) | 26 | All other test files |
+| Category                                             | Count | Files                                                                        |
+| ---------------------------------------------------- | ----- | ---------------------------------------------------------------------------- |
+| Already formatted (zero changes)                     | 3     | `formats/index.spec.ts`, `sensorml/index.spec.ts`, `swecommon/index.spec.ts` |
+| Structural changes (line wrapping, object expansion) | 26    | All other test files                                                         |
 
 **Note:** The 3 passing test files and 5 of the 7 passing source files are all barrel/index files or type definition files — typically short files with simple export statements that naturally stay under 80 characters.
 
@@ -441,21 +452,22 @@ Prettier and ESLint are cleanly separated in the upstream toolchain. There are n
 
 **Answer:** Ranked by frequency of occurrence:
 
-| Rank | Category | Frequency | Example |
-|------|----------|-----------|---------|
-| 1 | **Object literal expansion** | Very high | `{ rel: 'items', href: '/api', type: 'application/json' }` → multi-line (3+ lines) |
-| 2 | **Import statement wrapping** | High | Named imports exceeding 80 chars split across lines |
-| 3 | **Union type wrapping** | Medium | Long union type definitions in `model.ts` split across lines |
-| 4 | **Ternary expression wrapping** | Medium | Ternary operators moved to new lines in `helpers.ts` |
-| 5 | **Template literal consolidation** | Low | Multi-line template strings reformatted |
-| 6 | **Trailing comma adjustments** | Low | ES5-style trailing commas added to multi-line structures |
-| 7 | **Arrow function formatting** | Very low | Occasional wrapping of arrow function bodies |
+| Rank | Category                           | Frequency | Example                                                                            |
+| ---- | ---------------------------------- | --------- | ---------------------------------------------------------------------------------- |
+| 1    | **Object literal expansion**       | Very high | `{ rel: 'items', href: '/api', type: 'application/json' }` → multi-line (3+ lines) |
+| 2    | **Import statement wrapping**      | High      | Named imports exceeding 80 chars split across lines                                |
+| 3    | **Union type wrapping**            | Medium    | Long union type definitions in `model.ts` split across lines                       |
+| 4    | **Ternary expression wrapping**    | Medium    | Ternary operators moved to new lines in `helpers.ts`                               |
+| 5    | **Template literal consolidation** | Low       | Multi-line template strings reformatted                                            |
+| 6    | **Trailing comma adjustments**     | Low       | ES5-style trailing commas added to multi-line structures                           |
+| 7    | **Arrow function formatting**      | Very low  | Occasional wrapping of arrow function bodies                                       |
 
 **The dominant change** — object literal expansion — is most concentrated in test files. Test files define inline link objects, response fixtures, and mock data with multiple properties on one line. Prettier splits these across lines at the 80-character boundary. `url_builder.spec.ts` is the extreme case: it contains hundreds of inline link objects, and Prettier expands nearly every one, producing 2,221 line changes in that file alone.
 
 ### Question 27: Do any Prettier changes affect semantics?
 
 **Answer:** **No.** All changes are purely formatting:
+
 - Line wrapping does not change JavaScript/TypeScript semantics
 - Trailing comma additions are valid ES5+ syntax and don't affect behavior
 - Object literal expansion preserves the same object structure
@@ -473,18 +485,18 @@ Prettier is designed to be semantics-preserving. No Prettier change in the CSAPI
 
 **Top 10 files by change volume:**
 
-| File | Changes | Primary Cause |
-|------|---------|---------------|
-| `url_builder.spec.ts` | +1,851 / -370 | Object literal expansion (link objects) |
-| `swecommon/data-array.spec.ts` | +120 / -60 | Object expansion, import wrapping |
-| `swecommon/parser.ts` | +75 / -37 | Line wrapping in function bodies |
-| `swecommon/data-record.spec.ts` | +65 / -33 | Object expansion |
-| `url_builder.ts` | +65 / -33 | Line wrapping, ternaries |
-| `integration/discovery.spec.ts` | +67 / -33 | Object expansion |
-| `integration/navigation.spec.ts` | +58 / -28 | Object expansion |
-| `helpers.spec.ts` | +55 / -27 | Object expansion |
-| `swecommon/components.spec.ts` | +49 / -24 | Object expansion |
-| `swecommon/components.ts` | +26 / -13 | Line wrapping |
+| File                             | Changes       | Primary Cause                           |
+| -------------------------------- | ------------- | --------------------------------------- |
+| `url_builder.spec.ts`            | +1,851 / -370 | Object literal expansion (link objects) |
+| `swecommon/data-array.spec.ts`   | +120 / -60    | Object expansion, import wrapping       |
+| `swecommon/parser.ts`            | +75 / -37     | Line wrapping in function bodies        |
+| `swecommon/data-record.spec.ts`  | +65 / -33     | Object expansion                        |
+| `url_builder.ts`                 | +65 / -33     | Line wrapping, ternaries                |
+| `integration/discovery.spec.ts`  | +67 / -33     | Object expansion                        |
+| `integration/navigation.spec.ts` | +58 / -28     | Object expansion                        |
+| `helpers.spec.ts`                | +55 / -27     | Object expansion                        |
+| `swecommon/components.spec.ts`   | +49 / -24     | Object expansion                        |
+| `swecommon/components.ts`        | +26 / -13     | Line wrapping                           |
 
 **Note:** `url_builder.spec.ts` accounts for **55% of the total diff** (2,221 of 4,059 total changed lines). Without this file, the remaining 45 files have ~1,838 changed lines — still significant but more manageable.
 
@@ -512,6 +524,7 @@ The formatting impact is large — 46 of 56 files, 3,023 insertions / 1,036 dele
 ### Question 30: Will Prettier change `endpoint.ts` and `index.ts` after the refactoring?
 
 **Answer:**
+
 - **`endpoint.ts`:** Has an **8-line Prettier diff** (2 insertions, 6 deletions). These are minor line-wrapping changes in existing upstream code — not related to the CSAPI removal. The changes exist in the current file and will persist after CSAPI code is removed.
 - **`index.ts`:** Has **zero real formatting changes**. With `--end-of-line auto`, `index.ts` passes Prettier. The only failure with default settings is CRLF line endings (Windows artifact). After removing ~170 lines of CSAPI exports, the remaining code is already Prettier-compliant.
 
@@ -520,9 +533,10 @@ The formatting impact is large — 46 of 56 files, 3,023 insertions / 1,036 dele
 ### Question 31: Will ESLint flag new unused imports in `endpoint.ts` after refactoring?
 
 **Answer:** **No.** The two CSAPI imports removed from `endpoint.ts` are:
+
 ```typescript
-import CSAPIQueryBuilder from './csapi/url_builder.js';       // line 52
-import { scanCsapiLinks } from './csapi/helpers.js';          // line 53
+import CSAPIQueryBuilder from './csapi/url_builder.js'; // line 52
+import { scanCsapiLinks } from './csapi/helpers.js'; // line 53
 ```
 
 These are **deleted entirely** — they don't become unused; they are removed from the file. After removal, ESLint produces **0 errors, 0 warnings** on `endpoint.ts` (verified by running `npx eslint src/ogc-api/endpoint.ts` on the current file, which already passes).
@@ -547,6 +561,7 @@ export { CSAPIQueryBuilder } from './url_builder';
 ### Question 33: Will remaining `index.ts` exports comply after CSAPI removal?
 
 **Answer:** **Yes.** After removing ~170 lines of CSAPI exports, the remaining `index.ts` exports are:
+
 - Shared types and utilities from `src/shared/`
 - OGC API endpoint class and types from `src/ogc-api/`
 - WFS, WMS, WMTS, STAC, TMS, EDR types and endpoints
@@ -570,6 +585,7 @@ The core file impact is minimal. `endpoint.ts` has a small 8-line Prettier diff;
 **Answer:** **Before (Option A: Format First).** The analysis of three options:
 
 **Option A: Format First** (Recommended)
+
 - Run Prettier on all 56 CSAPI files + 4 fixture files in a dedicated commit
 - Then apply architectural changes in subsequent commits
 - **Pro:** Formatting diff is isolated; refactoring commits are pure logic changes; reviewers can skip the formatting commit
@@ -577,18 +593,21 @@ The core file impact is minimal. `endpoint.ts` has a small 8-line Prettier diff;
 - **Con:** A small amount of formatted code will be deleted by the refactoring (the `url_builder.ts` line that imports `CSAPIResourceTypes`), but this is trivial
 
 **Option B: Refactor First**
+
 - Apply all architectural changes first, then run Prettier as a final pass
 - **Pro:** Only the final code gets formatted
 - **Con:** Intermediate commits fail `format:check` — while CI only checks the final PR state, this means `git bisect` and per-commit review are broken
 - **Con:** The refactoring diff is mixed with formatting context (lines that Prettier would have changed are shown as unchanged, creating an inconsistent baseline)
 
 **Option C: Atomic**
+
 - Each commit includes both logical changes and formatting for affected files
 - **Pro:** Every commit passes CI individually
 - **Con:** Formatting changes are mixed with logic changes in every diff, making code review harder
 - **Con:** Significantly more complex to implement — must format each file after each logical change
 
 **Recommendation: Option A** for these reasons:
+
 1. The formatting diff is too large (3,023 insertions) to mix with logic changes
 2. Upstream has clear precedent for formatting-only commits (5+ in git history)
 3. CI only checks the final PR state, but Option A still satisfies per-commit correctness
@@ -599,6 +618,7 @@ The core file impact is minimal. `endpoint.ts` has a small 8-line Prettier diff;
 **Answer:** **46 files changed, 3,023 insertions, 1,036 deletions** for CSAPI source/test files, plus 4 fixture JSON files (minor changes). Plus 8 lines in `endpoint.ts`.
 
 This is **too large for inline review**. The diff should be in its own commit with a clear message:
+
 ```
 style: apply prettier formatting to csapi files
 
@@ -668,91 +688,91 @@ Q: Is the formatting diff > 100 lines?
 
 ### Source Files (27)
 
-| File | Prettier | ESLint | Refactoring Impact |
-|------|----------|--------|-------------------|
-| `command-routing.ts` | ✗ Fail (7 lines) | ✓ Pass | None |
-| `helpers.ts` | ✗ Fail (11 lines) | ✓ Pass | None |
-| `model.ts` | ✗ Fail (16 lines) | ✓ Pass | None |
-| `url_builder.ts` | ✗ Fail (98 lines) | ✗ 1 error (`CSAPIResourceTypes` unused) | None |
-| `formats/classification.ts` | ✓ Pass | ✓ Pass | None |
-| `formats/constants.ts` | ✓ Pass | ✓ Pass | None |
-| `formats/geojson.ts` | ✗ Fail (18 lines) | ✓ Pass | None |
-| `formats/index.ts` | ✗ Fail (5 lines) | ✓ Pass | None |
-| `formats/part2.ts` | ✗ Fail (31 lines) | ✓ Pass | None |
-| `formats/property.ts` | ✗ Fail (3 lines) | ✓ Pass | None |
-| `formats/response.ts` | ✗ Fail (8 lines) | ✓ Pass | None |
-| `formats/schema-response.ts` | ✓ Pass | ✓ Pass | None |
-| `formats/sensorml/_helpers.ts` | ✗ Fail (23 lines) | ✓ Pass | None |
-| `formats/sensorml/aggregate-process.ts` | ✗ Fail (8 lines) | ✗ 2 errors | None |
-| `formats/sensorml/errors.ts` | ✓ Pass | ✓ Pass | None |
-| `formats/sensorml/index.ts` | ✓ Pass | ✓ Pass | None |
-| `formats/sensorml/parser.ts` | ✗ Fail (7 lines) | ✗ 2 errors | None |
-| `formats/sensorml/physical-system.ts` | ✗ Fail (32 lines) | ✗ 3 errors | None |
-| `formats/sensorml/simple-process.ts` | ✓ Pass | ✗ 1 error | None |
-| `formats/sensorml/types.ts` | ✓ Pass | ✓ Pass | None |
-| `formats/swecommon/_helpers.ts` | ✗ Fail (12 lines) | ✓ Pass | None |
-| `formats/swecommon/components.ts` | ✗ Fail (39 lines) | ✓ Pass | None |
-| `formats/swecommon/data-array.ts` | ✗ Fail (62 lines) | ✓ Pass | None |
-| `formats/swecommon/data-record.ts` | ✗ Fail (4 lines) | ✓ Pass | None |
-| `formats/swecommon/index.ts` | ✗ Fail (11 lines) | ✓ Pass | None |
-| `formats/swecommon/parser.ts` | ✗ Fail (112 lines) | ✓ Pass | None |
-| `formats/swecommon/types.ts` | ✗ Fail (7 lines) | ✓ Pass | None |
+| File                                    | Prettier           | ESLint                                  | Refactoring Impact |
+| --------------------------------------- | ------------------ | --------------------------------------- | ------------------ |
+| `command-routing.ts`                    | ✗ Fail (7 lines)   | ✓ Pass                                  | None               |
+| `helpers.ts`                            | ✗ Fail (11 lines)  | ✓ Pass                                  | None               |
+| `model.ts`                              | ✗ Fail (16 lines)  | ✓ Pass                                  | None               |
+| `url_builder.ts`                        | ✗ Fail (98 lines)  | ✗ 1 error (`CSAPIResourceTypes` unused) | None               |
+| `formats/classification.ts`             | ✓ Pass             | ✓ Pass                                  | None               |
+| `formats/constants.ts`                  | ✓ Pass             | ✓ Pass                                  | None               |
+| `formats/geojson.ts`                    | ✗ Fail (18 lines)  | ✓ Pass                                  | None               |
+| `formats/index.ts`                      | ✗ Fail (5 lines)   | ✓ Pass                                  | None               |
+| `formats/part2.ts`                      | ✗ Fail (31 lines)  | ✓ Pass                                  | None               |
+| `formats/property.ts`                   | ✗ Fail (3 lines)   | ✓ Pass                                  | None               |
+| `formats/response.ts`                   | ✗ Fail (8 lines)   | ✓ Pass                                  | None               |
+| `formats/schema-response.ts`            | ✓ Pass             | ✓ Pass                                  | None               |
+| `formats/sensorml/_helpers.ts`          | ✗ Fail (23 lines)  | ✓ Pass                                  | None               |
+| `formats/sensorml/aggregate-process.ts` | ✗ Fail (8 lines)   | ✗ 2 errors                              | None               |
+| `formats/sensorml/errors.ts`            | ✓ Pass             | ✓ Pass                                  | None               |
+| `formats/sensorml/index.ts`             | ✓ Pass             | ✓ Pass                                  | None               |
+| `formats/sensorml/parser.ts`            | ✗ Fail (7 lines)   | ✗ 2 errors                              | None               |
+| `formats/sensorml/physical-system.ts`   | ✗ Fail (32 lines)  | ✗ 3 errors                              | None               |
+| `formats/sensorml/simple-process.ts`    | ✓ Pass             | ✗ 1 error                               | None               |
+| `formats/sensorml/types.ts`             | ✓ Pass             | ✓ Pass                                  | None               |
+| `formats/swecommon/_helpers.ts`         | ✗ Fail (12 lines)  | ✓ Pass                                  | None               |
+| `formats/swecommon/components.ts`       | ✗ Fail (39 lines)  | ✓ Pass                                  | None               |
+| `formats/swecommon/data-array.ts`       | ✗ Fail (62 lines)  | ✓ Pass                                  | None               |
+| `formats/swecommon/data-record.ts`      | ✗ Fail (4 lines)   | ✓ Pass                                  | None               |
+| `formats/swecommon/index.ts`            | ✗ Fail (11 lines)  | ✓ Pass                                  | None               |
+| `formats/swecommon/parser.ts`           | ✗ Fail (112 lines) | ✓ Pass                                  | None               |
+| `formats/swecommon/types.ts`            | ✗ Fail (7 lines)   | ✓ Pass                                  | None               |
 
 ### Test Files (29)
 
-| File | Prettier | ESLint | Refactoring Impact |
-|------|----------|--------|-------------------|
-| `command-routing.spec.ts` | ✗ Fail (26 lines) | ✓ Pass | None |
-| `helpers.spec.ts` | ✗ Fail (82 lines) | ✓ Pass | None |
-| `model.spec.ts` | ✗ Fail (21 lines) | ✓ Pass | None |
-| `url_builder.spec.ts` | ✗ Fail (2,221 lines) | ✓ Pass | None |
-| `formats/classification.spec.ts` | ✗ Fail (29 lines) | ✓ Pass | None |
-| `formats/constants.spec.ts` | ✗ Fail (55 lines) | ✓ Pass | None |
-| `formats/geojson.spec.ts` | ✗ Fail (72 lines) | ✓ Pass | None |
-| `formats/index.spec.ts` | ✓ Pass | ✓ Pass | None |
-| `formats/part2.spec.ts` | ✗ Fail (52 lines) | ✓ Pass | None |
-| `formats/property.spec.ts` | ✗ Fail (4 lines) | ✓ Pass | None |
-| `formats/response.spec.ts` | ✗ Fail (36 lines) | ✓ Pass | None |
-| `formats/schema-response.spec.ts` | ✗ Fail (7 lines) | ✓ Pass | None |
-| `formats/sensorml/aggregate-process.spec.ts` | ✗ Fail (10 lines) | ✗ 1 error | None |
-| `formats/sensorml/index.spec.ts` | ✓ Pass | ✓ Pass | None |
-| `formats/sensorml/parser.spec.ts` | ✗ Fail (18 lines) | ✗ 1 error | None |
-| `formats/sensorml/physical-system.spec.ts` | ✗ Fail (39 lines) | ✗ 2 errors | None |
-| `formats/sensorml/simple-process.spec.ts` | ✗ Fail (12 lines) | ✗ 1 error | None |
-| `formats/sensorml/types.spec.ts` | ✗ Fail (28 lines) | ✗ 32 errors | None |
-| `formats/swecommon/components.spec.ts` | ✗ Fail (73 lines) | ✓ Pass | None |
-| `formats/swecommon/data-array.spec.ts` | ✗ Fail (180 lines) | ✓ Pass | None |
-| `formats/swecommon/data-record.spec.ts` | ✗ Fail (98 lines) | ✗ 14 errors | None |
-| `formats/swecommon/index.spec.ts` | ✓ Pass | ✗ 1 error | None |
-| `formats/swecommon/parser.spec.ts` | ✗ Fail (86 lines) | ✗ 1 error | None |
-| `formats/swecommon/types.spec.ts` | ✗ Fail (59 lines) | ✗ 27 errors | None |
-| `integration/command.spec.ts` | ✗ Fail (56 lines) | ✓ Pass | None |
-| `integration/discovery.spec.ts` | ✗ Fail (100 lines) | ✓ Pass | None |
-| `integration/navigation.spec.ts` | ✗ Fail (86 lines) | ✓ Pass | None |
-| `integration/observation.spec.ts` | ✗ Fail (45 lines) | ✗ 3 errors | None |
-| `integration/pipeline.spec.ts` | ✗ Fail (50 lines) | ✓ Pass | None |
+| File                                         | Prettier             | ESLint      | Refactoring Impact |
+| -------------------------------------------- | -------------------- | ----------- | ------------------ |
+| `command-routing.spec.ts`                    | ✗ Fail (26 lines)    | ✓ Pass      | None               |
+| `helpers.spec.ts`                            | ✗ Fail (82 lines)    | ✓ Pass      | None               |
+| `model.spec.ts`                              | ✗ Fail (21 lines)    | ✓ Pass      | None               |
+| `url_builder.spec.ts`                        | ✗ Fail (2,221 lines) | ✓ Pass      | None               |
+| `formats/classification.spec.ts`             | ✗ Fail (29 lines)    | ✓ Pass      | None               |
+| `formats/constants.spec.ts`                  | ✗ Fail (55 lines)    | ✓ Pass      | None               |
+| `formats/geojson.spec.ts`                    | ✗ Fail (72 lines)    | ✓ Pass      | None               |
+| `formats/index.spec.ts`                      | ✓ Pass               | ✓ Pass      | None               |
+| `formats/part2.spec.ts`                      | ✗ Fail (52 lines)    | ✓ Pass      | None               |
+| `formats/property.spec.ts`                   | ✗ Fail (4 lines)     | ✓ Pass      | None               |
+| `formats/response.spec.ts`                   | ✗ Fail (36 lines)    | ✓ Pass      | None               |
+| `formats/schema-response.spec.ts`            | ✗ Fail (7 lines)     | ✓ Pass      | None               |
+| `formats/sensorml/aggregate-process.spec.ts` | ✗ Fail (10 lines)    | ✗ 1 error   | None               |
+| `formats/sensorml/index.spec.ts`             | ✓ Pass               | ✓ Pass      | None               |
+| `formats/sensorml/parser.spec.ts`            | ✗ Fail (18 lines)    | ✗ 1 error   | None               |
+| `formats/sensorml/physical-system.spec.ts`   | ✗ Fail (39 lines)    | ✗ 2 errors  | None               |
+| `formats/sensorml/simple-process.spec.ts`    | ✗ Fail (12 lines)    | ✗ 1 error   | None               |
+| `formats/sensorml/types.spec.ts`             | ✗ Fail (28 lines)    | ✗ 32 errors | None               |
+| `formats/swecommon/components.spec.ts`       | ✗ Fail (73 lines)    | ✓ Pass      | None               |
+| `formats/swecommon/data-array.spec.ts`       | ✗ Fail (180 lines)   | ✓ Pass      | None               |
+| `formats/swecommon/data-record.spec.ts`      | ✗ Fail (98 lines)    | ✗ 14 errors | None               |
+| `formats/swecommon/index.spec.ts`            | ✓ Pass               | ✗ 1 error   | None               |
+| `formats/swecommon/parser.spec.ts`           | ✗ Fail (86 lines)    | ✗ 1 error   | None               |
+| `formats/swecommon/types.spec.ts`            | ✗ Fail (59 lines)    | ✗ 27 errors | None               |
+| `integration/command.spec.ts`                | ✗ Fail (56 lines)    | ✓ Pass      | None               |
+| `integration/discovery.spec.ts`              | ✗ Fail (100 lines)   | ✓ Pass      | None               |
+| `integration/navigation.spec.ts`             | ✗ Fail (86 lines)    | ✓ Pass      | None               |
+| `integration/observation.spec.ts`            | ✗ Fail (45 lines)    | ✗ 3 errors  | None               |
+| `integration/pipeline.spec.ts`               | ✗ Fail (50 lines)    | ✓ Pass      | None               |
 
 ### Core Files (Modified by Refactoring)
 
-| File | Prettier | ESLint | Refactoring Impact |
-|------|----------|--------|-------------------|
+| File                      | Prettier         | ESLint | Refactoring Impact                              |
+| ------------------------- | ---------------- | ------ | ----------------------------------------------- |
 | `src/ogc-api/endpoint.ts` | ✗ Fail (8 lines) | ✓ Pass | Remove 2 imports, `csapi()` method, cache field |
-| `src/index.ts` | ✓ Pass | ✓ Pass | Remove ~170 lines of CSAPI exports |
+| `src/index.ts`            | ✓ Pass           | ✓ Pass | Remove ~170 lines of CSAPI exports              |
 
 ### New Files (Created by Refactoring)
 
-| File | Prettier | ESLint | Notes |
-|------|----------|--------|-------|
-| `csapi/index.ts` (barrel) | Must comply | Must comply | Follow `formats/index.ts` pattern |
+| File                         | Prettier    | ESLint      | Notes                                |
+| ---------------------------- | ----------- | ----------- | ------------------------------------ |
+| `csapi/index.ts` (barrel)    | Must comply | Must comply | Follow `formats/index.ts` pattern    |
 | `csapi/factory.ts` (factory) | Must comply | Must comply | New file; write compliant from start |
 
 ### Summary Statistics
 
-| Category | Prettier Fail | Prettier Pass | ESLint Errors | ESLint Clean |
-|----------|---------------|---------------|---------------|--------------|
-| Source files (27) | 20 (74%) | 7 (26%) | 4 files / 8 errors | 23 (85%) |
-| Test files (29) | 26 (90%) | 3 (10%) | 11 files / 91 errors | 18 (62%) |
-| **Total (56)** | **46 (82%)** | **10 (18%)** | **15 files / 99 errors** | **41 (73%)** |
+| Category          | Prettier Fail | Prettier Pass | ESLint Errors            | ESLint Clean |
+| ----------------- | ------------- | ------------- | ------------------------ | ------------ |
+| Source files (27) | 20 (74%)      | 7 (26%)       | 4 files / 8 errors       | 23 (85%)     |
+| Test files (29)   | 26 (90%)      | 3 (10%)       | 11 files / 91 errors     | 18 (62%)     |
+| **Total (56)**    | **46 (82%)**  | **10 (18%)**  | **15 files / 99 errors** | **41 (73%)** |
 
 ---
 
@@ -760,12 +780,12 @@ Q: Is the formatting diff > 100 lines?
 
 Four CSAPI fixture files need Prettier formatting:
 
-| File | Issue |
-|------|-------|
+| File                                                      | Issue                       |
+| --------------------------------------------------------- | --------------------------- |
 | `fixtures/ogc-api/sample-data/csapi/sample-data-hub.json` | JSON indentation/whitespace |
-| `fixtures/ogc-api/sample-data/csapi/collections.json` | JSON indentation/whitespace |
-| `fixtures/ogc-api/sample-data/csapi/iot-sensors.json` | JSON indentation/whitespace |
-| `fixtures/ogc-api/sample-data/csapi/conformance.json` | JSON indentation/whitespace |
+| `fixtures/ogc-api/sample-data/csapi/collections.json`     | JSON indentation/whitespace |
+| `fixtures/ogc-api/sample-data/csapi/iot-sensors.json`     | JSON indentation/whitespace |
+| `fixtures/ogc-api/sample-data/csapi/conformance.json`     | JSON indentation/whitespace |
 
 These are JSON files created for CSAPI tests. The `.prettierignore` excludes `fixtures/**/*.xml` but not JSON files. These should be included in the formatting commit.
 
@@ -816,12 +836,12 @@ New files created by the refactoring (barrel file `csapi/index.ts`, factory file
 
 ### Constraint Compliance Matrix
 
-| # | Constraint | Status | Evidence | Notes |
-|---|-----------|--------|----------|-------|
-| 1 | CI compliance — all code must pass `format:check`, `lint`, `typecheck` | ✓ Compliant | Formatting and ESLint fixes documented; all are achievable | Format First commit ensures compliance from first commit |
-| 2 | Upstream configuration is authoritative — no config modifications | ✓ Compliant | Analysis used upstream config as-is; no modifications proposed | Even the inactive `eslint-plugin-require-extensions` is left untouched |
-| 3 | No CSAPI in root exports | ✓ Compliant | ESLint impact on `index.ts` after removal verified — 0 errors | Removing CSAPI exports creates no new violations |
-| 4 | New files must also comply | ✓ Compliant | Compliance checklist produced (Section 9) | Barrel and factory files have specific guidance |
+| #   | Constraint                                                             | Status      | Evidence                                                       | Notes                                                                  |
+| --- | ---------------------------------------------------------------------- | ----------- | -------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 1   | CI compliance — all code must pass `format:check`, `lint`, `typecheck` | ✓ Compliant | Formatting and ESLint fixes documented; all are achievable     | Format First commit ensures compliance from first commit               |
+| 2   | Upstream configuration is authoritative — no config modifications      | ✓ Compliant | Analysis used upstream config as-is; no modifications proposed | Even the inactive `eslint-plugin-require-extensions` is left untouched |
+| 3   | No CSAPI in root exports                                               | ✓ Compliant | ESLint impact on `index.ts` after removal verified — 0 errors  | Removing CSAPI exports creates no new violations                       |
+| 4   | New files must also comply                                             | ✓ Compliant | Compliance checklist produced (Section 9)                      | Barrel and factory files have specific guidance                        |
 
 ### Scope Boundary Adherence
 
@@ -835,17 +855,17 @@ New files created by the refactoring (barrel file `csapi/index.ts`, factory file
 
 ### Minimum-Change Test
 
-| Finding / Recommendation | Serves jahow's requirements? | Minimum-change? | Include in implementation? |
-|--------------------------|------------------------------|-----------------|---------------------------|
-| Apply Prettier to 46 CSAPI files | Yes — required for CI `format:check` | Yes — automated, mechanical | ✓ Include |
-| Fix 99 ESLint `no-unused-vars` errors | Yes — required for CI `lint` | Yes — remove/rename unused imports | ✓ Include |
-| Format 4 CSAPI fixture files | Yes — required for CI `format:check` | Yes — automated, mechanical | ✓ Include |
-| Format `endpoint.ts` (8-line diff) | Yes — required for CI `format:check` | Yes — automated, mechanical | ✓ Include |
-| Write new files Prettier-compliant | Yes — necessary consequence | Yes — write correctly from start | ✓ Include |
-| Use dedicated formatting commit | Yes — keeps PR reviewable | Yes — upstream precedent exists | ✓ Include |
-| Add `eslint-config-prettier` | No — nice-to-have (no conflicts exist) | No — modifies upstream config | ✗ Defer |
-| Remove `eslint-plugin-require-extensions` | No — nice-to-have (dead dep) | No — modifies upstream config | ✗ Defer |
-| Change `endOfLine` to `"auto"` | No — nice-to-have (dev convenience) | No — modifies upstream config | ✗ Defer |
+| Finding / Recommendation                  | Serves jahow's requirements?           | Minimum-change?                    | Include in implementation? |
+| ----------------------------------------- | -------------------------------------- | ---------------------------------- | -------------------------- |
+| Apply Prettier to 46 CSAPI files          | Yes — required for CI `format:check`   | Yes — automated, mechanical        | ✓ Include                  |
+| Fix 99 ESLint `no-unused-vars` errors     | Yes — required for CI `lint`           | Yes — remove/rename unused imports | ✓ Include                  |
+| Format 4 CSAPI fixture files              | Yes — required for CI `format:check`   | Yes — automated, mechanical        | ✓ Include                  |
+| Format `endpoint.ts` (8-line diff)        | Yes — required for CI `format:check`   | Yes — automated, mechanical        | ✓ Include                  |
+| Write new files Prettier-compliant        | Yes — necessary consequence            | Yes — write correctly from start   | ✓ Include                  |
+| Use dedicated formatting commit           | Yes — keeps PR reviewable              | Yes — upstream precedent exists    | ✓ Include                  |
+| Add `eslint-config-prettier`              | No — nice-to-have (no conflicts exist) | No — modifies upstream config      | ✗ Defer                    |
+| Remove `eslint-plugin-require-extensions` | No — nice-to-have (dead dep)           | No — modifies upstream config      | ✗ Defer                    |
+| Change `endOfLine` to `"auto"`            | No — nice-to-have (dev convenience)    | No — modifies upstream config      | ✗ Defer                    |
 
 ### Deferred Insights
 
@@ -860,15 +880,15 @@ New files created by the refactoring (barrel file `csapi/index.ts`, factory file
 
 ### What Downstream Plans Should Consume
 
-| Downstream Plan | What to consume from this report | Section reference |
-|-----------------|----------------------------------|-------------------|
-| Plan 08 (Changelist) | Execution order: Format First (Option A) | § 6 |
-| Plan 08 (Changelist) | File-by-file impact matrix for commit planning | § 7 |
-| Plan 08 (Changelist) | ESLint fix list: 15 files, 99 errors, all `no-unused-vars` | § 2, Q12/Q17 |
-| Plan 08 (Changelist) | Formatting commit scope: 46 files + 4 fixtures + endpoint.ts | § 4, Q28 |
-| Plan 08 (Changelist) | New file compliance checklist | § 9 |
-| Plan 08 (Changelist) | Commit message template for formatting commit | § 6, Q36 |
-| Plan 08 (Changelist) | CI constraints: single job, sequential, final-state only | § 3, Q21/Q38 |
+| Downstream Plan      | What to consume from this report                             | Section reference |
+| -------------------- | ------------------------------------------------------------ | ----------------- |
+| Plan 08 (Changelist) | Execution order: Format First (Option A)                     | § 6               |
+| Plan 08 (Changelist) | File-by-file impact matrix for commit planning               | § 7               |
+| Plan 08 (Changelist) | ESLint fix list: 15 files, 99 errors, all `no-unused-vars`   | § 2, Q12/Q17      |
+| Plan 08 (Changelist) | Formatting commit scope: 46 files + 4 fixtures + endpoint.ts | § 4, Q28          |
+| Plan 08 (Changelist) | New file compliance checklist                                | § 9               |
+| Plan 08 (Changelist) | Commit message template for formatting commit                | § 6, Q36          |
+| Plan 08 (Changelist) | CI constraints: single job, sequential, final-state only     | § 3, Q21/Q38      |
 
 ### Decisions Now Final
 
@@ -936,11 +956,11 @@ New files created by the refactoring (barrel file `csapi/index.ts`, factory file
 
 ## 15. Open Questions
 
-| # | Question | Why Unresolved | Resolution Path |
-|---|----------|----------------|-----------------|
-| 1 | Should ESLint fixes go in the formatting commit or a separate commit? | Implementation sequencing decision, not a research question | Plan 08 should resolve based on commit narrative preference |
-| 2 | Should `endpoint.ts` formatting be in the formatting commit or architectural commit? | Both are valid; depends on commit narrative | Plan 08 should resolve |
-| 3 | Will upstream have opinions on the `url_builder.spec.ts` 2,221-line formatting diff? | Cannot predict reviewer reaction | Mitigate by clearly labeling the formatting commit and noting this file in the PR description |
+| #   | Question                                                                             | Why Unresolved                                              | Resolution Path                                                                               |
+| --- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 1   | Should ESLint fixes go in the formatting commit or a separate commit?                | Implementation sequencing decision, not a research question | Plan 08 should resolve based on commit narrative preference                                   |
+| 2   | Should `endpoint.ts` formatting be in the formatting commit or architectural commit? | Both are valid; depends on commit narrative                 | Plan 08 should resolve                                                                        |
+| 3   | Will upstream have opinions on the `url_builder.spec.ts` 2,221-line formatting diff? | Cannot predict reviewer reaction                            | Mitigate by clearly labeling the formatting commit and noting this file in the PR description |
 
 ---
 
@@ -995,11 +1015,11 @@ b8664f6 fix: apply prettier
 ```yaml
 # From .github/workflows/qa.yml
 steps:
-  - run: npm run format:check    # Step 1: Prettier
-  - run: npm run typecheck       # Step 2: tsc --noEmit
-  - run: npm run lint            # Step 3: ESLint
-  - run: npm run test:browser    # Step 4: Jest (jsdom)
-  - run: npm run test:node       # Step 5: Jest (node)
+  - run: npm run format:check # Step 1: Prettier
+  - run: npm run typecheck # Step 2: tsc --noEmit
+  - run: npm run lint # Step 3: ESLint
+  - run: npm run test:browser # Step 4: Jest (jsdom)
+  - run: npm run test:node # Step 5: Jest (node)
 ```
 
 ---

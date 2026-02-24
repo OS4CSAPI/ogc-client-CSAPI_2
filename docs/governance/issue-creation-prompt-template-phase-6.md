@@ -49,30 +49,33 @@ Use this template when the issue maps to a planned P6 ROADMAP task.
 
 ## Files to Create or Modify
 
-| File | Action | Est. Lines | Purpose |
-|------|--------|-----------|---------|
-| {{`path/to/file.ts`}} | {{Create / Modify}} | {{~N-M}} | {{Brief purpose}} |
-| {{`path/to/file.spec.ts`}} | {{Create / Modify}} | {{~N-M}} | {{Brief purpose}} |
+| File                       | Action              | Est. Lines | Purpose           |
+| -------------------------- | ------------------- | ---------- | ----------------- |
+| {{`path/to/file.ts`}}      | {{Create / Modify}} | {{~N-M}}   | {{Brief purpose}} |
+| {{`path/to/file.spec.ts`}} | {{Create / Modify}} | {{~N-M}}   | {{Brief purpose}} |
 
 ## Blueprint Reference
 
 {{Which existing file(s) in the repo demonstrate the pattern to follow. For Phase 6:
+
 - Barrel file → `src/ogc-api/csapi/formats/index.ts` (sectioned JSDoc divider pattern)
 - Factory function → `endpoint.csapi()` method logic (guard → fetch → scan → construct) and EDR `endpoint.edr()` pattern
 - `package.json` exports → existing `"."` and `"./worker"` export conditions
 - ESLint fixes → `import type` conversion pattern in existing CSAPI source files
-}}
+  }}
 
 ## Scope — What to Implement
 
 {{Organized list of exactly what to build. Use sub-headers if the task has distinct sub-parts. Include method signatures, file paths, or line references — be specific enough that the implementer has no ambiguity.}}
 
 ### JSDoc Requirements
+
 - Document {{what}} with {{what level of detail}}
 - Add `@see` links to {{which spec sections or implementation guide sections}}
 - Follow the JSDoc style in {{which blueprint file}}
 
 ### Testing Requirements
+
 - {{Specific testing action — e.g., "Run `npx tsc --noEmit` after modifications" or "Create `factory.spec.ts` with 2 tests"}}
 - Follow test patterns from {{which blueprint test file}}
 
@@ -115,6 +118,7 @@ Use this template when the issue maps to a planned P6 ROADMAP task.
 > **For Phase 2 issues:** Also review [`docs/governance/phase-2-lessons-learned.md`](phase-2-lessons-learned.md)
 
 Key constraints for this task:
+
 - **Precedence:** OGC specifications → AI Collaboration Agreement → This issue description → Existing code → Conversational context
 - **No scope expansion:** Do not infer unstated requirements or add unrequested features
 - **No refactoring:** Do not rename, restructure, or "improve" code outside this issue's scope
@@ -157,43 +161,43 @@ Read these documents before starting implementation. They are ordered by priorit
 
 ### Primary References (must read)
 
-| # | Document | Section/Lines | What It Provides |
-|---|----------|---------------|------------------|
-| 1 | {{Guide section with code template or specification}} | {{Lines N-M}} | {{What the implementer gets from it}} |
-| 2 | {{Blueprint file to match}} | {{Full file / Lines N-M}} | {{What pattern to follow}} |
+| #   | Document                                              | Section/Lines             | What It Provides                      |
+| --- | ----------------------------------------------------- | ------------------------- | ------------------------------------- |
+| 1   | {{Guide section with code template or specification}} | {{Lines N-M}}             | {{What the implementer gets from it}} |
+| 2   | {{Blueprint file to match}}                           | {{Full file / Lines N-M}} | {{What pattern to follow}}            |
 
 ### Phase 6 Primary References
 
 For Phase 6 tasks, include these in the Primary References table:
 
-| # | Document | What It Provides |
-|---|----------|------------------|
-| 1 | [P6 Implementation Guide](../planning/phase-6/P6-implementation-guide.md) §{{N}} | Complete file specification, code sketch, line references for the specific task |
-| 2 | [P6 ROADMAP](../planning/phase-6/P6-ROADMAP.md) Task {{N}} | Task definition, deliverables, dependencies, estimated time |
-| 3 | [P6 Contribution Goal](../planning/phase-6/P6-contribution-goal-and-definition.md) | Acceptance criteria (12 gates), scope boundaries, consumer API migration |
-| 4 | [Task Granularity Review](../research/phase-6/task-granularity-review.md) | Split rationale for execution units 2a/2b, 4a/4b, 10a/10b |
-| 5 | [Design Decision Resolution Report](../research/phase-6/design-decision-resolution-report.md) | All 10 design forks resolved — zero open questions |
+| #   | Document                                                                                      | What It Provides                                                                |
+| --- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| 1   | [P6 Implementation Guide](../planning/phase-6/P6-implementation-guide.md) §{{N}}              | Complete file specification, code sketch, line references for the specific task |
+| 2   | [P6 ROADMAP](../planning/phase-6/P6-ROADMAP.md) Task {{N}}                                    | Task definition, deliverables, dependencies, estimated time                     |
+| 3   | [P6 Contribution Goal](../planning/phase-6/P6-contribution-goal-and-definition.md)            | Acceptance criteria (12 gates), scope boundaries, consumer API migration        |
+| 4   | [Task Granularity Review](../research/phase-6/task-granularity-review.md)                     | Split rationale for execution units 2a/2b, 4a/4b, 10a/10b                       |
+| 5   | [Design Decision Resolution Report](../research/phase-6/design-decision-resolution-report.md) | All 10 design forks resolved — zero open questions                              |
 
 ### Research References (context, not required reading)
 
-| # | Document | What It Provides |
-|---|----------|------------------|
+| #     | Document                        | What It Provides                   |
+| ----- | ------------------------------- | ---------------------------------- |
 | {{N}} | {{Research plan findings path}} | {{Why a design decision was made}} |
 
 All Phase 6 research findings: [`docs/research/phase-6/findings/`](../research/phase-6/findings/)
 
 ### Convention Quick Reference
 
-| Rule | Example |
-|------|---------|
-| Use `.js` extension for relative imports | `import { X } from './file.js'` |
-| Use `import type` for interfaces/types | `import type { Y } from './model.js'` |
-| Three-tier hierarchy: import from lower tiers only | shared → ogc-api → csapi |
-| Named exports for types and utilities | `export interface Z { ... }` |
-| Barrel file sections use JSDoc dividers | `// ─────── Section Name ───────` pattern from `formats/index.ts` |
-| Prettier-compliant from inception | Single quotes, semicolons, 80-char width, 2-space indent |
-| HTTP mocking: `globalThis.fetch = jest.fn()` | Never use nock, msw, or other libraries |
-| Meaningful tests only | Verify behavior, not that code runs without throwing |
+| Rule                                               | Example                                                           |
+| -------------------------------------------------- | ----------------------------------------------------------------- |
+| Use `.js` extension for relative imports           | `import { X } from './file.js'`                                   |
+| Use `import type` for interfaces/types             | `import type { Y } from './model.js'`                             |
+| Three-tier hierarchy: import from lower tiers only | shared → ogc-api → csapi                                          |
+| Named exports for types and utilities              | `export interface Z { ... }`                                      |
+| Barrel file sections use JSDoc dividers            | `// ─────── Section Name ───────` pattern from `formats/index.ts` |
+| Prettier-compliant from inception                  | Single quotes, semicolons, 80-char width, 2-space indent          |
+| HTTP mocking: `globalThis.fetch = jest.fn()`       | Never use nock, msw, or other libraries                           |
+| Meaningful tests only                              | Verify behavior, not that code runs without throwing              |
 ```
 
 ---
@@ -220,7 +224,9 @@ Use this template when the issue is triggered by a verification failure, code re
 
 **Evidence:**
 ```
+
 {{Paste the verification command and its output}}
+
 ```
 
 **Impact:** {{What breaks or degrades if this isn't fixed. Which acceptance criteria are affected?}}
@@ -289,13 +295,13 @@ Key constraints:
 
 ### Choosing Template A vs Template B
 
-| Trigger | Template | Examples |
-|---------|----------|---------|
-| Planned ROADMAP task | **A** | "Apply Prettier to 51 files", "Create barrel file" |
-| Verification gate failure | **B** | "Barrel file missing export for CSAPIQueryBuilder" |
-| Code review finding | **B** | "Factory function missing EndpointError import" |
-| TypeScript compilation error | **B** | "Type mismatch in factory return type" |
-| Boundary violation | **B** | "endpoint.ts still imports from csapi/" |
+| Trigger                      | Template | Examples                                           |
+| ---------------------------- | -------- | -------------------------------------------------- |
+| Planned ROADMAP task         | **A**    | "Apply Prettier to 51 files", "Create barrel file" |
+| Verification gate failure    | **B**    | "Barrel file missing export for CSAPIQueryBuilder" |
+| Code review finding          | **B**    | "Factory function missing EndpointError import"    |
+| TypeScript compilation error | **B**    | "Type mismatch in factory return type"             |
+| Boundary violation           | **B**    | "endpoint.ts still imports from csapi/"            |
 
 ### Filling in the "Scope — What NOT to Touch" Section
 
@@ -307,6 +313,7 @@ This is the most important section for AI safety. For each issue, identify:
 4. **Business logic** — Phase 6 changes zero CSAPI behavior
 
 **Phase 6 specific scope boundaries:**
+
 - Phase A tasks (1, 2a, 2b, 3) must NOT touch any code logic — formatting/imports only
 - Task 4b must NOT modify `index.ts` — only creates the barrel file
 - Task 5 must NOT modify `endpoint.ts` — only creates factory files
@@ -320,6 +327,7 @@ This is the most important section for AI safety. For each issue, identify:
 Issues are numbered sequentially as created. The original ROADMAP mapping (#1–#33) is historical context only.
 
 **Current state (as of February 24, 2026):**
+
 - Issues #1–#33: Original ROADMAP tasks (Phases 1–4)
 - Issues #34–#77: Finding-driven fixes, smoke test follow-ups
 - Issues #78+: Phase 5 parser completion tasks
@@ -331,29 +339,29 @@ New issues get the next available number.
 
 Apply these labels consistently:
 
-| Label | When to Use |
-|-------|------------|
-| `phase-6` | All Phase 6 tasks |
-| `implementation` | All coding tasks |
-| `documentation` | Tasks with significant documentation focus |
-| `formatting` | Phase A tasks (Prettier, ESLint) |
-| `architecture` | Phase B tasks (barrel, factory, decoupling) |
-| `verification` | Phase C tasks (gates, litmus test, rebase) |
-| `bug` | Finding-driven issues where code needs a fix |
+| Label            | When to Use                                  |
+| ---------------- | -------------------------------------------- |
+| `phase-6`        | All Phase 6 tasks                            |
+| `implementation` | All coding tasks                             |
+| `documentation`  | Tasks with significant documentation focus   |
+| `formatting`     | Phase A tasks (Prettier, ESLint)             |
+| `architecture`   | Phase B tasks (barrel, factory, decoupling)  |
+| `verification`   | Phase C tasks (gates, litmus test, rebase)   |
+| `bug`            | Finding-driven issues where code needs a fix |
 
 ---
 
 ## Changes from v3.0
 
-| Aspect | v3.0 (Phase 5) | v4.0 (Phase 6) |
-|--------|-----------------|-----------------|
-| Phase coverage | Phases 1–5 | Phases 1–6 |
-| Task scope | Parser completion (9 tasks, 14 units) | Module boundary refactoring (10 tasks, 13 units) |
-| Constraint focus | Parser-specific (tolerant extraction, parseValidTime reuse, cross-references) | Architecture-specific (Format First ordering, `.js` extensions, `import type`, barrel exports, zero business logic) |
-| Scope boundaries | Per-parser isolation (don't touch other parsers) | Per-file isolation (each task owns specific files) |
-| Primary references | P5 Implementation Guide, Parsing Coverage Audit | P6 Implementation Guide, Task Granularity Review, Design Decision Resolution Report |
-| Blueprint references | `extractCSAPIFeature()`, SensorML sub-parsers | `formats/index.ts` barrel, EDR `endpoint.edr()` factory, existing `package.json` exports |
-| Testing requirements | 8+ test cases per parser, fixture-based | Minimal (2 factory tests, `tsc --noEmit` per task, full suite at commit boundaries) |
-| Finding categories | Code bug, server limitation, parser gap | Boundary violation, export gap, type error, test regression |
-| Labels | 12 labels (incl. `parser`) | 7 labels (incl. `formatting`, `architecture`, `verification`) |
-| Template B triggers | Smoke test findings | Verification gate failures, code review findings |
+| Aspect               | v3.0 (Phase 5)                                                                | v4.0 (Phase 6)                                                                                                      |
+| -------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Phase coverage       | Phases 1–5                                                                    | Phases 1–6                                                                                                          |
+| Task scope           | Parser completion (9 tasks, 14 units)                                         | Module boundary refactoring (10 tasks, 13 units)                                                                    |
+| Constraint focus     | Parser-specific (tolerant extraction, parseValidTime reuse, cross-references) | Architecture-specific (Format First ordering, `.js` extensions, `import type`, barrel exports, zero business logic) |
+| Scope boundaries     | Per-parser isolation (don't touch other parsers)                              | Per-file isolation (each task owns specific files)                                                                  |
+| Primary references   | P5 Implementation Guide, Parsing Coverage Audit                               | P6 Implementation Guide, Task Granularity Review, Design Decision Resolution Report                                 |
+| Blueprint references | `extractCSAPIFeature()`, SensorML sub-parsers                                 | `formats/index.ts` barrel, EDR `endpoint.edr()` factory, existing `package.json` exports                            |
+| Testing requirements | 8+ test cases per parser, fixture-based                                       | Minimal (2 factory tests, `tsc --noEmit` per task, full suite at commit boundaries)                                 |
+| Finding categories   | Code bug, server limitation, parser gap                                       | Boundary violation, export gap, type error, test regression                                                         |
+| Labels               | 12 labels (incl. `parser`)                                                    | 7 labels (incl. `formatting`, `architecture`, `verification`)                                                       |
+| Template B triggers  | Smoke test findings                                                           | Verification gate failures, code review findings                                                                    |

@@ -6,16 +6,16 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Status** | Not Started |
-| **Plan Type** | External research (industry case studies) |
-| **Date Created** | 2026-02-23 |
-| **Last Updated** | 2026-02-23 |
-| **Estimated Time** | 2–3 hours |
-| **Actual Time** | — |
-| **Depends On** | None |
-| **Blocks** | Plan 06 (Endpoint Decoupling Architecture) |
+| Field                  | Value                                                     |
+| ---------------------- | --------------------------------------------------------- |
+| **Status**             | Not Started                                               |
+| **Plan Type**          | External research (industry case studies)                 |
+| **Date Created**       | 2026-02-23                                                |
+| **Last Updated**       | 2026-02-23                                                |
+| **Estimated Time**     | 2–3 hours                                                 |
+| **Actual Time**        | —                                                         |
+| **Depends On**         | None                                                      |
+| **Blocks**             | Plan 06 (Endpoint Decoupling Architecture)                |
 | **Strategy Reference** | [research-strategy.md § Plan 04](../research-strategy.md) |
 
 ---
@@ -152,36 +152,36 @@ This plan has no dependencies and can run in parallel with Plans 01, 02, 05, and
 
 ### Primary Sources (In Workspace)
 
-| Source | Path | What to Extract |
-|--------|------|-----------------|
-| CSAPIQueryBuilder constructor | `src/ogc-api/csapi/url_builder.ts` (lines 106–174) | What data the builder needs: `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` + optional `Map<string, string>` resource URLs |
-| Current `csapi()` method | `src/ogc-api/endpoint.ts` (lines 385–413) | How the endpoint currently provides data to the builder: `getCollectionDocument()`, `extractRootResourceUrls()`, `hasConnectedSystems` check |
-| CSAPI model types | `src/ogc-api/csapi/model.ts` | Types exported by CSAPI — what the consumer API must expose |
-| Core model types | `src/ogc-api/model.ts` | Shared types like `OgcApiCollectionInfo` that cross the module boundary |
-| Current root exports | `src/index.ts` | What CSAPI currently exports from root — the API surface that must move to `./csapi` |
-| CSAPI helpers | `src/ogc-api/csapi/helpers.ts` | `scanCsapiLinks()` — the function `endpoint.ts` imports (must be eliminated or moved) |
+| Source                        | Path                                               | What to Extract                                                                                                                              |
+| ----------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| CSAPIQueryBuilder constructor | `src/ogc-api/csapi/url_builder.ts` (lines 106–174) | What data the builder needs: `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` + optional `Map<string, string>` resource URLs         |
+| Current `csapi()` method      | `src/ogc-api/endpoint.ts` (lines 385–413)          | How the endpoint currently provides data to the builder: `getCollectionDocument()`, `extractRootResourceUrls()`, `hasConnectedSystems` check |
+| CSAPI model types             | `src/ogc-api/csapi/model.ts`                       | Types exported by CSAPI — what the consumer API must expose                                                                                  |
+| Core model types              | `src/ogc-api/model.ts`                             | Shared types like `OgcApiCollectionInfo` that cross the module boundary                                                                      |
+| Current root exports          | `src/index.ts`                                     | What CSAPI currently exports from root — the API surface that must move to `./csapi`                                                         |
+| CSAPI helpers                 | `src/ogc-api/csapi/helpers.ts`                     | `scanCsapiLinks()` — the function `endpoint.ts` imports (must be eliminated or moved)                                                        |
 
 ### External Sources
 
-| Source | URL/Reference | What to Extract |
-|--------|---------------|-----------------|
-| AWS SDK v3 `lib-storage` | https://github.com/aws/aws-sdk-js-v3/tree/main/lib/lib-storage | Consumer API, constructor signature, what it accepts from `client-s3` |
-| AWS SDK v3 `client-s3` | https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-s3 | Verify no imports from `lib-storage` — confirm one-way dependency |
-| Octokit core | https://github.com/octokit/core.js | Plugin architecture, `.plugin()` API, dependency direction |
-| Octokit REST plugin | https://github.com/octokit/plugin-rest-endpoint-methods.js | How it composes with core, consumer API, type dependencies |
-| Angular CDK testing | https://github.com/angular/components/tree/main/src/cdk/testing | Sub-path export, relationship to `@angular/core`, consumer API |
-| RxJS operators | https://github.com/ReactiveX/rxjs/tree/master/src/internal/operators | How operators accept Observable, standalone function pattern |
-| date-fns sub-paths | https://github.com/date-fns/date-fns | Per-function export pattern, type sharing |
-| zod-to-json-schema | https://github.com/StefanTerdell/zod-to-json-schema | How it depends on zod, what types it accepts, consumer API |
-| zod core | https://github.com/colinhacks/zod | Verify no imports from ecosystem packages |
-| TanStack Query | https://github.com/TanStack/query | `@tanstack/query-core` + `@tanstack/react-query` sub-module pattern |
-| drizzle-orm | https://github.com/drizzle-team/drizzle-orm | `drizzle-orm/pg-core` sub-path, consumer API, type dependencies |
+| Source                   | URL/Reference                                                        | What to Extract                                                       |
+| ------------------------ | -------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| AWS SDK v3 `lib-storage` | https://github.com/aws/aws-sdk-js-v3/tree/main/lib/lib-storage       | Consumer API, constructor signature, what it accepts from `client-s3` |
+| AWS SDK v3 `client-s3`   | https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-s3     | Verify no imports from `lib-storage` — confirm one-way dependency     |
+| Octokit core             | https://github.com/octokit/core.js                                   | Plugin architecture, `.plugin()` API, dependency direction            |
+| Octokit REST plugin      | https://github.com/octokit/plugin-rest-endpoint-methods.js           | How it composes with core, consumer API, type dependencies            |
+| Angular CDK testing      | https://github.com/angular/components/tree/main/src/cdk/testing      | Sub-path export, relationship to `@angular/core`, consumer API        |
+| RxJS operators           | https://github.com/ReactiveX/rxjs/tree/master/src/internal/operators | How operators accept Observable, standalone function pattern          |
+| date-fns sub-paths       | https://github.com/date-fns/date-fns                                 | Per-function export pattern, type sharing                             |
+| zod-to-json-schema       | https://github.com/StefanTerdell/zod-to-json-schema                  | How it depends on zod, what types it accepts, consumer API            |
+| zod core                 | https://github.com/colinhacks/zod                                    | Verify no imports from ecosystem packages                             |
+| TanStack Query           | https://github.com/TanStack/query                                    | `@tanstack/query-core` + `@tanstack/react-query` sub-module pattern   |
+| drizzle-orm              | https://github.com/drizzle-team/drizzle-orm                          | `drizzle-orm/pg-core` sub-path, consumer API, type dependencies       |
 
 ### Prior Research Findings
 
-| Finding | Path | What to Use |
-|---------|------|-------------|
-| None | — | This is Plan 4 — no prior findings from Phase 6. The current CSAPIQueryBuilder constructor signature (from the codebase) provides the baseline for comparison. |
+| Finding | Path | What to Use                                                                                                                                                    |
+| ------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| None    | —    | This is Plan 4 — no prior findings from Phase 6. The current CSAPIQueryBuilder constructor signature (from the codebase) provides the baseline for comparison. |
 
 ---
 
@@ -192,6 +192,7 @@ This plan has no dependencies and can run in parallel with Plans 01, 02, 05, and
 **Objective:** Document the consumer API, dependency direction, type sharing, and async handling for each of the 5+ selected libraries.
 
 **Tasks:**
+
 1. **AWS SDK v3:** Fetch `@aws-sdk/lib-storage` source — document the `Upload` class constructor, what it accepts from `S3Client`, how the consumer creates it, and verify that `client-s3` has no imports from `lib-storage`
 2. **Octokit:** Fetch `@octokit/plugin-rest-endpoint-methods` — document the plugin function signature, how it composes with `Octokit.plugin()`, verify dependency direction, determine if the plugin pattern violates our constraints
 3. **Angular CDK:** Fetch `@angular/cdk/testing` — document the consumer API, what it imports from `@angular/core`, verify no reverse dependencies
@@ -207,6 +208,7 @@ This plan has no dependencies and can run in parallel with Plans 01, 02, 05, and
 **Objective:** Classify the discovered patterns into categories and build a comparison matrix.
 
 **Tasks:**
+
 1. Classify each library's consumer API into one of: (a) Constructor injection (sub-module class takes core instance), (b) Factory function (standalone function returns configured sub-module), (c) Static method on sub-module class, (d) Wrapper class (sub-module wraps core entirely), (e) Standalone utility functions (no class, each function takes core data), (f) Plugin registration (core registers sub-module — expected: excluded)
 2. Build comparison matrix with columns: Library | Pattern Type | Coupling Level (concrete/interface/data/params) | Async? | Constraint Fit (✓/✗ for each of constraints 1–4)
 3. Identify which patterns satisfy ALL four constraints — these are the viable candidates for CSAPI
@@ -219,6 +221,7 @@ This plan has no dependencies and can run in parallel with Plans 01, 02, 05, and
 **Objective:** Map each viable pattern to the specific CSAPI scenario and evaluate fit.
 
 **Tasks:**
+
 1. For each viable pattern, draft a concrete CSAPI consumer code example showing what the developer would type:
    - Constructor injection: `new CSAPIClient(endpoint)` or `new CSAPIClient(collectionDoc, resourceUrls)`
    - Factory function: `createCSAPIClient(endpoint)` or `createCSAPIClient({baseUrl, conformance, collectionLinks})`
@@ -236,6 +239,7 @@ This plan has no dependencies and can run in parallel with Plans 01, 02, 05, and
 **Objective:** Determine how types flow across the core → sub-module boundary in each pattern, and what that means for CSAPI.
 
 **Tasks:**
+
 1. For each studied library, document how shared types are referenced: (a) direct import from core's public API, (b) re-declaration of compatible types, (c) shared type package, (d) structural typing (no explicit shared type)
 2. Map to CSAPI: which core types does CSAPI currently import? (`OgcApiCollectionInfo` from `model.ts`, `EndpointError` from `shared/errors.ts`, various from `shared/models.ts`)
 3. Determine if CSAPI can import these types from the core's public API (`@camptocamp/ogc-client`) at the type level only (i.e., `import type { OgcApiCollectionInfo } from '@camptocamp/ogc-client'`), or if it needs to use relative internal imports
@@ -249,6 +253,7 @@ This plan has no dependencies and can run in parallel with Plans 01, 02, 05, and
 **Objective:** Consolidate all phase outputs into the deliverable document.
 
 **Tasks:**
+
 1. Synthesize findings from Phases 1–4 into the findings report structure
 2. Verify all 38 research questions are answered
 3. Validate findings against boundary conditions (Constraints 1–4)
@@ -302,14 +307,14 @@ This research is complete when:
 
 ## 9. Risks and Mitigation
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Most studied libraries use multi-package monorepos, not single-package sub-path exports | Patterns may not directly apply to our single-package scenario | Distinguish between patterns that require package boundaries (multi-repo) and patterns that work with sub-path exports (single package). Focus on the API shape, not the packaging mechanics. |
-| Octokit's plugin pattern may require core to know about plugins (`.plugin()` registration) | Pattern may violate constraint 3 and need to be excluded | Verify dependency direction before adopting; if Octokit violates constraints, document it as an anti-pattern for our use case |
-| No studied library may exactly match our "async data from core → sync builder" scenario | The recommended pattern may be a hybrid not seen in any single library | Propose a composite pattern that combines the best elements, with explicit rationale for each design choice |
-| The "right" pattern may be subjective — different team members may prefer different API shapes | Recommendation may be contested in PR review | Provide multiple viable options with objective tradeoff analysis, not just one recommendation. Let Plan 06 make the final decision with full evidence. |
-| CSAPI currently uses `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` — if the recommendation changes the constructor to accept the full endpoint, migration effort may be high | Significant refactoring of `CSAPIQueryBuilder` | Document migration effort for each pattern; if the constructor already accepts a narrow type, prefer patterns that preserve this narrow coupling |
-| Some libraries may have changed their API patterns between major versions | Outdated case study | Verify the current version of each library; note the version studied |
+| Risk                                                                                                                                                                                    | Impact                                                                 | Mitigation                                                                                                                                                                                    |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Most studied libraries use multi-package monorepos, not single-package sub-path exports                                                                                                 | Patterns may not directly apply to our single-package scenario         | Distinguish between patterns that require package boundaries (multi-repo) and patterns that work with sub-path exports (single package). Focus on the API shape, not the packaging mechanics. |
+| Octokit's plugin pattern may require core to know about plugins (`.plugin()` registration)                                                                                              | Pattern may violate constraint 3 and need to be excluded               | Verify dependency direction before adopting; if Octokit violates constraints, document it as an anti-pattern for our use case                                                                 |
+| No studied library may exactly match our "async data from core → sync builder" scenario                                                                                                 | The recommended pattern may be a hybrid not seen in any single library | Propose a composite pattern that combines the best elements, with explicit rationale for each design choice                                                                                   |
+| The "right" pattern may be subjective — different team members may prefer different API shapes                                                                                          | Recommendation may be contested in PR review                           | Provide multiple viable options with objective tradeoff analysis, not just one recommendation. Let Plan 06 make the final decision with full evidence.                                        |
+| CSAPI currently uses `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` — if the recommendation changes the constructor to accept the full endpoint, migration effort may be high | Significant refactoring of `CSAPIQueryBuilder`                         | Document migration effort for each pattern; if the constructor already accepts a narrow type, prefer patterns that preserve this narrow coupling                                              |
+| Some libraries may have changed their API patterns between major versions                                                                                                               | Outdated case study                                                    | Verify the current version of each library; note the version studied                                                                                                                          |
 
 ---
 

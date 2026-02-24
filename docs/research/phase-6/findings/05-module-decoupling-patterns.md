@@ -6,17 +6,17 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Research Plan** | [Plan 05: Module Decoupling Patterns in TypeScript](../research-plans/05-module-decoupling-patterns.md) |
-| **Plan Type** | External research (architectural patterns) |
-| **Date Started** | 2026-02-23 |
-| **Date Completed** | 2026-02-23 |
-| **Research Time** | ~3 hours (actual) |
-| **Estimated Time** | 2–3 hours (from plan) |
-| **Questions Answered** | 37 of 37 detailed questions |
-| **Depends On** | None (independent external research) |
-| **Blocks** | Plan 06 (Endpoint Decoupling Architecture) |
+| Field                  | Value                                                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Research Plan**      | [Plan 05: Module Decoupling Patterns in TypeScript](../research-plans/05-module-decoupling-patterns.md) |
+| **Plan Type**          | External research (architectural patterns)                                                              |
+| **Date Started**       | 2026-02-23                                                                                              |
+| **Date Completed**     | 2026-02-23                                                                                              |
+| **Research Time**      | ~3 hours (actual)                                                                                       |
+| **Estimated Time**     | 2–3 hours (from plan)                                                                                   |
+| **Questions Answered** | 37 of 37 detailed questions                                                                             |
+| **Depends On**         | None (independent external research)                                                                    |
+| **Blocks**             | Plan 06 (Endpoint Decoupling Architecture)                                                              |
 
 ---
 
@@ -24,31 +24,31 @@
 
 ### Primary Sources Consulted
 
-| Source | Path / URL | What Was Extracted |
-|--------|------------|-------------------|
-| CSAPIQueryBuilder constructor | `src/ogc-api/csapi/url_builder.ts` (lines 106–174) | Constructor signature: `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` + optional `Map<string, string>`. Uses `import type` for `OgcApiCollectionInfo`. |
-| Endpoint CSAPI imports | `src/ogc-api/endpoint.ts` (lines 52–53) | The two constraint violations: `import CSAPIQueryBuilder` (value import) and `import { scanCsapiLinks }` (value import) |
-| Endpoint `csapi()` method | `src/ogc-api/endpoint.ts` (lines 385–413) | Data flow: `hasConnectedSystems` check → `getCollectionDocument()` → `extractRootResourceUrls()` → `new CSAPIQueryBuilder(doc, urls)` |
-| Endpoint `extractRootResourceUrls()` | `src/ogc-api/endpoint.ts` (lines 431–436) | Delegates to `scanCsapiLinks(rootDoc.links)` — the second constraint violation |
-| `scanCsapiLinks` function | `src/ogc-api/csapi/helpers.ts` (lines 129–229) | Accepts `Array<{rel?: string; href?: string}>`, uses `CSAPIResourceTypes` internally. Three link conventions: `ogc-cs:` prefix, plain resource name, `items` href |
-| Core model types | `src/ogc-api/model.ts` (lines 85–155) | `OgcApiCollectionInfo` (30+ properties, `links: any`), `OgcApiDocumentLink`, `OgcApiDocument` |
-| CSAPI model types | `src/ogc-api/csapi/model.ts` (lines 1–3) | Imports: `import type { BoundingBox, DateTimeParameter, CrsCode, MimeType } from '../../shared/models.js'`, `import type { OgcApiDocumentLink } from '../model.js'` |
-| EDR URL builder | `src/ogc-api/edr/url_builder.ts` (lines 1–30) | EDR imports from core: `CrsCode`, `DataQueryType`, `EdrParameterInfo`, `OgcApiCollectionInfo` — all value imports, no reverse dependency |
-| `EndpointError` class | `src/shared/errors.ts` (lines 11–20) | Located in `shared/`, not in `ogc-api/` — import from CSAPI (`../../shared/errors.js`) does not cross the core ↔ CSAPI boundary |
-| `checkHasConnectedSystems` | `src/ogc-api/info.ts` (lines 112–123) | Zero CSAPI imports — uses only conformance URI strings |
-| Root exports | `src/index.ts` (252 lines) | ~170 lines of CSAPI re-exports: `CSAPIQueryBuilder`, 3 const exports, ~40 type exports from model, ~30 format function exports, extensive SensorML/SWE type exports |
-| TypeScript Handbook — Structural Typing | https://www.typescriptlang.org/docs/handbook/type-compatibility.html | Structural compatibility rules, duck typing semantics |
-| TypeScript Handbook — `import type` | https://www.typescriptlang.org/docs/handbook/modules/reference.html#type-only-imports-and-exports | Complete erasure guarantee, `isolatedModules` behavior |
-| TypeScript Handbook — Utility Types | https://www.typescriptlang.org/docs/handbook/utility-types.html | `Pick<>` as implicit adapter, structural narrowing |
-| TypeScript Project References | https://www.typescriptlang.org/docs/handbook/project-references.html | `composite`, `references`, build ordering, declaration boundary |
-| Node.js subpath exports | https://nodejs.org/api/packages.html#subpath-exports | `"exports"` field for module encapsulation |
+| Source                                  | Path / URL                                                                                        | What Was Extracted                                                                                                                                                  |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CSAPIQueryBuilder constructor           | `src/ogc-api/csapi/url_builder.ts` (lines 106–174)                                                | Constructor signature: `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` + optional `Map<string, string>`. Uses `import type` for `OgcApiCollectionInfo`.    |
+| Endpoint CSAPI imports                  | `src/ogc-api/endpoint.ts` (lines 52–53)                                                           | The two constraint violations: `import CSAPIQueryBuilder` (value import) and `import { scanCsapiLinks }` (value import)                                             |
+| Endpoint `csapi()` method               | `src/ogc-api/endpoint.ts` (lines 385–413)                                                         | Data flow: `hasConnectedSystems` check → `getCollectionDocument()` → `extractRootResourceUrls()` → `new CSAPIQueryBuilder(doc, urls)`                               |
+| Endpoint `extractRootResourceUrls()`    | `src/ogc-api/endpoint.ts` (lines 431–436)                                                         | Delegates to `scanCsapiLinks(rootDoc.links)` — the second constraint violation                                                                                      |
+| `scanCsapiLinks` function               | `src/ogc-api/csapi/helpers.ts` (lines 129–229)                                                    | Accepts `Array<{rel?: string; href?: string}>`, uses `CSAPIResourceTypes` internally. Three link conventions: `ogc-cs:` prefix, plain resource name, `items` href   |
+| Core model types                        | `src/ogc-api/model.ts` (lines 85–155)                                                             | `OgcApiCollectionInfo` (30+ properties, `links: any`), `OgcApiDocumentLink`, `OgcApiDocument`                                                                       |
+| CSAPI model types                       | `src/ogc-api/csapi/model.ts` (lines 1–3)                                                          | Imports: `import type { BoundingBox, DateTimeParameter, CrsCode, MimeType } from '../../shared/models.js'`, `import type { OgcApiDocumentLink } from '../model.js'` |
+| EDR URL builder                         | `src/ogc-api/edr/url_builder.ts` (lines 1–30)                                                     | EDR imports from core: `CrsCode`, `DataQueryType`, `EdrParameterInfo`, `OgcApiCollectionInfo` — all value imports, no reverse dependency                            |
+| `EndpointError` class                   | `src/shared/errors.ts` (lines 11–20)                                                              | Located in `shared/`, not in `ogc-api/` — import from CSAPI (`../../shared/errors.js`) does not cross the core ↔ CSAPI boundary                                     |
+| `checkHasConnectedSystems`              | `src/ogc-api/info.ts` (lines 112–123)                                                             | Zero CSAPI imports — uses only conformance URI strings                                                                                                              |
+| Root exports                            | `src/index.ts` (252 lines)                                                                        | ~170 lines of CSAPI re-exports: `CSAPIQueryBuilder`, 3 const exports, ~40 type exports from model, ~30 format function exports, extensive SensorML/SWE type exports |
+| TypeScript Handbook — Structural Typing | https://www.typescriptlang.org/docs/handbook/type-compatibility.html                              | Structural compatibility rules, duck typing semantics                                                                                                               |
+| TypeScript Handbook — `import type`     | https://www.typescriptlang.org/docs/handbook/modules/reference.html#type-only-imports-and-exports | Complete erasure guarantee, `isolatedModules` behavior                                                                                                              |
+| TypeScript Handbook — Utility Types     | https://www.typescriptlang.org/docs/handbook/utility-types.html                                   | `Pick<>` as implicit adapter, structural narrowing                                                                                                                  |
+| TypeScript Project References           | https://www.typescriptlang.org/docs/handbook/project-references.html                              | `composite`, `references`, build ordering, declaration boundary                                                                                                     |
+| Node.js subpath exports                 | https://nodejs.org/api/packages.html#subpath-exports                                              | `"exports"` field for module encapsulation                                                                                                                          |
 
 ### Prior Findings Used
 
-| Finding | Path | What Was Consumed |
-|---------|------|-------------------|
-| Plan 02 findings | `docs/research/phase-6/findings/02-edr-integration-pattern-analysis.md` | EDR decoupling baseline: EDR has 1 import into `endpoint.ts` (value only), 0 root exports, 656 source lines. Identical integration pattern as CSAPI but at 1/18th scale. |
-| Plan 04 findings | `docs/research/phase-6/findings/04-sub-module-api-design-patterns.md` | Recommended consumer API: two-layer (sync constructor + async factory function). Constructor injection as dominant industry pattern. Current `CSAPIQueryBuilder` constructor already follows best practice. |
+| Finding          | Path                                                                    | What Was Consumed                                                                                                                                                                                           |
+| ---------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plan 02 findings | `docs/research/phase-6/findings/02-edr-integration-pattern-analysis.md` | EDR decoupling baseline: EDR has 1 import into `endpoint.ts` (value only), 0 root exports, 656 source lines. Identical integration pattern as CSAPI but at 1/18th scale.                                    |
+| Plan 04 findings | `docs/research/phase-6/findings/04-sub-module-api-design-patterns.md`   | Recommended consumer API: two-layer (sync constructor + async factory function). Constructor injection as dominant industry pattern. Current `CSAPIQueryBuilder` constructor already follows best practice. |
 
 ### Sources Not Available or Not Useful
 
@@ -62,7 +62,7 @@
 
 This report investigates how TypeScript's structural type system affects adapter patterns, dependency inversion, and module boundary design, applied specifically to the CSAPI extraction from `endpoint.ts`. The research answers 37 detailed questions across 7 sub-topics, producing a coupling level comparison matrix, a `scanCsapiLinks` placement recommendation, an `import type` strategy, and a module extraction verification plan.
 
-**The central finding is that TypeScript's structural typing provides *implicit* dependency inversion — the core does not need to `implement` any sub-module interface for the sub-module to accept core data.** This eliminates the need for explicit adapter classes (as required in Java/C#) and means that the CSAPI module boundary can be defined by a simple structural contract: an interface declaring what shape of data CSAPI needs, satisfied by any object with matching properties.
+**The central finding is that TypeScript's structural typing provides _implicit_ dependency inversion — the core does not need to `implement` any sub-module interface for the sub-module to accept core data.** This eliminates the need for explicit adapter classes (as required in Java/C#) and means that the CSAPI module boundary can be defined by a simple structural contract: an interface declaring what shape of data CSAPI needs, satisfied by any object with matching properties.
 
 **The current codebase is already at the optimal coupling level.** `CSAPIQueryBuilder` accepts `Pick<OgcApiCollectionInfo, 'id' | 'title' | 'links'>` — this is a "data record with a type reference" pattern (Level 3.5 in our taxonomy). It has zero runtime coupling to core (the constructor only accesses `.id`, `.title`, and `.links` on the passed object) with compile-time drift detection via the `Pick<>` reference. The only changes needed are:
 
@@ -74,16 +74,16 @@ The coupling level itself (what the constructor accepts) does not need to change
 
 ### Key Metrics
 
-| Metric | Value | Significance |
-|--------|-------|-------------|
-| Coupling levels analyzed | 4 (+ current Level 3.5) | Complete spectrum from tight (concrete class) to loose (individual params) |
-| Constraint violations in current code | 2 imports in `endpoint.ts` | `CSAPIQueryBuilder` (line 52) + `scanCsapiLinks` (line 53) |
-| Type-only imports from core in CSAPI | 3 files | `url_builder.ts`, `model.ts`, `helpers.ts` — all use `import type`, zero runtime coupling |
-| `scanCsapiLinks` callers | 2 | `endpoint.ts:435` and `url_builder.ts` (via `extractAvailableResources`) |
+| Metric                                | Value                      | Significance                                                                              |
+| ------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------- |
+| Coupling levels analyzed              | 4 (+ current Level 3.5)    | Complete spectrum from tight (concrete class) to loose (individual params)                |
+| Constraint violations in current code | 2 imports in `endpoint.ts` | `CSAPIQueryBuilder` (line 52) + `scanCsapiLinks` (line 53)                                |
+| Type-only imports from core in CSAPI  | 3 files                    | `url_builder.ts`, `model.ts`, `helpers.ts` — all use `import type`, zero runtime coupling |
+| `scanCsapiLinks` callers              | 2                          | `endpoint.ts:435` and `url_builder.ts` (via `extractAvailableResources`)                  |
 
 ### Overall Assessment
 
-**Keep the current coupling level (Level 3.5: data record + type reference). The changes needed are not to the coupling architecture but to *who* orchestrates the data flow.** Currently the endpoint orchestrates (calls `new CSAPIQueryBuilder`); after decoupling, the consumer orchestrates (calls a factory function from `@camptocamp/ogc-client/csapi`). The `scanCsapiLinks` function should be generalized into a shared link scanner that accepts a `Set<string>` of known types, eliminating the endpoint's import of CSAPI-specific code.
+**Keep the current coupling level (Level 3.5: data record + type reference). The changes needed are not to the coupling architecture but to _who_ orchestrates the data flow.** Currently the endpoint orchestrates (calls `new CSAPIQueryBuilder`); after decoupling, the consumer orchestrates (calls a factory function from `@camptocamp/ogc-client/csapi`). The `scanCsapiLinks` function should be generalized into a shared link scanner that accepts a `Set<string>` of known types, eliminating the endpoint's import of CSAPI-specific code.
 
 ---
 
@@ -153,7 +153,7 @@ interface CSAPICollectionInput {
 }
 
 class CSAPIQueryBuilder {
-  constructor(private collection_: CSAPICollectionInput) { }
+  constructor(private collection_: CSAPICollectionInput) {}
 }
 
 // Consumer code — both compile without knowing about each other
@@ -168,12 +168,12 @@ TypeScript checks that `OgcApiCollectionInfo` has `id: string`, `title: string`,
 
 **Answer:** The idiom depends on the relationship between the modules:
 
-| Approach | When to use | Coupling | Drift detection |
-|---|---|---|---|
-| **(a)** Explicit interface in sub-module | Separate packages or hard module boundaries | Zero | None (unless tested) |
-| **(b)** `Pick<CoreType, keys>` | Same package, internal sub-module | `import type` only | **Automatic** via compiler |
-| **(c)** Inline type literal | One-off function parameters | Zero | None |
-| **(d)** Re-declared standalone type | Truly independent modules | Zero | None (unless tested) |
+| Approach                                 | When to use                                 | Coupling           | Drift detection            |
+| ---------------------------------------- | ------------------------------------------- | ------------------ | -------------------------- |
+| **(a)** Explicit interface in sub-module | Separate packages or hard module boundaries | Zero               | None (unless tested)       |
+| **(b)** `Pick<CoreType, keys>`           | Same package, internal sub-module           | `import type` only | **Automatic** via compiler |
+| **(c)** Inline type literal              | One-off function parameters                 | Zero               | None                       |
+| **(d)** Re-declared standalone type      | Truly independent modules                   | Zero               | None (unless tested)       |
 
 **For CSAPI within ogc-client:** Approach **(b)** — `Pick<>` with `import type` — is idiomatic. It is the standard pattern for intra-package module boundaries in the TypeScript ecosystem (used by Angular, RxJS, and the TypeScript compiler itself). If CSAPI were ever extracted to a separate npm package, switch to **(a)**.
 
@@ -182,6 +182,7 @@ TypeScript checks that `OgcApiCollectionInfo` has `id: string`, `title: string`,
 **Answer:** The fundamental difference is that TypeScript's structural typing eliminates the need for explicit adapter wrapper classes.
 
 **Java (nominal typing):**
+
 ```java
 // Sub-module defines abstraction
 public interface CollectionLike { String getId(); String getTitle(); }
@@ -194,38 +195,47 @@ public class CollectionAdapter implements CollectionLike {
     @Override public String getTitle() { return inner.getTitle(); }
 }
 ```
+
 Without the adapter class, `OgcApiCollectionInfo` cannot be passed where `CollectionLike` is expected — even if it has matching methods.
 
 **TypeScript (structural typing):**
+
 ```typescript
 // Sub-module defines shape
-interface CollectionLike { id: string; title: string; }
+interface CollectionLike {
+  id: string;
+  title: string;
+}
 
-function process(c: CollectionLike) { /* ... */ }
+function process(c: CollectionLike) {
+  /* ... */
+}
 
 // No adapter — just pass the object
 process(ogcApiCollectionInfoInstance); // ✅ TypeScript verifies shape match
 ```
 
 **Practical implications for CSAPI:**
+
 1. No wrapper class needed — the collection document object is passed directly
 2. No DI container binding or configuration
-3. Core satisfies CSAPI's contract *implicitly*, without any `implements` declaration
+3. Core satisfies CSAPI's contract _implicitly_, without any `implements` declaration
 4. **Tradeoff:** If core renames a field, the match breaks silently unless both modules are compiled together (which they are in our single-package setup)
 
 ### Question 5: Are explicit adapter interfaces unnecessary for this scenario?
 
-**Answer:** Explicit adapter *classes* are unnecessary. However, a **named interface** is still valuable for documentation, error messages, test fixtures, and IDE support — even though structural typing makes it optional.
+**Answer:** Explicit adapter _classes_ are unnecessary. However, a **named interface** is still valuable for documentation, error messages, test fixtures, and IDE support — even though structural typing makes it optional.
 
 **Evidence:** When CSAPI uses an inline type literal, TypeScript error messages become unwieldy:
 
 ```
-Type '{ id: string; title: string; }' is not assignable to type 
+Type '{ id: string; title: string; }' is not assignable to type
 '{ id: string; title: string; links: Array<{ rel?: string | undefined; href?: string | undefined; }>; }'.
   Property 'links' is missing...
 ```
 
 With a named interface `CSAPICollectionInput`, the error is:
+
 ```
 Type '{ id: string; title: string; }' is not assignable to type 'CSAPICollectionInput'.
   Property 'links' is missing in type '{ id: string; title: string; }'.
@@ -237,13 +247,13 @@ Type '{ id: string; title: string; }' is not assignable to type 'CSAPICollection
 
 **Answer:**
 
-| Dimension | `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` | `{ id: string; title: string; links: any }` |
-|---|---|---|
-| **Type safety** | Full — `links` inherits core's type | Reduced — `links: any` loses all structure |
-| **Refactoring safety** | If core renames `id`, compiler error in CSAPI | **Silent breakage** — no error, runtime failure |
-| **Documentation** | Readers see "uses core collection shape" | Opaque — no origin clue |
-| **Module coupling** | `import type` dependency on `../model.js` | Zero dependency |
-| **IDE hover** | Shows `OgcApiCollectionInfo` docs | Shows raw literal type |
+| Dimension              | `Pick<OgcApiCollectionInfo, 'id' \| 'title' \| 'links'>` | `{ id: string; title: string; links: any }`     |
+| ---------------------- | -------------------------------------------------------- | ----------------------------------------------- |
+| **Type safety**        | Full — `links` inherits core's type                      | Reduced — `links: any` loses all structure      |
+| **Refactoring safety** | If core renames `id`, compiler error in CSAPI            | **Silent breakage** — no error, runtime failure |
+| **Documentation**      | Readers see "uses core collection shape"                 | Opaque — no origin clue                         |
+| **Module coupling**    | `import type` dependency on `../model.js`                | Zero dependency                                 |
+| **IDE hover**          | Shows `OgcApiCollectionInfo` docs                        | Shows raw literal type                          |
 
 **The critical loss is refactoring safety.** With `Pick<>`, a typo like `Pick<OgcApiCollectionInfo, 'id' | 'title' | 'lnks'>` produces a compile error. With a standalone interface, `lnks` silently compiles as a new property.
 
@@ -265,12 +275,14 @@ This provides **zero runtime coupling** + **compile-time drift detection** + **f
 **Answer:** Three approaches, ordered by fit for a single-package project:
 
 1. **Compile-time compatibility assertion (best for this project):**
+
    ```typescript
    // In a test or type-check file
    import type { OgcApiCollectionInfo } from '../../ogc-api/model.js';
    type AssertExtends<T, U extends T> = true;
    type _Check = AssertExtends<CSAPICollectionInput, OgcApiCollectionInfo>;
    ```
+
    If the core type diverges from CSAPI's contract, the assertion fails at compile time.
 
 2. **Integration test:** A test that constructs a real `OgcApiCollectionInfo` and passes it to `CSAPIQueryBuilder`. This catches both structural drift and semantic changes.
@@ -292,6 +304,7 @@ TypeScript's structural typing is a **game-changer** for module boundary design 
 **Answer:** In TypeScript, DIP manifests as the sub-module defining a structural contract (interface) that the core satisfies implicitly — without the core importing or referencing the sub-module.
 
 **Example:**
+
 ```typescript
 // ─── csapi/model.ts (sub-module defines what it needs) ───
 export interface CSAPICollectionInput {
@@ -303,7 +316,7 @@ export interface CSAPICollectionInput {
 // ─── csapi/url_builder.ts (sub-module consumes the contract) ───
 import type { CSAPICollectionInput } from './model.js';
 export class CSAPIQueryBuilder {
-  constructor(private collection_: CSAPICollectionInput) { }
+  constructor(private collection_: CSAPICollectionInput) {}
 }
 
 // ─── consumer code (orchestrates data flow) ───
@@ -316,15 +329,18 @@ The endpoint never imports `CSAPICollectionInput`. TypeScript verifies structura
 
 ### Question 9: Is explicit DIP necessary in TypeScript?
 
-**Answer:** **No, explicit DIP is not necessary for compilation.** TypeScript's structural typing provides *implicit* DIP automatically. However, explicit DIP (a named interface) remains valuable for **architectural clarity** — it documents what the sub-module requires, improves error messages, and makes the contract visible to future maintainers.
+**Answer:** **No, explicit DIP is not necessary for compilation.** TypeScript's structural typing provides _implicit_ DIP automatically. However, explicit DIP (a named interface) remains valuable for **architectural clarity** — it documents what the sub-module requires, improves error messages, and makes the contract visible to future maintainers.
 
 **In nominal systems (Java/C#):**
+
 ```
 Core ───implements──→ SubModule.IFoo ←──depends on── SubModule
 ```
-The core *must* reference the sub-module's interface (reverse compile-time dependency).
+
+The core _must_ reference the sub-module's interface (reverse compile-time dependency).
 
 **In TypeScript:**
+
 ```
 Core (no reference to sub-module)
   ↓ (passes structurally compatible data)
@@ -335,9 +351,10 @@ The "interface" in DIP becomes a **documentation/communication tool** rather tha
 
 ### Question 10: Inverting the endpoint → CSAPI dependency
 
-**Answer:** Currently, `endpoint.ts` imports `CSAPIQueryBuilder` and `scanCsapiLinks` — the endpoint *creates* the builder. After inversion, the **consumer** creates it.
+**Answer:** Currently, `endpoint.ts` imports `CSAPIQueryBuilder` and `scanCsapiLinks` — the endpoint _creates_ the builder. After inversion, the **consumer** creates it.
 
 **Current (endpoint orchestrates):**
+
 ```typescript
 // endpoint.ts
 import CSAPIQueryBuilder from './csapi/url_builder.js';
@@ -351,6 +368,7 @@ async csapi(collectionId: string): Promise<CSAPIQueryBuilder> {
 ```
 
 **After inversion (consumer orchestrates):**
+
 ```typescript
 // Consumer code
 import { OgcApiEndpoint } from '@camptocamp/ogc-client';
@@ -381,14 +399,14 @@ The factory function from Plan 04 automates this orchestration so consumers don'
 
 **Answer:** The current CSAPI constructor already demonstrates the answer.
 
-| Dimension | Accepts core instance | Accepts extracted data |
-|---|---|---|
-| **Coupling** | Depends on core's full class (all methods, properties, transitive deps) | Depends only on minimal structural contract |
-| **Testability** | Tests must construct/mock full `OgcApiEndpoint` | Tests construct lightweight plain objects |
-| **Flexibility** | Only works with `OgcApiEndpoint` instances | Any data source matching the shape |
-| **Serialization** | Core instances may have methods, Promises, non-serializable fields | Plain data — easily serializable |
-| **Sub-module behavior** | Tempted to call core methods (behavioral coupling) | Operates on data only |
-| **API surface** | Sub-module's `.d.ts` references core types | Self-contained `.d.ts` |
+| Dimension               | Accepts core instance                                                   | Accepts extracted data                      |
+| ----------------------- | ----------------------------------------------------------------------- | ------------------------------------------- |
+| **Coupling**            | Depends on core's full class (all methods, properties, transitive deps) | Depends only on minimal structural contract |
+| **Testability**         | Tests must construct/mock full `OgcApiEndpoint`                         | Tests construct lightweight plain objects   |
+| **Flexibility**         | Only works with `OgcApiEndpoint` instances                              | Any data source matching the shape          |
+| **Serialization**       | Core instances may have methods, Promises, non-serializable fields      | Plain data — easily serializable            |
+| **Sub-module behavior** | Tempted to call core methods (behavioral coupling)                      | Operates on data only                       |
+| **API surface**         | Sub-module's `.d.ts` references core types                              | Self-contained `.d.ts`                      |
 
 **"Accepts extracted data" produces a cleaner module boundary.** The current `CSAPIQueryBuilder` already does this — it accepts `{id, title, links}` + `Map<string, string>`, not `OgcApiEndpoint`. This is the right level.
 
@@ -404,7 +422,7 @@ Plan 04 recommends option 2: an async factory function exported from `@camptocam
 
 ### Sub-topic Synthesis
 
-Dependency inversion in TypeScript is implicit — structural typing means the core never needs to know about the sub-module's interface. The current CSAPI constructor already follows the ideal pattern (accepts extracted data, not the core instance). The change needed is not to the DIP architecture but to *who orchestrates* the data flow: moving from "endpoint creates builder" to "consumer or factory function creates builder."
+Dependency inversion in TypeScript is implicit — structural typing means the core never needs to know about the sub-module's interface. The current CSAPI constructor already follows the ideal pattern (accepts extracted data, not the core instance). The change needed is not to the DIP architecture but to _who orchestrates_ the data flow: moving from "endpoint creates builder" to "consumer or factory function creates builder."
 
 ---
 
@@ -428,6 +446,7 @@ export async function createCSAPIBuilder(
 ```
 
 **Analysis:**
+
 - **Compile-time coupling:** CSAPI imports the entire `OgcApiEndpoint` class (896 lines, all its dependencies)
 - **Runtime coupling:** CSAPI calls endpoint methods (`getCollectionDocument`, `root`)
 - **Testability:** Tests must instantiate or mock `OgcApiEndpoint` — requires HTTP mocking
@@ -444,13 +463,16 @@ export async function createCSAPIBuilder(
 ```typescript
 // csapi/model.ts
 export interface CSAPIEndpointLike {
-  getCollectionDocument(id: string): Promise<{ id: string; title: string; links: any[] }>;
+  getCollectionDocument(
+    id: string
+  ): Promise<{ id: string; title: string; links: any[] }>;
   readonly root: Promise<{ links?: Array<{ rel?: string; href?: string }> }>;
   readonly hasConnectedSystems: Promise<boolean>;
 }
 ```
 
 **Analysis:**
+
 - `OgcApiEndpoint` would satisfy this structurally — IF `getCollectionDocument` were public
 - CSAPI still needs types for return values (structural inline types or core type imports)
 - Testability: easy to create mock objects implementing the interface
@@ -476,14 +498,17 @@ export default class CSAPIQueryBuilder {
   constructor(
     private collection_: CSAPICollectionInput,
     resourceUrls?: Map<string, string>
-  ) { /* ... */ }
+  ) {
+    /* ... */
+  }
 }
 ```
 
 **Analysis:**
+
 - **Zero type imports from core** — the interface is self-contained
 - **Consumer burden:** consumer (or factory function) must extract data and assemble the record
-- **Type safety:** Actually *improves* over current — `links: Array<{rel?, href?}>` is more specific than the current `links: any` from `OgcApiCollectionInfo`
+- **Type safety:** Actually _improves_ over current — `links: Array<{rel?, href?}>` is more specific than the current `links: any` from `OgcApiCollectionInfo`
 - **Testability:** Trivial — tests create plain object literals
 - **Migration:** Minimal — the shape is identical to what `Pick<OgcApiCollectionInfo, 'id' | 'title' | 'links'>` resolves to
 
@@ -503,6 +528,7 @@ constructor(
 ```
 
 **Analysis:**
+
 - **Maximum decoupling** — no structured type dependency at all
 - **Most verbose:** Consumer must pass 4 arguments in correct order
 - **Refactoring hazard:** positional parameters are fragile (reordering breaks callers silently)
@@ -515,12 +541,12 @@ constructor(
 
 **Answer:**
 
-| Change | Level 1 (Class) | Level 2 (Interface) | Level 3 (Data Record) | Level 4 (Params) |
-|---|---|---|---|---|
-| Core adds property | No change needed | No change needed | No change needed | No change needed |
-| Core removes `title` | CSAPI calls break at compile time | Interface breaks if using `title` | Local interface unaffected (but consumers may pass `undefined`) | Parameter still expected |
-| Core renames `id` → `identifier` | CSAPI calls break | Interface unaffected (defines own `id`) | Record unaffected | Param unaffected |
-| Core changes `links` type | CSAPI affected immediately | Interface may need update | Record unaffected | Param may need update |
+| Change                           | Level 1 (Class)                   | Level 2 (Interface)                     | Level 3 (Data Record)                                           | Level 4 (Params)         |
+| -------------------------------- | --------------------------------- | --------------------------------------- | --------------------------------------------------------------- | ------------------------ |
+| Core adds property               | No change needed                  | No change needed                        | No change needed                                                | No change needed         |
+| Core removes `title`             | CSAPI calls break at compile time | Interface breaks if using `title`       | Local interface unaffected (but consumers may pass `undefined`) | Parameter still expected |
+| Core renames `id` → `identifier` | CSAPI calls break                 | Interface unaffected (defines own `id`) | Record unaffected                                               | Param unaffected         |
+| Core changes `links` type        | CSAPI affected immediately        | Interface may need update               | Record unaffected                                               | Param may need update    |
 
 **Key insight:** Levels 3 and 4 are insulated from core changes but lose automatic drift detection. The compile-time compatibility assertion (Question 7) mitigates this for Level 3.
 
@@ -528,12 +554,12 @@ constructor(
 
 **Answer:**
 
-| Level | Can IDE lead user from endpoint to CSAPI? |
-|---|---|
-| 1 (Class) | Yes — `endpoint.csapi()` return type is annotated. But we're removing this method. |
-| 2 (Interface) | Partial — the interface is discoverable but the connection to endpoint is indirect |
+| Level           | Can IDE lead user from endpoint to CSAPI?                                               |
+| --------------- | --------------------------------------------------------------------------------------- |
+| 1 (Class)       | Yes — `endpoint.csapi()` return type is annotated. But we're removing this method.      |
+| 2 (Interface)   | Partial — the interface is discoverable but the connection to endpoint is indirect      |
 | 3 (Data Record) | No direct connection — consumer must know to import from `@camptocamp/ogc-client/csapi` |
-| 4 (Params) | Same as Level 3 |
+| 4 (Params)      | Same as Level 3                                                                         |
 
 IDE discoverability is primarily a function of the **consumer API** (Plan 04), not the coupling level. A well-documented factory function with JSDoc pointing to the endpoint is more discoverable than tight coupling.
 
@@ -541,12 +567,12 @@ IDE discoverability is primarily a function of the **consumer API** (Plan 04), n
 
 **Answer:**
 
-| Level | Test input construction | Isolation from HTTP |
-|---|---|---|
-| 1 (Class) | Must instantiate `OgcApiEndpoint` (HTTP fetch → complex mocking) | Poor — endpoint triggers HTTP requests |
-| 2 (Interface) | Create mock implementing `CSAPIEndpointLike` (easy) | Good — mock returns plain data |
-| 3 (Data Record) | Create plain `{ id, title, links }` object literal (trivial) | **Perfect** — no mocking needed |
-| 4 (Params) | Pass primitive values directly (trivial) | **Perfect** |
+| Level           | Test input construction                                          | Isolation from HTTP                    |
+| --------------- | ---------------------------------------------------------------- | -------------------------------------- |
+| 1 (Class)       | Must instantiate `OgcApiEndpoint` (HTTP fetch → complex mocking) | Poor — endpoint triggers HTTP requests |
+| 2 (Interface)   | Create mock implementing `CSAPIEndpointLike` (easy)              | Good — mock returns plain data         |
+| 3 (Data Record) | Create plain `{ id, title, links }` object literal (trivial)     | **Perfect** — no mocking needed        |
+| 4 (Params)      | Pass primitive values directly (trivial)                         | **Perfect**                            |
 
 Level 3 provides the best balance of testability and semantic grouping.
 
@@ -576,20 +602,20 @@ The current Level 3.5 is already the optimal coupling level for this extraction.
 
 ## 4. Coupling Level Comparison Matrix
 
-| Dimension | L1: Concrete Class | L2: Explicit Interface | L3: Data Record | L3.5: Pick<> (Current) | L4: Individual Params |
-|---|---|---|---|---|---|
-| **Constraint 1: One-way dep** | ⚠️ CSAPI → core (heavy) | ✓ CSAPI → own interface | ✓ Zero imports | ✓ `import type` only | ✓ Zero imports |
-| **Constraint 2: Separate entry** | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **Constraint 3: No outward imports** | ✓ (core doesn't import CSAPI) | ✓ | ✓ | ✓ | ✓ |
-| **Constraint 4: Core builds alone** | ✗ Requires public methods | ✗ Requires public methods | ✓ | ✓ | ✓ |
-| **Type safety** | ★★★★★ | ★★★★☆ | ★★★☆☆ | ★★★★★ | ★★★☆☆ |
-| **Refactoring safety** | ★★★★★ | ★★★★☆ | ★★☆☆☆ | ★★★★★ | ★★☆☆☆ |
-| **IDE discoverability** | ★★★★★ | ★★★☆☆ | ★★☆☆☆ | ★★★☆☆ | ★★☆☆☆ |
-| **Testability** | ★☆☆☆☆ | ★★★★☆ | ★★★★★ | ★★★★★ | ★★★★★ |
-| **Consumer ergonomics** | ★★★★★ | ★★★☆☆ | ★★★★☆ | ★★★★☆ | ★★☆☆☆ |
-| **Migration effort** | Low (move method) | Medium (new interface, public methods) | Low (define local interface) | **Zero** (already in place) | High (rewrite internals) |
-| **Tree-shaking** | ★☆☆☆☆ (pulls in full class) | ★★★☆☆ | ★★★★★ | ★★★★★ | ★★★★★ |
-| **Runtime coupling** | High (calls methods) | Medium (calls via interface) | **Zero** | **Zero** | **Zero** |
+| Dimension                            | L1: Concrete Class            | L2: Explicit Interface                 | L3: Data Record              | L3.5: Pick<> (Current)      | L4: Individual Params    |
+| ------------------------------------ | ----------------------------- | -------------------------------------- | ---------------------------- | --------------------------- | ------------------------ |
+| **Constraint 1: One-way dep**        | ⚠️ CSAPI → core (heavy)       | ✓ CSAPI → own interface                | ✓ Zero imports               | ✓ `import type` only        | ✓ Zero imports           |
+| **Constraint 2: Separate entry**     | ✓                             | ✓                                      | ✓                            | ✓                           | ✓                        |
+| **Constraint 3: No outward imports** | ✓ (core doesn't import CSAPI) | ✓                                      | ✓                            | ✓                           | ✓                        |
+| **Constraint 4: Core builds alone**  | ✗ Requires public methods     | ✗ Requires public methods              | ✓                            | ✓                           | ✓                        |
+| **Type safety**                      | ★★★★★                         | ★★★★☆                                  | ★★★☆☆                        | ★★★★★                       | ★★★☆☆                    |
+| **Refactoring safety**               | ★★★★★                         | ★★★★☆                                  | ★★☆☆☆                        | ★★★★★                       | ★★☆☆☆                    |
+| **IDE discoverability**              | ★★★★★                         | ★★★☆☆                                  | ★★☆☆☆                        | ★★★☆☆                       | ★★☆☆☆                    |
+| **Testability**                      | ★☆☆☆☆                         | ★★★★☆                                  | ★★★★★                        | ★★★★★                       | ★★★★★                    |
+| **Consumer ergonomics**              | ★★★★★                         | ★★★☆☆                                  | ★★★★☆                        | ★★★★☆                       | ★★☆☆☆                    |
+| **Migration effort**                 | Low (move method)             | Medium (new interface, public methods) | Low (define local interface) | **Zero** (already in place) | High (rewrite internals) |
+| **Tree-shaking**                     | ★☆☆☆☆ (pulls in full class)   | ★★★☆☆                                  | ★★★★★                        | ★★★★★                       | ★★★★★                    |
+| **Runtime coupling**                 | High (calls methods)          | Medium (calls via interface)           | **Zero**                     | **Zero**                    | **Zero**                 |
 
 **Ranking (weighted by constraint compliance + minimum change):**
 
@@ -607,12 +633,12 @@ The current Level 3.5 is already the optimal coupling level for this extraction.
 
 **Answer:** Four patterns, often combined:
 
-| Pattern | Mechanism | Enforcement level |
-|---|---|---|
-| **Barrel files** (`index.ts`) | Re-export curated public API | Social convention (compile-time if combined with `exports`) |
-| **`package.json` `"exports"`** | Node.js subpath exports | **Runtime** — consumers get `ERR_PACKAGE_PATH_NOT_EXPORTED` for unlisted paths |
-| **`@internal` + `stripInternal`** | TSDoc tag + tsconfig option | Declaration-level — stripped from `.d.ts` output |
-| **TypeScript Project References** | Separate `tsconfig.json` per module | Compile-time — modules only see each other's `.d.ts` |
+| Pattern                           | Mechanism                           | Enforcement level                                                              |
+| --------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------ |
+| **Barrel files** (`index.ts`)     | Re-export curated public API        | Social convention (compile-time if combined with `exports`)                    |
+| **`package.json` `"exports"`**    | Node.js subpath exports             | **Runtime** — consumers get `ERR_PACKAGE_PATH_NOT_EXPORTED` for unlisted paths |
+| **`@internal` + `stripInternal`** | TSDoc tag + tsconfig option         | Declaration-level — stripped from `.d.ts` output                               |
+| **TypeScript Project References** | Separate `tsconfig.json` per module | Compile-time — modules only see each other's `.d.ts`                           |
 
 **Recommendation for ogc-client:** Barrel file + `"exports"` subpath. The barrel defines what's public; the `"exports"` field enforces it. Project References and `@internal`/`stripInternal` are heavier than warranted for one sub-module.
 
@@ -620,9 +646,9 @@ The current Level 3.5 is already the optimal coupling level for this extraction.
 
 **Answer:** Yes — `src/ogc-api/csapi/index.ts` serves exactly the same role as `src/index.ts`, scoped to the `./csapi` entry point.
 
-| Entry point | Barrel file | Consumer import |
-|---|---|---|
-| `"."` | `src/index.ts` | `import { OgcApiEndpoint } from '@camptocamp/ogc-client'` |
+| Entry point | Barrel file                  | Consumer import                                                    |
+| ----------- | ---------------------------- | ------------------------------------------------------------------ |
+| `"."`       | `src/index.ts`               | `import { OgcApiEndpoint } from '@camptocamp/ogc-client'`          |
 | `"./csapi"` | `src/ogc-api/csapi/index.ts` | `import { CSAPIQueryBuilder } from '@camptocamp/ogc-client/csapi'` |
 
 The barrel is the single source of truth for the sub-path's public API. The `"exports"` field in `package.json` points to the barrel's build output.
@@ -636,7 +662,8 @@ csapi/index.ts → exports CSAPI's full public API (may include utilities root d
 src/index.ts   → re-exports a curated subset from csapi/index.ts (or nothing, per jahow's requirement)
 ```
 
-The root barrel becomes a *downstream consumer* of the CSAPI barrel. Per jahow's requirement, the root barrel should NOT re-export any CSAPI symbols. The `csapi/index.ts` barrel should export everything CSAPI consumers need:
+The root barrel becomes a _downstream consumer_ of the CSAPI barrel. Per jahow's requirement, the root barrel should NOT re-export any CSAPI symbols. The `csapi/index.ts` barrel should export everything CSAPI consumers need:
+
 - `CSAPIQueryBuilder` (default)
 - All CSAPI model types (`CSAPIResourceTypes`, `CommandStatusCodes`, `SystemTypeUris`, etc.)
 - Format parsing utilities
@@ -654,22 +681,26 @@ No need for `@internal` tags or separate `internal/` subdirectories at this scal
 **Answer:** This is the most complex decoupling problem. Analysis of all four options:
 
 **Current state:**
+
 - `scanCsapiLinks` lives in `csapi/helpers.ts`
 - Called by `endpoint.ts:435` (in `extractRootResourceUrls()`) — **constraint violation**
 - Called by `url_builder.ts` (in `extractAvailableResources()`) — internal CSAPI use, fine
 - Depends on `CSAPIResourceTypes` from `csapi/model.ts` — CSAPI-specific knowledge
 
 **Option A: Keep in CSAPI, duplicate in core**
+
 - Pro: No shared code to maintain
 - Con: Duplication of link scanning logic (~100 lines); `CSAPIResourceTypes` must be duplicated
 - Assessment: Fragile — the two copies will drift
 
 **Option B: Move to shared utils**
+
 - Pro: Single implementation, accessible to both
 - Con: `CSAPIResourceTypes` (CSAPI-specific constant) would pollute shared utils
 - Assessment: Violates separation of concerns
 
 **Option C: Generalize the link scanner**
+
 - Create a generic `scanLinks(links, knownTypes, prefixes)` in shared or `ogc-api/link-utils.ts`
 - `endpoint.ts` calls `scanLinks(links, knownTypes, ['ogc-cs:'])` with a literal set of type names
 - CSAPI keeps `scanCsapiLinks` as a convenience wrapper calling the generic function
@@ -677,10 +708,12 @@ No need for `@internal` tags or separate `internal/` subdirectories at this scal
 - Con: Requires factoring out the link scanning logic
 
 **Option D: Expose from CSAPI barrel (violates constraint)**
+
 - `endpoint.ts` imports `scanCsapiLinks` from `@camptocamp/ogc-client/csapi`
 - Assessment: **Violates constraint 3** — core imports from CSAPI
 
 **Option E: Inline in endpoint's `extractRootResourceUrls`**
+
 - The function is only 6 lines in `endpoint.ts`. The actual logic is ~40 lines.
 - Inlining would require duplicating the link relation matching logic with hardcoded CSAPI resource type names
 - Assessment: Hardcoding `['systems', 'deployments', ...]` in `endpoint.ts` is CSAPI-specific knowledge in core
@@ -699,21 +732,29 @@ export function scanResourceLinks(
     const rel = link.rel;
     const href = link.href ?? '';
     if (typeof rel !== 'string') continue;
-    
+
     // Convention 1: prefixed (e.g., "ogc-cs:systems")
     if (relPrefix) {
       const match = rel.match(new RegExp(`^${relPrefix}(.+)$`));
-      if (match && knownTypes.has(match[1])) { result.set(match[1], href); continue; }
+      if (match && knownTypes.has(match[1])) {
+        result.set(match[1], href);
+        continue;
+      }
     }
-    
+
     // Convention 2: plain resource name
-    if (knownTypes.has(rel)) { result.set(rel, href); continue; }
-    
+    if (knownTypes.has(rel)) {
+      result.set(rel, href);
+      continue;
+    }
+
     // Convention 3: "items" with resource type in href
     if (rel === 'items' && typeof href === 'string') {
       const segment = href.split('?')[0].replace(/\/+$/, '').split('/').pop();
-      const normalized = segment === 'featuresOfInterest' ? 'samplingFeatures' : segment;
-      if (normalized && knownTypes.has(normalized)) result.set(normalized, href);
+      const normalized =
+        segment === 'featuresOfInterest' ? 'samplingFeatures' : segment;
+      if (normalized && knownTypes.has(normalized))
+        result.set(normalized, href);
     }
   }
   return result;
@@ -748,6 +789,7 @@ export function scanCsapiLinks(
 ```
 
 **Why this is cleanest:**
+
 - `endpoint.ts` no longer imports from `csapi/`
 - The generic scanner is reusable for EDR and future OGC modules
 - `CSAPIResourceTypes` stays in `csapi/model.ts`
@@ -775,7 +817,7 @@ The barrel file pattern (curated `csapi/index.ts` + `package.json` `"exports"`) 
 
 ### Question 28: Case studies of intra-package sub-module extraction
 
-**Answer:** Direct case studies of sub-path export extraction *within a single package* are rare in published literature — most documented extractions involve separate npm packages. However, three relevant precedents exist:
+**Answer:** Direct case studies of sub-path export extraction _within a single package_ are rare in published literature — most documented extractions involve separate npm packages. However, three relevant precedents exist:
 
 1. **date-fns v2 → v3:** Migrated from deeply-importable internals to curated sub-path exports. Single package, extensive `"exports"` map. The extraction was done **one-shot** over a major version boundary.
 
@@ -789,12 +831,12 @@ The barrel file pattern (curated `csapi/index.ts` + `package.json` `"exports"`) 
 
 **Answer:**
 
-| Pattern | Description | Fit for ogc-client |
-|---|---|---|
-| **One-shot extraction** | All changes in one PR/branch | **Best fit** — small coupling surface, comprehensive tests, no external consumers |
-| **Strangler fig** | Gradual replacement, both paths work | Overkill — no benefit from keeping both paths |
-| **Branch-by-abstraction** | Introduce abstraction, then swap | Useful specifically for `endpoint.csapi()` method |
-| **Feature flags** | Runtime toggle | Not appropriate for library extraction |
+| Pattern                   | Description                          | Fit for ogc-client                                                                |
+| ------------------------- | ------------------------------------ | --------------------------------------------------------------------------------- |
+| **One-shot extraction**   | All changes in one PR/branch         | **Best fit** — small coupling surface, comprehensive tests, no external consumers |
+| **Strangler fig**         | Gradual replacement, both paths work | Overkill — no benefit from keeping both paths                                     |
+| **Branch-by-abstraction** | Introduce abstraction, then swap     | Useful specifically for `endpoint.csapi()` method                                 |
+| **Feature flags**         | Runtime toggle                       | Not appropriate for library extraction                                            |
 
 **Recommendation:** One-shot extraction. The two constraint violations (`CSAPIQueryBuilder` import and `scanCsapiLinks` import) can be resolved simultaneously. The endpoint's `csapi()` method can be deprecated or removed in the same change.
 
@@ -802,13 +844,13 @@ The barrel file pattern (curated `csapi/index.ts` + `package.json` `"exports"`) 
 
 **Answer:** Multiple complementary techniques:
 
-| Method | What it catches | Tooling |
-|---|---|---|
-| **`grep -r "from.*csapi" src/ogc-api/*.ts`** | Direct import violations | Built-in |
-| **ESLint `import/no-restricted-paths`** | Lint-time boundary enforcement | Already have `eslint-plugin-import` |
-| **Custom boundary test** | CI-friendly validation | Jest test (see below) |
-| **`dependency-cruiser`** | Transitive dependencies, visualizations | New tool (optional) |
-| **TypeScript compilation without CSAPI** | Proves core builds independently | Exclude `csapi/` from tsconfig |
+| Method                                       | What it catches                         | Tooling                             |
+| -------------------------------------------- | --------------------------------------- | ----------------------------------- |
+| **`grep -r "from.*csapi" src/ogc-api/*.ts`** | Direct import violations                | Built-in                            |
+| **ESLint `import/no-restricted-paths`**      | Lint-time boundary enforcement          | Already have `eslint-plugin-import` |
+| **Custom boundary test**                     | CI-friendly validation                  | Jest test (see below)               |
+| **`dependency-cruiser`**                     | Transitive dependencies, visualizations | New tool (optional)                 |
+| **TypeScript compilation without CSAPI**     | Proves core builds independently        | Exclude `csapi/` from tsconfig      |
 
 **Recommended verification: Custom boundary test + ESLint rule**
 
@@ -819,8 +861,9 @@ import * as path from 'path';
 
 test('no imports from csapi/ in core ogc-api files', () => {
   const coreDir = path.join(__dirname, '../src/ogc-api');
-  const coreFiles = fs.readdirSync(coreDir)
-    .filter(f => f.endsWith('.ts') && !f.endsWith('.spec.ts'));
+  const coreFiles = fs
+    .readdirSync(coreDir)
+    .filter((f) => f.endsWith('.ts') && !f.endsWith('.spec.ts'));
   for (const file of coreFiles) {
     const content = fs.readFileSync(path.join(coreDir, file), 'utf8');
     expect(content).not.toMatch(/from\s+['"]\.\/csapi\//);
@@ -834,9 +877,9 @@ test('no imports from csapi/ in core ogc-api files', () => {
 
 1. **Forgetting `import type` conversion.** When removing a value import from CSAPI, any types that were imported alongside values must be converted to `import type`. Current `endpoint.ts` uses value imports for both `CSAPIQueryBuilder` and `scanCsapiLinks`.
 
-2. **Leaving transitive dependencies.** After removing direct imports, verify the *transitive* import graph — another file might re-export from CSAPI indirectly.
+2. **Leaving transitive dependencies.** After removing direct imports, verify the _transitive_ import graph — another file might re-export from CSAPI indirectly.
 
-3. **Barrel file circular references.** If `csapi/index.ts` re-exports from `url_builder.ts`, and `url_builder.ts` were to import from `../endpoint.ts`, which then imports from `csapi/index.ts` — a cycle. Not currently an issue since we're *removing* the endpoint → CSAPI direction.
+3. **Barrel file circular references.** If `csapi/index.ts` re-exports from `url_builder.ts`, and `url_builder.ts` were to import from `../endpoint.ts`, which then imports from `csapi/index.ts` — a cycle. Not currently an issue since we're _removing_ the endpoint → CSAPI direction.
 
 4. **Breaking tree-shaking with side effects.** The `package.json` should declare `"sideEffects": false` (or list specific side-effectful files). Note: `src/index.ts` imports `'./worker-fallback/index.js'` as a side effect.
 
@@ -885,19 +928,21 @@ This was introduced in TypeScript 3.8 (PR #35200) specifically to guarantee eras
 
 **Answer:** If CSAPI uses `import type` for all core types:
 
-| Dependency type | Present? | Explanation |
-|---|---|---|
-| **Runtime dependency** | **No** | `import type` erased — CSAPI `.js` has no core references |
-| **Build-time dependency** | **Yes** | TypeScript compiler needs `../model.d.ts` to type-check |
-| **Package dependency** | **No** (same package) | Both share the same build — irrelevant until/unless separated |
+| Dependency type           | Present?              | Explanation                                                   |
+| ------------------------- | --------------------- | ------------------------------------------------------------- |
+| **Runtime dependency**    | **No**                | `import type` erased — CSAPI `.js` has no core references     |
+| **Build-time dependency** | **Yes**               | TypeScript compiler needs `../model.d.ts` to type-check       |
+| **Package dependency**    | **No** (same package) | Both share the same build — irrelevant until/unless separated |
 
 **Current state of CSAPI's type imports from core:**
+
 - `url_builder.ts:1` — `import type { OgcApiCollectionInfo } from '../model.js'` ✓ type-only
 - `model.ts:2` — `import type { OgcApiDocumentLink } from '../model.js'` ✓ type-only
 - `model.ts:1` — `import type { BoundingBox, DateTimeParameter, CrsCode, MimeType } from '../../shared/models.js'` ✓ type-only
 - `helpers.ts:3` — `import type { BoundingBox } from '../../shared/models.js'` ✓ type-only
 
 All type imports are already `import type`. The only value imports from outside CSAPI are:
+
 - `url_builder.ts:4` — `import { EndpointError } from '../../shared/errors.js'` — value import from **shared** (see Question open item in Section 13)
 
 ### Question 35: `import type` for drift detection without module dependency
@@ -909,7 +954,9 @@ All type imports are already `import type`. The only value imports from outside 
 import type { OgcApiCollectionInfo } from '../model.js'; // erased at runtime
 
 export class CSAPIQueryBuilder {
-  constructor(private collection_: Pick<OgcApiCollectionInfo, 'id' | 'title' | 'links'>) { }
+  constructor(
+    private collection_: Pick<OgcApiCollectionInfo, 'id' | 'title' | 'links'>
+  ) {}
 }
 ```
 
@@ -917,13 +964,14 @@ If core renames `id` → `identifier`: `Pick<>` fails because `'id'` is no longe
 
 **This is the strongest argument for keeping `Pick<>` + `import type`.** You get drift detection without any runtime or bundle-size cost.
 
-**Does it violate constraint 3 ("nothing outside CSAPI should import from CSAPI")?** No — constraint 3 is about *core importing from CSAPI*. CSAPI importing (type-only) from core is the *desired* dependency direction. Constraint 1 (one-way dependency) is: CSAPI imports from core, never the reverse. `import type` satisfies this perfectly.
+**Does it violate constraint 3 ("nothing outside CSAPI should import from CSAPI")?** No — constraint 3 is about _core importing from CSAPI_. CSAPI importing (type-only) from core is the _desired_ dependency direction. Constraint 1 (one-way dependency) is: CSAPI imports from core, never the reverse. `import type` satisfies this perfectly.
 
 ### Question 36: Self-referencing package imports
 
 **Answer:** If CSAPI uses `import type { OgcApiCollectionInfo } from '@camptocamp/ogc-client'` (the package's public API):
 
 - **Circular dependency?** With `import type` — no runtime circular dependency (erased). But TypeScript's resolution traverses: `csapi/url_builder.ts` → `@camptocamp/ogc-client` → `src/index.ts` → `csapi/url_builder.ts` — a compile-time cycle in the resolution graph. TypeScript handles this in most cases but it can cause:
+
   - IDE performance issues (language server resolves the full root barrel)
   - Confusing error messages
   - Issues with `declaration: true` emit ordering
@@ -943,6 +991,7 @@ import type { OgcApiCollectionInfo } from '@camptocamp/ogc-client';
 ```
 
 **Reasons:**
+
 1. No circular dependency risk
 2. TypeScript resolves relative imports directly — no `package.json` indirection
 3. Better build performance
@@ -959,12 +1008,12 @@ import type { OgcApiCollectionInfo } from '@camptocamp/ogc-client';
 
 ### Constraint Compliance Matrix
 
-| # | Constraint | Status | Evidence | Notes |
-|---|-----------|--------|----------|-------|
-| 1 | One-way dependency: CSAPI → core, never reverse | ✓ Compliant | Recommended Level 3.5 has CSAPI importing from core via `import type`. Core never references CSAPI. The generic link scanner has zero CSAPI knowledge. | All coupling levels except L1 satisfy this. L1 also satisfies it technically but creates heavy coupling. |
-| 2 | Separate entry point: `@camptocamp/ogc-client/csapi` | ✓ Compliant | Barrel file + `"exports"` sub-path recommended. Coupling level doesn't affect entry point design. | Plan 03 handles mechanical `"exports"` config. |
-| 3 | No outward imports: nothing outside `csapi/` imports from it | ✓ Compliant | After extraction: `endpoint.ts` removes both CSAPI imports. `scanCsapiLinks` replaced by generic `scanResourceLinks`. `index.ts` CSAPI re-exports removed. | The two current violations are resolved. |
-| 4 | Core builds/tests independently | ✓ Compliant | With Level 3.5, removing `csapi/` leaves core with: zero import errors (CSAPI imports are in CSAPI only), zero type errors (core types are self-contained), zero test failures (`endpoint.csapi()` method removed). | Verified by the factory function approach: builder creation moves from core to consumer/CSAPI. |
+| #   | Constraint                                                   | Status      | Evidence                                                                                                                                                                                                            | Notes                                                                                                    |
+| --- | ------------------------------------------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 1   | One-way dependency: CSAPI → core, never reverse              | ✓ Compliant | Recommended Level 3.5 has CSAPI importing from core via `import type`. Core never references CSAPI. The generic link scanner has zero CSAPI knowledge.                                                              | All coupling levels except L1 satisfy this. L1 also satisfies it technically but creates heavy coupling. |
+| 2   | Separate entry point: `@camptocamp/ogc-client/csapi`         | ✓ Compliant | Barrel file + `"exports"` sub-path recommended. Coupling level doesn't affect entry point design.                                                                                                                   | Plan 03 handles mechanical `"exports"` config.                                                           |
+| 3   | No outward imports: nothing outside `csapi/` imports from it | ✓ Compliant | After extraction: `endpoint.ts` removes both CSAPI imports. `scanCsapiLinks` replaced by generic `scanResourceLinks`. `index.ts` CSAPI re-exports removed.                                                          | The two current violations are resolved.                                                                 |
+| 4   | Core builds/tests independently                              | ✓ Compliant | With Level 3.5, removing `csapi/` leaves core with: zero import errors (CSAPI imports are in CSAPI only), zero type errors (core types are self-contained), zero test failures (`endpoint.csapi()` method removed). | Verified by the factory function approach: builder creation moves from core to consumer/CSAPI.           |
 
 ### Scope Boundary Adherence
 
@@ -978,18 +1027,18 @@ import type { OgcApiCollectionInfo } from '@camptocamp/ogc-client';
 
 ### Minimum-Change Test
 
-| Finding / Recommendation | Serves jahow's requirements? | Minimum-change? | Include in implementation? |
-|--------------------------|------------------------------|-----------------|---------------------------|
-| Keep Level 3.5 coupling (no constructor change) | Yes — maintains current behavior | Yes — zero migration | ✓ Include |
-| Remove `CSAPIQueryBuilder` import from `endpoint.ts` | Yes — directly required by jahow | Yes | ✓ Include |
-| Remove `scanCsapiLinks` import from `endpoint.ts` | Yes — directly required by jahow | Yes | ✓ Include |
-| Create generic `scanResourceLinks` utility | Yes — necessary to remove `scanCsapiLinks` import | Yes — minimal code | ✓ Include |
-| Create `csapi/index.ts` barrel file | Yes — required for separate entry point | Yes | ✓ Include |
-| Add compile-time drift assertion test | No — defensive measure | No — extra test file | ✗ Defer |
-| TypeScript Project References | No — architectural improvement | No — heavy refactor | ✗ Defer |
-| ESLint `no-restricted-paths` rule | No — enforcement | No — tooling change | ⚠️ Discuss (low cost, high value) |
-| Custom boundary integration test | No — enforcement | Borderline — simple test | ⚠️ Discuss |
-| `@internal` tags / `stripInternal` | No — nice-to-have | No — config change | ✗ Defer |
+| Finding / Recommendation                             | Serves jahow's requirements?                      | Minimum-change?          | Include in implementation?        |
+| ---------------------------------------------------- | ------------------------------------------------- | ------------------------ | --------------------------------- |
+| Keep Level 3.5 coupling (no constructor change)      | Yes — maintains current behavior                  | Yes — zero migration     | ✓ Include                         |
+| Remove `CSAPIQueryBuilder` import from `endpoint.ts` | Yes — directly required by jahow                  | Yes                      | ✓ Include                         |
+| Remove `scanCsapiLinks` import from `endpoint.ts`    | Yes — directly required by jahow                  | Yes                      | ✓ Include                         |
+| Create generic `scanResourceLinks` utility           | Yes — necessary to remove `scanCsapiLinks` import | Yes — minimal code       | ✓ Include                         |
+| Create `csapi/index.ts` barrel file                  | Yes — required for separate entry point           | Yes                      | ✓ Include                         |
+| Add compile-time drift assertion test                | No — defensive measure                            | No — extra test file     | ✗ Defer                           |
+| TypeScript Project References                        | No — architectural improvement                    | No — heavy refactor      | ✗ Defer                           |
+| ESLint `no-restricted-paths` rule                    | No — enforcement                                  | No — tooling change      | ⚠️ Discuss (low cost, high value) |
+| Custom boundary integration test                     | No — enforcement                                  | Borderline — simple test | ⚠️ Discuss                        |
+| `@internal` tags / `stripInternal`                   | No — nice-to-have                                 | No — config change       | ✗ Defer                           |
 
 ### Deferred Insights
 
@@ -1004,16 +1053,16 @@ import type { OgcApiCollectionInfo } from '@camptocamp/ogc-client';
 
 ### What Downstream Plans Should Consume
 
-| Downstream Plan | What to consume from this report | Section reference |
-|-----------------|----------------------------------|-------------------|
-| Plan 06 | **Coupling level decision:** Keep Level 3.5 (`Pick<>` + `import type`). No constructor signature change needed. | § 3 (Question 21), § 4 (Matrix) |
-| Plan 06 | **`scanCsapiLinks` resolution:** Generalize into `scanResourceLinks()` in `ogc-api/link-utils.ts`. CSAPI keeps wrapper. Endpoint calls generic version. | § 5 (Question 26) |
-| Plan 06 | **Barrel file design:** `csapi/index.ts` exports full CSAPI public API. Root `index.ts` removes all CSAPI re-exports. | § 5 (Question 24) |
-| Plan 06 | **`import type` strategy:** Keep relative paths, keep `Pick<>`, keep current `import type` statements. | § 7 (Question 37) |
-| Plan 06 | **Factory function as orchestration mechanism:** The factory function (from Plan 04) resolves the `endpoint.ts` → CSAPI coupling by moving builder creation from endpoint to CSAPI/consumer. | § 2 (Question 10) |
-| Plan 06 | **`EndpointError` import is acceptable:** `shared/errors.ts` is a shared utility, not core. CSAPI's import from `../../shared/errors.js` does not violate constraints. | § 7 (Question 34), § 13 (Open Question 1) |
-| Plan 08 | **Verification checklist:** Custom boundary test + ESLint rule + grep commands for confirming extraction completeness. | § 6 (Questions 30–31) |
-| Plan 08 | **One-shot extraction pattern:** All changes in one commit/PR — no staged migration needed. | § 6 (Question 29) |
+| Downstream Plan | What to consume from this report                                                                                                                                                             | Section reference                         |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Plan 06         | **Coupling level decision:** Keep Level 3.5 (`Pick<>` + `import type`). No constructor signature change needed.                                                                              | § 3 (Question 21), § 4 (Matrix)           |
+| Plan 06         | **`scanCsapiLinks` resolution:** Generalize into `scanResourceLinks()` in `ogc-api/link-utils.ts`. CSAPI keeps wrapper. Endpoint calls generic version.                                      | § 5 (Question 26)                         |
+| Plan 06         | **Barrel file design:** `csapi/index.ts` exports full CSAPI public API. Root `index.ts` removes all CSAPI re-exports.                                                                        | § 5 (Question 24)                         |
+| Plan 06         | **`import type` strategy:** Keep relative paths, keep `Pick<>`, keep current `import type` statements.                                                                                       | § 7 (Question 37)                         |
+| Plan 06         | **Factory function as orchestration mechanism:** The factory function (from Plan 04) resolves the `endpoint.ts` → CSAPI coupling by moving builder creation from endpoint to CSAPI/consumer. | § 2 (Question 10)                         |
+| Plan 06         | **`EndpointError` import is acceptable:** `shared/errors.ts` is a shared utility, not core. CSAPI's import from `../../shared/errors.js` does not violate constraints.                       | § 7 (Question 34), § 13 (Open Question 1) |
+| Plan 08         | **Verification checklist:** Custom boundary test + ESLint rule + grep commands for confirming extraction completeness.                                                                       | § 6 (Questions 30–31)                     |
+| Plan 08         | **One-shot extraction pattern:** All changes in one commit/PR — no staged migration needed.                                                                                                  | § 6 (Question 29)                         |
 
 ### Decisions Now Final
 
@@ -1043,7 +1092,7 @@ import type { OgcApiCollectionInfo } from '@camptocamp/ogc-client';
 
 2. **The current coupling level (Level 3.5) is already optimal.** `Pick<OgcApiCollectionInfo, 'id' | 'title' | 'links'>` with `import type` gives zero runtime coupling, automatic drift detection, and excellent developer ergonomics. No change to the constructor signature is needed.
 
-3. **The decoupling problem is not about *what data flows* but *who orchestrates the flow*.** Currently `endpoint.ts` creates the builder. After decoupling, a factory function in CSAPI (Plan 04's recommendation) takes over this role. The data shape stays identical.
+3. **The decoupling problem is not about _what data flows_ but _who orchestrates the flow_.** Currently `endpoint.ts` creates the builder. After decoupling, a factory function in CSAPI (Plan 04's recommendation) takes over this role. The data shape stays identical.
 
 4. **`import type` is the ideal boundary mechanism** for an intra-package sub-module. It provides compile-time type safety and drift detection while being completely erased at runtime. All current CSAPI type imports from core are already `import type`.
 
@@ -1093,13 +1142,13 @@ import type { OgcApiCollectionInfo } from '@camptocamp/ogc-client';
 
 ## 13. Open Questions
 
-| # | Question | Why Unresolved | Resolution Path |
-|---|----------|----------------|-----------------|
-| 1 | Is `shared/` considered "core" for constraint purposes? `EndpointError` is in `shared/errors.ts`, imported by CSAPI. | jahow's constraint says "anything not part of `src/ogc-api/csapi`" — `shared/` is not part of `csapi/` but also not part of `ogc-api/`. | Plan 06 should classify: `shared/` is a utility layer, not core. If contested, CSAPI can declare its own error class. |
-| 2 | Should `endpoint.csapi()` method be removed, deprecated, or replaced with a note pointing to the factory? | Depends on migration strategy and backward compatibility policy. | Plan 06 should decide based on whether any other code calls `endpoint.csapi()`. |
-| 3 | Should the factory function accept `OgcApiEndpoint` (Level 1 for factory, Level 3.5 for constructor) or extracted data? | This determines whether CSAPI has any import of the endpoint class. Plan 04 recommends accepting the endpoint for convenience. | Plan 06 must reconcile Plan 04 (accept endpoint) with Plan 05 (prefer extracted data). Both are viable — Plan 06 should evaluate the tradeoffs. |
-| 4 | Should the `featuresOfInterest → samplingFeatures` normalization live in the generic scanner or the CSAPI wrapper? | It's CSAPI-specific domain knowledge, but the generic scanner's "items" convention handling already needs endpoint-type awareness. | Plan 06 should decide. Recommendation: keep in CSAPI wrapper. |
-| 5 | Should `extractRootResourceUrls()` move entirely to the factory function? | If it moves, `endpoint.ts` loses `hasConnectedSystems` detection capability. But `hasConnectedSystems` doesn't use this function. | Plan 06 should evaluate whether the endpoint needs root resource URL extraction for any non-CSAPI purpose. |
+| #   | Question                                                                                                                | Why Unresolved                                                                                                                          | Resolution Path                                                                                                                                 |
+| --- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Is `shared/` considered "core" for constraint purposes? `EndpointError` is in `shared/errors.ts`, imported by CSAPI.    | jahow's constraint says "anything not part of `src/ogc-api/csapi`" — `shared/` is not part of `csapi/` but also not part of `ogc-api/`. | Plan 06 should classify: `shared/` is a utility layer, not core. If contested, CSAPI can declare its own error class.                           |
+| 2   | Should `endpoint.csapi()` method be removed, deprecated, or replaced with a note pointing to the factory?               | Depends on migration strategy and backward compatibility policy.                                                                        | Plan 06 should decide based on whether any other code calls `endpoint.csapi()`.                                                                 |
+| 3   | Should the factory function accept `OgcApiEndpoint` (Level 1 for factory, Level 3.5 for constructor) or extracted data? | This determines whether CSAPI has any import of the endpoint class. Plan 04 recommends accepting the endpoint for convenience.          | Plan 06 must reconcile Plan 04 (accept endpoint) with Plan 05 (prefer extracted data). Both are viable — Plan 06 should evaluate the tradeoffs. |
+| 4   | Should the `featuresOfInterest → samplingFeatures` normalization live in the generic scanner or the CSAPI wrapper?      | It's CSAPI-specific domain knowledge, but the generic scanner's "items" convention handling already needs endpoint-type awareness.      | Plan 06 should decide. Recommendation: keep in CSAPI wrapper.                                                                                   |
+| 5   | Should `extractRootResourceUrls()` move entirely to the factory function?                                               | If it moves, `endpoint.ts` loses `hasConnectedSystems` detection capability. But `hasConnectedSystems` doesn't use this function.       | Plan 06 should evaluate whether the endpoint needs root resource URL extraction for any non-CSAPI purpose.                                      |
 
 ---
 
@@ -1109,23 +1158,23 @@ import type { OgcApiCollectionInfo } from '@camptocamp/ogc-client';
 
 Complete list of how CSAPI files import from outside `csapi/`:
 
-| File | Import | Type | Target | Constraint Status |
-|---|---|---|---|---|
-| `url_builder.ts:1` | `import type { OgcApiCollectionInfo }` | Type-only | `../model.js` | ✓ Acceptable (erased) |
-| `url_builder.ts:4` | `import { EndpointError }` | Value | `../../shared/errors.js` | ✓ Acceptable (shared utility) |
-| `model.ts:1` | `import type { BoundingBox, DateTimeParameter, CrsCode, MimeType }` | Type-only | `../../shared/models.js` | ✓ Acceptable (erased) |
-| `model.ts:2` | `import type { OgcApiDocumentLink }` | Type-only | `../model.js` | ✓ Acceptable (erased) |
-| `model.ts:3` | `import type { Geometry }` | Type-only | `geojson` (npm) | ✓ External package |
-| `helpers.ts:3` | `import type { BoundingBox }` | Type-only | `../../shared/models.js` | ✓ Acceptable (erased) |
+| File               | Import                                                              | Type      | Target                   | Constraint Status             |
+| ------------------ | ------------------------------------------------------------------- | --------- | ------------------------ | ----------------------------- |
+| `url_builder.ts:1` | `import type { OgcApiCollectionInfo }`                              | Type-only | `../model.js`            | ✓ Acceptable (erased)         |
+| `url_builder.ts:4` | `import { EndpointError }`                                          | Value     | `../../shared/errors.js` | ✓ Acceptable (shared utility) |
+| `model.ts:1`       | `import type { BoundingBox, DateTimeParameter, CrsCode, MimeType }` | Type-only | `../../shared/models.js` | ✓ Acceptable (erased)         |
+| `model.ts:2`       | `import type { OgcApiDocumentLink }`                                | Type-only | `../model.js`            | ✓ Acceptable (erased)         |
+| `model.ts:3`       | `import type { Geometry }`                                          | Type-only | `geojson` (npm)          | ✓ External package            |
+| `helpers.ts:3`     | `import type { BoundingBox }`                                       | Type-only | `../../shared/models.js` | ✓ Acceptable (erased)         |
 
 ### B. Current Core → CSAPI Import Map (Constraint Violations)
 
-| File | Import | Type | Target | Resolution |
-|---|---|---|---|---|
-| `endpoint.ts:52` | `import CSAPIQueryBuilder` | **Value** | `./csapi/url_builder.js` | Remove — factory function replaces |
-| `endpoint.ts:53` | `import { scanCsapiLinks }` | **Value** | `./csapi/helpers.js` | Remove — generic link scanner replaces |
-| `index.ts:45` | `export { default as CSAPIQueryBuilder }` | **Re-export** | `./ogc-api/csapi/url_builder.js` | Remove — move to CSAPI barrel |
-| `index.ts:46–227` | Multiple `export type { ... }` and `export { ... }` | **Re-exports** | Various `./ogc-api/csapi/*` paths | Remove — move to CSAPI barrel |
+| File              | Import                                              | Type           | Target                            | Resolution                             |
+| ----------------- | --------------------------------------------------- | -------------- | --------------------------------- | -------------------------------------- |
+| `endpoint.ts:52`  | `import CSAPIQueryBuilder`                          | **Value**      | `./csapi/url_builder.js`          | Remove — factory function replaces     |
+| `endpoint.ts:53`  | `import { scanCsapiLinks }`                         | **Value**      | `./csapi/helpers.js`              | Remove — generic link scanner replaces |
+| `index.ts:45`     | `export { default as CSAPIQueryBuilder }`           | **Re-export**  | `./ogc-api/csapi/url_builder.js`  | Remove — move to CSAPI barrel          |
+| `index.ts:46–227` | Multiple `export type { ... }` and `export { ... }` | **Re-exports** | Various `./ogc-api/csapi/*` paths | Remove — move to CSAPI barrel          |
 
 ---
 

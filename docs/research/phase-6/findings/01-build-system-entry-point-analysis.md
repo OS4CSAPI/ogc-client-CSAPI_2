@@ -6,17 +6,17 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Research Plan** | [Plan 01: Upstream Build System and Entry Point Analysis](../research-plans/01-build-system-entry-point-analysis.md) |
-| **Plan Type** | Internal analysis |
-| **Date Started** | 2026-02-23 |
-| **Date Completed** | 2026-02-23 |
-| **Research Time** | ~3 hours (actual) |
-| **Estimated Time** | 2–3 hours (from plan) |
-| **Questions Answered** | 31 of 31 detailed questions |
-| **Depends On** | None — this is Plan 1, the foundation |
-| **Blocks** | Plan 03 (Separate Entry Point Design Patterns), Plan 06 (Endpoint Decoupling Architecture), Plan 08 (File-Level Changelist and Commit Strategy) |
+| Field                  | Value                                                                                                                                           |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Research Plan**      | [Plan 01: Upstream Build System and Entry Point Analysis](../research-plans/01-build-system-entry-point-analysis.md)                            |
+| **Plan Type**          | Internal analysis                                                                                                                               |
+| **Date Started**       | 2026-02-23                                                                                                                                      |
+| **Date Completed**     | 2026-02-23                                                                                                                                      |
+| **Research Time**      | ~3 hours (actual)                                                                                                                               |
+| **Estimated Time**     | 2–3 hours (from plan)                                                                                                                           |
+| **Questions Answered** | 31 of 31 detailed questions                                                                                                                     |
+| **Depends On**         | None — this is Plan 1, the foundation                                                                                                           |
+| **Blocks**             | Plan 03 (Separate Entry Point Design Patterns), Plan 06 (Endpoint Decoupling Architecture), Plan 08 (File-Level Changelist and Commit Strategy) |
 
 ---
 
@@ -24,32 +24,32 @@
 
 ### Primary Sources Consulted
 
-| Source | Path / URL | What Was Extracted |
-|--------|------------|-------------------|
-| Package configuration | `package.json` | `exports`, `main`, `browser`, `types`, `files`, `scripts` (build commands), `"type": "module"` |
-| Browser build config | `package.json` → `"build:browser"` script | esbuild command flags: `--outdir=./dist`, `--platform=neutral`, `--format=esm`, `--sourcemap`, file glob via `find` |
-| Node build config | `vite.node-config.js` | Rollup input (`src-node/index.ts`), output (`dist-node.js`), `emptyOutDir: false`, SSR mode |
-| Worker build config | `vite.worker-config.js` | Entry point (`src/worker/index.ts`), `vite-plugin-dts` config (`include: ['./src/**/*']`), `emptyOutDir: false` |
-| TypeScript config | `tsconfig.json` | `moduleResolution: "node"`, `declaration: true`, `declarationMap: true`, `include: ["./src/**/*", "./src-node/**/*"]` |
-| Root barrel file | `src/index.ts` (252 lines) | CSAPI re-exports spanning lines 45–227 (~170 lines of CSAPI exports) |
-| Node entry point | `src-node/index.ts` | Simple `export * from '../src/index.js'` + `enableFallbackWithoutWorker()` |
-| Worker entry point | `src/worker/index.ts` (111 lines) | Imports from shared/models, wms, wfs, wmts — zero CSAPI imports |
-| CSAPI module files | `src/ogc-api/csapi/` | File inventory: `command-routing.ts`, `helpers.ts`, `model.ts`, `url_builder.ts`, `formats/` (12+ files + `sensorml/` + `swecommon/` subdirs), `integration/` (5 spec files) |
-| Endpoint source | `src/ogc-api/endpoint.ts` | Lines 52–53: the two CSAPI imports (`CSAPIQueryBuilder`, `scanCsapiLinks`) |
-| Full build output | `dist/` (after `npm run build`) | Complete directory tree, file sizes, content inspection of key outputs |
+| Source                | Path / URL                                | What Was Extracted                                                                                                                                                           |
+| --------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Package configuration | `package.json`                            | `exports`, `main`, `browser`, `types`, `files`, `scripts` (build commands), `"type": "module"`                                                                               |
+| Browser build config  | `package.json` → `"build:browser"` script | esbuild command flags: `--outdir=./dist`, `--platform=neutral`, `--format=esm`, `--sourcemap`, file glob via `find`                                                          |
+| Node build config     | `vite.node-config.js`                     | Rollup input (`src-node/index.ts`), output (`dist-node.js`), `emptyOutDir: false`, SSR mode                                                                                  |
+| Worker build config   | `vite.worker-config.js`                   | Entry point (`src/worker/index.ts`), `vite-plugin-dts` config (`include: ['./src/**/*']`), `emptyOutDir: false`                                                              |
+| TypeScript config     | `tsconfig.json`                           | `moduleResolution: "node"`, `declaration: true`, `declarationMap: true`, `include: ["./src/**/*", "./src-node/**/*"]`                                                        |
+| Root barrel file      | `src/index.ts` (252 lines)                | CSAPI re-exports spanning lines 45–227 (~170 lines of CSAPI exports)                                                                                                         |
+| Node entry point      | `src-node/index.ts`                       | Simple `export * from '../src/index.js'` + `enableFallbackWithoutWorker()`                                                                                                   |
+| Worker entry point    | `src/worker/index.ts` (111 lines)         | Imports from shared/models, wms, wfs, wmts — zero CSAPI imports                                                                                                              |
+| CSAPI module files    | `src/ogc-api/csapi/`                      | File inventory: `command-routing.ts`, `helpers.ts`, `model.ts`, `url_builder.ts`, `formats/` (12+ files + `sensorml/` + `swecommon/` subdirs), `integration/` (5 spec files) |
+| Endpoint source       | `src/ogc-api/endpoint.ts`                 | Lines 52–53: the two CSAPI imports (`CSAPIQueryBuilder`, `scanCsapiLinks`)                                                                                                   |
+| Full build output     | `dist/` (after `npm run build`)           | Complete directory tree, file sizes, content inspection of key outputs                                                                                                       |
 
 ### External Sources Consulted
 
-| Source | URL | What Was Extracted |
-|--------|-----|-------------------|
-| Node.js subpath exports | https://nodejs.org/api/packages.html#subpath-exports | Conditional exports syntax, `"types"` community condition, sub-path patterns, encapsulation behavior |
+| Source                      | URL                                                                 | What Was Extracted                                                                                                            |
+| --------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Node.js subpath exports     | https://nodejs.org/api/packages.html#subpath-exports                | Conditional exports syntax, `"types"` community condition, sub-path patterns, encapsulation behavior                          |
 | TypeScript moduleResolution | https://www.typescriptlang.org/docs/handbook/modules/reference.html | `"node"` (node10) does NOT read `"exports"`, `"node16"`/`"nodenext"`/`"bundler"` DO read `"exports"` with `"types"` condition |
 
 ### Prior Findings Used
 
-| Finding | Path | What Was Consumed |
-|---------|------|-------------------|
-| None | — | This is Plan 1 — no prior findings exist |
+| Finding | Path | What Was Consumed                        |
+| ------- | ---- | ---------------------------------------- |
+| None    | —    | This is Plan 1 — no prior findings exist |
 
 ### Sources Not Available or Not Useful
 
@@ -68,15 +68,15 @@ The one source-level change required is creating `src/ogc-api/csapi/index.ts` as
 
 ### Key Metrics
 
-| Metric | Value | Significance |
-|--------|-------|-------------|
-| CSAPI JS output size | 191.4 KB across 27 files | Substantial footprint that consumers shouldn't load if not needed |
-| `url_builder.js` alone | 86 KB | Largest single CSAPI file — validates need for separate entry point |
-| `dist-node.js` (Node bundle) | 483.5 KB (with CSAPI inlined) | Will shrink significantly after CSAPI removal from import chain |
-| `dist/worker/index.js` | 144.3 KB (zero CSAPI) | Completely unaffected by CSAPI separation |
-| `dist/index.js` (browser entry) | ~2.5 KB (per-file re-exports) | Lightweight; just preserves import statements to sibling files |
-| CSAPI `.d.ts` files in dist | 27 files | All already generated by `vite-plugin-dts` — no config changes needed |
-| Build stages | 3 (worker → node → browser) | All layer into `dist/` via `emptyOutDir: false` |
+| Metric                          | Value                         | Significance                                                          |
+| ------------------------------- | ----------------------------- | --------------------------------------------------------------------- |
+| CSAPI JS output size            | 191.4 KB across 27 files      | Substantial footprint that consumers shouldn't load if not needed     |
+| `url_builder.js` alone          | 86 KB                         | Largest single CSAPI file — validates need for separate entry point   |
+| `dist-node.js` (Node bundle)    | 483.5 KB (with CSAPI inlined) | Will shrink significantly after CSAPI removal from import chain       |
+| `dist/worker/index.js`          | 144.3 KB (zero CSAPI)         | Completely unaffected by CSAPI separation                             |
+| `dist/index.js` (browser entry) | ~2.5 KB (per-file re-exports) | Lightweight; just preserves import statements to sibling files        |
+| CSAPI `.d.ts` files in dist     | 27 files                      | All already generated by `vite-plugin-dts` — no config changes needed |
+| Build stages                    | 3 (worker → node → browser)   | All layer into `dist/` via `emptyOutDir: false`                       |
 
 ### Overall Assessment
 
@@ -111,6 +111,7 @@ This section answers the 8 questions about how the three-stage build pipeline tr
 **Evidence:**
 
 The `build:browser` npm script:
+
 ```
 esbuild $(find ./src -name "*.ts" -type f -not -path '*worker/index.ts' -not -path '*.spec.ts') --outdir=./dist --platform=neutral --format=esm --sourcemap
 ```
@@ -118,8 +119,9 @@ esbuild $(find ./src -name "*.ts" -type f -not -path '*worker/index.ts' -not -pa
 Key: The `--bundle` flag is **absent**. With `--outdir` and no `--bundle`, esbuild operates as a per-file transpiler. The `find` command generates a list of ~143+ `.ts` files which are each compiled to a corresponding `.js` file in `dist/`, preserving the directory structure.
 
 After running the build, `dist/ogc-api/csapi/url_builder.js` contains:
+
 ```javascript
-import { EndpointError } from "../../shared/errors.js";
+import { EndpointError } from '../../shared/errors.js';
 // ... compiled code with preserved relative imports
 ```
 
@@ -132,6 +134,7 @@ The imports are preserved as relative paths to sibling files — not resolved or
 **Evidence:**
 
 Confirmed files in `dist/ogc-api/csapi/`:
+
 - `url_builder.js` (86 KB), `url_builder.js.map`, `url_builder.d.ts`
 - `model.js`, `model.js.map`, `model.d.ts`
 - `helpers.js`, `helpers.js.map`, `helpers.d.ts`
@@ -148,6 +151,7 @@ Total: **27 CSAPI `.js` files** totaling 191.4 KB, with corresponding `.d.ts` an
 **Evidence:**
 
 `dist-node.js` contains CSAPI code fully inlined:
+
 - `CSAPIQueryBuilder` class definition found at approximately line 3591
 - `scanCsapiLinks` function found at approximately line 3527
 - All CSAPI format parsers, model types, and helper functions are present
@@ -161,6 +165,7 @@ This is a single-file bundle (Vite SSR mode with `rollup` input from `src-node/i
 **Evidence:**
 
 `src/worker/index.ts` imports from:
+
 - `../shared/models.js` (types)
 - `../wms/endpoint.js`
 - `../wfs/endpoint.js`
@@ -175,11 +180,13 @@ There are no imports from `../ogc-api/csapi/` or any CSAPI module. The worker is
 **Evidence:**
 
 From `package.json`:
+
 ```json
 "build": "rm -rf dist && npm run build:worker && npm run build:node && npm run build:browser"
 ```
 
 Both `vite.node-config.js` and `vite.worker-config.js` set:
+
 ```javascript
 build: {
   emptyOutDir: false,
@@ -188,6 +195,7 @@ build: {
 ```
 
 This means:
+
 1. `rm -rf dist` cleans the directory
 2. `build:worker` creates `dist/worker/index.js` + all `.d.ts` files (via `vite-plugin-dts`)
 3. `build:node` adds `dist/dist-node.js` (SSR bundle)
@@ -200,15 +208,17 @@ This means:
 **Evidence:**
 
 `dist/index.js` (the compiled `src/index.ts`) contains preserved imports:
+
 ```javascript
-import CSAPIQueryBuilder from "./ogc-api/csapi/url_builder.js";
-import { scanCsapiLinks } from "./ogc-api/csapi/helpers.js";
+import CSAPIQueryBuilder from './ogc-api/csapi/url_builder.js';
+import { scanCsapiLinks } from './ogc-api/csapi/helpers.js';
 // etc.
 ```
 
 `dist/ogc-api/csapi/url_builder.js` contains:
+
 ```javascript
-import { EndpointError } from "../../shared/errors.js";
+import { EndpointError } from '../../shared/errors.js';
 ```
 
 These are relative path imports to sibling files — not inlined code.
@@ -222,6 +232,7 @@ These are relative path imports to sibling files — not inlined code.
 ### Question 8: Are there build-time exclusions?
 
 **Answer:** Yes, two exclusion patterns in the esbuild `find` command:
+
 1. `-not -path '*worker/index.ts'` — excludes the worker entry point (already built by Vite)
 2. `-not -path '*.spec.ts'` — excludes test files
 
@@ -244,6 +255,7 @@ This section answers the 7 questions about the `"exports"` field and how to conf
 **Evidence:**
 
 From `package.json`:
+
 ```json
 "exports": {
   ".": {
@@ -256,6 +268,7 @@ From `package.json`:
 ```
 
 There is no `"./csapi"` sub-path. The root entry targets:
+
 - `types` → TypeScript declaration file
 - `import` → ESM per-file entry (browser or Node ESM)
 - `browser` → Same as import (per-file ESM)
@@ -266,6 +279,7 @@ There is no `"./csapi"` sub-path. The root entry targets:
 **Answer:** The `"./csapi"` sub-path should point to the barrel file output produced by esbuild:
 
 **Recommended configuration:**
+
 ```json
 "./csapi": {
   "types": "./dist/ogc-api/csapi/index.d.ts",
@@ -324,6 +338,7 @@ This section answers the 6 questions about `.d.ts` file generation for CSAPI.
 **Evidence:**
 
 From `vite.worker-config.js`:
+
 ```javascript
 import dts from 'vite-plugin-dts';
 // ...
@@ -332,7 +347,7 @@ plugins: [
     include: ['./src/**/*'],
     exclude: ['./src/**/*.spec.ts'],
   }),
-]
+];
 ```
 
 The `include` pattern `'./src/**/*'` matches ALL files under `src/`, including all CSAPI files. The `exclude` pattern only removes `.spec.ts` test files.
@@ -344,6 +359,7 @@ The `include` pattern `'./src/**/*'` matches ALL files under `src/`, including a
 **Evidence:**
 
 Confirmed by inspecting `dist/` after `npm run build:worker`:
+
 - `dist/ogc-api/csapi/url_builder.d.ts`
 - `dist/ogc-api/csapi/model.d.ts`
 - `dist/ogc-api/csapi/helpers.d.ts`
@@ -362,6 +378,7 @@ These were all generated by `vite-plugin-dts` during the `build:worker` stage �
 **Evidence:**
 
 From `package.json`:
+
 ```json
 "typecheck": "tsc --noEmit"
 ```
@@ -385,23 +402,27 @@ The `--noEmit` flag means typechecking produces no output. `vite-plugin-dts` is 
 **Answer:** **No.** This is a critical finding. The current `tsconfig.json` uses `"moduleResolution": "node"` (which TypeScript 5.x calls `"node10"`), and this setting **does NOT read the `"exports"` field at all**.
 
 For consumers to resolve `@camptocamp/ogc-client/csapi` via the `"exports"` field, they need:
+
 - `"moduleResolution": "node16"` or `"nodenext"` — for Node.js projects
 - `"moduleResolution": "bundler"` — for bundler-based projects
 
 **Evidence:** From TypeScript documentation on `node10` (formerly `node`):
 
 > Supported features for `node10`:
+>
 > - package.json "exports" ❌
 > - package.json "imports" and self-name imports ❌
 
 vs. `node16`/`nodenext`:
 
 > Supported features for `node16`/`nodenext`:
+>
 > - package.json "exports" ✅ matches types, node, import
 
 vs. `bundler`:
 
 > Supported features for `bundler`:
+>
 > - package.json "exports" ✅ matches types, import/require depending on syntax
 
 **Impact:** This does NOT affect the upstream ogc-client build itself (which uses esbuild/Vite, not tsc, for compilation). It affects **consumers** of the package. Consumers with `moduleResolution: "node"` would need to use the package-relative path `@camptocamp/ogc-client/dist/ogc-api/csapi/index.js` or update their `moduleResolution` setting. Modern TypeScript projects overwhelmingly use `"node16"`, `"nodenext"`, or `"bundler"`, so this is a minor concern.
@@ -423,6 +444,7 @@ This section answers the 5 questions about the CSAPI barrel file and its role as
 **Evidence:**
 
 Directory listing of `src/ogc-api/csapi/`:
+
 ```
 command-routing.ts
 helpers.ts
@@ -441,6 +463,7 @@ No `index.ts` exists. One must be created.
 **Evidence:**
 
 From `src/index.ts` (lines 45–227), the CSAPI re-exports include:
+
 - From `./ogc-api/csapi/model.js`: ~40+ type exports (CSAPIObservation, CSAPIDatastream, CSAPIResponseFormat, etc.)
 - From `./ogc-api/csapi/formats/index.js`: format parser exports
 - From `./ogc-api/csapi/url_builder.js`: `CSAPIQueryBuilder` class
@@ -454,6 +477,7 @@ The barrel file content would essentially be the CSAPI-related export lines curr
 **Answer:** Two sources import from CSAPI modules:
 
 1. **`src/ogc-api/endpoint.ts`** (line 52–53) — **runtime dependency:**
+
    ```typescript
    import CSAPIQueryBuilder from './csapi/url_builder.js';
    import { scanCsapiLinks } from './csapi/helpers.js';
@@ -481,6 +505,7 @@ The `endpoint.ts` imports are the decoupling target for Plan 06. The `src/index.
 **Evidence:**
 
 `src-node/index.ts` contains:
+
 ```typescript
 export * from '../src/index.js';
 export { enableFallbackWithoutWorker } from '../src/worker-fallback/index.js';
@@ -536,12 +561,12 @@ This section answers the 5 questions about how the proposed changes affect each 
 
 The impact on existing build stages is minimal and predictable:
 
-| Build Stage | Affected? | Change Needed? | Impact |
-|-------------|-----------|----------------|--------|
-| `build:browser` (esbuild) | No | None | File glob discovers the same files + the new barrel file |
-| `build:node` (Vite SSR) | Yes — bundle shrinks | None to config | Automatically excludes CSAPI after `src/index.ts` changes (full exclusion after Plan 06) |
-| `build:worker` (Vite lib) | No | None | Zero CSAPI imports; d.ts generation glob-based |
-| `typecheck` (tsc) | No | None | `include` glob unchanged; CSAPI files still typechecked |
+| Build Stage               | Affected?            | Change Needed? | Impact                                                                                   |
+| ------------------------- | -------------------- | -------------- | ---------------------------------------------------------------------------------------- |
+| `build:browser` (esbuild) | No                   | None           | File glob discovers the same files + the new barrel file                                 |
+| `build:node` (Vite SSR)   | Yes — bundle shrinks | None to config | Automatically excludes CSAPI after `src/index.ts` changes (full exclusion after Plan 06) |
+| `build:worker` (Vite lib) | No                   | None           | Zero CSAPI imports; d.ts generation glob-based                                           |
+| `typecheck` (tsc)         | No                   | None           | `include` glob unchanged; CSAPI files still typechecked                                  |
 
 **No build configuration files need modification.** All changes are source-level (`src/index.ts` modification, `src/ogc-api/csapi/index.ts` creation) and package-level (`package.json` `"exports"` update).
 
@@ -551,15 +576,16 @@ The impact on existing build stages is minimal and predictable:
 
 ### Constraint Compliance Matrix
 
-| # | Constraint | Status | Evidence | Notes |
-|---|-----------|--------|----------|-------|
-| 1 | No CSAPI in root exports | ✓ Compliant | Removing CSAPI re-exports from `src/index.ts` removes them from the `"."` export path. `build:browser` still compiles the files (they exist in `dist/`) but they are not reachable from `dist/index.js` | Full removal from `dist-node.js` requires Plan 06 to decouple `endpoint.ts` |
-| 2 | Separate entry point `"./csapi"` | ✓ Compliant | `"exports"` configuration with `"./csapi"` sub-path pointing to barrel file output at `dist/ogc-api/csapi/index.js` | Consumers import via `@camptocamp/ogc-client/csapi` |
-| 5 | CI must pass | ✓ Compliant | No build config changes needed; esbuild file glob, vite-plugin-dts glob, and typecheck glob all continue to include CSAPI files. Only source changes (barrel file creation, `src/index.ts` modification) and `package.json` `"exports"` update | Must verify with actual build run during implementation |
+| #   | Constraint                       | Status      | Evidence                                                                                                                                                                                                                                       | Notes                                                                       |
+| --- | -------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| 1   | No CSAPI in root exports         | ✓ Compliant | Removing CSAPI re-exports from `src/index.ts` removes them from the `"."` export path. `build:browser` still compiles the files (they exist in `dist/`) but they are not reachable from `dist/index.js`                                        | Full removal from `dist-node.js` requires Plan 06 to decouple `endpoint.ts` |
+| 2   | Separate entry point `"./csapi"` | ✓ Compliant | `"exports"` configuration with `"./csapi"` sub-path pointing to barrel file output at `dist/ogc-api/csapi/index.js`                                                                                                                            | Consumers import via `@camptocamp/ogc-client/csapi`                         |
+| 5   | CI must pass                     | ✓ Compliant | No build config changes needed; esbuild file glob, vite-plugin-dts glob, and typecheck glob all continue to include CSAPI files. Only source changes (barrel file creation, `src/index.ts` modification) and `package.json` `"exports"` update | Must verify with actual build run during implementation                     |
 
 ### Scope Boundary Adherence
 
 - **In scope — explored:**
+
   - Complete build pipeline analysis (3 stages)
   - `dist/` directory tree documentation
   - `package.json` `"exports"` configuration for `"./csapi"`
@@ -569,6 +595,7 @@ The impact on existing build stages is minimal and predictable:
   - Cross-module dependency mapping
 
 - **Out of scope — respected:**
+
   - Consumer API design (deferred to Plan 03)
   - Decoupling architecture for `endpoint.ts` (deferred to Plan 06)
   - Formatting and linting (deferred to Plan 07)
@@ -584,14 +611,14 @@ The impact on existing build stages is minimal and predictable:
 
 ### Minimum-Change Test
 
-| Finding / Recommendation | Serves jahow's requirements? | Minimum-change? | Include in implementation? |
-|--------------------------|------------------------------|-----------------|---------------------------|
-| Create `src/ogc-api/csapi/index.ts` barrel file | Yes — directly required for `"./csapi"` entry point | Yes | ✓ Include |
-| Add `"./csapi"` to `package.json` `"exports"` | Yes — directly required for separate import path | Yes | ✓ Include |
-| Remove CSAPI re-exports from `src/index.ts` | Yes — directly required (no CSAPI in root) | Yes | ✓ Include |
-| Node SSR bundle shrinkage | Yes — necessary consequence of removing CSAPI from root | Yes — happens automatically | ✓ Include (no action needed) |
-| Consumer `moduleResolution` compatibility note | No — nice-to-have documentation | No — not minimum change | ✗ Defer |
-| Optimizing per-file ESM for Node consumers | No — nice-to-have optimization | No — current approach works | ✗ Defer |
+| Finding / Recommendation                        | Serves jahow's requirements?                            | Minimum-change?             | Include in implementation?   |
+| ----------------------------------------------- | ------------------------------------------------------- | --------------------------- | ---------------------------- |
+| Create `src/ogc-api/csapi/index.ts` barrel file | Yes — directly required for `"./csapi"` entry point     | Yes                         | ✓ Include                    |
+| Add `"./csapi"` to `package.json` `"exports"`   | Yes — directly required for separate import path        | Yes                         | ✓ Include                    |
+| Remove CSAPI re-exports from `src/index.ts`     | Yes — directly required (no CSAPI in root)              | Yes                         | ✓ Include                    |
+| Node SSR bundle shrinkage                       | Yes — necessary consequence of removing CSAPI from root | Yes — happens automatically | ✓ Include (no action needed) |
+| Consumer `moduleResolution` compatibility note  | No — nice-to-have documentation                         | No — not minimum change     | ✗ Defer                      |
+| Optimizing per-file ESM for Node consumers      | No — nice-to-have optimization                          | No — current approach works | ✗ Defer                      |
 
 ### Deferred Insights
 
@@ -605,11 +632,11 @@ The impact on existing build stages is minimal and predictable:
 
 ### What Downstream Plans Should Consume
 
-| Downstream Plan | What to consume from this report | Section reference |
-|-----------------|----------------------------------|-------------------|
-| **Plan 03** (Separate Entry Point Design) | Confirmed `"exports"` configuration structure; barrel file pattern; per-file ESM output model; `"types"` condition pointing to `.d.ts` file | § 2 (Q9–Q15), § 4 (Q22–Q26) |
-| **Plan 06** (Endpoint Decoupling Architecture) | `endpoint.ts` has exactly 2 CSAPI imports (line 52: `CSAPIQueryBuilder`, line 53: `scanCsapiLinks`); CSAPI modules' outward dependencies (shared/models types, ogc-api/model types, shared/errors EndpointError class); full CSAPI exclusion from `dist-node.js` requires decoupling these imports | § 4 (Q24), § 5 (Q28), Key Takeaway #6 |
-| **Plan 08** (File-Level Changelist) | Exact files to modify: `package.json` (exports), `src/index.ts` (remove CSAPI), `src/ogc-api/csapi/index.ts` (create barrel); NO build config changes needed | § 5 (Sub-topic Synthesis), § 10 (Impact on Implementation) |
+| Downstream Plan                                | What to consume from this report                                                                                                                                                                                                                                                                   | Section reference                                          |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **Plan 03** (Separate Entry Point Design)      | Confirmed `"exports"` configuration structure; barrel file pattern; per-file ESM output model; `"types"` condition pointing to `.d.ts` file                                                                                                                                                        | § 2 (Q9–Q15), § 4 (Q22–Q26)                                |
+| **Plan 06** (Endpoint Decoupling Architecture) | `endpoint.ts` has exactly 2 CSAPI imports (line 52: `CSAPIQueryBuilder`, line 53: `scanCsapiLinks`); CSAPI modules' outward dependencies (shared/models types, ogc-api/model types, shared/errors EndpointError class); full CSAPI exclusion from `dist-node.js` requires decoupling these imports | § 4 (Q24), § 5 (Q28), Key Takeaway #6                      |
+| **Plan 08** (File-Level Changelist)            | Exact files to modify: `package.json` (exports), `src/index.ts` (remove CSAPI), `src/ogc-api/csapi/index.ts` (create barrel); NO build config changes needed                                                                                                                                       | § 5 (Sub-topic Synthesis), § 10 (Impact on Implementation) |
 
 ### Decisions Now Final
 
@@ -657,6 +684,7 @@ The impact on existing build stages is minimal and predictable:
 1. **Create `src/ogc-api/csapi/index.ts`** — barrel file re-exporting all public CSAPI types, classes, and functions. Content is the ~170 lines of CSAPI exports currently in `src/index.ts`, with import paths adjusted from `./ogc-api/csapi/` to `./`.
 
 2. **Update `package.json` `"exports"`** — add the `"./csapi"` sub-path:
+
    ```json
    "exports": {
      ".": {
@@ -689,13 +717,13 @@ The impact on existing build stages is minimal and predictable:
 
 ## 11. Open Questions
 
-| # | Question | Why Unresolved | Resolution Path |
-|---|----------|----------------|-----------------|
-| 1 | What is the exact public API surface of the CSAPI barrel file? | This is a consumer API design question, not a build system question | Plan 03 should finalize which exports are public vs. internal |
-| 2 | How should `endpoint.ts` be decoupled from CSAPI imports? | Requires architectural analysis of the OgcApiEndpoint class | Plan 06 will resolve this |
-| 3 | Should the barrel file re-export everything from `src/index.ts`, or should some CSAPI internals be hidden? | Design decision about public API surface | Plan 03 should decide |
-| 4 | Will removing CSAPI from `src/index.ts` break any existing consumers of ogc-client? | This is a semver/breaking-change question, not a build question | Plan 03 or Plan 08 should assess breaking-change impact |
-| 5 | Should self-referencing imports within the project use `@camptocamp/ogc-client/csapi`? | Depends on whether `moduleResolution: "node"` in tsconfig is updated | Deferred — not needed for upstream PR |
+| #   | Question                                                                                                   | Why Unresolved                                                       | Resolution Path                                               |
+| --- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------- |
+| 1   | What is the exact public API surface of the CSAPI barrel file?                                             | This is a consumer API design question, not a build system question  | Plan 03 should finalize which exports are public vs. internal |
+| 2   | How should `endpoint.ts` be decoupled from CSAPI imports?                                                  | Requires architectural analysis of the OgcApiEndpoint class          | Plan 06 will resolve this                                     |
+| 3   | Should the barrel file re-export everything from `src/index.ts`, or should some CSAPI internals be hidden? | Design decision about public API surface                             | Plan 03 should decide                                         |
+| 4   | Will removing CSAPI from `src/index.ts` break any existing consumers of ogc-client?                        | This is a semver/breaking-change question, not a build question      | Plan 03 or Plan 08 should assess breaking-change impact       |
+| 5   | Should self-referencing imports within the project use `@camptocamp/ogc-client/csapi`?                     | Depends on whether `moduleResolution: "node"` in tsconfig is updated | Deferred — not needed for upstream PR                         |
 
 ---
 
@@ -738,19 +766,19 @@ Total CSAPI JS: **191.4 KB across 27 .js files**
 
 CSAPI modules import from non-CSAPI modules:
 
-| CSAPI File | Imports From | Import Type |
-|------------|-------------|-------------|
-| Multiple CSAPI files | `../../shared/models.js` (BoundingBox, DateTimeParameter, CrsCode, MimeType) | `import type` (types only) |
-| Multiple CSAPI files | `../model.js` (OgcApiDocumentLink, OgcApiCollectionInfo) | `import type` (types only) |
-| `url_builder.ts`, others | `../../shared/errors.js` (EndpointError) | Value import (runtime dependency) |
+| CSAPI File               | Imports From                                                                 | Import Type                       |
+| ------------------------ | ---------------------------------------------------------------------------- | --------------------------------- |
+| Multiple CSAPI files     | `../../shared/models.js` (BoundingBox, DateTimeParameter, CrsCode, MimeType) | `import type` (types only)        |
+| Multiple CSAPI files     | `../model.js` (OgcApiDocumentLink, OgcApiCollectionInfo)                     | `import type` (types only)        |
+| `url_builder.ts`, others | `../../shared/errors.js` (EndpointError)                                     | Value import (runtime dependency) |
 
 Non-CSAPI modules import from CSAPI:
 
-| Non-CSAPI File | Imports From CSAPI | Import Type |
-|----------------|--------------------|-------------|
+| Non-CSAPI File            | Imports From CSAPI                           | Import Type            |
+| ------------------------- | -------------------------------------------- | ---------------------- |
 | `src/ogc-api/endpoint.ts` | `./csapi/url_builder.js` (CSAPIQueryBuilder) | Value import (runtime) |
-| `src/ogc-api/endpoint.ts` | `./csapi/helpers.js` (scanCsapiLinks) | Value import (runtime) |
-| `src/index.ts` | Multiple CSAPI modules | Re-export (public API) |
+| `src/ogc-api/endpoint.ts` | `./csapi/helpers.js` (scanCsapiLinks)        | Value import (runtime) |
+| `src/index.ts`            | Multiple CSAPI modules                       | Re-export (public API) |
 
 ### C. Current `package.json` `"exports"` (verbatim)
 

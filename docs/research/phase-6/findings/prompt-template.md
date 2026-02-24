@@ -122,16 +122,16 @@ Commit and push to the phase-6 branch.
 
 ## Quick Reference: Phase 6 Plans and Their Findings
 
-| # | Title | Type | Depends On | Prior Findings to Read |
-|---|-------|------|------------|----------------------|
-| 01 | Upstream Build System and Entry Point Analysis | Internal analysis | — | None |
-| 02 | EDR Integration Pattern Analysis | Internal analysis | — | None |
-| 03 | Separate Entry Point Design Patterns | External (packaging) | 01 | 01 findings |
-| 04 | TypeScript Sub-Module API Design Patterns | External (industry) | — | None |
-| 05 | Module Decoupling Patterns in TypeScript | External (architecture) | — | None |
-| 06 | Endpoint Decoupling Architecture | Design synthesis | 02, 03, 04, 05 | 02, 03, 04, 05 findings |
-| 07 | Prettier and ESLint Configuration Analysis | Mechanical | — | None |
-| 08 | File-Level Changelist and Commit Strategy | Implementation synthesis | 01–07 | All prior findings (01–07) |
+| #   | Title                                          | Type                     | Depends On     | Prior Findings to Read     |
+| --- | ---------------------------------------------- | ------------------------ | -------------- | -------------------------- |
+| 01  | Upstream Build System and Entry Point Analysis | Internal analysis        | —              | None                       |
+| 02  | EDR Integration Pattern Analysis               | Internal analysis        | —              | None                       |
+| 03  | Separate Entry Point Design Patterns           | External (packaging)     | 01             | 01 findings                |
+| 04  | TypeScript Sub-Module API Design Patterns      | External (industry)      | —              | None                       |
+| 05  | Module Decoupling Patterns in TypeScript       | External (architecture)  | —              | None                       |
+| 06  | Endpoint Decoupling Architecture               | Design synthesis         | 02, 03, 04, 05 | 02, 03, 04, 05 findings    |
+| 07  | Prettier and ESLint Configuration Analysis     | Mechanical               | —              | None                       |
+| 08  | File-Level Changelist and Commit Strategy      | Implementation synthesis | 01–07          | All prior findings (01–07) |
 
 ---
 

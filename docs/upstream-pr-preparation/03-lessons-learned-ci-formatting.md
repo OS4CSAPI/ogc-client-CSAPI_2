@@ -34,20 +34,20 @@ The workflow is defined in [`.github/workflows/qa.yml`](https://github.com/campt
 
 Our pre-submission verification process was thorough on **correctness** but did not include the upstream CI's **style enforcement** step:
 
-| What we verified | Tool | Result |
-|-----------------|------|--------|
-| Type safety | `tsc --noEmit` | 0 errors |
-| CSAPI unit tests | `npx jest --testPathPattern="csapi"` | 1,285 passing (29 suites) |
-| Endpoint integration tests | `npx jest -- endpoint.spec.ts` | 82/83 passing (1 pre-existing) |
-| CSAPI endpoint tests | `npx jest -t "CSAPI"` | 6/6 passing |
-| Rebase integrity | `git diff main clean-pr -- src/ fixtures/` | Zero diff |
-| Live server smoke tests | Manual against OSH + 52°North | 25 sessions, all passing |
+| What we verified           | Tool                                       | Result                         |
+| -------------------------- | ------------------------------------------ | ------------------------------ |
+| Type safety                | `tsc --noEmit`                             | 0 errors                       |
+| CSAPI unit tests           | `npx jest --testPathPattern="csapi"`       | 1,285 passing (29 suites)      |
+| Endpoint integration tests | `npx jest -- endpoint.spec.ts`             | 82/83 passing (1 pre-existing) |
+| CSAPI endpoint tests       | `npx jest -t "CSAPI"`                      | 6/6 passing                    |
+| Rebase integrity           | `git diff main clean-pr -- src/ fixtures/` | Zero diff                      |
+| Live server smoke tests    | Manual against OSH + 52°North              | 25 sessions, all passing       |
 
-| What we did NOT verify | Tool | Would have caught |
-|------------------------|------|-------------------|
-| **Prettier formatting** | `npm run format:check` | **This failure** |
-| ESLint rules | `npm run lint` | Unknown (likely clean) |
-| Full CI pipeline | All 5 steps in sequence | Everything |
+| What we did NOT verify  | Tool                    | Would have caught      |
+| ----------------------- | ----------------------- | ---------------------- |
+| **Prettier formatting** | `npm run format:check`  | **This failure**       |
+| ESLint rules            | `npm run lint`          | Unknown (likely clean) |
+| Full CI pipeline        | All 5 steps in sequence | Everything             |
 
 The root cause is simple: we never ran `npm run format:check` or the equivalent `npx prettier --check .` against the upstream's Prettier configuration (v2.8.8 with their `.prettierrc.json`). Our development process used our own editor formatting settings, which differ from upstream's rules.
 

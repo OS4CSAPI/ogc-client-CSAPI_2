@@ -16,6 +16,7 @@
 **External-Knowledge-First Pattern:** Before making any design decision, gather authoritative external knowledge (industry case studies, proven library patterns, specification references). This is the same methodology used in the testing research phase, where external research plans (Sections 3, 8, 9, 32) preceded every internal design synthesis.
 
 **Success Criteria:** After completing this research, we can answer:
+
 1. Exactly how does the upstream build system produce dist artifacts, and how do we add a second entry point?
 2. How did EDR integrate with `endpoint.ts`, and why is that pattern unacceptable for CSAPI at this scale?
 3. How do proven TypeScript libraries solve sub-module composition, and what patterns apply to our constraints?
@@ -64,11 +65,11 @@ These are the genuine design decisions our research must inform:
 
 > **Research broadly, implement minimally.**
 >
-> jahow issued two concrete requirements. Our research explores industry best practices, build system mechanics, and architectural patterns to ensure we make the *best* design choices to meet those requirements. However, the implementation must deliver *only* what jahow requires — no additional work inspired by research findings that exceeds the acceptance criteria.
+> jahow issued two concrete requirements. Our research explores industry best practices, build system mechanics, and architectural patterns to ensure we make the _best_ design choices to meet those requirements. However, the implementation must deliver _only_ what jahow requires — no additional work inspired by research findings that exceeds the acceptance criteria.
 >
-> Rules 3 and 4 above are reasonable inferences from jahow's two bullet points, but they are *our* inferences, not his explicit words. If during implementation we discover that a pragmatic solution (e.g., a clean `import type` from core) would simplify the architecture, we should consider asking jahow rather than dogmatically enforcing inferred constraints.
+> Rules 3 and 4 above are reasonable inferences from jahow's two bullet points, but they are _our_ inferences, not his explicit words. If during implementation we discover that a pragmatic solution (e.g., a clean `import type` from core) would simplify the architecture, we should consider asking jahow rather than dogmatically enforcing inferred constraints.
 >
-> jahow also said *"unless we find a better way to handle tree-shaking"* — this alternative should be explored in Plans 01/03. If modern ESM tree-shaking already prevents CSAPI from entering consumer bundles, that may be a simpler path jahow explicitly said he'd accept.
+> jahow also said _"unless we find a better way to handle tree-shaking"_ — this alternative should be explored in Plans 01/03. If modern ESM tree-shaking already prevents CSAPI from entering consumer bundles, that may be a simpler path jahow explicitly said he'd accept.
 >
 > See: [Scope Alignment Review Notes](research-plans/scope-alignment-review-notes.md)
 
@@ -85,6 +86,7 @@ These are the genuine design decisions our research must inform:
 **Why First:** Everything else depends on knowing whether the build system supports multiple entry points out of the box, or if we need config changes. This determines the shape of every subsequent decision.
 
 **Key Questions:**
+
 - How does `package.json` `"exports"` map to dist output?
 - What does esbuild do with the `find ./src -name "*.ts"` command? Does it produce per-file output or a single bundle?
 - How does `vite build` (node config) handle entry points?
@@ -94,9 +96,10 @@ These are the genuine design decisions our research must inform:
 - What changes to `package.json` `"exports"` are needed for `"./csapi"`?
 - Does tree-shaking work automatically if we just add exports, or is the separate entry point strictly necessary?
 
-**Boundary scoping:** The entry point *must* be `"./csapi"` mapping to CSAPI module code only. Do not explore shared or merged entry point configurations.
+**Boundary scoping:** The entry point _must_ be `"./csapi"` mapping to CSAPI module code only. Do not explore shared or merged entry point configurations.
 
 **Sources:**
+
 - `package.json` (scripts, exports, main, browser, types fields)
 - `vite.node-config.js`, `vite.worker-config.js`
 - `tsconfig.json` (paths, outDir, declaration settings)
@@ -116,6 +119,7 @@ These are the genuine design decisions our research must inform:
 **Why Second:** EDR is the pattern we followed. Understanding where it succeeded and where it doesn't scale helps us design the CSAPI alternative. jahow himself pointed to PR #114 as a reference in issue #118.
 
 **Key Questions:**
+
 - What imports does `endpoint.ts` have from `src/ogc-api/edr/`?
 - What imports does `info.ts` have from EDR?
 - What does `index.ts` export from EDR?
@@ -125,9 +129,10 @@ These are the genuine design decisions our research must inform:
 - What is the exact boundary between "small enough to include" and "needs its own entry point"?
 - Could EDR eventually move to the same pattern we're building for CSAPI?
 
-**Boundary scoping:** EDR's integration pattern is a reference for *what CSAPI must NOT do*. Research the pattern to understand why it's disallowed at CSAPI's scale, not to replicate it.
+**Boundary scoping:** EDR's integration pattern is a reference for _what CSAPI must NOT do_. Research the pattern to understand why it's disallowed at CSAPI's scale, not to replicate it.
 
 **Sources:**
+
 - `src/ogc-api/endpoint.ts` (EDR-related imports and methods)
 - `src/ogc-api/info.ts` (EDR conformance checks)
 - `src/index.ts` (EDR exports)
@@ -148,6 +153,7 @@ These are the genuine design decisions our research must inform:
 **Why Third:** After understanding the build system (Plan 01) and the EDR precedent (Plan 02), we need to research proven patterns before designing our own.
 
 **Key Questions:**
+
 - How do popular libraries implement sub-path exports (e.g., `@angular/core/testing`, `rxjs/operators`, `lodash-es/chunk`)?
 - What pattern works with esbuild's per-file output?
 - Do we need a separate barrel file (`src/ogc-api/csapi/index.ts`) or can we point directly to specific files?
@@ -159,6 +165,7 @@ These are the genuine design decisions our research must inform:
 **Boundary scoping:** Only research patterns where the sub-module is a **one-way dependent** of the host package (CSAPI depends on core, never reverse). Exclude patterns where sub-modules register themselves with the host.
 
 **Sources:**
+
 - Node.js documentation on package exports
 - TypeScript handbook on module resolution with `"exports"`
 - Popular library examples (Angular, RxJS, date-fns, AWS SDK v3)
@@ -178,6 +185,7 @@ These are the genuine design decisions our research must inform:
 **Why Fourth:** This is the most visible design decision — what developers actually type when they use CSAPI. Without studying industry precedent, we'd design from instinct. This plan mirrors Section 3 (TypeScript Testing Best Practices) from the testing research phase.
 
 **Key Questions (all scoped to one-way dependency patterns only):**
+
 - How does `@aws-sdk/lib-storage` consume `@aws-sdk/client-s3`? Does the sub-module accept the client instance, a config object, or primitives?
 - How does `@octokit/plugin-rest-endpoint-methods` compose with `@octokit/core`? What does the consumer API look like?
 - How does `@angular/cdk/testing` relate to `@angular/core`? Does it import concrete classes or interfaces?
@@ -188,6 +196,7 @@ These are the genuine design decisions our research must inform:
 - How do these libraries handle the case where the sub-module needs data that the core module provides asynchronously?
 
 **Boundary scoping:** Only study patterns where:
+
 - The sub-module depends on the core (never reverse) — matching constraint 4
 - The sub-module is imported via a separate path — matching constraint 2
 - The core module has no knowledge of the sub-module's existence — matching constraint 3
@@ -195,6 +204,7 @@ These are the genuine design decisions our research must inform:
 **Excluded patterns:** Plugin registration, mixin injection, decorator/monkey-patching, host-imports-plugin architectures.
 
 **Sources:**
+
 - AWS SDK v3 source code and documentation (multi-package monorepo with sub-module composition)
 - Octokit source code (plugin architecture with core dependency)
 - Angular CDK source code (sub-path exports with core dependency)
@@ -214,6 +224,7 @@ These are the genuine design decisions our research must inform:
 **Why Fifth:** Plan 06 requires us to design the decoupling architecture. TypeScript's structural typing makes adapter patterns different from Java/C# where they originated. Without studying TypeScript-specific approaches, we'd apply textbook patterns that may not translate well.
 
 **Key Questions (all scoped to our extraction scenario):**
+
 - What does the adapter pattern look like in TypeScript? Concrete examples, not just UML diagrams
 - How does dependency inversion work with TypeScript's structural typing? (Duck-typed interfaces as implicit contracts vs explicit `interface` declarations)
 - What are the tradeoffs between coupling levels that satisfy our constraints?
@@ -222,10 +233,11 @@ These are the genuine design decisions our research must inform:
   - Accept `{baseUrl: string, conformance: string[], collections: ...}` data record (loose)
   - Accept individual function parameters (loosest, most verbose)
 - How do TypeScript projects define module boundaries? (barrel files, explicit public APIs, `@internal` tags)
-- Are there documented case studies of extracting a tightly-coupled module into a separately-importable sub-module *within the same package*? (This is exactly our situation)
+- Are there documented case studies of extracting a tightly-coupled module into a separately-importable sub-module _within the same package_? (This is exactly our situation)
 - How loose is "loose enough" for a module that lives in the same repo as its dependency?
 
 **Boundary scoping:** All patterns must result in:
+
 - CSAPI importing from core (never reverse) — constraint 4
 - No CSAPI types/code appearing in core's module graph — constraint 3
 - A clean module boundary where core can be built/tested without CSAPI — constraints 1, 3, 4
@@ -233,6 +245,7 @@ These are the genuine design decisions our research must inform:
 **Excluded patterns:** Circular dependency patterns, shared mutable state, service locator patterns, runtime dependency injection containers.
 
 **Sources:**
+
 - TypeScript handbook (structural typing, module resolution)
 - Adapter and facade pattern references with TypeScript examples
 - Real-world TypeScript library refactoring case studies (blog posts, conference talks, GitHub issues documenting module extractions)
@@ -251,6 +264,7 @@ These are the genuine design decisions our research must inform:
 **Why Sixth:** This is the critical design plan — every consequential decision lives here. It is now informed by five prior plans: build system mechanics (01), EDR precedent (02), entry point patterns (03), industry API patterns (04), and TypeScript decoupling patterns (05).
 
 **Key Questions (all framed as "given our boundary conditions and prior research findings"):**
+
 - Given the industry patterns from Plan 04, what consumer API shape best fits our constraints? Factory function, static method, or constructor with endpoint parameter?
 - Given the coupling analysis from Plan 05, what level of coupling is optimal? Concrete `OgcApiEndpoint`, an interface, or extracted data primitives?
 - What exact data does `CSAPIQueryBuilder` need from the endpoint? (base URL, available resources, resource URLs, conformance classes)
@@ -262,12 +276,14 @@ These are the genuine design decisions our research must inform:
 - How are shared types (like `OgcApiCollectionInfo`) referenced across the module boundary?
 
 **Boundary verification checklist (every design decision must pass all four):**
+
 - [ ] Nothing from CSAPI appears in root `index.ts`
 - [ ] CSAPI is importable via `@camptocamp/ogc-client/csapi`
 - [ ] Nothing outside `src/ogc-api/csapi/` imports from CSAPI
 - [ ] Core module has zero imports from CSAPI code
 
 **Sources:**
+
 - Plan 01 findings (build system capabilities)
 - Plan 02 findings (EDR pattern analysis)
 - Plan 03 findings (entry point configuration)
@@ -292,6 +308,7 @@ These are the genuine design decisions our research must inform:
 **Why Seventh:** Formatting is mechanical but we need to understand the rules before applying them, especially since we've never run ESLint against this codebase. There may be lint errors beyond formatting that affect our code.
 
 **Key Questions:**
+
 - What Prettier version and configuration does upstream use? (`.prettierrc.json` rules)
 - What ESLint version and plugins are configured? (`eslint.config.js` rules)
 - What specific Prettier changes will be applied to our files? (single quotes vs double? trailing commas? line width? semicolons?)
@@ -302,6 +319,7 @@ These are the genuine design decisions our research must inform:
 - Should we run Prettier before or after the architectural refactor?
 
 **Sources:**
+
 - `.prettierrc.json` (or `prettier` field in `package.json`)
 - `eslint.config.js`
 - `package.json` (devDependencies: prettier version, eslint plugins)
@@ -320,6 +338,7 @@ These are the genuine design decisions our research must inform:
 **Why Last:** This is the synthesis of all prior research into a concrete implementation plan. It requires the build config (01), EDR pattern (02), entry point design (03), industry patterns (04), decoupling patterns (05), architecture (06), and formatting rules (07).
 
 **Key Questions:**
+
 - What is the complete list of files to create, modify, move, or delete?
 - What is the correct ordering of commits? (Architecture first? Formatting first? Both together?)
 - Should we squash the refactoring into the existing 13 commits or add new commits on top?
@@ -329,6 +348,7 @@ These are the genuine design decisions our research must inform:
 - What is the verification checklist before pushing?
 
 **Boundary verification (final gate):**
+
 - [ ] `git grep` confirms no CSAPI imports in `src/index.ts`
 - [ ] `git grep` confirms no CSAPI imports in any file outside `src/ogc-api/csapi/`
 - [ ] `npm run format:check` passes
@@ -338,6 +358,7 @@ These are the genuine design decisions our research must inform:
 - [ ] `npm run test:node` passes
 
 **Sources:**
+
 - All prior research findings (Plans 01–07)
 - Current file inventory on `clean-pr` branch
 - The 13-commit structure of the existing PR
@@ -349,18 +370,19 @@ These are the genuine design decisions our research must inform:
 
 ## Research Execution Order
 
-| # | Research Plan | Type | Depends On | Est. Time |
-|---|--------------|------|------------|-----------|
-| 01 | Build System and Entry Point Analysis | Internal analysis | — | 2–3 hours |
-| 02 | EDR Integration Pattern Analysis | Internal analysis | — | 1–2 hours |
-| 03 | Separate Entry Point Design Patterns | External (packaging) | 01 | 2–3 hours |
-| 04 | TypeScript Sub-Module API Design Patterns | External (industry) | — | 2–3 hours |
-| 05 | Module Decoupling Patterns in TypeScript | External (architecture) | — | 2–3 hours |
-| 06 | Endpoint Decoupling Architecture | **Design synthesis** | 02, 03, 04, 05 | 3–4 hours |
-| 07 | Prettier and ESLint Configuration Analysis | Mechanical | — | 1–2 hours |
-| 08 | File-Level Changelist and Commit Strategy | Implementation synthesis | 01–07 | 2–3 hours |
+| #   | Research Plan                              | Type                     | Depends On     | Est. Time |
+| --- | ------------------------------------------ | ------------------------ | -------------- | --------- |
+| 01  | Build System and Entry Point Analysis      | Internal analysis        | —              | 2–3 hours |
+| 02  | EDR Integration Pattern Analysis           | Internal analysis        | —              | 1–2 hours |
+| 03  | Separate Entry Point Design Patterns       | External (packaging)     | 01             | 2–3 hours |
+| 04  | TypeScript Sub-Module API Design Patterns  | External (industry)      | —              | 2–3 hours |
+| 05  | Module Decoupling Patterns in TypeScript   | External (architecture)  | —              | 2–3 hours |
+| 06  | Endpoint Decoupling Architecture           | **Design synthesis**     | 02, 03, 04, 05 | 3–4 hours |
+| 07  | Prettier and ESLint Configuration Analysis | Mechanical               | —              | 1–2 hours |
+| 08  | File-Level Changelist and Commit Strategy  | Implementation synthesis | 01–07          | 2–3 hours |
 
 **Parallel execution opportunities:**
+
 - Plans 01, 02, 04, 05, and 07 have no dependencies — can run in parallel
 - Plan 03 depends on 01 only
 - Plan 06 depends on 02, 03, 04, 05 — the critical design synthesis
@@ -374,7 +396,7 @@ This research phase can proceed immediately, without waiting for jahow's detaile
 
 ## Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | 2026-02-23 | Initial 6-plan strategy |
-| 2.0 | 2026-02-23 | Added Boundary Conditions section, added Plans 04–05 (external research), renumbered Plans 05–06 to 07–08, scoped all research questions to respect jahow's constraints, added boundary verification checklists |
+| Version | Date       | Changes                                                                                                                                                                                                         |
+| ------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0     | 2026-02-23 | Initial 6-plan strategy                                                                                                                                                                                         |
+| 2.0     | 2026-02-23 | Added Boundary Conditions section, added Plans 04–05 (external research), renumbered Plans 05–06 to 07–08, scoped all research questions to respect jahow's constraints, added boundary verification checklists |

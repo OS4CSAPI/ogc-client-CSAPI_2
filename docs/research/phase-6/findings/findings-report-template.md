@@ -6,17 +6,17 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Research Plan** | [Plan NN: Title](../research-plans/NN-slug.md) |
-| **Plan Type** | [Same as research plan: Internal analysis / External research / Design synthesis / etc.] |
-| **Date Started** | [YYYY-MM-DD] |
-| **Date Completed** | [YYYY-MM-DD] |
-| **Research Time** | [X hours (actual)] |
-| **Estimated Time** | [X–Y hours (from plan)] |
-| **Questions Answered** | [N of N detailed questions] |
-| **Depends On** | [Plan numbers this research built upon] |
-| **Blocks** | [Plan numbers that can now proceed with these findings] |
+| Field                  | Value                                                                                    |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| **Research Plan**      | [Plan NN: Title](../research-plans/NN-slug.md)                                           |
+| **Plan Type**          | [Same as research plan: Internal analysis / External research / Design synthesis / etc.] |
+| **Date Started**       | [YYYY-MM-DD]                                                                             |
+| **Date Completed**     | [YYYY-MM-DD]                                                                             |
+| **Research Time**      | [X hours (actual)]                                                                       |
+| **Estimated Time**     | [X–Y hours (from plan)]                                                                  |
+| **Questions Answered** | [N of N detailed questions]                                                              |
+| **Depends On**         | [Plan numbers this research built upon]                                                  |
+| **Blocks**             | [Plan numbers that can now proceed with these findings]                                  |
 
 ---
 
@@ -24,15 +24,15 @@
 
 ### Primary Sources Consulted
 
-| Source | Path / URL | What Was Extracted |
-|--------|------------|-------------------|
+| Source        | Path / URL             | What Was Extracted        |
+| ------------- | ---------------------- | ------------------------- |
 | [Description] | [relative/path or URL] | [What was found and used] |
 | [Description] | [relative/path or URL] | [What was found and used] |
 
 ### Prior Findings Used
 
-| Finding | Path | What Was Consumed |
-|---------|------|-------------------|
+| Finding            | Path                                | What Was Consumed                                                 |
+| ------------------ | ----------------------------------- | ----------------------------------------------------------------- |
 | [Plan NN findings] | [relative/path/to/findings/NN-*.md] | [Specific findings, decisions, or data consumed from that report] |
 
 ### Sources Not Available or Not Useful
@@ -51,8 +51,8 @@
 
 [Optional — include if the research produced quantifiable data. Use a table or bullet list.]
 
-| Metric | Value | Significance |
-|--------|-------|-------------|
+| Metric              | Value   | Significance     |
+| ------------------- | ------- | ---------------- |
 | [What was measured] | [Value] | [Why it matters] |
 
 ### Overall Assessment
@@ -80,17 +80,17 @@
 
 <!-- ============================================================
      SUB-TOPIC SECTIONS
-     
+
      Create one numbered section per research question sub-topic
      from the research plan's Section 4 (Detailed Questions).
-     
+
      Each sub-topic section should:
      - Match the sub-topic heading from the research plan
      - Answer every numbered question under that sub-topic
      - Provide evidence for each answer (code references, spec
        quotes, analysis results, external documentation)
      - Use tables, code blocks, and diagrams where they add clarity
-     
+
      Number sections sequentially starting from 1.
      ============================================================ -->
 
@@ -147,11 +147,11 @@
 
 ### Constraint Compliance Matrix
 
-| # | Constraint | Status | Evidence | Notes |
-|---|-----------|--------|----------|-------|
-| 1 | [Constraint text from plan § 3.1] | ✓ Compliant / ✗ Violated / ⚠️ Conditional | [How the findings comply or where tension exists] | [Additional context] |
-| 2 | [Constraint text] | ✓ / ✗ / ⚠️ | [Evidence] | [Notes] |
-| 3 | [Constraint text] | ✓ / ✗ / ⚠️ | [Evidence] | [Notes] |
+| #   | Constraint                        | Status                                    | Evidence                                          | Notes                |
+| --- | --------------------------------- | ----------------------------------------- | ------------------------------------------------- | -------------------- |
+| 1   | [Constraint text from plan § 3.1] | ✓ Compliant / ✗ Violated / ⚠️ Conditional | [How the findings comply or where tension exists] | [Additional context] |
+| 2   | [Constraint text]                 | ✓ / ✗ / ⚠️                                | [Evidence]                                        | [Notes]              |
+| 3   | [Constraint text]                 | ✓ / ✗ / ⚠️                                | [Evidence]                                        | [Notes]              |
 
 ### Scope Boundary Adherence
 
@@ -173,10 +173,10 @@
 
 For each significant finding or recommendation in this report, answer:
 
-| Finding / Recommendation | Serves jahow's requirements? | Minimum-change? | Include in implementation? |
-|--------------------------|------------------------------|-----------------|---------------------------|
-| [Finding 1] | Yes — directly required / Yes — necessary consequence / No — nice-to-have | Yes / No | ✓ Include / ✗ Defer / ⚠️ Discuss |
-| [Finding 2] | [Assessment] | [Assessment] | [Decision] |
+| Finding / Recommendation | Serves jahow's requirements?                                              | Minimum-change? | Include in implementation?       |
+| ------------------------ | ------------------------------------------------------------------------- | --------------- | -------------------------------- |
+| [Finding 1]              | Yes — directly required / Yes — necessary consequence / No — nice-to-have | Yes / No        | ✓ Include / ✗ Defer / ⚠️ Discuss |
+| [Finding 2]              | [Assessment]                                                              | [Assessment]    | [Decision]                       |
 
 ### Deferred Insights
 
@@ -192,10 +192,10 @@ For each significant finding or recommendation in this report, answer:
 
 ### What Downstream Plans Should Consume
 
-| Downstream Plan | What to consume from this report | Section reference |
-|-----------------|----------------------------------|-------------------|
-| Plan [NN] | [Specific findings, decisions, data, or artifacts to use] | [§ N.N or "Key Takeaway #N"] |
-| Plan [NN] | [Specific findings] | [Section reference] |
+| Downstream Plan | What to consume from this report                          | Section reference            |
+| --------------- | --------------------------------------------------------- | ---------------------------- |
+| Plan [NN]       | [Specific findings, decisions, data, or artifacts to use] | [§ N.N or "Key Takeaway #N"] |
+| Plan [NN]       | [Specific findings]                                       | [Section reference]          |
 
 ### Decisions Now Final
 
@@ -253,10 +253,10 @@ For each significant finding or recommendation in this report, answer:
 
 [Anything unresolved. Each question should identify which downstream plan (if any) should address it.]
 
-| # | Question | Why Unresolved | Resolution Path |
-|---|----------|----------------|-----------------|
-| 1 | [Open question] | [Why this couldn't be answered in this research] | [Plan NN should address this / Needs upstream clarification / Deferred to implementation] |
-| 2 | [Open question] | [Why unresolved] | [Resolution path] |
+| #   | Question        | Why Unresolved                                   | Resolution Path                                                                           |
+| --- | --------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| 1   | [Open question] | [Why this couldn't be answered in this research] | [Plan NN should address this / Needs upstream clarification / Deferred to implementation] |
+| 2   | [Open question] | [Why unresolved]                                 | [Resolution path]                                                                         |
 
 ---
 

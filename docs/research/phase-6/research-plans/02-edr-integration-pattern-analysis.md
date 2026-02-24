@@ -6,16 +6,16 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Status** | Not Started |
-| **Plan Type** | Internal analysis |
-| **Date Created** | 2026-02-23 |
-| **Last Updated** | 2026-02-23 |
-| **Estimated Time** | 1–2 hours |
-| **Actual Time** | — |
-| **Depends On** | None |
-| **Blocks** | Plan 06 (Endpoint Decoupling Architecture) |
+| Field                  | Value                                                     |
+| ---------------------- | --------------------------------------------------------- |
+| **Status**             | Not Started                                               |
+| **Plan Type**          | Internal analysis                                         |
+| **Date Created**       | 2026-02-23                                                |
+| **Last Updated**       | 2026-02-23                                                |
+| **Estimated Time**     | 1–2 hours                                                 |
+| **Actual Time**        | —                                                         |
+| **Depends On**         | None                                                      |
+| **Blocks**             | Plan 06 (Endpoint Decoupling Architecture)                |
 | **Strategy Reference** | [research-strategy.md § Plan 02](../research-strategy.md) |
 
 ---
@@ -139,32 +139,32 @@ This plan has no dependencies and can run in parallel with Plans 01, 04, 05, and
 
 ### Primary Sources (In Workspace)
 
-| Source | Path | What to Extract |
-|--------|------|-----------------|
-| OGC API endpoint class | `src/ogc-api/endpoint.ts` | All EDR and CSAPI imports, properties, methods, cache maps, private helpers |
-| Info utilities | `src/ogc-api/info.ts` | `checkHasEnvironmentalDataRetrieval`, `checkHasConnectedSystems`, `parseCollections` — import lists and implementation details |
-| OGC API model types | `src/ogc-api/model.ts` | EDR-specific types (`DataQueryType`, `EdrParameterInfo`, `data_queries` on `OgcApiCollectionInfo`) |
-| Root barrel file | `src/index.ts` | All EDR exports (expected: none) and all CSAPI exports (~170 lines) |
-| EDR module | `src/ogc-api/edr/` | Full directory: `url_builder.ts` (562 lines), `model.ts` (126 lines), `helpers.ts` (17 lines) |
-| CSAPI module | `src/ogc-api/csapi/` | Directory structure and file inventory: `url_builder.ts`, `model.ts`, `helpers.ts`, `command-routing.ts`, `formats/`, `integration/` |
-| Endpoint tests | `src/ogc-api/endpoint.spec.ts` | EDR test block (lines ~2543–2835) and CSAPI test block (lines ~2836–2886) |
-| CSAPIQueryBuilder | `src/ogc-api/csapi/url_builder.ts` | Constructor signature, what data it needs from the endpoint |
-| EDRQueryBuilder | `src/ogc-api/edr/url_builder.ts` | Constructor signature, what data it needs from the endpoint |
-| CSAPI helpers | `src/ogc-api/csapi/helpers.ts` | `scanCsapiLinks()` — what it does and why it's imported into `endpoint.ts` |
+| Source                 | Path                               | What to Extract                                                                                                                      |
+| ---------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| OGC API endpoint class | `src/ogc-api/endpoint.ts`          | All EDR and CSAPI imports, properties, methods, cache maps, private helpers                                                          |
+| Info utilities         | `src/ogc-api/info.ts`              | `checkHasEnvironmentalDataRetrieval`, `checkHasConnectedSystems`, `parseCollections` — import lists and implementation details       |
+| OGC API model types    | `src/ogc-api/model.ts`             | EDR-specific types (`DataQueryType`, `EdrParameterInfo`, `data_queries` on `OgcApiCollectionInfo`)                                   |
+| Root barrel file       | `src/index.ts`                     | All EDR exports (expected: none) and all CSAPI exports (~170 lines)                                                                  |
+| EDR module             | `src/ogc-api/edr/`                 | Full directory: `url_builder.ts` (562 lines), `model.ts` (126 lines), `helpers.ts` (17 lines)                                        |
+| CSAPI module           | `src/ogc-api/csapi/`               | Directory structure and file inventory: `url_builder.ts`, `model.ts`, `helpers.ts`, `command-routing.ts`, `formats/`, `integration/` |
+| Endpoint tests         | `src/ogc-api/endpoint.spec.ts`     | EDR test block (lines ~2543–2835) and CSAPI test block (lines ~2836–2886)                                                            |
+| CSAPIQueryBuilder      | `src/ogc-api/csapi/url_builder.ts` | Constructor signature, what data it needs from the endpoint                                                                          |
+| EDRQueryBuilder        | `src/ogc-api/edr/url_builder.ts`   | Constructor signature, what data it needs from the endpoint                                                                          |
+| CSAPI helpers          | `src/ogc-api/csapi/helpers.ts`     | `scanCsapiLinks()` — what it does and why it's imported into `endpoint.ts`                                                           |
 
 ### External Sources
 
-| Source | URL/Reference | What to Extract |
-|--------|---------------|-----------------|
-| PR #114 (EDR) | https://github.com/camptocamp/ogc-client/pull/114 | Review comments, merge decision, maintainer approval criteria |
-| PR #136 (CSAPI) | https://github.com/camptocamp/ogc-client/pull/136 | jahow's comments on why CSAPI needs a separate entry point |
-| Issue #118 | https://github.com/camptocamp/ogc-client/issues/118 | jahow's original guidance referencing PR #114 as the integration model |
+| Source          | URL/Reference                                       | What to Extract                                                        |
+| --------------- | --------------------------------------------------- | ---------------------------------------------------------------------- |
+| PR #114 (EDR)   | https://github.com/camptocamp/ogc-client/pull/114   | Review comments, merge decision, maintainer approval criteria          |
+| PR #136 (CSAPI) | https://github.com/camptocamp/ogc-client/pull/136   | jahow's comments on why CSAPI needs a separate entry point             |
+| Issue #118      | https://github.com/camptocamp/ogc-client/issues/118 | jahow's original guidance referencing PR #114 as the integration model |
 
 ### Prior Research Findings
 
-| Finding | Path | What to Use |
-|---------|------|-------------|
-| None | — | This is Plan 2 — no prior findings from Phase 6. Earlier research in `docs/research/design/` and `docs/research/upstream/` documented the original integration approach but is not required input. |
+| Finding | Path | What to Use                                                                                                                                                                                        |
+| ------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| None    | —    | This is Plan 2 — no prior findings from Phase 6. Earlier research in `docs/research/design/` and `docs/research/upstream/` documented the original integration approach but is not required input. |
 
 ---
 
@@ -175,6 +175,7 @@ This plan has no dependencies and can run in parallel with Plans 01, 04, 05, and
 **Objective:** Document every point where EDR code touches files outside `src/ogc-api/edr/`.
 
 **Tasks:**
+
 1. Read `endpoint.ts` imports — extract all EDR-related imports (expected: 1 import of `EDRQueryBuilder from './edr/url_builder.js'`)
 2. Read `endpoint.ts` class body — document every EDR property, method, and cache map
 3. Read `info.ts` — document `checkHasEnvironmentalDataRetrieval()` (conformance check only), confirm no EDR module imports
@@ -191,6 +192,7 @@ This plan has no dependencies and can run in parallel with Plans 01, 04, 05, and
 **Objective:** Document every point where CSAPI code touches files outside `src/ogc-api/csapi/`.
 
 **Tasks:**
+
 1. Read `endpoint.ts` imports — extract all CSAPI-related imports (expected: 2 imports — `CSAPIQueryBuilder from './csapi/url_builder.js'` and `{ scanCsapiLinks } from './csapi/helpers.js'`)
 2. Read `endpoint.ts` class body — document every CSAPI property, method, cache map, and private helper (`extractRootResourceUrls()`)
 3. Read `info.ts` — document `checkHasConnectedSystems()` (conformance check only), confirm no CSAPI module imports
@@ -208,6 +210,7 @@ This plan has no dependencies and can run in parallel with Plans 01, 04, 05, and
 **Objective:** Quantify the differences that explain why one pattern is acceptable and the other is not.
 
 **Tasks:**
+
 1. Create side-by-side comparison table:
    - Source lines (non-spec): EDR 656 vs CSAPI 11,767
    - Source files (non-spec): EDR 3 vs CSAPI ~27
@@ -230,6 +233,7 @@ This plan has no dependencies and can run in parallel with Plans 01, 04, 05, and
 **Objective:** Extract jahow's exact words about why CSAPI needs different treatment, and understand the EDR approval context.
 
 **Tasks:**
+
 1. Review PR #114 (EDR) review comments — what did jahow say (approve/request changes)? What was the merge rationale?
 2. Review PR #136 (CSAPI) review comments — extract jahow's exact phrasing about separate entry point, import direction, and module boundary
 3. Review issue #118 — extract jahow's original guidance about using PR #114 as a model
@@ -243,6 +247,7 @@ This plan has no dependencies and can run in parallel with Plans 01, 04, 05, and
 **Objective:** Extract the architectural principles that define when a module needs its own entry point vs. when it can embed in the endpoint pattern.
 
 **Tasks:**
+
 1. Synthesize EDR's "passing pattern" — what characteristics make it acceptable?
    - Small size (~650 lines)
    - Zero public API exports (not in `index.ts`)
@@ -268,6 +273,7 @@ This plan has no dependencies and can run in parallel with Plans 01, 04, 05, and
 **Objective:** Consolidate all phase outputs into the deliverable document.
 
 **Tasks:**
+
 1. Synthesize findings from Phases 1–5
 2. Verify all 35 research questions are answered
 3. Validate findings against boundary conditions (Constraints 1, 3, 4)
@@ -318,13 +324,13 @@ This research is complete when:
 
 ## 9. Risks and Mitigation
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| PR #114 review comments may be sparse or missing | Can't determine why jahow accepted EDR's integration pattern | Infer from the code structure itself — EDR's small size and zero root exports make the rationale self-evident even without explicit comments |
-| jahow's PR #136 feedback may be ambiguous about what exactly must change | Can't distinguish between "remove from index.ts" and "remove from endpoint.ts entirely" | Document both interpretations and flag as an open question for Plan 06; may need to ask jahow for clarification before implementing |
-| The "boundary line" between embeddable and non-embeddable may not have a clean rule | Can't produce clean criteria for Plan 06 | Use multiple dimensions (size, API surface, module complexity) as a composite heuristic rather than a single threshold; document the continuum |
-| `hasConnectedSystems` and `csapiCollections` may appear safe (no CSAPI imports) but jahow may still want them removed from endpoint | Incorrect assumption that conformance-only checks can stay | Document the technical finding (no CSAPI imports in info.ts) but flag that jahow's intent may go further than the technical constraint; recommend asking for clarification |
-| Our earlier research docs may contain outdated integration analysis that contradicts current code | Confusion between past designs and current state | Use ONLY the current source code as the ground truth; reference prior research docs only for historical context, never as authoritative |
+| Risk                                                                                                                                | Impact                                                                                  | Mitigation                                                                                                                                                                 |
+| ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PR #114 review comments may be sparse or missing                                                                                    | Can't determine why jahow accepted EDR's integration pattern                            | Infer from the code structure itself — EDR's small size and zero root exports make the rationale self-evident even without explicit comments                               |
+| jahow's PR #136 feedback may be ambiguous about what exactly must change                                                            | Can't distinguish between "remove from index.ts" and "remove from endpoint.ts entirely" | Document both interpretations and flag as an open question for Plan 06; may need to ask jahow for clarification before implementing                                        |
+| The "boundary line" between embeddable and non-embeddable may not have a clean rule                                                 | Can't produce clean criteria for Plan 06                                                | Use multiple dimensions (size, API surface, module complexity) as a composite heuristic rather than a single threshold; document the continuum                             |
+| `hasConnectedSystems` and `csapiCollections` may appear safe (no CSAPI imports) but jahow may still want them removed from endpoint | Incorrect assumption that conformance-only checks can stay                              | Document the technical finding (no CSAPI imports in info.ts) but flag that jahow's intent may go further than the technical constraint; recommend asking for clarification |
+| Our earlier research docs may contain outdated integration analysis that contradicts current code                                   | Confusion between past designs and current state                                        | Use ONLY the current source code as the ground truth; reference prior research docs only for historical context, never as authoritative                                    |
 
 ---
 

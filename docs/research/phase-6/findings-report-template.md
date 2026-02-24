@@ -1,25 +1,25 @@
 # Findings: [Title]
 
-> **Research Plan Reference:** [Link to research plan file]
-> **Research Questions Answered:** [N] of [N]
-> **Status:** Complete | **Branch:** `phase-6`
+> **Research Plan Reference:** [Link to research plan file] > **Research Questions Answered:** [N] of [N] > **Status:** Complete | **Branch:** `phase-6`
 
-| Field | Value |
-|-------|-------|
-| **Research Start** | [YYYY-MM-DD HH:MM] |
-| **Research End** | [YYYY-MM-DD HH:MM] |
-| **Actual Time** | [X hours Y minutes] |
-| **Methodology** | [Brief: code analysis, documentation review, local testing, etc.] |
+| Field              | Value                                                             |
+| ------------------ | ----------------------------------------------------------------- |
+| **Research Start** | [YYYY-MM-DD HH:MM]                                                |
+| **Research End**   | [YYYY-MM-DD HH:MM]                                                |
+| **Actual Time**    | [X hours Y minutes]                                               |
+| **Methodology**    | [Brief: code analysis, documentation review, local testing, etc.] |
 
 ---
 
 ## Sources Consulted
 
 ### Primary Sources
+
 - [File path — what was found]
 - [File path — what was found]
 
 ### Supporting Sources
+
 - [URL or reference — what was found]
 
 ---
@@ -39,8 +39,8 @@
 
 [2–4 paragraph summary of the most important findings. Should be readable standalone without the detail sections. Include a key metrics table if applicable:]
 
-| Metric | Value |
-|--------|-------|
+| Metric                          | Value   |
+| ------------------------------- | ------- |
 | [Relevant count or measurement] | [Value] |
 | [Relevant count or measurement] | [Value] |
 
@@ -55,6 +55,7 @@
 **Finding:** [Direct answer to the question]
 
 **Evidence:**
+
 ```
 [Code snippet, configuration excerpt, or documentation quote that supports the finding]
 ```
@@ -68,6 +69,7 @@
 **Finding:** [Answer]
 
 **Evidence:**
+
 ```
 [Supporting evidence]
 ```
@@ -94,10 +96,10 @@
 
 [How do these findings affect the planned implementation? Reference specific items from the work assessment or other research plans.]
 
-| Decision | Rationale | Affects |
-|----------|-----------|---------|
-| [Decision made based on findings] | [Why] | [Which files/plans] |
-| [Decision made based on findings] | [Why] | [Which files/plans] |
+| Decision                          | Rationale | Affects             |
+| --------------------------------- | --------- | ------------------- |
+| [Decision made based on findings] | [Why]     | [Which files/plans] |
+| [Decision made based on findings] | [Why]     | [Which files/plans] |
 
 ---
 
