@@ -60,6 +60,18 @@ These are the genuine design decisions our research must inform:
 
 5. **All CI checks must pass:** Prettier formatting, TypeScript type checking, ESLint linting, browser tests, Node.js tests
 
+### Implementation Scope Principle
+
+> **Research broadly, implement minimally.**
+>
+> jahow issued two concrete requirements. Our research explores industry best practices, build system mechanics, and architectural patterns to ensure we make the *best* design choices to meet those requirements. However, the implementation must deliver *only* what jahow requires — no additional work inspired by research findings that exceeds the acceptance criteria.
+>
+> Rules 3 and 4 above are reasonable inferences from jahow's two bullet points, but they are *our* inferences, not his explicit words. If during implementation we discover that a pragmatic solution (e.g., a clean `import type` from core) would simplify the architecture, we should consider asking jahow rather than dogmatically enforcing inferred constraints.
+>
+> jahow also said *"unless we find a better way to handle tree-shaking"* — this alternative should be explored in Plans 01/03. If modern ESM tree-shaking already prevents CSAPI from entering consumer bundles, that may be a simpler path jahow explicitly said he'd accept.
+>
+> See: [Scope Alignment Review Notes](research-plans/scope-alignment-review-notes.md)
+
 ---
 
 ## Research Plans Overview

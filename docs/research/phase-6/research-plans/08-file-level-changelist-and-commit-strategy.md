@@ -64,6 +64,27 @@ This plan is also uniquely positioned: it must account for the *existing* 13-com
 5. **CI compliance (Constraint 5):** Every commit in the final sequence must individually pass all 5 CI checks: `npm run format:check`, `npm run typecheck`, `npm run lint`, `npm run test:browser`, `npm run test:node`. If this is impractical for intermediate commits, the plan must document which commits are allowed to be squashed.
 6. **PR #136 compatibility:** The changelist must be applicable to the `clean-pr` branch, which has 13 commits above `upstream/main` (`53a6449`). The strategy must define how refactoring changes integrate with those 13 commits — amend, rebase, or extend.
 
+### Implementation Scope Gate
+
+> **Research broadly, implement minimally.**
+>
+> This plan translates research findings into the concrete changelist. Every file operation in the changelist must pass the **minimum-change test:**
+>
+> **"Does this file change directly serve jahow's two requirements (CSAPI out of root index.ts, non-CSAPI code stops importing CSAPI), or are we adding work he didn't request?"**
+>
+> The changelist must contain ONLY:
+> - Changes required to satisfy jahow's two bullet points
+> - Changes that are direct consequences of those requirements (e.g., moving a method because its imports violate the constraints)
+> - Changes required to pass CI (formatting, linting)
+>
+> The changelist must NOT contain:
+> - "While we're at it" improvements (refactoring code that isn't affected by the boundary conditions)
+> - New abstractions or patterns inspired by research but not required by the constraints
+> - Changes to modules outside our scope (EDR, other upstream code)
+> - Documentation files beyond what's needed for the PR
+>
+> See: [Scope Alignment Review Notes](scope-alignment-review-notes.md)
+
 ### Excluded From Scope
 
 - **Architectural decision-making:** All architectural decisions are made in Plans 01–06. Plan 08 does not revisit them — it translates them into file operations. If a decision is ambiguous, this plan flags it as an open question for Plan 06 rather than resolving it.
@@ -313,6 +334,7 @@ This research is complete when:
 - [ ] The changelist accounts for formatting (Plan 07's output) and places it correctly in the commit sequence
 - [ ] No file affected by the refactoring is missing from the changelist (completeness verified by walking through constraints)
 - [ ] A developer can execute the spec mechanically — zero ambiguities, zero decisions left to make
+- [ ] **Implementation scope gate applied:** Every file operation passes the minimum-change test — no changes beyond what jahow's requirements demand
 - [ ] Deliverable document is complete and follows the findings report template
 - [ ] The deliverable document IS the implementation spec — it bridges research and action
 

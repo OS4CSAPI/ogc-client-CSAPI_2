@@ -64,6 +64,24 @@ This is the critical synthesis plan. It cannot begin until Plans 02–05 are com
 4. **One-way dependency (Constraint 4):** After refactoring, removing the entire `src/ogc-api/csapi/` directory must leave core fully functional — zero type errors, zero test failures, zero import resolution errors. This is the litmus test for every design choice.
 5. **CI compliance:** Prettier, TypeScript typecheck, ESLint, browser tests, and Node.js tests must all pass.
 
+### Implementation Scope Gate
+
+> **Research broadly, implement minimally.**
+>
+> Plans 04 and 05 provide industry best practices and architectural theory to *inform* design decisions. However, every design decision produced by this plan must pass the **minimum-change test:**
+>
+> **"Does this change directly serve jahow's two requirements (CSAPI out of root index.ts, non-CSAPI code stops importing CSAPI), or are we adding work he didn't request?"**
+>
+> If a design choice is informed by industry best practice but increases the implementation scope beyond what jahow requires, prefer the simpler approach that still satisfies all boundary conditions. Use the industry research to *validate* that the simpler approach is sound — not to justify a more complex one.
+>
+> Specifically:
+> - Do NOT introduce adapter interfaces, factory patterns, or data record types unless they are strictly necessary to satisfy the boundary conditions. If the existing code can be relocated without restructuring, that is preferred.
+> - Do NOT refactor `CSAPIQueryBuilder`'s constructor signature unless the current signature violates a boundary condition.
+> - Do NOT suggest changes to EDR or other upstream modules — that is not our scope.
+> - If a design decision is a close call, document both options and flag it for jahow's input rather than over-engineering a solution.
+>
+> See: [Scope Alignment Review Notes](scope-alignment-review-notes.md)
+
 ### Excluded From Scope
 
 - **Plugin registration, mixin injection, decorator patterns:** Excluded — these require core to reference the sub-module (violates constraints 3 and 4).
@@ -368,6 +386,7 @@ This research is complete when:
 - [ ] Post-refactoring verification checklist is complete
 - [ ] The "litmus test" is explicitly verified: removing `src/ogc-api/csapi/` leaves core functional
 - [ ] Deliverable document is complete and follows the findings report template
+- [ ] **Implementation scope gate applied:** Every design decision passes the minimum-change test — no changes beyond what jahow's requirements demand
 - [ ] Findings are cross-referenced with Plan 08 and provide everything Plan 08 needs to produce the changelist
 
 ---
