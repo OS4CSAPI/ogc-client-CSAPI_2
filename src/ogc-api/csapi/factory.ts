@@ -40,13 +40,8 @@ export async function createCSAPIBuilder(
     throw new EndpointError('Endpoint does not support Connected Systems');
   }
 
-  // Access root and getCollectionDocument via `any` because they are
-  // currently `private`. Task 6 (Issue #122) changes them to `public`;
-  // these casts will be removed then.
-  const ep = endpoint as any;
-
-  const collectionDoc = await ep.getCollectionDocument(collectionId);
-  const rootDoc = await ep.root;
+  const collectionDoc = await endpoint.getCollectionDocument(collectionId);
+  const rootDoc = await endpoint.root;
   const links = rootDoc?.links;
   const resourceUrls = Array.isArray(links)
     ? scanCsapiLinks(links)
