@@ -5,6 +5,18 @@ import CSAPIQueryBuilder from './url_builder.js';
 import { scanCsapiLinks } from './helpers.js';
 
 /**
+ * Validates that a document has the minimum shape of an {@link OgcApiCollectionInfo}.
+ */
+function isCollectionInfo(doc: unknown): doc is OgcApiCollectionInfo {
+  return (
+    typeof doc === 'object' &&
+    doc !== null &&
+    'id' in doc &&
+    typeof (doc as Record<string, unknown>).id === 'string'
+  );
+}
+
+/**
  * Creates a {@link CSAPIQueryBuilder} for constructing Connected Systems
  * query URLs against the given collection.
  *
@@ -47,8 +59,11 @@ export async function createCSAPIBuilder(
     ? scanCsapiLinks(links)
     : new Map<string, string>();
 
-  return new CSAPIQueryBuilder(
-    collectionDoc as unknown as OgcApiCollectionInfo,
-    resourceUrls
-  );
+  if (!isCollectionInfo(collectionDoc)) {
+    throw new EndpointError(
+      `Collection '${collectionId}' document is not a valid OgcApiCollectionInfo`
+    );
+  }
+
+  return new CSAPIQueryBuilder(collectionDoc, resourceUrls);
 }
