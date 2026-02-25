@@ -20,9 +20,9 @@
 
 | Check             | Result                                                                                                                 |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| format:check (C1) | ⚠️ 3 files fail — 1 untracked (`_validate_fixtures.js`), 2 doc files from pre-review commits (see F72)                |
+| format:check (C1) | ⚠️ 2 doc files fail — from pre-review commits (see F72). Scratch file `_validate_fixtures.js` deleted (see F79). |
 | typecheck (C2)    | ✅ Exit 0 — `npx tsc --noEmit` clean                                                                                   |
-| lint (C3)         | ❌ 4 errors — 2 pre-existing in untracked `_validate_fixtures.js` + **2 NEW** unused imports from D-3 (see F71)        |
+| lint (C3)         | ❌ 2 errors — **2 NEW** unused imports from D-3 (see F71). Scratch file `_validate_fixtures.js` deleted (see F79).     |
 | test:browser (C4) | ✅ 57 suites pass, 3 fail + 1 force-exited (pre-existing Windows esbuild timeout — passes on Linux CI). 1651/1726 pass |
 | test:node (C5)    | ✅ 61 suites, 1730 passed, 4 skipped, 0 failures                                                                       |
 
@@ -266,10 +266,10 @@ _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 
 
 This is a strict improvement over Phase 6.3, where V1/V4 showed ⚠️ due to the `@see` tag grep false positive.
 
-### [F79] INFORMATIONAL: `_validate_fixtures.js` remains untracked
+### [F79] GAP: `_validate_fixtures.js` scratch file left in working directory
 
-**Severity:** INFORMATIONAL
-**Detail:** This file continues to cause 2 ESLint errors (`@typescript-eslint/no-require-imports`) and 1 Prettier failure. It is untracked (`??` in `git status`), not part of the repository, and not part of the upstream contribution. It is a local utility file. No action required.
+**Severity:** GAP (process)
+**Detail:** A scratch utility script (`_validate_fixtures.js`) was left in the working directory after being used to validate fixture JSON files during the Issue #132/#133 session. It was never committed to any branch and contained a hardcoded local absolute path. It caused 2 ESLint errors and 1 Prettier failure, polluting C1/C3 gate results. **Deleted** during Phase 6.4 review — working directory is now clean. Prior review descriptions incorrectly characterized this as "pre-existing, not our code" without investigation. It was our throwaway file.
 
 ---
 
@@ -281,9 +281,9 @@ This is a strict improvement over Phase 6.3, where V1/V4 showed ⚠️ due to th
 | V2   | 0        | 0                                                                    | ✅         |
 | V3   | 0        | 0                                                                    | ✅         |
 | V4   | 0        | 0                                                                    | ✅         |
-| C1   | exit 0   | ⚠️ 3 files fail (1 untracked + 2 docs — see F72)                    | ⚠️ Fix Now |
+| C1   | exit 0   | ⚠️ 2 doc files fail (see F72). Scratch file deleted (F79).           | ⚠️ Fix Now |
 | C2   | exit 0   | ✅ exit 0                                                            | ✅         |
-| C3   | exit 0   | ❌ 4 errors (2 untracked + 2 D-3 unused imports — see F71)          | ❌ Fix Now |
+| C3   | exit 0   | ❌ 2 errors (D-3 unused imports — see F71). Scratch file deleted (F79) | ❌ Fix Now |
 | C4   | all pass | ✅ 57/61 pass (4 Windows esbuild timeout — passes on CI)            | ✅         |
 | C5   | all pass | ✅ 61/61 suites, 1730 pass, 4 skip                                  | ✅         |
 
@@ -343,7 +343,7 @@ This is a strict improvement over Phase 6.3, where V1/V4 showed ⚠️ due to th
 | ------------------------- | ----- | ----------------------------------------------------------------------------------- |
 | Files reviewed            | 12    | 10 source/test + 2 docs (via diff)                                                 |
 | Prior findings reaffirmed | 26    | F18, F45, F51–F60, F61–F70 + Phase 6.3 recommendations                              |
-| New findings              | 9     | 2 BUG, 6 POSITIVE, 1 INFORMATIONAL                                                 |
+| New findings              | 9     | 2 BUG, 6 POSITIVE, 1 GAP (process)                                                 |
 | Bugs found                | 2     | F71 (unused import — lint), F72 (2 unfmt docs — Prettier)                           |
 | Breaking changes          | 0     | Zero                                                                                |
 | Acceptance criteria met   | 10/12 | C1 (2 docs) + C3 (unused import) block; A1–A4, C2, C4, C5, B1–B4 all pass          |
