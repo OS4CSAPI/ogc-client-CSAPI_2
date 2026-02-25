@@ -15,7 +15,7 @@ import {
   QUDT_NS,
   UCUM_NS,
   CF_NS,
-  SystemTypeUris,
+  SYSTEM_TYPE_RECOGNITION_VALUES,
   DeploymentTypeUris,
   ProcedureTypeUris,
   SamplingFeatureTypeUris,
@@ -96,14 +96,16 @@ describe('CSAPI_MEDIA_TYPES', () => {
 // ========================================
 
 describe('Resource Type URI Arrays', () => {
-  it('SystemTypeUris contains 10 entries (5 CURIE + 5 full URI)', () => {
-    expect(SystemTypeUris).toHaveLength(10);
-    expect(SystemTypeUris).toContain('sosa:Sensor');
-    expect(SystemTypeUris).toContain('http://www.w3.org/ns/sosa/Sensor');
-    expect(SystemTypeUris).toContain('sosa:Platform');
-    expect(SystemTypeUris).toContain('sosa:Actuator');
-    expect(SystemTypeUris).toContain('sosa:Sampler');
-    expect(SystemTypeUris).toContain('sosa:System');
+  it('SYSTEM_TYPE_RECOGNITION_VALUES contains 10 entries (5 CURIE + 5 full URI)', () => {
+    expect(SYSTEM_TYPE_RECOGNITION_VALUES).toHaveLength(10);
+    expect(SYSTEM_TYPE_RECOGNITION_VALUES).toContain('sosa:Sensor');
+    expect(SYSTEM_TYPE_RECOGNITION_VALUES).toContain(
+      'http://www.w3.org/ns/sosa/Sensor'
+    );
+    expect(SYSTEM_TYPE_RECOGNITION_VALUES).toContain('sosa:Platform');
+    expect(SYSTEM_TYPE_RECOGNITION_VALUES).toContain('sosa:Actuator');
+    expect(SYSTEM_TYPE_RECOGNITION_VALUES).toContain('sosa:Sampler');
+    expect(SYSTEM_TYPE_RECOGNITION_VALUES).toContain('sosa:System');
   });
 
   it('DeploymentTypeUris contains 2 entries', () => {
