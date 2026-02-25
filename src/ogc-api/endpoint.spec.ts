@@ -2858,4 +2858,45 @@ describe('OgcApiEndpoint with CSAPI', () => {
       await expect(endpoint.hasConnectedSystems).resolves.toBe(false);
     });
   });
+
+  describe('getCollectionDocument', () => {
+    beforeEach(() => {
+      endpoint = new OgcApiEndpoint('http://local/csapi/sample-data-hub');
+    });
+
+    it('returns the expected collection document for a CSAPI collection', async () => {
+      const doc = await endpoint.getCollectionDocument('iot-sensors');
+      expect(doc).toBeTruthy();
+      expect(doc.id).toBe('iot-sensors');
+      expect(doc.links).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ rel: 'ogc-cs:systems' }),
+        ])
+      );
+    });
+  });
+
+  describe('CSAPI conformance with no matching collections', () => {
+    beforeEach(() => {
+      endpoint = new OgcApiEndpoint('http://local/csapi/empty-csapi-hub');
+    });
+
+    it('reports Connected Systems support even with no matching collections', async () => {
+      await expect(endpoint.hasConnectedSystems).resolves.toBe(true);
+    });
+
+    it('returns an empty array when no collection has CSAPI link relations', async () => {
+      await expect(endpoint.csapiCollections).resolves.toEqual([]);
+    });
+  });
+
+  describe('Part 1-only conformance', () => {
+    beforeEach(() => {
+      endpoint = new OgcApiEndpoint('http://local/csapi/part1-only-hub');
+    });
+
+    it('detects Connected Systems support with Part 1 Core only', async () => {
+      await expect(endpoint.hasConnectedSystems).resolves.toBe(true);
+    });
+  });
 });
