@@ -349,15 +349,15 @@ _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 
 **File:** `docs/CSAPI-CODE-AUDIT-PHASE-6.md`
 **Detail:** The comprehensive code audit identified 1 BUG (B-1: `as any` in factory.ts — now RESOLVED by Issues #129/#130) and 8 DESIGN findings. All 8 DESIGN findings are pre-existing from Phases 1–5:
 - D-1: `SystemTypeUris` name collision (model.ts vs constants.ts)
-- D-2: Circular import in SensorML (_helpers → parser)
-- D-3: Duplicated `parseComponentList`/`parseConnectionList`
+- D-2: Circular import in SensorML (_helpers → parser) — **intentional** (Issue #88 explicitly introduced this with documented rationale; callback alternative was considered and rejected)
+- D-3: Duplicated `parseComponentList`/`parseConnectionList` — **partially resolved** (Issue #97 already extracted `parseComponentEntry`; 3 of 4 functions remain)
 - D-4: Duplicated `isRecord()` type guard
-- D-5: `SIMPLE_COMPONENT_TYPES` duplicated 3×
-- D-6: `isLinkReference()` duplicated 3×
+- D-5: `SIMPLE_COMPONENT_TYPES` duplicated 3× — **intentional** duplication to avoid circular imports
+- D-6: `isLinkReference()` duplicated 3× — **intentional** duplication to avoid circular imports
 - D-7: Spread-then-delete pattern (by design)
 - D-8: Module-level mutable state in command-routing.ts
 
-**Assessment:** None of these were introduced by Phase 6. They were inherited from Phases 1–5 parser work and are quarantined within the CSAPI module. They represent normal technical debt in a large parser codebase and do not affect boundary isolation, tree-shaking, or upstream acceptance criteria. D-7 and D-8 are intentional design choices with documented trade-offs.
+**Assessment:** None of these were introduced by Phase 6. They were inherited from Phases 1–5 parser work and are quarantined within the CSAPI module. They represent normal technical debt in a large parser codebase and do not affect boundary isolation, tree-shaking, or upstream acceptance criteria. D-2, D-5, D-6, D-7, and D-8 are intentional design choices with documented trade-offs. D-3 is partially resolved by Issue #97. See `f70-design-findings-investigation.md` for the full investigation report.
 
 ---
 
@@ -455,7 +455,7 @@ _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 
 
 1. **F18** — `@see` link precision for `parseCommandStatus` (carried since Phase 5.2)
 2. **F45** — `getCommandStatus` string concatenation deviation (carried since Phase 5.5)
-3. **D-1 through D-8** — Code audit DESIGN findings. All pre-existing from Phases 1–5. None affect boundary isolation or upstream acceptance. Address if/when revisiting parser internals post-merge.
+3. **D-1 through D-8** — Code audit DESIGN findings. All pre-existing from Phases 1–5. D-2, D-5, D-6, D-7, and D-8 are intentional design choices; D-3 is partially resolved (Issue #97). None affect boundary isolation or upstream acceptance. Address remaining items if/when revisiting parser internals post-merge.
 
 ---
 
