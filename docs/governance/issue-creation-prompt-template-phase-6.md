@@ -96,6 +96,7 @@ Use this template when the issue maps to a planned P6 ROADMAP task.
 - [ ] {{Test verification — e.g., "`npx tsc --noEmit` passes" or "Both factory tests pass"}}
 - [ ] Existing tests still pass (`npm run test:browser`)
 - [ ] No lint errors (`npm run lint`)
+- [ ] All created or modified files pass `npx prettier --check`
 - [ ] {{Any task-specific criteria — e.g., "`git grep 'csapi' src/index.ts` returns 0 matches"}}
 
 ## Dependencies
@@ -258,6 +259,7 @@ Use this template when the issue is triggered by a verification failure, code re
 - [ ] {{Verification gate that previously failed now passes}}
 - [ ] Existing tests still pass (`npm run test:browser`)
 - [ ] No lint errors (`npm run lint`)
+- [ ] All created or modified files pass `npx prettier --check`
 
 ## Dependencies
 
