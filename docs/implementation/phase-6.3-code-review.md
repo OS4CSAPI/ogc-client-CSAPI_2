@@ -35,27 +35,29 @@
 
 ### CI Gates
 
-| Check             | Result                                                                                                                |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------- |
-| format:check (C1) | ❌ 14 files fail — all newly created fixtures + 1 doc file not run through Prettier after creation (see F61)          |
-| typecheck (C2)    | ✅ Exit 0 — `npx tsc --noEmit` clean                                                                                 |
-| lint (C3)         | ✅ Exit 0 — `npx eslint src/` clean                                                                                  |
-| test:browser (C4) | ✅ 57 suites pass, 4 fail (pre-existing Windows esbuild path bug — passes on Linux CI)                               |
-| test:node (C5)    | ✅ 61 suites, 1730 passed, 4 skipped, 0 failures                                                                     |
+| Check             | Result                                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------------------------ |
+| format:check (C1) | ❌ 14 files fail — all newly created fixtures + 1 doc file not run through Prettier after creation (see F61) |
+| typecheck (C2)    | ✅ Exit 0 — `npx tsc --noEmit` clean                                                                         |
+| lint (C3)         | ✅ Exit 0 — `npx eslint src/` clean                                                                          |
+| test:browser (C4) | ✅ 57 suites pass, 4 fail (pre-existing Windows esbuild path bug — passes on Linux CI)                       |
+| test:node (C5)    | ✅ 61 suites, 1730 passed, 4 skipped, 0 failures                                                             |
 
 ### Boundary Gates
 
-| Gate | Command                                                                      | Expected | Actual | Status |
-| ---- | ---------------------------------------------------------------------------- | -------- | ------ | ------ |
-| V1   | `git grep "from.*csapi" src/ogc-api/endpoint.ts`                             | 0        | 1*     | ⚠️     |
-| V2   | `git grep "csapi\|CSAPI" src/index.ts`                                       | 0        | 0      | ✅     |
-| V3   | `git grep "import.*from.*csapi" -- "src/" ":!src/ogc-api/csapi/"`            | 0        | 0      | ✅     |
-| V4   | `git grep "from.*csapi" -- "src/" ":!src/ogc-api/csapi/" ":!src/index.ts"`   | 0        | 1*     | ⚠️     |
+| Gate | Command                                                                    | Expected | Actual | Status |
+| ---- | -------------------------------------------------------------------------- | -------- | ------ | ------ |
+| V1   | `git grep "from.*csapi" src/ogc-api/endpoint.ts`                           | 0        | 1\*    | ⚠️     |
+| V2   | `git grep "csapi\|CSAPI" src/index.ts`                                     | 0        | 0      | ✅     |
+| V3   | `git grep "import.*from.*csapi" -- "src/" ":!src/ogc-api/csapi/"`          | 0        | 0      | ✅     |
+| V4   | `git grep "from.*csapi" -- "src/" ":!src/ogc-api/csapi/" ":!src/index.ts"` | 0        | 1\*    | ⚠️     |
 
 **\*V1/V4 Note:** The single match is a JSDoc `@see` comment (not an import) at `endpoint.ts` line 323:
+
 ```
 @see Import createCSAPIBuilder from '@camptocamp/ogc-client/csapi'
 ```
+
 This is consumer guidance documentation, not a runtime or compile-time dependency. Zero `import` statements reference CSAPI from endpoint.ts. The boundary isolation requirement — "nothing outside `src/ogc-api/csapi/` should import from the CSAPI code" — is satisfied. The `@see` tag creates zero coupling at build or runtime. This is a **grep false positive**, not a boundary violation.
 
 ---
@@ -64,11 +66,12 @@ This is consumer guidance documentation, not a runtime or compile-time dependenc
 
 ### Phase B Architecture — Task 4b: Barrel File (`5228d4a`)
 
-| File                          | Lines Changed | Scope                                         |
-| ----------------------------- | ------------- | --------------------------------------------- |
-| `src/ogc-api/csapi/index.ts`  | +220 (new)    | Barrel re-exporting 171 CSAPI symbols         |
+| File                         | Lines Changed | Scope                                 |
+| ---------------------------- | ------------- | ------------------------------------- |
+| `src/ogc-api/csapi/index.ts` | +220 (new)    | Barrel re-exporting 171 CSAPI symbols |
 
 **Category A checklist:**
+
 - [x] Every CSAPI symbol previously in `src/index.ts` lines 45–227 is re-exported
 - [x] Value exports use `export { ... }` — type exports use `export type { ... }`
 - [x] All import paths use `.js` extensions
@@ -80,12 +83,13 @@ This is consumer guidance documentation, not a runtime or compile-time dependenc
 
 ### Phase B Architecture — Task 5: Factory Function (`4081668`)
 
-| File                                   | Lines Changed | Scope                                               |
-| -------------------------------------- | ------------- | --------------------------------------------------- |
-| `src/ogc-api/csapi/factory.ts`         | +70 (new)     | `createCSAPIBuilder()` async factory function        |
-| `src/ogc-api/csapi/factory.spec.ts`    | +90 (new)     | 2 migrated tests from endpoint.spec.ts               |
+| File                                | Lines Changed | Scope                                         |
+| ----------------------------------- | ------------- | --------------------------------------------- |
+| `src/ogc-api/csapi/factory.ts`      | +70 (new)     | `createCSAPIBuilder()` async factory function |
+| `src/ogc-api/csapi/factory.spec.ts` | +90 (new)     | 2 migrated tests from endpoint.spec.ts        |
 
 **Category B checklist:**
+
 - [x] 4-step logic preserved: guard (`hasConnectedSystems`) → fetch collection → scan root links → construct builder
 - [x] `import type OgcApiEndpoint` — type-only import, erased at compile
 - [x] `import { EndpointError }` from `../../shared/errors.js` — runtime import for error throwing
@@ -94,16 +98,18 @@ This is consumer guidance documentation, not a runtime or compile-time dependenc
 - [x] Tests cover: successful builder creation + error on non-CSAPI endpoint
 
 **Additional checks:**
+
 - [x] `isCollectionInfo()` type guard validates document shape (Issue #130 fix) — guards against edge-case null/undefined documents
 - [x] Factory import path from barrel: `export { createCSAPIBuilder } from './factory.js'` in `index.ts`
 
 ### Phase B Architecture — Task 6: Endpoint Decoupling (`20a35d2`)
 
-| File                          | Lines Changed | Scope                                                       |
-| ----------------------------- | ------------- | ----------------------------------------------------------- |
-| `src/ogc-api/endpoint.ts`     | −119          | Remove CSAPI imports, `csapi()` method, cache, helper       |
+| File                      | Lines Changed | Scope                                                 |
+| ------------------------- | ------------- | ----------------------------------------------------- |
+| `src/ogc-api/endpoint.ts` | −119          | Remove CSAPI imports, `csapi()` method, cache, helper |
 
 **Category C checklist:**
+
 - [x] All CSAPI imports removed (2 import statements: `CSAPIQueryBuilder`, `scanCsapiLinks`)
 - [x] `csapi()` method removed (~49 lines)
 - [x] `extractRootResourceUrls()` removed (~14 lines)
@@ -116,17 +122,19 @@ This is consumer guidance documentation, not a runtime or compile-time dependenc
 
 ### Phase B Architecture — Task 7: Root Export Removal (`ed27108`)
 
-| File                                   | Lines Changed | Scope                                             |
-| -------------------------------------- | ------------- | ------------------------------------------------- |
-| `src/index.ts`                         | −186          | Remove all CSAPI export lines (252 → 66 lines)    |
-| `src/ogc-api/endpoint.spec.ts`         | −81           | Remove 3 CSAPI method tests                       |
+| File                           | Lines Changed | Scope                                          |
+| ------------------------------ | ------------- | ---------------------------------------------- |
+| `src/index.ts`                 | −186          | Remove all CSAPI export lines (252 → 66 lines) |
+| `src/ogc-api/endpoint.spec.ts` | −81           | Remove 3 CSAPI method tests                    |
 
 **Category D checklist:**
+
 - [x] All CSAPI export lines removed (lines 45–227, ~186 lines)
 - [x] Core exports (WFS, WMS, WMTS, TMS, STAC, etc.) completely intact
 - [x] `git grep "csapi\|CSAPI" src/index.ts` → 0 matches
 
 **Category G checklist:**
+
 - [x] 3 CSAPI tests removed from `endpoint.spec.ts` (`csapi()` method, caching, error)
 - [x] 2 tests migrated to `factory.spec.ts` (builder creation + error case)
 - [x] 1 test removed (caching — no longer applicable since factory has no cache)
@@ -134,11 +142,12 @@ This is consumer guidance documentation, not a runtime or compile-time dependenc
 
 ### Phase B Architecture — Task 8: Package Configuration (`a7a9b2a`)
 
-| File           | Lines Changed | Scope                                                       |
-| -------------- | ------------- | ----------------------------------------------------------- |
-| `package.json` | +8            | Add `./csapi` sub-path export + `sideEffects: false`        |
+| File           | Lines Changed | Scope                                                |
+| -------------- | ------------- | ---------------------------------------------------- |
+| `package.json` | +8            | Add `./csapi` sub-path export + `sideEffects: false` |
 
 **Category E checklist:**
+
 - [x] `"./csapi"` sub-path added with `types`, `import`, `browser`, `default` conditions
 - [x] `"types"` condition listed first (TypeScript ecosystem convention)
 - [x] Paths point to `dist/ogc-api/csapi/index.js` (correct compiled output path — matches barrel file location)
@@ -148,38 +157,43 @@ This is consumer guidance documentation, not a runtime or compile-time dependenc
 
 ### Issues #129–#133 — Post-Architecture QA Hardening
 
-| Issue | Commit    | File(s) Changed                      | Change Description                                   |
-| ----- | --------- | ------------------------------------ | ---------------------------------------------------- |
-| #129  | `56e0e44` | `factory.ts`                         | Removed stale `as any` cast + 3-line outdated comment |
-| #130  | `4172490` | `factory.ts`                         | Replaced double cast with `isCollectionInfo()` guard  |
-| #131  | `efbff10` | `property.spec.ts`, `osh-properties.json` | Added 2 live-data tests + OSH fixture JSON       |
-| #132  | `6853143` | `factory.spec.ts` + 10 fixture files  | Expanded 2→6 tests + 3 hub fixtures                  |
-| #133  | `56f9ddc` | `endpoint.spec.ts` + 4 fixture files  | Expanded 3→7 CSAPI tests + 2 hub fixtures            |
+| Issue | Commit    | File(s) Changed                           | Change Description                                    |
+| ----- | --------- | ----------------------------------------- | ----------------------------------------------------- |
+| #129  | `56e0e44` | `factory.ts`                              | Removed stale `as any` cast + 3-line outdated comment |
+| #130  | `4172490` | `factory.ts`                              | Replaced double cast with `isCollectionInfo()` guard  |
+| #131  | `efbff10` | `property.spec.ts`, `osh-properties.json` | Added 2 live-data tests + OSH fixture JSON            |
+| #132  | `6853143` | `factory.spec.ts` + 10 fixture files      | Expanded 2→6 tests + 3 hub fixtures                   |
+| #133  | `56f9ddc` | `endpoint.spec.ts` + 4 fixture files      | Expanded 3→7 CSAPI tests + 2 hub fixtures             |
 
 **Issue #129 — Remove stale `as any` cast:**
+
 - Removed `(endpoint as any).root` cast — `root` is now public (Task 6)
 - Removed `(endpoint as any).getCollectionDocument()` cast — now public (Task 6)
 - Removed 3-line comment explaining the private access workaround
 - ✅ No `as any` remains anywhere in `factory.ts`
 
 **Issue #130 — Replace double cast with runtime type guard:**
+
 - Removed `collectionDoc as unknown as OgcApiCollectionInfo` double cast
 - Added `isCollectionInfo()` function that validates `typeof doc === 'object' && doc !== null && 'id' in doc && typeof doc.id === 'string'`
 - Throws `EndpointError` with descriptive message if shape doesn't match
 - ✅ Zero `as unknown as` or `as any` in `factory.ts`
 
 **Issue #131 — Validate parseProperty against live OSH data:**
+
 - Fetched all 7 Property resources from OpenSensorHub at `http://45.55.99.236:8080/sensorhub/api/properties`
 - Created `fixtures/ogc-api/csapi/osh-properties.json` with captured response
 - Added 2 new test cases: one verifying full parse, one checking optional field absence
 - ✅ All 8 property.spec.ts tests pass
 
 **Issue #132 — Expand factory.spec.ts from 2→6 tests:**
+
 - Added 4 new test scenarios: multi-collection hub, non-conforming document (mocked getCollectionDocument), network error propagation, collection without CSAPI links
 - Created 3 new fixture hubs: `empty-csapi-hub`, `multi-hub` (with `alpha-sensors` + `beta-network` collections), `part1-only-hub`
 - ✅ All 6 factory.spec.ts tests pass
 
 **Issue #133 — Expand endpoint.spec.ts CSAPI section from 3→7 tests:**
+
 - Added 4 new test scenarios: getCollectionDocument verification, empty CSAPI hub (conformance but no matching collections), empty csapiCollections array, Part 1-only conformance detection
 - Reuses fixtures from Issue #132 (empty-csapi-hub, part1-only-hub)
 - Added `weather-stations.json` collection fixture (plain collection, no CSAPI links)
@@ -189,12 +203,12 @@ This is consumer guidance documentation, not a runtime or compile-time dependenc
 
 ## Overall Codebase Metrics (Cumulative)
 
-| Category                               | Files | Lines (approx.) | Tests |
-| -------------------------------------- | ----- | --------------- | ----- |
-| Phase 1–4 (URL Builder, Integration)   | ~15   | ~10,200         | ~643  |
-| Phase 5 (Parsers)                      | ~41   | ~15,800         | ~642  |
-| Phase 6 (Barrel + Factory + Decoupling) | 3 new | +290 new code   | +13   |
-| **Total CSAPI**                        | **59** (29 source + 30 test) | **~28,220** | **~1,298** |
+| Category                                | Files                        | Lines (approx.) | Tests      |
+| --------------------------------------- | ---------------------------- | --------------- | ---------- |
+| Phase 1–4 (URL Builder, Integration)    | ~15                          | ~10,200         | ~643       |
+| Phase 5 (Parsers)                       | ~41                          | ~15,800         | ~642       |
+| Phase 6 (Barrel + Factory + Decoupling) | 3 new                        | +290 new code   | +13        |
+| **Total CSAPI**                         | **59** (29 source + 30 test) | **~28,220**     | **~1,298** |
 
 _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 suites._
 
@@ -204,40 +218,40 @@ _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 
 
 ### Still Open (2 — both minor, knowingly deferred since Phase 5)
 
-| ID      | Severity       | Status         | Detail                                                                                |
-| ------- | -------------- | -------------- | ------------------------------------------------------------------------------------- |
-| **F18** | GAP (minor)    | **STILL OPEN** | `@see` link precision for `parseCommandStatus` JSDoc. Deferred since Phase 5.2.       |
-| **F45** | DESIGN (minor) | **STILL OPEN** | `getCommandStatus` string concatenation pattern deviation. Deferred since Phase 5.5.  |
+| ID      | Severity       | Status         | Detail                                                                               |
+| ------- | -------------- | -------------- | ------------------------------------------------------------------------------------ |
+| **F18** | GAP (minor)    | **STILL OPEN** | `@see` link precision for `parseCommandStatus` JSDoc. Deferred since Phase 5.2.      |
+| **F45** | DESIGN (minor) | **STILL OPEN** | `getCommandStatus` string concatenation pattern deviation. Deferred since Phase 5.5. |
 
 ### Phase 6.1 Findings
 
-| ID      | Status                                     |
-| ------- | ------------------------------------------ |
-| **F51** | ✅ Unchanged — zero-logic formatting holds  |
-| **F52** | ✅ Unchanged — ESLint audit methodology     |
+| ID      | Status                                              |
+| ------- | --------------------------------------------------- |
+| **F51** | ✅ Unchanged — zero-logic formatting holds          |
+| **F52** | ✅ Unchanged — ESLint audit methodology             |
 | **F53** | ℹ️ Unchanged — commit message inaccuracy (deferred) |
-| **F54** | ✅ RESOLVED — no recurrence                 |
+| **F54** | ✅ RESOLVED — no recurrence                         |
 
 ### Phase 6.2 Findings
 
-| ID      | Status                                                              |
-| ------- | ------------------------------------------------------------------- |
-| **F55** | ✅ STILL TRUE — QA workflow verified green on CI                     |
-| **F56** | ✅ STILL TRUE — CRLF fix holding, `core.autocrlf = input`           |
-| **F57** | ℹ️ Unchanged — no `.gitattributes` (follows upstream convention)    |
-| **F58** | ✅ Unchanged — `.prettierignore` YAML entry correct                 |
-| **F59** | ✅ RELEVANT — see F61 (same root cause pattern reoccurred)          |
-| **F60** | ✅ Unchanged — thorough investigation documentation                 |
+| ID      | Status                                                           |
+| ------- | ---------------------------------------------------------------- |
+| **F55** | ✅ STILL TRUE — QA workflow verified green on CI                 |
+| **F56** | ✅ STILL TRUE — CRLF fix holding, `core.autocrlf = input`        |
+| **F57** | ℹ️ Unchanged — no `.gitattributes` (follows upstream convention) |
+| **F58** | ✅ Unchanged — `.prettierignore` YAML entry correct              |
+| **F59** | ✅ RELEVANT — see F61 (same root cause pattern reoccurred)       |
+| **F60** | ✅ Unchanged — thorough investigation documentation              |
 
 ### Phase 6.2 Recommendations Status
 
-| Recommendation                               | Priority        | Status                           |
-| -------------------------------------------- | --------------- | -------------------------------- |
+| Recommendation                               | Priority        | Status                                        |
+| -------------------------------------------- | --------------- | --------------------------------------------- |
 | Investigate C1 (`format:check`)              | Fix Before Push | ✅ Was RESOLVED in 6.2, but see new F61 below |
-| Investigate C4/C5 pre-existing test failures | Fix Before Push | ✅ RESOLVED — confirmed Windows-only         |
-| F53 commit message inaccuracy                | Defer           | ℹ️ Unchanged                    |
-| F18 `@see` link precision                    | Defer           | ⚠️ Still open                   |
-| F45 string concatenation pattern             | Defer           | ⚠️ Still open                   |
+| Investigate C4/C5 pre-existing test failures | Fix Before Push | ✅ RESOLVED — confirmed Windows-only          |
+| F53 commit message inaccuracy                | Defer           | ℹ️ Unchanged                                  |
+| F18 `@see` link precision                    | Defer           | ⚠️ Still open                                 |
+| F45 string concatenation pattern             | Defer           | ⚠️ Still open                                 |
 
 ---
 
@@ -247,6 +261,7 @@ _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 
 
 **Severity:** BUG
 **Files:**
+
 1. `docs/CSAPI-CODE-AUDIT-PHASE-6.md`
 2. `fixtures/ogc-api/csapi/empty-csapi-hub.json`
 3. `fixtures/ogc-api/csapi/empty-csapi-hub/collections.json`
@@ -273,6 +288,7 @@ _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 
 **Severity:** POSITIVE
 **File:** `src/ogc-api/csapi/factory.ts`
 **Detail:** The `createCSAPIBuilder()` function is clean, well-documented, and correctly structured:
+
 - `import type OgcApiEndpoint` — type-only, erased at compile time (zero runtime coupling to core)
 - `import { EndpointError }` from `../../shared/errors.js` — legitimate shared dependency
 - `import CSAPIQueryBuilder` + `import { scanCsapiLinks }` — internal CSAPI imports only
@@ -285,6 +301,7 @@ _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 
 **Severity:** POSITIVE
 **File:** `src/ogc-api/csapi/index.ts`
 **Detail:** The barrel file:
+
 - Uses JSDoc section dividers matching `formats/index.ts` pattern
 - Value exports use `export { ... }` syntax; type exports use `export type { ... }` syntax
 - All paths use `.js` extensions (ESM convention)
@@ -296,6 +313,7 @@ _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 
 **Severity:** POSITIVE
 **File:** `src/ogc-api/endpoint.ts`
 **Detail:** The decoupling was executed with minimal diff:
+
 - Only 2 visibility changes (`root`, `getCollectionDocument`): 1-word change each, zero logic change
 - `hasConnectedSystems` and `csapiCollections` remain on endpoint with zero CSAPI imports — they use `info.ts` functions that check conformance URIs only, identical to the EDR pattern (`hasEnvironmentalDataRetrieval`, `edrCollections`)
 - The `@see` JSDoc on `hasConnectedSystems` was updated to reference the new `@camptocamp/ogc-client/csapi` import path
@@ -312,6 +330,7 @@ _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 
 **Severity:** POSITIVE
 **File:** `package.json`
 **Detail:** The `"./csapi"` export block matches the ecosystem convention observed across 6 surveyed libraries:
+
 - `"types"` listed first (TypeScript resolution order)
 - `"import"`, `"browser"`, `"default"` all resolve to `./dist/ogc-api/csapi/index.js`
 - `"sideEffects": false` enables tree-shaking through the barrel
@@ -322,6 +341,7 @@ _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 
 **Severity:** POSITIVE
 **Files:** `factory.spec.ts` (6 tests), `endpoint.spec.ts` CSAPI section (7 tests), `property.spec.ts` (8 tests)
 **Detail:** The test expansion from Issues #131–#133 was well-targeted:
+
 - Factory tests cover: happy path, error path, multi-collection, non-conforming document (mock), network error propagation, empty resources
 - Endpoint CSAPI tests cover: detection, collection listing, getCollectionDocument, non-CSAPI endpoint, empty conformance hub, empty csapiCollections, Part 1-only
 - Property tests include 2 live-data validated tests against real OSH server responses
@@ -348,8 +368,9 @@ _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 
 **Severity:** INFORMATIONAL
 **File:** `docs/CSAPI-CODE-AUDIT-PHASE-6.md`
 **Detail:** The comprehensive code audit identified 1 BUG (B-1: `as any` in factory.ts — now RESOLVED by Issues #129/#130) and 8 DESIGN findings. All 8 DESIGN findings are pre-existing from Phases 1–5:
+
 - D-1: `SystemTypeUris` name collision (model.ts vs constants.ts)
-- D-2: Circular import in SensorML (_helpers → parser) — **intentional** (Issue #88 explicitly introduced this with documented rationale; callback alternative was considered and rejected)
+- D-2: Circular import in SensorML (\_helpers → parser) — **intentional** (Issue #88 explicitly introduced this with documented rationale; callback alternative was considered and rejected)
 - D-3: Duplicated `parseComponentList`/`parseConnectionList` — **partially resolved** (Issue #97 already extracted `parseComponentEntry`; 3 of 4 functions remain)
 - D-4: Duplicated `isRecord()` type guard
 - D-5: `SIMPLE_COMPONENT_TYPES` duplicated 3× — **intentional** duplication to avoid circular imports
@@ -363,17 +384,17 @@ _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 
 
 ## Architecture Verification Matrix
 
-| Gate | Expected | Actual | Status |
-| ---- | -------- | ------ | ------ |
-| V1   | 0        | 1 (JSDoc comment) | ⚠️ False positive — no import |
-| V2   | 0        | 0      | ✅     |
-| V3   | 0        | 0      | ✅     |
-| V4   | 0        | 1 (JSDoc comment) | ⚠️ False positive — no import |
-| C1   | exit 0   | ❌ 14 files fail Prettier | ❌ Fix Now |
-| C2   | exit 0   | ✅ exit 0   | ✅     |
-| C3   | exit 0   | ✅ exit 0   | ✅     |
-| C4   | all pass | ✅ 57/61 pass (4 Windows esbuild — passes on CI) | ✅ |
-| C5   | all pass | ✅ 61/61 suites, 1730 pass, 4 skip | ✅ |
+| Gate | Expected | Actual                                           | Status     |
+| ---- | -------- | ------------------------------------------------ | ---------- |
+| V1   | 0        | 0                                                | ✅         |
+| V2   | 0        | 0                                                | ✅         |
+| V3   | 0        | 0                                                | ✅         |
+| V4   | 0        | 0                                                | ✅         |
+| C1   | exit 0   | ❌ 14 files fail Prettier                        | ❌ Fix Now |
+| C2   | exit 0   | ✅ exit 0                                        | ✅         |
+| C3   | exit 0   | ✅ exit 0                                        | ✅         |
+| C4   | all pass | ✅ 57/61 pass (4 Windows esbuild — passes on CI) | ✅         |
+| C5   | all pass | ✅ 61/61 suites, 1730 pass, 4 skip               | ✅         |
 
 ---
 
@@ -393,15 +414,15 @@ _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 
 
 ## Export Completeness Audit
 
-| Section              | Symbols Expected | Symbols Found | Match? |
-| -------------------- | ---------------- | ------------- | ------ |
-| Factory Function     | 1                | 1             | ✅     |
-| Query Builder        | 1                | 1             | ✅     |
-| Model Values         | 3                | 3             | ✅     |
-| Model Types          | 42               | 42            | ✅     |
-| Format Handler Values| 27               | 27            | ✅     |
-| Format Handler Types | 97               | 97            | ✅     |
-| **Total**            | **171**          | **171**       | ✅     |
+| Section               | Symbols Expected | Symbols Found | Match? |
+| --------------------- | ---------------- | ------------- | ------ |
+| Factory Function      | 1                | 1             | ✅     |
+| Query Builder         | 1                | 1             | ✅     |
+| Model Values          | 3                | 3             | ✅     |
+| Model Types           | 42               | 42            | ✅     |
+| Format Handler Values | 27               | 27            | ✅     |
+| Format Handler Types  | 97               | 97            | ✅     |
+| **Total**             | **171**          | **171**       | ✅     |
 
 ---
 
@@ -409,34 +430,34 @@ _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 
 
 ### Phase 3 Lessons (Still Active)
 
-| Lesson | Check | Status |
-| ------ | ----- | ------ |
-| L1: Audit upstream before building | Factory function follows EDR `endpoint.edr()` pattern exactly | ✅ |
-| L4: No parallel systems | `endpoint.csapi()` removed, replaced by `createCSAPIBuilder()` in factory module — no parallel API surface | ✅ |
-| L10: Type naming avoids built-in collisions | `QueryOptions → CSAPIQueryOptions`, `Link → SensorMLLink`, `Document → SensorMLDocument` | ✅ |
+| Lesson                                      | Check                                                                                                      | Status |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------ |
+| L1: Audit upstream before building          | Factory function follows EDR `endpoint.edr()` pattern exactly                                              | ✅     |
+| L4: No parallel systems                     | `endpoint.csapi()` removed, replaced by `createCSAPIBuilder()` in factory module — no parallel API surface | ✅     |
+| L10: Type naming avoids built-in collisions | `QueryOptions → CSAPIQueryOptions`, `Link → SensorMLLink`, `Document → SensorMLDocument`                   | ✅     |
 
 ### Phase 2 Lessons (Still Active)
 
-| Lesson | Check | Status |
-| ------ | ----- | ------ |
-| L6: Review findings become work items | Code audit findings tracked; B-1 → Issues #129/#130 | ✅ |
-| L7: DRY violations compound | No new duplication introduced in Phase 6 code | ✅ |
-| L8: Single-server testing creates false confidence | Issue #131 tested against OSH live data; ST#24 tested both OSH + 52North | ✅ |
-| L9: "Works by luck" is a bug | `isCollectionInfo()` guard explicitly validates document shape | ✅ |
-| L10: Smoke tests are read-only | ST#24 was observation-only, no code modifications | ✅ |
+| Lesson                                             | Check                                                                    | Status |
+| -------------------------------------------------- | ------------------------------------------------------------------------ | ------ |
+| L6: Review findings become work items              | Code audit findings tracked; B-1 → Issues #129/#130                      | ✅     |
+| L7: DRY violations compound                        | No new duplication introduced in Phase 6 code                            | ✅     |
+| L8: Single-server testing creates false confidence | Issue #131 tested against OSH live data; ST#24 tested both OSH + 52North | ✅     |
+| L9: "Works by luck" is a bug                       | `isCollectionInfo()` guard explicitly validates document shape           | ✅     |
+| L10: Smoke tests are read-only                     | ST#24 was observation-only, no code modifications                        | ✅     |
 
 ---
 
 ## Summary
 
-| Category                  | Count | Details                                                           |
-| ------------------------- | ----- | ----------------------------------------------------------------- |
-| Files reviewed            | 18+   | 7 modified source/test + 15 new fixtures + package.json + index.ts |
-| Prior findings reaffirmed | 16    | F18, F45, F51–F60 + Phase 6.2 recommendations                    |
+| Category                  | Count | Details                                                                                  |
+| ------------------------- | ----- | ---------------------------------------------------------------------------------------- |
+| Files reviewed            | 18+   | 7 modified source/test + 15 new fixtures + package.json + index.ts                       |
+| Prior findings reaffirmed | 16    | F18, F45, F51–F60 + Phase 6.2 recommendations                                            |
 | New findings              | 10    | 1 BUG, 5 POSITIVE, 2 INFORMATIONAL, 1 POSITIVE (type guard), 1 POSITIVE (test expansion) |
-| Bugs found                | 1     | F61: 14 files fail format:check                                  |
-| Breaking changes          | 0     | Zero                                                             |
-| Acceptance criteria met   | 11/12 | C1 blocks; A1–A4, C2–C5, B1–B4 all pass                         |
+| Bugs found                | 1     | F61: 14 files fail format:check                                                          |
+| Breaking changes          | 0     | Zero                                                                                     |
+| Acceptance criteria met   | 11/12 | C1 blocks; A1–A4, C2–C5, B1–B4 all pass                                                  |
 
 ---
 
@@ -448,7 +469,7 @@ _Non-CSAPI totals: 1734 total tests in full suite (1730 passed + 4 skipped). 61 
 
 ### Fix Before Push (before upstream)
 
-1. **F68 (optional)** — Consider rewording the `@see` tag on `hasConnectedSystems` line 323 in `endpoint.ts` to avoid the grep false positive. Not required — the boundary is clean — but it would make V1/V4 explicitly zero.
+1. ~~**F68 (optional)** — Consider rewording the `@see` tag on `hasConnectedSystems` line 323 in `endpoint.ts` to avoid the grep false positive.~~ **RESOLVED** — Issue #138.
 2. **Verify C1 passes on CI** — After the F61 fix, temporarily enable the QA workflow on `phase-6` to confirm all 5 gates are green on Linux CI (same approach as Issue #128 verification).
 
 ### Defer (Low Priority)
