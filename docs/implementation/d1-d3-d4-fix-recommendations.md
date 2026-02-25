@@ -32,9 +32,9 @@ This is an **API-surface defect**, not just internal debt. A consumer who writes
 
 The barrel (`csapi/index.ts`) only re-exports `model.ts`'s 5-entry version. The `constants.ts` 10-entry version (with CURIEs) is **never exposed to consumers** — it's only used internally by format handlers. So this is not actually a consumer-facing API collision today — it's a **maintainer-facing naming confusion** where two different files define `SystemTypeUris` with different values for different purposes:
 
-| File         | Entries      | Purpose                                                  |
-| ------------ | ------------ | -------------------------------------------------------- |
-| `model.ts`   | 5 full URIs  | Public type system — canonical system type values        |
+| File           | Entries                     | Purpose                                                         |
+| -------------- | --------------------------- | --------------------------------------------------------------- |
+| `model.ts`     | 5 full URIs                 | Public type system — canonical system type values               |
 | `constants.ts` | 10 (5 CURIEs + 5 full URIs) | Internal recognition vocabulary — match both forms when parsing |
 
 ### Recommended Fix: Rename the Internal One
@@ -82,6 +82,7 @@ Concrete steps:
 
 1. **Move to `_helpers.ts`:** Cut `parseComponentList`, `parseConnection`, and `parseConnectionList` from `physical-system.ts`. Add them to `_helpers.ts` right after `parseComponentEntry`. `parseConnection` becomes exported at the `_helpers.ts` level (acceptable since `_helpers.ts` is internal).
 2. **Re-export from both consumers:**
+
    ```typescript
    // physical-system.ts
    export { parseComponentList, parseConnectionList } from './_helpers.js';
@@ -89,7 +90,9 @@ Concrete steps:
    // aggregate-process.ts
    export { parseComponentList, parseConnectionList } from './_helpers.js';
    ```
+
    This keeps the existing test import paths working without modification.
+
 3. **Remove the duplicate definitions** from `aggregate-process.ts`.
 4. **Run existing tests** — no test changes needed because:
    - `physical-system.spec.ts` imports `parseComponentList` from `./physical-system.js` → still works via re-export
@@ -165,11 +168,11 @@ Concrete steps:
 
 ## Relative Prioritization
 
-| Finding | Fix Effort                                   | Value                                              | Who Benefits    | Audit Priority |
-| ------- | -------------------------------------------- | -------------------------------------------------- | --------------- | -------------- |
-| D-3     | Very low (template exists via Issue #97)     | Medium (eliminates ~105 lines of duplication)      | Maintainers     | Priority 2, #2 |
-| D-1     | Low (rename or consolidate)                  | Medium-High (fixes API-surface ambiguity)          | **Consumers**   | Priority 2, #4 |
-| D-4     | Trivial code, non-trivial architecture decision | Low (3-line function)                           | Maintainers     | Priority 3, #6 |
+| Finding | Fix Effort                                      | Value                                         | Who Benefits  | Audit Priority |
+| ------- | ----------------------------------------------- | --------------------------------------------- | ------------- | -------------- |
+| D-3     | Very low (template exists via Issue #97)        | Medium (eliminates ~105 lines of duplication) | Maintainers   | Priority 2, #2 |
+| D-1     | Low (rename or consolidate)                     | Medium-High (fixes API-surface ambiguity)     | **Consumers** | Priority 2, #4 |
+| D-4     | Trivial code, non-trivial architecture decision | Low (3-line function)                         | Maintainers   | Priority 3, #6 |
 
 ### Recommended Sequencing
 

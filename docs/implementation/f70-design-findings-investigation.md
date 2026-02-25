@@ -79,11 +79,11 @@
 
 ### Three Precision Improvements
 
-| Finding | Current Characterization                    | Improved Characterization                                                                          |
-| ------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| D-2     | Inherited technical debt                    | **Intentional design choice** — Issue #88 explicitly introduced it with documented rationale       |
-| D-3     | Fully outstanding duplication               | **Partially resolved** — Issue #97 extracted `parseComponentEntry`; 3 of 4 functions remain        |
-| D-5/D-6 | Inherited technical debt                    | **Intentional duplication** to avoid circular imports, consistent with the module isolation strategy |
+| Finding | Current Characterization      | Improved Characterization                                                                            |
+| ------- | ----------------------------- | ---------------------------------------------------------------------------------------------------- |
+| D-2     | Inherited technical debt      | **Intentional design choice** — Issue #88 explicitly introduced it with documented rationale         |
+| D-3     | Fully outstanding duplication | **Partially resolved** — Issue #97 extracted `parseComponentEntry`; 3 of 4 functions remain          |
+| D-5/D-6 | Inherited technical debt      | **Intentional duplication** to avoid circular imports, consistent with the module isolation strategy |
 
 ### No Missing Decisions Found
 

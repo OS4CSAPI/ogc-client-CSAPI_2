@@ -41,7 +41,6 @@ import {
   optionalString,
   parseLink,
   parseProcessMethod,
-  parseComponentEntry,
   parseIOList,
   parseSettings,
   parseFeatureList,

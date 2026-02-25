@@ -33,7 +33,6 @@ import {
   isRecord,
   optionalString,
   parseLink,
-  parseComponentEntry,
   parseIOList,
   parseSettings,
   parseFeatureList,
