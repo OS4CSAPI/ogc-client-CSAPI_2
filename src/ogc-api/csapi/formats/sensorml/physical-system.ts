@@ -28,9 +28,6 @@ import type {
   InputList,
   OutputList,
   ParameterList,
-  ComponentList,
-  ConnectionList,
-  Connection,
   SpatialFrame,
   TemporalFrame,
   FrameAxis,
@@ -49,92 +46,17 @@ import {
   parseSettings,
   parseFeatureList,
   parseModes,
+  parseComponentList,
+  parseConnectionList,
 } from './_helpers.js';
 
 export { SensorMLParseError };
-export { parseProcessMethod, parseComponentEntry } from './_helpers.js';
-
-// ========================================
-// Internal Helpers — Components & Connections
-// ========================================
-
-/**
- * Parse a {@link ComponentList} — array of named sub-process components.
- *
- * @param value - Raw JSON value
- * @returns Parsed ComponentList, or `undefined` if absent/null
- * @throws {SensorMLParseError} If `value` is present but is not an array,
- *   or if any component entry is invalid
- * @see OAS: ComponentList (L4112)
- */
-export function parseComponentList(value: unknown): ComponentList | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (!Array.isArray(value)) {
-    throw new SensorMLParseError('"components" must be an array');
-  }
-  return value.map((item, i) => {
-    try {
-      return parseComponentEntry(item, i);
-    } catch (err) {
-      if (err instanceof SensorMLParseError) throw err;
-      throw new SensorMLParseError(
-        `Invalid components[${i}]: ${(err as Error).message}`
-      );
-    }
-  });
-}
-
-/**
- * Parse a single {@link Connection} entry.
- *
- * Both `source` and `destination` properties are required strings
- * (PathRef data paths).
- *
- * @param value - Raw JSON value
- * @param index - Array index for error messages
- * @returns Parsed Connection
- * @throws {SensorMLParseError} If the entry is not valid or lacks
- *   required `source`/`destination` properties
- * @see OAS: ConnectionList (L4127)
- */
-function parseConnection(value: unknown, index: number): Connection {
-  if (!isRecord(value)) {
-    throw new SensorMLParseError(`connections[${index}] must be an object`);
-  }
-  if (typeof value.source !== 'string') {
-    throw new SensorMLParseError(
-      `connections[${index}] must have a string "source" property`
-    );
-  }
-  if (typeof value.destination !== 'string') {
-    throw new SensorMLParseError(
-      `connections[${index}] must have a string "destination" property`
-    );
-  }
-  return {
-    source: value.source,
-    destination: value.destination,
-  };
-}
-
-/**
- * Parse a {@link ConnectionList} — array of data-flow connections.
- *
- * @param value - Raw JSON value
- * @returns Parsed ConnectionList, or `undefined` if absent/null
- * @throws {SensorMLParseError} If `value` is present but is not an array,
- *   or if any connection entry is invalid
- * @see OAS: ConnectionList (L4127)
- */
-export function parseConnectionList(
-  value: unknown
-): ConnectionList | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (!Array.isArray(value)) {
-    throw new SensorMLParseError('"connections" must be an array');
-  }
-  return value.map((item, i) => parseConnection(item, i));
-}
+export {
+  parseProcessMethod,
+  parseComponentEntry,
+  parseComponentList,
+  parseConnectionList,
+} from './_helpers.js';
 
 // ========================================
 // Internal Helpers — AbstractPhysicalProcess
