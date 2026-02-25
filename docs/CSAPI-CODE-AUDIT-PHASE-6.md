@@ -2,7 +2,7 @@
 
 **Branch:** `phase-6`  
 **Date:** 2025  
-**Scope:** All 28+ source files in `src/ogc-api/csapi/`, modified upstream files, package configuration  
+**Scope:** All 28+ source files in `src/ogc-api/csapi/`, modified upstream files, package configuration
 
 ---
 
@@ -31,14 +31,14 @@ The CSAPI module is a well-structured, densely documented TypeScript library imp
 
 Key findings:
 
-| Severity | Count |
-|----------|-------|
-| BUG      | 1     |
-| DESIGN   | 8     |
-| GAP      | 2     |
-| CONSISTENCY | 4  |
-| INFORMATIONAL | 5 |
-| POSITIVE | 12    |
+| Severity      | Count |
+| ------------- | ----- |
+| BUG           | 1     |
+| DESIGN        | 8     |
+| GAP           | 2     |
+| CONSISTENCY   | 4     |
+| INFORMATIONAL | 5     |
+| POSITIVE      | 12    |
 
 No runtime-breaking bugs were found. The single BUG-level finding is a planned `as any` cast in `factory.ts` that is already tracked (Issue #122). Design-level findings center on code duplication and a structural circular import.
 
@@ -46,14 +46,14 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 ## 2. Severity Legend
 
-| Level | Meaning |
-|-------|---------|
-| **BUG** | Incorrect behavior, type-safety hole, or runtime risk |
-| **DESIGN** | Architectural concern or code smell that increases maintenance burden |
-| **GAP** | Missing feature, incomplete implementation, or spec deviation |
-| **CONSISTENCY** | Inconsistency in naming, patterns, or conventions |
-| **INFORMATIONAL** | Observation or documentation note; no action needed |
-| **POSITIVE** | Exemplary practice worth preserving |
+| Level             | Meaning                                                               |
+| ----------------- | --------------------------------------------------------------------- |
+| **BUG**           | Incorrect behavior, type-safety hole, or runtime risk                 |
+| **DESIGN**        | Architectural concern or code smell that increases maintenance burden |
+| **GAP**           | Missing feature, incomplete implementation, or spec deviation         |
+| **CONSISTENCY**   | Inconsistency in naming, patterns, or conventions                     |
+| **INFORMATIONAL** | Observation or documentation note; no action needed                   |
+| **POSITIVE**      | Exemplary practice worth preserving                                   |
 
 ---
 
@@ -63,13 +63,13 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `factory.ts` — 60 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | Creates `CSAPIQueryBuilder` instances from `OgcApiEndpoint` + `collectionId` |
-| **Imports** | `import type OgcApiEndpoint` (correct), `import type { OgcApiCollectionInfo }` (correct), value imports from `shared/errors.js`, `url_builder.js`, `helpers.js` — all `.js` extensions ✅ |
-| **Exports** | `createCSAPIBuilder` (async function) |
-| **JSDoc** | Complete: `@param`, `@returns`, `@throws`, `@example`, `@see` |
-| **Spec compliance** | N/A (factory pattern, no OGC normative behavior) |
+| Aspect              | Assessment                                                                                                                                                                                |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Purpose**         | Creates `CSAPIQueryBuilder` instances from `OgcApiEndpoint` + `collectionId`                                                                                                              |
+| **Imports**         | `import type OgcApiEndpoint` (correct), `import type { OgcApiCollectionInfo }` (correct), value imports from `shared/errors.js`, `url_builder.js`, `helpers.js` — all `.js` extensions ✅ |
+| **Exports**         | `createCSAPIBuilder` (async function)                                                                                                                                                     |
+| **JSDoc**           | Complete: `@param`, `@returns`, `@throws`, `@example`, `@see`                                                                                                                             |
+| **Spec compliance** | N/A (factory pattern, no OGC normative behavior)                                                                                                                                          |
 
 **Findings:**
 
@@ -80,13 +80,13 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `index.ts` — 209 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | Barrel re-export file for `@camptocamp/ogc-client/csapi` sub-path |
-| **Imports** | All re-exports use `.js` extensions ✅ |
-| **Exports** | ~170 named symbols (values + types), grouped by category |
-| **JSDoc** | `@module` with usage example |
-| **Spec compliance** | N/A (re-export only) |
+| Aspect              | Assessment                                                        |
+| ------------------- | ----------------------------------------------------------------- |
+| **Purpose**         | Barrel re-export file for `@camptocamp/ogc-client/csapi` sub-path |
+| **Imports**         | All re-exports use `.js` extensions ✅                            |
+| **Exports**         | ~170 named symbols (values + types), grouped by category          |
+| **JSDoc**           | `@module` with usage example                                      |
+| **Spec compliance** | N/A (re-export only)                                              |
 
 **Findings:**
 
@@ -98,13 +98,13 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `model.ts` — 788 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | All CSAPI TypeScript interfaces, types, and const value arrays |
-| **Imports** | `import type` from `../../shared/models.js`, `../model.js`, `geojson` — all correct ✅ |
-| **Exports** | 9 resource interfaces, query option interfaces, collection types, schema response types, `CSAPIResourceTypes`, `CommandStatusCodes`, `SystemTypeUris` |
-| **JSDoc** | Thorough — `@see` links to spec table numbers throughout |
-| **Spec compliance** | Closely tracks OGC 23-001 & 23-002 table definitions |
+| Aspect              | Assessment                                                                                                                                            |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Purpose**         | All CSAPI TypeScript interfaces, types, and const value arrays                                                                                        |
+| **Imports**         | `import type` from `../../shared/models.js`, `../model.js`, `geojson` — all correct ✅                                                                |
+| **Exports**         | 9 resource interfaces, query option interfaces, collection types, schema response types, `CSAPIResourceTypes`, `CommandStatusCodes`, `SystemTypeUris` |
+| **JSDoc**           | Thorough — `@see` links to spec table numbers throughout                                                                                              |
+| **Spec compliance** | Closely tracks OGC 23-001 & 23-002 table definitions                                                                                                  |
 
 **Findings:**
 
@@ -117,13 +117,13 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `helpers.ts` — 226 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | Utility functions: temporal formatting, validation, link scanning |
-| **Imports** | Value + type imports from `./model.js`, `./formats/constants.js` — `.js` extensions ✅ |
-| **Exports** | `formatDateTimeParameter`, `isValidResourceType`, `assertValidResourceType`, `encodeResourceId`, `scanCsapiLinks`, `validateLimit`, `validateBbox` |
-| **JSDoc** | Complete — every function has `@param`, `@returns`, `@throws` |
-| **Spec compliance** | Handles 3 link-relation conventions (ogc-cs:, plain name, items-with-href) |
+| Aspect              | Assessment                                                                                                                                         |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Purpose**         | Utility functions: temporal formatting, validation, link scanning                                                                                  |
+| **Imports**         | Value + type imports from `./model.js`, `./formats/constants.js` — `.js` extensions ✅                                                             |
+| **Exports**         | `formatDateTimeParameter`, `isValidResourceType`, `assertValidResourceType`, `encodeResourceId`, `scanCsapiLinks`, `validateLimit`, `validateBbox` |
+| **JSDoc**           | Complete — every function has `@param`, `@returns`, `@throws`                                                                                      |
+| **Spec compliance** | Handles 3 link-relation conventions (ogc-cs:, plain name, items-with-href)                                                                         |
 
 **Findings:**
 
@@ -135,13 +135,13 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `url_builder.ts` — 2,490 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | Main `CSAPIQueryBuilder` class — URL construction for all 9 resource types |
-| **Imports** | Type imports from `./model.js`, value import from `./helpers.js` — `.js` extensions ✅ |
-| **Exports** | `CSAPIQueryBuilder` (default), `PARAM_NAME_MAP`, `TEMPORAL_KEYS`, `RESOURCE_PATH_OVERRIDES` |
-| **JSDoc** | Exceptional — every public method has `@param`, `@returns`, `@throws`, `@example`, `@see` |
-| **Spec compliance** | Implements query parameters per Part 1 Table 8 & Part 2 Table 6 |
+| Aspect              | Assessment                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| **Purpose**         | Main `CSAPIQueryBuilder` class — URL construction for all 9 resource types                  |
+| **Imports**         | Type imports from `./model.js`, value import from `./helpers.js` — `.js` extensions ✅      |
+| **Exports**         | `CSAPIQueryBuilder` (default), `PARAM_NAME_MAP`, `TEMPORAL_KEYS`, `RESOURCE_PATH_OVERRIDES` |
+| **JSDoc**           | Exceptional — every public method has `@param`, `@returns`, `@throws`, `@example`, `@see`   |
+| **Spec compliance** | Implements query parameters per Part 1 Table 8 & Part 2 Table 6                             |
 
 **Findings:**
 
@@ -155,13 +155,13 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `command-routing.ts` — 163 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | Per-server routing fallback for `/commands` rejection (OSH compatibility) |
-| **Imports** | Value + type imports — `.js` extensions ✅ |
-| **Exports** | `getCommandRoutingPreference`, `setCommandRoutingPreference`, `clearCommandRoutingCache`, `isCommandRouteRejection`, `buildNestedCommandUrl` |
-| **JSDoc** | Complete with `@module`, `@example`, `@param`, `@returns` |
-| **Spec compliance** | Implements fallback for servers that reject top-level routes |
+| Aspect              | Assessment                                                                                                                                   |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Purpose**         | Per-server routing fallback for `/commands` rejection (OSH compatibility)                                                                    |
+| **Imports**         | Value + type imports — `.js` extensions ✅                                                                                                   |
+| **Exports**         | `getCommandRoutingPreference`, `setCommandRoutingPreference`, `clearCommandRoutingCache`, `isCommandRouteRejection`, `buildNestedCommandUrl` |
+| **JSDoc**           | Complete with `@module`, `@example`, `@param`, `@returns`                                                                                    |
+| **Spec compliance** | Implements fallback for servers that reject top-level routes                                                                                 |
 
 **Findings:**
 
@@ -174,11 +174,11 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/index.ts` — 341 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | Barrel re-export for all format handlers |
+| Aspect              | Assessment                                                                    |
+| ------------------- | ----------------------------------------------------------------------------- |
+| **Purpose**         | Barrel re-export for all format handlers                                      |
 | **Imports/Exports** | Re-exports from 9 sub-modules — `.js` extensions ✅, `export type` correct ✅ |
-| **JSDoc** | Module-level comment |
+| **JSDoc**           | Module-level comment                                                          |
 
 **Findings:**
 
@@ -189,13 +189,13 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/constants.ts` — 336 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | Media types, vocabulary URIs, asset types, content-type map |
-| **Imports** | `import type` from `../model.js` ✅ |
-| **Exports** | 7 media type constants, `*TypeUris` objects, `CSAPI_CONTENT_TYPES`, vocabulary namespace constants |
-| **JSDoc** | Complete with spec references |
-| **Spec compliance** | Closely tracks OGC 23-001 Requirement Classes |
+| Aspect              | Assessment                                                                                         |
+| ------------------- | -------------------------------------------------------------------------------------------------- |
+| **Purpose**         | Media types, vocabulary URIs, asset types, content-type map                                        |
+| **Imports**         | `import type` from `../model.js` ✅                                                                |
+| **Exports**         | 7 media type constants, `*TypeUris` objects, `CSAPI_CONTENT_TYPES`, vocabulary namespace constants |
+| **JSDoc**           | Complete with spec references                                                                      |
+| **Spec compliance** | Closely tracks OGC 23-001 Requirement Classes                                                      |
 
 **Findings:**
 
@@ -206,13 +206,13 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/geojson.ts` — 527 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | GeoJSON Feature type recognition and Part 1 resource extraction |
-| **Imports** | Type + value imports from model, constants, sensorml — `.js` extensions ✅ |
-| **Exports** | `isCSAPIFeature`, `getCSAPIResourceType`, `parseValidTime`, `isValidUri`, `extractCSAPIFeature` |
-| **JSDoc** | Complete |
-| **Spec compliance** | Implements classification priority: SOSA → SSN → SensorML vocabularies |
+| Aspect              | Assessment                                                                                      |
+| ------------------- | ----------------------------------------------------------------------------------------------- |
+| **Purpose**         | GeoJSON Feature type recognition and Part 1 resource extraction                                 |
+| **Imports**         | Type + value imports from model, constants, sensorml — `.js` extensions ✅                      |
+| **Exports**         | `isCSAPIFeature`, `getCSAPIResourceType`, `parseValidTime`, `isValidUri`, `extractCSAPIFeature` |
+| **JSDoc**           | Complete                                                                                        |
+| **Spec compliance** | Implements classification priority: SOSA → SSN → SensorML vocabularies                          |
 
 **Findings:**
 
@@ -225,12 +225,12 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/classification.ts` — 126 lines
 
-| Aspect | Assessment |
-|--------|------------|
+| Aspect      | Assessment                                                                    |
+| ----------- | ----------------------------------------------------------------------------- |
 | **Purpose** | Endpoint-context fallback for servers returning `featureType: null` (52North) |
-| **Imports** | Type import from model — `.js` extension ✅ |
-| **Exports** | `inferResourceTypeFromPath`, `classifyFeature` |
-| **JSDoc** | Complete |
+| **Imports** | Type import from model — `.js` extension ✅                                   |
+| **Exports** | `inferResourceTypeFromPath`, `classifyFeature`                                |
+| **JSDoc**   | Complete                                                                      |
 
 **Findings:**
 
@@ -240,12 +240,12 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/property.ts` — 56 lines
 
-| Aspect | Assessment |
-|--------|------------|
+| Aspect      | Assessment                                                                                |
+| ----------- | ----------------------------------------------------------------------------------------- |
 | **Purpose** | Parse Property (DerivedProperty) — the only Part 1 resource that is NOT a GeoJSON Feature |
-| **Imports** | Type import — `.js` extension ✅ |
-| **Exports** | `parseProperty` |
-| **JSDoc** | Complete; notes no live server currently returns Property data |
+| **Imports** | Type import — `.js` extension ✅                                                          |
+| **Exports** | `parseProperty`                                                                           |
+| **JSDoc**   | Complete; notes no live server currently returns Property data                            |
 
 **Findings:**
 
@@ -255,12 +255,12 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/response.ts` — 131 lines
 
-| Aspect | Assessment |
-|--------|------------|
+| Aspect      | Assessment                                            |
+| ----------- | ----------------------------------------------------- |
 | **Purpose** | Normalize FeatureCollection vs Items envelope formats |
-| **Imports** | Value + type imports — `.js` extensions ✅ |
-| **Exports** | Envelope normalization functions |
-| **JSDoc** | Complete |
+| **Imports** | Value + type imports — `.js` extensions ✅            |
+| **Exports** | Envelope normalization functions                      |
+| **JSDoc**   | Complete                                              |
 
 **Findings:**
 
@@ -270,12 +270,12 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/schema-response.ts` — 178 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | Parse datastream & control stream schema responses |
+| Aspect      | Assessment                                                                     |
+| ----------- | ------------------------------------------------------------------------------ |
+| **Purpose** | Parse datastream & control stream schema responses                             |
 | **Imports** | Delegates to `parseSWEComponent()` and `parseEncoding()` — `.js` extensions ✅ |
-| **Exports** | `parseDatastreamSchemaResponse`, `parseControlStreamSchemaResponse` |
-| **JSDoc** | Complete |
+| **Exports** | `parseDatastreamSchemaResponse`, `parseControlStreamSchemaResponse`            |
+| **JSDoc**   | Complete                                                                       |
 
 **Findings:**
 
@@ -287,13 +287,13 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/part2.ts` — 518 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | All 5 Part 2 resource parsers |
-| **Imports** | Type + value imports — `.js` extensions ✅ |
-| **Exports** | `parseDatastream`, `parseObservation`, `parseControlStream`, `parseCommand`, `parseCommandStatus`, `normalizeStatusCode` |
-| **JSDoc** | Complete with spec references |
-| **Spec compliance** | Tracks Part 2 Tables closely |
+| Aspect              | Assessment                                                                                                               |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Purpose**         | All 5 Part 2 resource parsers                                                                                            |
+| **Imports**         | Type + value imports — `.js` extensions ✅                                                                               |
+| **Exports**         | `parseDatastream`, `parseObservation`, `parseControlStream`, `parseCommand`, `parseCommandStatus`, `normalizeStatusCode` |
+| **JSDoc**           | Complete with spec references                                                                                            |
+| **Spec compliance** | Tracks Part 2 Tables closely                                                                                             |
 
 **Findings:**
 
@@ -308,11 +308,11 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/sensorml/index.ts` — 141 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | Barrel re-export for SensorML parsers + types |
+| Aspect      | Assessment                                                      |
+| ----------- | --------------------------------------------------------------- |
+| **Purpose** | Barrel re-export for SensorML parsers + types                   |
 | **Exports** | Values + types from parser, sub-parsers, helpers, errors, types |
-| **JSDoc** | Module-level |
+| **JSDoc**   | Module-level                                                    |
 
 **Findings:**
 
@@ -322,12 +322,12 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/sensorml/types.ts` — 928 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | Complete SensorML 3.0 type hierarchy |
-| **Imports** | None (leaf type file) |
+| Aspect      | Assessment                                                     |
+| ----------- | -------------------------------------------------------------- |
+| **Purpose** | Complete SensorML 3.0 type hierarchy                           |
+| **Imports** | None (leaf type file)                                          |
 | **Exports** | All SensorML interfaces, types, `SENSORML_PROCESS_TYPES` const |
-| **JSDoc** | Thorough — `@see` OAS line references throughout |
+| **JSDoc**   | Thorough — `@see` OAS line references throughout               |
 
 **Findings:**
 
@@ -338,12 +338,12 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/sensorml/parser.ts` — 457 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | Main SensorML parser — type discrimination + shared property parsers |
+| Aspect      | Assessment                                                                                                                      |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Purpose** | Main SensorML parser — type discrimination + shared property parsers                                                            |
 | **Imports** | Type + value imports from `types.js`, SWE Common `types.js`, `errors.js`, `_helpers.js`, sub-parser files — `.js` extensions ✅ |
-| **Exports** | `parseSensorML30`, plus shared parsers for DescribedObject/AbstractProcess/AbstractPhysicalProcess levels |
-| **JSDoc** | Excellent — `@module` with entry points listed |
+| **Exports** | `parseSensorML30`, plus shared parsers for DescribedObject/AbstractProcess/AbstractPhysicalProcess levels                       |
+| **JSDoc**   | Excellent — `@module` with entry points listed                                                                                  |
 
 **Findings:**
 
@@ -354,12 +354,12 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/sensorml/_helpers.ts` — 277 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | Shared internal parsing helpers consolidating previously-duplicated code (Issue #54) |
-| **Imports** | Types from `types.js`, `SensorMLParseError` from `errors.js`, **`parseSensorML30` from `parser.js`** — `.js` extensions ✅ |
+| Aspect      | Assessment                                                                                                                                               |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Purpose** | Shared internal parsing helpers consolidating previously-duplicated code (Issue #54)                                                                     |
+| **Imports** | Types from `types.js`, `SensorMLParseError` from `errors.js`, **`parseSensorML30` from `parser.js`** — `.js` extensions ✅                               |
 | **Exports** | `isRecord`, `optionalString`, `parseLink`, `parseIOList`, `parseSettings`, `parseFeatureList`, `parseModes`, `parseProcessMethod`, `parseComponentEntry` |
-| **JSDoc** | Complete |
+| **JSDoc**   | Complete                                                                                                                                                 |
 
 **Findings:**
 
@@ -371,10 +371,10 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/sensorml/errors.ts` — 40 lines
 
-| Aspect | Assessment |
-|--------|------------|
+| Aspect      | Assessment                                      |
+| ----------- | ----------------------------------------------- |
 | **Purpose** | `SensorMLParseError` class with optional `path` |
-| **JSDoc** | Complete |
+| **JSDoc**   | Complete                                        |
 
 **Findings:**
 
@@ -384,13 +384,13 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/sensorml/physical-system.ts` — 660 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | `PhysicalSystem` + `PhysicalComponent` parsers, plus `parsePosition` |
-| **Imports** | Types from `types.js`, helpers from `_helpers.js` — `.js` extensions ✅ |
-| **Exports** | `parsePhysicalSystem`, `parsePhysicalComponent`, `parsePosition`, `parseComponentList`, `parseConnectionList`, `parseProcessMethod`, `parseComponentEntry` |
-| **JSDoc** | Complete |
-| **Spec compliance** | Tracks AbstractPhysicalProcess properties (attachedTo, localReferenceFrames, localTimeFrames, position) |
+| Aspect              | Assessment                                                                                                                                                 |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Purpose**         | `PhysicalSystem` + `PhysicalComponent` parsers, plus `parsePosition`                                                                                       |
+| **Imports**         | Types from `types.js`, helpers from `_helpers.js` — `.js` extensions ✅                                                                                    |
+| **Exports**         | `parsePhysicalSystem`, `parsePhysicalComponent`, `parsePosition`, `parseComponentList`, `parseConnectionList`, `parseProcessMethod`, `parseComponentEntry` |
+| **JSDoc**           | Complete                                                                                                                                                   |
+| **Spec compliance** | Tracks AbstractPhysicalProcess properties (attachedTo, localReferenceFrames, localTimeFrames, position)                                                    |
 
 **Findings:**
 
@@ -403,12 +403,12 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/sensorml/simple-process.ts` — 148 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | `SimpleProcess` parser |
+| Aspect      | Assessment                            |
+| ----------- | ------------------------------------- |
+| **Purpose** | `SimpleProcess` parser                |
 | **Imports** | Types + helpers — `.js` extensions ✅ |
-| **Exports** | `parseSimpleProcess` |
-| **JSDoc** | Complete |
+| **Exports** | `parseSimpleProcess`                  |
+| **JSDoc**   | Complete                              |
 
 **Findings:**
 
@@ -419,12 +419,12 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/sensorml/aggregate-process.ts` — 252 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | `AggregateProcess` parser |
-| **Imports** | Types + helpers — `.js` extensions ✅ |
+| Aspect      | Assessment                                                                                                        |
+| ----------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Purpose** | `AggregateProcess` parser                                                                                         |
+| **Imports** | Types + helpers — `.js` extensions ✅                                                                             |
 | **Exports** | `parseAggregateProcess`, `parseComponentList`, `parseConnectionList`, `parseComponentEntry`, `SensorMLParseError` |
-| **JSDoc** | Complete |
+| **JSDoc**   | Complete                                                                                                          |
 
 **Findings:**
 
@@ -437,11 +437,11 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/swecommon/index.ts` — 145 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | Barrel re-export for SWE Common parsers + types |
+| Aspect      | Assessment                                                                      |
+| ----------- | ------------------------------------------------------------------------------- |
+| **Purpose** | Barrel re-export for SWE Common parsers + types                                 |
 | **Exports** | Values + types from parser, components, data-array, data-record, helpers, types |
-| **JSDoc** | Module-level |
+| **JSDoc**   | Module-level                                                                    |
 
 **Findings:**
 
@@ -451,12 +451,12 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/swecommon/types.ts` — 740 lines
 
-| Aspect | Assessment |
-|--------|------------|
+| Aspect      | Assessment                             |
+| ----------- | -------------------------------------- |
 | **Purpose** | Complete SWE Common 3.0 type hierarchy |
-| **Imports** | None (leaf type file) |
-| **Exports** | All SWE Common interfaces and types |
-| **JSDoc** | Thorough with spec references |
+| **Imports** | None (leaf type file)                  |
+| **Exports** | All SWE Common interfaces and types    |
+| **JSDoc**   | Thorough with spec references          |
 
 **Findings:**
 
@@ -466,12 +466,12 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/swecommon/_helpers.ts` — 88 lines
 
-| Aspect | Assessment |
-|--------|------------|
+| Aspect      | Assessment                                                                           |
+| ----------- | ------------------------------------------------------------------------------------ |
 | **Purpose** | Shared helpers (`isRecord`, `parseBaseProperties`, `parseAssociationAttributeGroup`) |
-| **Imports** | Type import from `types.js` ✅ |
-| **Exports** | 3 functions |
-| **JSDoc** | Complete |
+| **Imports** | Type import from `types.js` ✅                                                       |
+| **Exports** | 3 functions                                                                          |
+| **JSDoc**   | Complete                                                                             |
 
 **Findings:**
 
@@ -481,12 +481,12 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/swecommon/parser.ts` — 1,470 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | Main SWE Common parser: type discrimination, Vector, Matrix, DataChoice, Geometry, validation |
-| **Imports** | Types from `types.js`, values from `components.js`, `data-record.js`, `data-array.js`, `_helpers.js` — `.js` extensions ✅ |
+| Aspect      | Assessment                                                                                                                                                              |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Purpose** | Main SWE Common parser: type discrimination, Vector, Matrix, DataChoice, Geometry, validation                                                                           |
+| **Imports** | Types from `types.js`, values from `components.js`, `data-record.js`, `data-array.js`, `_helpers.js` — `.js` extensions ✅                                              |
 | **Exports** | `parseSWEComponent`, `parseVector`, `parseMatrix`, `parseDataChoice`, `parseGeometry`, `detectEncoding`, `validateAgainstSchema`, `ValidationResult`, `ValidationError` |
-| **JSDoc** | Exceptional — `@module` with entry-point list, every function fully documented |
+| **JSDoc**   | Exceptional — `@module` with entry-point list, every function fully documented                                                                                          |
 
 **Findings:**
 
@@ -499,12 +499,12 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/swecommon/components.ts` — 791 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | All 10 simple component parsers (6 scalar + 4 range) |
-| **Imports** | Types from `types.js`, `isRecord` from `_helpers.js` — `.js` extensions ✅ |
+| Aspect      | Assessment                                                                                                                                                                                         |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Purpose** | All 10 simple component parsers (6 scalar + 4 range)                                                                                                                                               |
+| **Imports** | Types from `types.js`, `isRecord` from `_helpers.js` — `.js` extensions ✅                                                                                                                         |
 | **Exports** | `parseSimpleComponent` (discriminator), `parseQuantity`, `parseCount`, `parseBoolean`, `parseText`, `parseTime`, `parseCategory`, plus range variants, `parseUnitOfMeasure`, `SweCommonParseError` |
-| **JSDoc** | Complete |
+| **JSDoc**   | Complete                                                                                                                                                                                           |
 
 **Findings:**
 
@@ -515,12 +515,12 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/swecommon/data-array.ts` — 597 lines
 
-| Aspect | Assessment |
-|--------|------------|
+| Aspect      | Assessment                                                       |
+| ----------- | ---------------------------------------------------------------- |
 | **Purpose** | DataArray parser with encoding support (JSON, Text, Binary, XML) |
-| **Imports** | Types, components, data-record, _helpers — `.js` extensions ✅ |
-| **Exports** | `parseDataArray`, `parseEncoding` |
-| **JSDoc** | Complete with example |
+| **Imports** | Types, components, data-record, \_helpers — `.js` extensions ✅  |
+| **Exports** | `parseDataArray`, `parseEncoding`                                |
+| **JSDoc**   | Complete with example                                            |
 
 **Findings:**
 
@@ -531,12 +531,12 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 #### `formats/swecommon/data-record.ts` — 247 lines
 
-| Aspect | Assessment |
-|--------|------------|
-| **Purpose** | DataRecord parser with recursive field support |
-| **Imports** | Types, components, _helpers — `.js` extensions ✅ |
-| **Exports** | `parseDataRecord`, `ComponentParser` type |
-| **JSDoc** | Complete with nested example |
+| Aspect      | Assessment                                         |
+| ----------- | -------------------------------------------------- |
+| **Purpose** | DataRecord parser with recursive field support     |
+| **Imports** | Types, components, \_helpers — `.js` extensions ✅ |
+| **Exports** | `parseDataRecord`, `ComponentParser` type          |
+| **JSDoc**   | Complete with nested example                       |
 
 **Findings:**
 
@@ -596,25 +596,25 @@ No runtime-breaking bugs were found. The single BUG-level finding is a planned `
 
 ### Type Cast Audit
 
-| Location | Cast | Justification | Risk |
-|----------|------|---------------|------|
-| `factory.ts:46` | `as any` | Access private OgcApiEndpoint members | **High** — tracked Issue #122 |
-| `factory.ts:57` | `as unknown as OgcApiCollectionInfo` | Double cast on collection doc | **Medium** — compounds above |
-| `geojson.ts:492` | `as unknown[]` | Safe array widening | None |
-| `physical-system.ts:290` | `as unknown as GeoJsonPoint` | Validated GeoJSON pass-through | Low |
-| `physical-system.ts:390` | `as unknown as Position` | Validated position pass-through | Low |
-| `aggregate-process.ts:233` | `as unknown as Record<string,unknown>` | Delete during spread-then-delete | Low (pattern) |
-| All SensorML sub-parsers | `as Record<string, unknown>` | Spread-then-delete pattern | Low (intentional) |
-| `_helpers.ts:276` | `as unknown as ComponentEntry` | Unrecognized component pass-through | Low |
+| Location                   | Cast                                   | Justification                         | Risk                          |
+| -------------------------- | -------------------------------------- | ------------------------------------- | ----------------------------- |
+| `factory.ts:46`            | `as any`                               | Access private OgcApiEndpoint members | **High** — tracked Issue #122 |
+| `factory.ts:57`            | `as unknown as OgcApiCollectionInfo`   | Double cast on collection doc         | **Medium** — compounds above  |
+| `geojson.ts:492`           | `as unknown[]`                         | Safe array widening                   | None                          |
+| `physical-system.ts:290`   | `as unknown as GeoJsonPoint`           | Validated GeoJSON pass-through        | Low                           |
+| `physical-system.ts:390`   | `as unknown as Position`               | Validated position pass-through       | Low                           |
+| `aggregate-process.ts:233` | `as unknown as Record<string,unknown>` | Delete during spread-then-delete      | Low (pattern)                 |
+| All SensorML sub-parsers   | `as Record<string, unknown>`           | Spread-then-delete pattern            | Low (intentional)             |
+| `_helpers.ts:276`          | `as unknown as ComponentEntry`         | Unrecognized component pass-through   | Low                           |
 
 All `as any` casts in `.spec.ts` files are test-only and acceptable for testing boundary conditions.
 
 ### Circular Import Analysis
 
-| Cycle | Files | Mechanism |
-|-------|-------|-----------|
-| SensorML | `parser.ts` → sub-parsers → `_helpers.ts` → `parser.ts` | Direct import of `parseSensorML30` |
-| SWE Common | ✅ **None** — uses `ComponentParser` callback injection | Clean architecture |
+| Cycle      | Files                                                   | Mechanism                          |
+| ---------- | ------------------------------------------------------- | ---------------------------------- |
+| SensorML   | `parser.ts` → sub-parsers → `_helpers.ts` → `parser.ts` | Direct import of `parseSensorML30` |
+| SWE Common | ✅ **None** — uses `ComponentParser` callback injection | Clean architecture                 |
 
 ---
 
@@ -622,81 +622,81 @@ All `as any` casts in `.spec.ts` files are test-only and acceptable for testing 
 
 ### BUG (1)
 
-| ID | File | Description |
-|----|------|-------------|
+| ID  | File               | Description                                                                               |
+| --- | ------------------ | ----------------------------------------------------------------------------------------- |
 | B-1 | `factory.ts:46,57` | `as any` + double cast accessing private `OgcApiEndpoint` members. Tracked by Issue #122. |
 
 ### DESIGN (8)
 
-| ID | File(s) | Description |
-|----|---------|-------------|
-| D-1 | `model.ts` / `constants.ts` | `SystemTypeUris` name collision — same name, different values, across two modules |
-| D-2 | `sensorml/_helpers.ts` → `parser.ts` | Circular import; should use callback injection |
-| D-3 | `physical-system.ts` / `aggregate-process.ts` | Duplicated `parseComponentList`, `parseConnectionList`, `parseConnection` |
-| D-4 | <a id="d-4--isrecord-duplication"></a>`sensorml/_helpers.ts` / `swecommon/_helpers.ts` | Duplicated `isRecord()` type guard |
-| D-5 | `swecommon/parser.ts` / `data-record.ts` / `data-array.ts` | `SIMPLE_COMPONENT_TYPES` duplicated 3 times |
-| D-6 | `swecommon/parser.ts` / `data-record.ts` / `data-array.ts` | `isLinkReference()` duplicated 3 times |
-| D-7 | All SensorML sub-parsers | Spread-then-delete pattern can leak unknown properties into typed results |
-| D-8 | `command-routing.ts` | Module-level mutable state (`routingCache_`) |
+| ID  | File(s)                                                                                | Description                                                                       |
+| --- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| D-1 | `model.ts` / `constants.ts`                                                            | `SystemTypeUris` name collision — same name, different values, across two modules |
+| D-2 | `sensorml/_helpers.ts` → `parser.ts`                                                   | Circular import; should use callback injection                                    |
+| D-3 | `physical-system.ts` / `aggregate-process.ts`                                          | Duplicated `parseComponentList`, `parseConnectionList`, `parseConnection`         |
+| D-4 | <a id="d-4--isrecord-duplication"></a>`sensorml/_helpers.ts` / `swecommon/_helpers.ts` | Duplicated `isRecord()` type guard                                                |
+| D-5 | `swecommon/parser.ts` / `data-record.ts` / `data-array.ts`                             | `SIMPLE_COMPONENT_TYPES` duplicated 3 times                                       |
+| D-6 | `swecommon/parser.ts` / `data-record.ts` / `data-array.ts`                             | `isLinkReference()` duplicated 3 times                                            |
+| D-7 | All SensorML sub-parsers                                                               | Spread-then-delete pattern can leak unknown properties into typed results         |
+| D-8 | `command-routing.ts`                                                                   | Module-level mutable state (`routingCache_`)                                      |
 
 ### GAP (2)
 
-| ID | File | Description |
-|----|------|-------------|
-| G-1 | `formats/property.ts` | Parser untested against live server data (no server returns Property) |
+| ID  | File                                          | Description                                                                |
+| --- | --------------------------------------------- | -------------------------------------------------------------------------- |
+| G-1 | `formats/property.ts`                         | Parser untested against live server data (no server returns Property)      |
 | G-2 | SensorML capability/characteristic/IO parsing | Uses `as unknown as` pass-through; full parsing deferred to Issues #24–#28 |
 
 ### CONSISTENCY (4)
 
-| ID | File(s) | Description |
-|----|---------|-------------|
-| C-1 | `url_builder.ts` | `getCommandStatus` manually builds query string instead of using `buildQueryString()` |
-| C-2 | `formats/part2.ts` | Time field parsing asymmetry: Observation pass-through vs Datastream/ControlStream interval parsing |
+| ID  | File(s)            | Description                                                                                                      |
+| --- | ------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| C-1 | `url_builder.ts`   | `getCommandStatus` manually builds query string instead of using `buildQueryString()`                            |
+| C-2 | `formats/part2.ts` | Time field parsing asymmetry: Observation pass-through vs Datastream/ControlStream interval parsing              |
 | C-3 | `formats/part2.ts` | `parseCommandStatus` defaults missing statusCode to `'PENDING'`; `parseCommand` leaves `currentStatus` undefined |
-| C-4 | `formats/index.ts` | Some type re-exports on individual lines vs grouped |
+| C-4 | `formats/index.ts` | Some type re-exports on individual lines vs grouped                                                              |
 
 ### INFORMATIONAL (5)
 
-| ID | File | Description |
-|----|------|-------------|
-| I-1 | `index.ts` | ~170 exports in barrel — monitor for tree-shaking impact |
-| I-2 | `url_builder.ts` | 2,490 lines / ~80 methods — largest file, but coherent |
-| I-3 | `model.ts` | `CommandStatusCodes` includes both full URIs and CURIEs (spec-compliant) |
-| I-4 | `schema-response.ts` | Clean delegation to SWE Common parsers |
-| I-5 | `package.json` | Sub-path export correctly configured |
+| ID  | File                 | Description                                                              |
+| --- | -------------------- | ------------------------------------------------------------------------ |
+| I-1 | `index.ts`           | ~170 exports in barrel — monitor for tree-shaking impact                 |
+| I-2 | `url_builder.ts`     | 2,490 lines / ~80 methods — largest file, but coherent                   |
+| I-3 | `model.ts`           | `CommandStatusCodes` includes both full URIs and CURIEs (spec-compliant) |
+| I-4 | `schema-response.ts` | Clean delegation to SWE Common parsers                                   |
+| I-5 | `package.json`       | Sub-path export correctly configured                                     |
 
 ### POSITIVE (12)
 
-| ID | Scope | Description |
-|----|-------|-------------|
-| P-1 | All files | **Zero `.js` extension violations** — every relative import uses `.js` ✅ |
-| P-2 | All files | **Correct `import type` usage** throughout ✅ |
-| P-3 | All files | **Three-tier hierarchy** (csapi → ogc-api → shared) never violated ✅ |
-| P-4 | All files | **Exceptional JSDoc quality** — `@param`, `@returns`, `@throws`, `@example`, `@see` on nearly every function |
-| P-5 | Barrel files | Correct `export type` for all type-only re-exports |
-| P-6 | `helpers.ts` | `scanCsapiLinks` normalizes `featuresOfInterest` → `samplingFeatures` alias |
-| P-7 | `geojson.ts` | Classification priority (SOSA→SSN→SensorML), `@link` parsing, OSH `type` fallback |
-| P-8 | `part2.ts` | `normalizeObservedProperties` handles both object and string array forms |
-| P-9 | SWE Common | `ComponentParser` callback injection avoids circular imports |
-| P-10 | `sensorml/types.ts` | Clean discriminated union + `SENSORML_PROCESS_TYPES` const tuple |
-| P-11 | `factory.ts` | Clear comment documenting planned `as any` removal timeline |
-| P-12 | `package.json` | `sideEffects: false` + correct sub-path export |
+| ID   | Scope               | Description                                                                                                  |
+| ---- | ------------------- | ------------------------------------------------------------------------------------------------------------ |
+| P-1  | All files           | **Zero `.js` extension violations** — every relative import uses `.js` ✅                                    |
+| P-2  | All files           | **Correct `import type` usage** throughout ✅                                                                |
+| P-3  | All files           | **Three-tier hierarchy** (csapi → ogc-api → shared) never violated ✅                                        |
+| P-4  | All files           | **Exceptional JSDoc quality** — `@param`, `@returns`, `@throws`, `@example`, `@see` on nearly every function |
+| P-5  | Barrel files        | Correct `export type` for all type-only re-exports                                                           |
+| P-6  | `helpers.ts`        | `scanCsapiLinks` normalizes `featuresOfInterest` → `samplingFeatures` alias                                  |
+| P-7  | `geojson.ts`        | Classification priority (SOSA→SSN→SensorML), `@link` parsing, OSH `type` fallback                            |
+| P-8  | `part2.ts`          | `normalizeObservedProperties` handles both object and string array forms                                     |
+| P-9  | SWE Common          | `ComponentParser` callback injection avoids circular imports                                                 |
+| P-10 | `sensorml/types.ts` | Clean discriminated union + `SENSORML_PROCESS_TYPES` const tuple                                             |
+| P-11 | `factory.ts`        | Clear comment documenting planned `as any` removal timeline                                                  |
+| P-12 | `package.json`      | `sideEffects: false` + correct sub-path export                                                               |
 
 ---
 
 ## 6. Metrics Summary
 
-| Metric | Value |
-|--------|-------|
-| Total production source files audited | 28 |
-| Total production lines (approx.) | ~11,200 |
-| Files with complete JSDoc | 28/28 (100%) |
-| `.js` extension violations | 0 |
-| `import type` violations | 0 |
-| Three-tier hierarchy violations | 0 |
-| `as any` in production code | 1 (factory.ts) |
-| Circular imports | 1 (SensorML) |
-| Duplicated function groups | 3 (components/connections, SIMPLE_COMPONENT_TYPES, isLinkReference) |
+| Metric                                | Value                                                               |
+| ------------------------------------- | ------------------------------------------------------------------- |
+| Total production source files audited | 28                                                                  |
+| Total production lines (approx.)      | ~11,200                                                             |
+| Files with complete JSDoc             | 28/28 (100%)                                                        |
+| `.js` extension violations            | 0                                                                   |
+| `import type` violations              | 0                                                                   |
+| Three-tier hierarchy violations       | 0                                                                   |
+| `as any` in production code           | 1 (factory.ts)                                                      |
+| Circular imports                      | 1 (SensorML)                                                        |
+| Duplicated function groups            | 3 (components/connections, SIMPLE_COMPONENT_TYPES, isLinkReference) |
 
 ---
 
