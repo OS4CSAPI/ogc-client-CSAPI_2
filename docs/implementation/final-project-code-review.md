@@ -35,7 +35,7 @@ The CSAPI (Connected Systems API) module is a **28,254-line** addition to `@camp
 
 **Verdict: PASS — Ready for upstream review.**
 
-The module is architecturally sound, fully decoupled, comprehensively tested (1,277 dedicated test cases), and passes all five CI gates. Two minor findings from prior reviews remain intentionally deferred. All new findings are cosmetic or informational — nothing blocks marking PR #136 "Ready for Review."
+The module is architecturally sound, fully decoupled, comprehensively tested (1,277 dedicated test cases), and passes all five CI gates. Two minor findings from prior reviews remain intentionally deferred. One stale code comment in `factory.ts` should be cleaned up before marking the PR ready for human review.
 
 ---
 
@@ -237,8 +237,8 @@ Consumer App
 
 **Findings:**
 
-- **F-NEW-01 (STYLE, cosmetic):** Lines 43–47 contain `as any` casts with a stale comment stating that `root` and `getCollectionDocument` are "currently `private`." Task 6 (Issue #122) already made them `public`, so the casts are now unnecessary. **Not a functional issue** — the code works identically with or without the casts. Clean-up candidate for a follow-up PR.
-- **F-NEW-02 (DESIGN, informational):** Line 57 has `collectionDoc as unknown as OgcApiCollectionInfo` — a double cast bridging the upstream `getCollectionDocument` return type to the CSAPI model type. Acceptable type-narrowing bridge for the initial contribution.
+- **F-NEW-01 (BUG, minor):** Lines 43–47 contain `as any` casts with a stale comment stating that `root` and `getCollectionDocument` are "currently `private`" and that "Task 6 (Issue #122) changes them to `public`." Task 6 IS complete — `root` is `public get` (endpoint.ts:67) and `getCollectionDocument` is `public` (endpoint.ts:357). The `as any` casts are now unnecessary and the comment is misleading. **This exists on the `clean-pr` branch that was pushed upstream.**
+- **F-NEW-02 (DESIGN, minor):** Line 57 has `collectionDoc as unknown as OgcApiCollectionInfo` — a double cast bridging the upstream `getCollectionDocument` return type to the CSAPI model type. This is acceptable as a type-narrowing bridge but could be replaced with a runtime validation or a dedicated type guard.
 
 ### 6.2 Barrel File (`index.ts` — 209 lines)
 
@@ -353,8 +353,8 @@ C  (Minimal):       2 modules  — factory (2 tests), endpoint CSAPI section (3 
 
 ### Test Weaknesses
 
-- **F-NEW-07 (GAP, minor):** `factory.spec.ts` has 2 test cases for a 60-line thin wrapper. The factory delegates to `OgcApiEndpoint` and `CSAPIUrlBuilder`, both of which are independently tested (1,272 total test cases cover the underlying logic). Additional edge-case tests would be nice-to-have but are not a coverage gap.
-- **F-NEW-08 (GAP, minor):** `endpoint.spec.ts` CSAPI section has 3 tests covering `hasConnectedSystems` and `csapiCollections`. The endpoint additions are a thin integration surface (~80 lines). Core CSAPI logic is independently tested. Additional tests would improve coverage but are not blocking.
+- **F-NEW-07 (GAP, moderate):** `factory.spec.ts` has only 2 test cases — it tests the happy path and one error case. Missing: tests for endpoints without CSAPI collections, endpoints with mixed collection types, error handling for network failures during initialization. This is the **primary test gap** in the module.
+- **F-NEW-08 (GAP, moderate):** `endpoint.spec.ts` CSAPI section has only 3 tests covering `hasConnectedSystems` and `csapiCollections`. Missing: tests for the `getCollectionDocument` public API, edge cases with empty collection lists.
 
 ---
 
@@ -394,27 +394,28 @@ This section catalogs findings discovered during this final end-to-end review th
 
 | Severity                    | Count  | IDs                          |
 | --------------------------- | ------ | ---------------------------- |
-| STYLE (cosmetic)            | 1      | F-NEW-01                     |
-| DESIGN (minor)              | 1      | F-NEW-04                     |
-| DESIGN (informational)      | 3      | F-NEW-02, F-NEW-03, F-NEW-06 |
-| GAP (minor)                 | 3      | F-NEW-05, F-NEW-07, F-NEW-08 |
+| BUG (minor)                 | 1      | F-NEW-01                     |
+| DESIGN (minor)              | 3      | F-NEW-02, F-NEW-03, F-NEW-04 |
+| DESIGN (informational)      | 1      | F-NEW-06                     |
+| GAP (minor)                 | 1      | F-NEW-05                     |
+| GAP (moderate)              | 2      | F-NEW-07, F-NEW-08           |
 | CONSISTENCY (informational) | 2      | F-NEW-09, F-NEW-10           |
 | **Total**                   | **10** |                              |
 
 ### Full Catalog
 
-| ID           | Severity                   | Location                         | Finding                                                                                                                                                                                                             | Recommendation                                                                           |
-| ------------ | -------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| **F-NEW-01** | STYLE, cosmetic            | `factory.ts:43–47`               | Stale `as any` casts and outdated comment. Task 6 already made these methods public. Casts are unnecessary but functionally harmless — code behaves identically.                                                    | Follow-up PR. Remove casts and update comment.                                           |
-| **F-NEW-02** | DESIGN, informational      | `factory.ts:57`                  | `collectionDoc as unknown as OgcApiCollectionInfo` double cast bridges upstream return type to CSAPI model type.                                                                                                    | Acceptable for initial contribution. Could be replaced with a type guard in a follow-up. |
-| **F-NEW-03** | DESIGN, informational      | `url_builder.ts`                 | Largest single file at 2,490 lines.                                                                                                                                                                                 | No action needed — cohesive builder pattern justifies the size.                          |
-| **F-NEW-04** | DESIGN, minor              | `format/part2/*.ts`              | Three code duplication groups: validTime/properties extraction, schema-response boilerplate, parseTimeRange logic.                                                                                                  | Low priority. Could be extracted to shared utilities in a follow-up PR.                  |
-| **F-NEW-05** | GAP, minor                 | `format/part2/property.ts`       | Property parser tested only against synthetic fixtures, not live API snapshots.                                                                                                                                     | Validate against live CSAPI deployment when available.                                   |
-| **F-NEW-06** | DESIGN, informational      | `format/sensorml/description.ts` | Cross-format dependency on `swe-common/` parsers.                                                                                                                                                                   | Architecturally correct per OGC spec structure. No action needed.                        |
-| **F-NEW-07** | GAP, minor                 | `factory.spec.ts`                | Only 2 test cases for a 60-line thin wrapper. The underlying logic (URL building, parsing) is covered by 1,272 other tests. Additional edge-case tests would be nice-to-have.                                       | Follow-up PR. Add 3–5 tests for edge cases.                                              |
-| **F-NEW-08** | GAP, minor                 | `endpoint.spec.ts`               | CSAPI section has only 3 tests for an 80-line integration surface. Core CSAPI logic is independently tested. Additional `getCollectionDocument` tests would improve coverage.                                       | Follow-up PR. Add 2–3 tests.                                                             |
-| **F-NEW-09** | CONSISTENCY, informational | Multiple Part 2 files            | Some handlers use `feature.properties?.X` optional chaining while others use `feature.properties.X` direct access. Both patterns are safe in context (GeoJSON features always have `properties`), but inconsistent. | Low priority — normalize in follow-up.                                                   |
-| **F-NEW-10** | CONSISTENCY, informational | `model.ts`                       | `SystemTypeUris` constant has values like `'http://www.opengis.net/def/x-]OGC/...'` that include a bracket character `]` in the URI. This matches the live OGC URIs but looks unusual.                              | Verify against latest OGC namespace registry. May be intentional encoding.               |
+| ID           | Severity                   | Location                         | Finding                                                                                                                                                                                                             | Recommendation                                                                                      |
+| ------------ | -------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **F-NEW-01** | BUG, minor                 | `factory.ts:43–47`               | Stale `as any` casts and outdated comment. The comment states `root` and `getCollectionDocument` are "currently private" — but Issue #122 (Task 6) already made them `public`. The casts are unnecessary.           | **Fix before marking PR ready.** Remove `as any` casts, update comment, access properties directly. |
+| **F-NEW-02** | DESIGN, minor              | `factory.ts:57`                  | `collectionDoc as unknown as OgcApiCollectionInfo` double cast bridges upstream return type to CSAPI model type.                                                                                                    | Acceptable for initial contribution. Could be replaced with a type guard in a follow-up.            |
+| **F-NEW-03** | DESIGN, informational      | `url_builder.ts`                 | Largest single file at 2,490 lines.                                                                                                                                                                                 | No action needed — cohesive builder pattern justifies the size.                                     |
+| **F-NEW-04** | DESIGN, minor              | `format/part2/*.ts`              | Three code duplication groups: validTime/properties extraction, schema-response boilerplate, parseTimeRange logic.                                                                                                  | Low priority. Could be extracted to shared utilities in a follow-up PR.                             |
+| **F-NEW-05** | GAP, minor                 | `format/part2/property.ts`       | Property parser tested only against synthetic fixtures, not live API snapshots.                                                                                                                                     | Validate against live CSAPI deployment when available.                                              |
+| **F-NEW-06** | DESIGN, informational      | `format/sensorml/description.ts` | Cross-format dependency on `swe-common/` parsers.                                                                                                                                                                   | Architecturally correct per OGC spec structure. No action needed.                                   |
+| **F-NEW-07** | GAP, moderate              | `factory.spec.ts`                | Only 2 test cases. Missing: no-CSAPI-collections case, mixed collections, network error during init.                                                                                                                | **Recommended before merge.** Add 3–5 additional test cases.                                        |
+| **F-NEW-08** | GAP, moderate              | `endpoint.spec.ts`               | CSAPI section has only 3 tests. Missing: `getCollectionDocument` tests, empty collection edge case.                                                                                                                 | **Recommended before merge.** Add 2–3 additional test cases.                                        |
+| **F-NEW-09** | CONSISTENCY, informational | Multiple Part 2 files            | Some handlers use `feature.properties?.X` optional chaining while others use `feature.properties.X` direct access. Both patterns are safe in context (GeoJSON features always have `properties`), but inconsistent. | Low priority — normalize in follow-up.                                                              |
+| **F-NEW-10** | CONSISTENCY, informational | `model.ts`                       | `SystemTypeUris` constant has values like `'http://www.opengis.net/def/x-]OGC/...'` that include a bracket character `]` in the URI. This matches the live OGC URIs but looks unusual.                              | Verify against latest OGC namespace registry. May be intentional encoding.                          |
 
 ---
 
@@ -499,20 +500,28 @@ Five issues were intentionally deferred during the project and remain open:
 
 ## 13. Recommendations
 
-**No blocking findings. All items are follow-up candidates.**
+### Fix Now (before marking PR #136 "Ready for Review")
+
+| Priority | Finding                                | Action                                                                                                                                                                               |
+| -------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **1**    | F-NEW-01: Stale `as any` in factory.ts | Remove the `as any` casts on lines 43–47, access `endpoint.root` and `endpoint.getCollectionDocument()` directly, update the comment. This is a 5-line fix on the `clean-pr` branch. |
+
+### Recommended Before Merge
+
+| Priority | Finding                                | Action                                                                                                   |
+| -------- | -------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **2**    | F-NEW-07: Factory test coverage        | Add 3–5 test cases to `factory.spec.ts` covering no-CSAPI endpoint, mixed collections, and init failure. |
+| **3**    | F-NEW-08: Endpoint CSAPI test coverage | Add 2–3 test cases to `endpoint.spec.ts` for `getCollectionDocument` and empty collections.              |
 
 ### Defer to Follow-Up PR
 
-| Priority | Finding                                       | Action                                                                |
-| -------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| 1        | F-NEW-01: Stale `as any` in factory.ts        | Remove unnecessary casts and update comment (cosmetic, 5-line change) |
-| 2        | F-NEW-07: Factory test coverage               | Add 3–5 edge-case tests for the thin wrapper                          |
-| 3        | F-NEW-08: Endpoint CSAPI test coverage        | Add 2–3 tests for `getCollectionDocument`                             |
-| 4        | F-NEW-04: Code duplication in format handlers | Extract shared extraction utilities                                   |
-| 5        | F-NEW-02: Double cast in factory.ts:57        | Replace with runtime type guard                                       |
-| 6        | F-NEW-09: Optional chaining inconsistency     | Normalize access patterns across Part 2 handlers                      |
-| 7        | F-NEW-10: SystemTypeUris bracket character    | Verify against OGC namespace registry                                 |
-| 8        | F-NEW-05: Live API validation                 | Test against live CSAPI deployment when available                     |
+| Priority | Finding                                       | Action                                            |
+| -------- | --------------------------------------------- | ------------------------------------------------- |
+| 4        | F-NEW-04: Code duplication in format handlers | Extract shared extraction utilities               |
+| 5        | F-NEW-02: Double cast in factory.ts:57        | Replace with runtime type guard                   |
+| 6        | F-NEW-09: Optional chaining inconsistency     | Normalize access patterns across Part 2 handlers  |
+| 7        | F-NEW-10: SystemTypeUris bracket character    | Verify against OGC namespace registry             |
+| 8        | F-NEW-05: Live API validation                 | Test against live CSAPI deployment when available |
 
 ---
 
@@ -520,22 +529,22 @@ Five issues were intentionally deferred during the project and remain open:
 
 ### Scorecard
 
-| Dimension                | Score | Rationale                                                                                  |
-| ------------------------ | ----- | ------------------------------------------------------------------------------------------ |
-| **Architecture**         | A     | Clean three-tier hierarchy, zero-coupling boundary, opt-in sub-path export                 |
-| **Code Quality**         | A     | Consistent patterns, excellent JSDoc, one cosmetic `as any` (functionally harmless)        |
-| **Type Safety**          | A     | Full TypeScript, correct `import type`, zero functional type issues                        |
-| **Test Coverage**        | A     | 1,277 test cases, 1.33:1 test-to-source ratio, all logic paths exercised                   |
-| **Documentation**        | A     | JSDoc with `@see` spec links everywhere, README consumer guide, comprehensive review trail |
-| **CI Compliance**        | A     | All 5 gates pass, all 4 boundary checks pass                                               |
-| **Upstream Integration** | A     | 9 files modified with surgical precision, zero behavioral changes to existing consumers    |
-| **Overall**              | **A** | Production-ready module, no blocking findings                                              |
+| Dimension                | Score  | Rationale                                                                                  |
+| ------------------------ | ------ | ------------------------------------------------------------------------------------------ |
+| **Architecture**         | A      | Clean three-tier hierarchy, zero-coupling boundary, opt-in sub-path export                 |
+| **Code Quality**         | A-     | Consistent patterns, excellent JSDoc, minor duplication in format handlers                 |
+| **Type Safety**          | A      | Full TypeScript, correct `import type`, one unnecessary `as any` (F-NEW-01)                |
+| **Test Coverage**        | B+     | 1,277 test cases, 1.33:1 test-to-source ratio, but factory/endpoint gaps                   |
+| **Documentation**        | A      | JSDoc with `@see` spec links everywhere, README consumer guide, comprehensive review trail |
+| **CI Compliance**        | A      | All 5 gates pass, all 4 boundary checks pass                                               |
+| **Upstream Integration** | A      | 9 files modified with surgical precision, zero behavioral changes to existing consumers    |
+| **Overall**              | **A-** | Production-ready module with minor polish items                                            |
 
 ### Final Verdict
 
 **PASS — The CSAPI module is ready for upstream review.**
 
-The 28,254-line module implements OGC API — Connected Systems Parts 1 and 2 with excellent architectural discipline, comprehensive testing, and zero impact on existing library consumers. All 10 new findings are cosmetic, informational, or nice-to-have improvements — none are functional issues, none block the PR, and none require changes before marking PR #136 "Ready for Review."
+The 28,254-line module implements OGC API — Connected Systems Parts 1 and 2 with excellent architectural discipline, comprehensive testing, and zero impact on existing library consumers. One minor fix (removing the stale `as any` cast in `factory.ts`) should be applied to the `clean-pr` branch before marking PR #136 "Ready for Review." Test coverage for `factory.ts` and the endpoint CSAPI section would benefit from expansion but are not blocking.
 
 The project successfully delivers:
 
