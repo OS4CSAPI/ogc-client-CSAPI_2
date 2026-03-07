@@ -1,5 +1,5 @@
 ---
-status: pending
+status: upstream
 priority: p2
 issue_id: "006"
 tags: [code-review, security, credential-leakage]

@@ -1,6 +1,6 @@
 # Phase 7: Code Review Cleanup — Plan
 
-**Version:** 1.1
+**Version:** 1.2
 **Date:** March 7, 2026
 **Status:** Ready for Execution
 **Scope:** Resolve 17 open issues (11 code-review findings + 6 pre-existing bugs) across 16 steps
@@ -19,7 +19,7 @@ This plan covers the execution of **Phase 7: Code Review Cleanup** — resolving
 
 **What this does NOT cover:**
 
-- Upstream-only findings 001 and 002 (tracked in `docs/code-review/upstream-findings-report.md`)
+- Upstream-only findings 001, 002, 005, and 006 (tracked in `docs/code-review/upstream-findings-report.md`)
 - Issue #110 (new `@link` resolution utilities — deferred, see `docs/code-review/110-deferred-enhancement-link-resolution-utilities.md`)
 - Any changes to upstream code we did not author
 
@@ -144,8 +144,10 @@ Before starting, confirm that `phase-6` in CSAPI_2 and `clean-pr` in ogc-client 
 
 | # | Title | Reason | Details |
 |---|-------|--------|---------|
-| 001 | Path traversal via unencoded `itemId` | Upstream-only | See `docs/code-review/upstream-findings-report.md` |
-| 002 | Query param injection via `encodeURI` | Upstream-only | See `docs/code-review/upstream-findings-report.md` |
+| 001 | Path traversal via unencoded `itemId` | Upstream-only (P1) | See `docs/code-review/upstream-findings-report.md` |
+| 002 | Query param injection via `encodeURI` | Upstream-only (P1) | See `docs/code-review/upstream-findings-report.md` |
+| 005 | `OgcApiEndpoint` accepts `http://` without warning | Upstream-only (P2) | See `docs/code-review/upstream-findings-report.md` |
+| 006 | Full `error` object logged — may expose API keys | Upstream-only (P2) | See `docs/code-review/upstream-findings-report.md` |
 | #110 | `@link` / `@id` resolution utilities | New functionality | See `docs/code-review/110-deferred-enhancement-link-resolution-utilities.md` |
 
 ---
@@ -388,4 +390,4 @@ After porting to ogc-client `clean-pr`:
 After this cleanup is complete and the PR is updated:
 
 - **#110** — `@link` / `@id` resolution utilities — first enhancement, separate PR
-- **001, 002** — Upstream security fixes — coordinate with camptocamp maintainer, separate PR
+- **001, 002, 005, 006** — Upstream security/quality fixes — coordinate with camptocamp maintainer, separate PR(s)
