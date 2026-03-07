@@ -15,6 +15,10 @@ import type { OgcApiCollectionInfo } from '../../model.js';
 import CSAPIQueryBuilder from '../url_builder.js';
 import { EndpointError } from '../../../shared/errors.js';
 import { parseCollectionResponse } from '../formats/response.js';
+
+// Identity parseItem — passes elements through unchanged (for envelope/classification tests)
+const identity = (item: unknown) => item;
+
 import {
   isCSAPIFeature,
   getCSAPIResourceType,
@@ -241,7 +245,7 @@ describe('Discovery workflow — full lifecycle', () => {
 
 describe('Discovery workflow — GeoJSON response parsing', () => {
   it('parses FeatureCollection into normalized CollectionResponse', () => {
-    const result = parseCollectionResponse(SYSTEMS_GEOJSON);
+    const result = parseCollectionResponse(SYSTEMS_GEOJSON, identity);
 
     expect(result.items).toHaveLength(2);
     expect(result.numberMatched).toBe(10);
@@ -251,7 +255,7 @@ describe('Discovery workflow — GeoJSON response parsing', () => {
   });
 
   it('classifies each feature from the parsed response', () => {
-    const result = parseCollectionResponse(SYSTEMS_GEOJSON);
+    const result = parseCollectionResponse(SYSTEMS_GEOJSON, identity);
 
     expect(getCSAPIResourceType(result.items[0])).toBe('System');
     expect(getCSAPIResourceType(result.items[1])).toBe('System');
@@ -259,7 +263,7 @@ describe('Discovery workflow — GeoJSON response parsing', () => {
   });
 
   it('extracts typed System from response features', () => {
-    const result = parseCollectionResponse(SYSTEMS_GEOJSON);
+    const result = parseCollectionResponse(SYSTEMS_GEOJSON, identity);
     const system = extractCSAPIFeature(
       result.items[0] as Record<string, unknown>
     );
@@ -277,7 +281,7 @@ describe('Discovery workflow — GeoJSON response parsing', () => {
 
 describe('Discovery workflow — items envelope parsing', () => {
   it('parses items envelope into normalized CollectionResponse', () => {
-    const result = parseCollectionResponse(DATASTREAMS_ITEMS);
+    const result = parseCollectionResponse(DATASTREAMS_ITEMS, identity);
 
     expect(result.items).toHaveLength(1);
     expect(result.items[0]).toHaveProperty('id', 'ds-001');
@@ -292,7 +296,7 @@ describe('Discovery workflow — items envelope parsing', () => {
 
 describe('Discovery workflow — classification fallback', () => {
   it('uses endpoint-context hint when featureType is null', () => {
-    const result = parseCollectionResponse(SYSTEMS_NULL_FEATURETYPE);
+    const result = parseCollectionResponse(SYSTEMS_NULL_FEATURETYPE, identity);
     const feature = result.items[0];
 
     // Pure featureType classification fails
@@ -416,14 +420,14 @@ describe('Discovery workflow — partial collection support', () => {
 
 describe('Discovery workflow — error scenarios', () => {
   it('throws on invalid collection response body', () => {
-    expect(() => parseCollectionResponse(null)).toThrow(/expected an object/);
-    expect(() => parseCollectionResponse('string')).toThrow(
+    expect(() => parseCollectionResponse(null, identity)).toThrow(/expected an object/);
+    expect(() => parseCollectionResponse('string', identity)).toThrow(
       /expected an object/
     );
   });
 
   it('throws on response missing both features and items arrays', () => {
-    expect(() => parseCollectionResponse({ data: [] })).toThrow(
+    expect(() => parseCollectionResponse({ data: [] }, identity)).toThrow(
       /missing both "features" and "items"/
     );
   });

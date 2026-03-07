@@ -22,6 +22,10 @@
 import type { OgcApiCollectionInfo } from '../../model.js';
 import CSAPIQueryBuilder from '../url_builder.js';
 import { parseCollectionResponse } from '../formats/response.js';
+
+// Identity parseItem — passes elements through unchanged (for envelope/pagination tests)
+const identity = (item: unknown) => item;
+
 import {
   isCSAPIFeature,
   getCSAPIResourceType,
@@ -401,22 +405,22 @@ describe('Navigation — paginated navigation with items envelope', () => {
   };
 
   it('accumulates items across three pages', () => {
-    const p1 = parseCollectionResponse(PAGE_1);
-    const p2 = parseCollectionResponse(PAGE_2);
-    const p3 = parseCollectionResponse(PAGE_3);
+    const p1 = parseCollectionResponse(PAGE_1, identity);
+    const p2 = parseCollectionResponse(PAGE_2, identity);
+    const p3 = parseCollectionResponse(PAGE_3, identity);
 
     const allItems = [...p1.items, ...p2.items, ...p3.items];
     expect(allItems).toHaveLength(5);
   });
 
   it('detects end of pagination when no next link', () => {
-    const p3 = parseCollectionResponse(PAGE_3);
+    const p3 = parseCollectionResponse(PAGE_3, identity);
     const nextLink = p3.links.find((l) => l.rel === 'next');
     expect(nextLink).toBeUndefined();
   });
 
   it('preserves numberMatched across pages', () => {
-    const p1 = parseCollectionResponse(PAGE_1);
+    const p1 = parseCollectionResponse(PAGE_1, identity);
     expect(p1.numberMatched).toBe(5);
   });
 });
@@ -508,20 +512,20 @@ describe('Navigation — partial collection support', () => {
 
 describe('Navigation — error handling across workflows', () => {
   it('parseCollectionResponse rejects non-object input', () => {
-    expect(() => parseCollectionResponse(null)).toThrow(
+    expect(() => parseCollectionResponse(null, identity)).toThrow(
       /Invalid collection response/
     );
-    expect(() => parseCollectionResponse('string')).toThrow(
+    expect(() => parseCollectionResponse('string', identity)).toThrow(
       /Invalid collection response/
     );
-    expect(() => parseCollectionResponse(42)).toThrow(
+    expect(() => parseCollectionResponse(42, identity)).toThrow(
       /Invalid collection response/
     );
   });
 
   it('parseCollectionResponse rejects object with neither features nor items', () => {
     expect(() =>
-      parseCollectionResponse({ links: [], other: 'data' })
+      parseCollectionResponse({ links: [], other: 'data' }, identity)
     ).toThrow();
   });
 

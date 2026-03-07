@@ -18,6 +18,10 @@ import type { OgcApiCollectionInfo } from '../../model.js';
 import CSAPIQueryBuilder from '../url_builder.js';
 import { EndpointError } from '../../../shared/errors.js';
 import { parseCollectionResponse } from '../formats/response.js';
+
+// Identity parseItem — passes elements through unchanged (for envelope tests)
+const identity = (item: unknown) => item;
+
 import {
   isCommandRouteRejection,
   getCommandRoutingPreference,
@@ -170,7 +174,7 @@ describe('Command workflow — control stream discovery', () => {
   });
 
   it('parses control stream items response', () => {
-    const parsed = parseCollectionResponse(CONTROL_STREAMS_RESPONSE);
+    const parsed = parseCollectionResponse(CONTROL_STREAMS_RESPONSE, identity);
     expect(parsed.items).toHaveLength(2);
 
     const valve = parsed.items[0] as Record<string, unknown>;
@@ -217,7 +221,7 @@ describe('Command workflow — command submission', () => {
   });
 
   it('parses async command submission response', () => {
-    const parsed = parseCollectionResponse(COMMAND_CREATED_ASYNC);
+    const parsed = parseCollectionResponse(COMMAND_CREATED_ASYNC, identity);
     expect(parsed.items).toHaveLength(1);
 
     const cmd = parsed.items[0] as Record<string, unknown>;
@@ -227,7 +231,7 @@ describe('Command workflow — command submission', () => {
   });
 
   it('parses sync command response with immediate completion', () => {
-    const parsed = parseCollectionResponse(COMMAND_SYNC_RESULT);
+    const parsed = parseCollectionResponse(COMMAND_SYNC_RESULT, identity);
     const cmd = parsed.items[0] as Record<string, unknown>;
     expect(cmd.currentStatus).toBe('COMPLETED');
   });
@@ -248,7 +252,7 @@ describe('Command workflow — status tracking', () => {
   });
 
   it('parses executing status with progress', () => {
-    const parsed = parseCollectionResponse(COMMAND_STATUS_EXECUTING);
+    const parsed = parseCollectionResponse(COMMAND_STATUS_EXECUTING, identity);
     const status = parsed.items[0] as Record<string, unknown>;
     expect(status.statusCode).toBe('EXECUTING');
     expect(status.percentCompletion).toBe(50);
@@ -256,7 +260,7 @@ describe('Command workflow — status tracking', () => {
   });
 
   it('parses completed status', () => {
-    const parsed = parseCollectionResponse(COMMAND_STATUS_COMPLETED);
+    const parsed = parseCollectionResponse(COMMAND_STATUS_COMPLETED, identity);
     const status = parsed.items[0] as Record<string, unknown>;
     expect(status.statusCode).toBe('COMPLETED');
     expect(status.percentCompletion).toBe(100);

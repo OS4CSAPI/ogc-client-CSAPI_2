@@ -14,6 +14,10 @@
 import type { OgcApiCollectionInfo } from '../../model.js';
 import CSAPIQueryBuilder from '../url_builder.js';
 import { parseCollectionResponse } from '../formats/response.js';
+
+// Identity parseItem — passes elements through unchanged (for envelope/pagination tests)
+const identity = (item: unknown) => item;
+
 import { parseSWEComponent } from '../formats/swecommon/parser.js';
 import { getCSAPIResourceType } from '../formats/geojson.js';
 
@@ -187,7 +191,7 @@ describe('Observation workflow — system to datastream discovery', () => {
     const url = builder.getSystems({ limit: 10 });
     expect(url).toContain('/systems?limit=10');
 
-    const parsed = parseCollectionResponse(SYSTEMS_RESPONSE);
+    const parsed = parseCollectionResponse(SYSTEMS_RESPONSE, identity);
     expect(parsed.items).toHaveLength(1);
     expect(getCSAPIResourceType(parsed.items[0])).toBe('System');
   });
@@ -200,7 +204,7 @@ describe('Observation workflow — system to datastream discovery', () => {
   });
 
   it('parses datastream items envelope and accesses datastream metadata', () => {
-    const parsed = parseCollectionResponse(DATASTREAMS_RESPONSE);
+    const parsed = parseCollectionResponse(DATASTREAMS_RESPONSE, identity);
     expect(parsed.items).toHaveLength(2);
 
     const tempDs = parsed.items[0] as Record<string, unknown>;
@@ -252,7 +256,7 @@ describe('Observation workflow — temporal query parameters', () => {
 
 describe('Observation workflow — pagination', () => {
   it('detects next link in first page', () => {
-    const page1 = parseCollectionResponse(OBSERVATIONS_PAGE_1);
+    const page1 = parseCollectionResponse(OBSERVATIONS_PAGE_1, identity);
     expect(page1.items).toHaveLength(2);
 
     const nextLink = page1.links.find(
@@ -263,7 +267,7 @@ describe('Observation workflow — pagination', () => {
   });
 
   it('detects end of pagination on last page', () => {
-    const page2 = parseCollectionResponse(OBSERVATIONS_PAGE_2);
+    const page2 = parseCollectionResponse(OBSERVATIONS_PAGE_2, identity);
     expect(page2.items).toHaveLength(1);
 
     const nextLink = page2.links.find(
@@ -273,8 +277,8 @@ describe('Observation workflow — pagination', () => {
   });
 
   it('accumulates items across pages', () => {
-    const page1 = parseCollectionResponse(OBSERVATIONS_PAGE_1);
-    const page2 = parseCollectionResponse(OBSERVATIONS_PAGE_2);
+    const page1 = parseCollectionResponse(OBSERVATIONS_PAGE_1, identity);
+    const page2 = parseCollectionResponse(OBSERVATIONS_PAGE_2, identity);
 
     const allItems = [...page1.items, ...page2.items];
     expect(allItems).toHaveLength(3);
@@ -355,13 +359,13 @@ describe('Observation workflow — observation creation', () => {
 describe('Observation workflow — error handling', () => {
   it('handles empty observation collection gracefully', () => {
     const emptyResponse = { items: [], links: [] };
-    const parsed = parseCollectionResponse(emptyResponse);
+    const parsed = parseCollectionResponse(emptyResponse, identity);
     expect(parsed.items).toHaveLength(0);
     expect(parsed.links).toHaveLength(0);
   });
 
   it('throws on malformed observation response (not an object)', () => {
-    expect(() => parseCollectionResponse(42)).toThrow(/expected an object/);
+    expect(() => parseCollectionResponse(42, identity)).toThrow(/expected an object/);
   });
 
   it('propagates EndpointError when datastreams not available', () => {
