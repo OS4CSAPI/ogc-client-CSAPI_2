@@ -1342,18 +1342,28 @@ describe('Deployment association and history', () => {
     );
   }
 
-  it('getDeploymentSystems returns correct URL', () => {
+  it('getDeploymentSystems returns correct URL (deprecated)', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const url = makeDepBuilder().getDeploymentSystems('dep-001');
     expect(url).toBe(
       'https://example.com/collections/iot/deployments/dep-001/systems'
     );
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('getDeploymentSystems() is deprecated')
+    );
+    warnSpy.mockRestore();
   });
 
-  it('getDeploymentSystems returns correct URL with options', () => {
+  it('getDeploymentSystems returns correct URL with options (deprecated)', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const url = makeDepBuilder().getDeploymentSystems('dep-001', { limit: 5 });
     expect(url).toBe(
       'https://example.com/collections/iot/deployments/dep-001/systems?limit=5'
     );
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('getDeploymentSystems() is deprecated')
+    );
+    warnSpy.mockRestore();
   });
 
   it('getDeploymentHistory returns correct URL', () => {
@@ -1373,6 +1383,7 @@ describe('Deployment association and history', () => {
 
 describe('Deployment resource validation', () => {
   it('throws EndpointError when deployments is unavailable', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const builder = new CSAPIQueryBuilder(
       makeCollection({
         id: 'sensors',
@@ -1397,6 +1408,7 @@ describe('Deployment resource validation', () => {
     );
     expect(() => builder.getDeploymentSystems('x')).toThrow(EndpointError);
     expect(() => builder.getDeploymentHistory('x')).toThrow(EndpointError);
+    warnSpy.mockRestore();
   });
 });
 

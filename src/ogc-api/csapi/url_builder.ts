@@ -922,20 +922,26 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for listing systems associated with a deployment.
    *
+   * @deprecated The `/deployments/{id}/systems` endpoint does not exist in the
+   * OGC API — Connected Systems Part 1 standard (OGC 23-001). The standard
+   * defines `deployedSystems` as an inline GeoJSON property
+   * (`properties/deployedSystems@link`) — an array of link objects embedded
+   * within a Deployment feature representation (Table 43). Use the parsed
+   * `deployedSystemsLink` property on a fetched `CSAPIDeployment` instead.
+   *
    * @param id - The deployment resource identifier.
    * @param options - Optional query parameters for filtering systems.
-   * @returns URL string for the deployment's systems endpoint.
+   * @returns URL string for the (non-standard) deployment systems endpoint.
    * @throws {EndpointError} If 'deployments' is not available on this collection.
-   *
-   * @example
-   * ```ts
-   * const url = builder.getDeploymentSystems('dep-001');
-   * // => "https://example.com/collections/iot/deployments/dep-001/systems"
-   * ```
    *
    * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
    */
   getDeploymentSystems(id: string, options?: SystemQueryOptions): string {
+    console.warn(
+      'getDeploymentSystems() is deprecated: /deployments/{id}/systems is not ' +
+        'a standard endpoint (OGC 23-001). Use the deployedSystemsLink property ' +
+        'on a fetched Deployment feature instead.'
+    );
     this.assertResourceAvailable('deployments');
     return this.buildResourceUrl('deployments', id, 'systems', options);
   }

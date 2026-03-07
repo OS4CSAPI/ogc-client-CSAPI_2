@@ -124,7 +124,13 @@ const DEPLOYMENT_FEATURE = {
     featureType: 'http://www.w3.org/ns/sosa/Deployment',
     name: 'Field Deployment Alpha',
     validTime: { start: '2024-03-01T00:00:00Z' },
-    deployedSystems: ['sys-001'],
+    'deployedSystems@link': [
+      {
+        href: 'https://example.com/api/systems/sys-001',
+        uid: 'urn:example:system:sys-001',
+        title: 'Weather Station Alpha',
+      },
+    ],
   },
 };
 
