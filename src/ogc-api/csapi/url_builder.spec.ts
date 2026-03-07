@@ -564,24 +564,6 @@ describe('getSystem', () => {
       'https://example.com/collections/iot/systems/urn%3Aexample%3Asensor%3A001'
     );
   });
-
-  it('throws EndpointError when systems is unavailable', () => {
-    const builder = new CSAPIQueryBuilder(
-      makeCollection({
-        id: 'no-systems',
-        links: [
-          {
-            rel: 'self',
-            type: '',
-            title: '',
-            href: 'https://example.com/collections/no-systems',
-          },
-        ],
-      })
-    );
-
-    expect(() => builder.getSystem('abc')).toThrow(EndpointError);
-  });
 });
 
 // ========================================
@@ -877,11 +859,6 @@ describe('createSubsystem', () => {
       'https://example.com/collections/iot/systems/urn%3Aexample%3Asys%3A001/subsystems'
     );
   });
-
-  it('throws EndpointError when systems is unavailable', () => {
-    const builder = new CSAPIQueryBuilder(makeCollection({ id: 'empty' }));
-    expect(() => builder.createSubsystem('x')).toThrow(EndpointError);
-  });
 });
 
 describe('createDataStreamForSystem', () => {
@@ -915,11 +892,6 @@ describe('createDataStreamForSystem', () => {
     expect(url).toBe(
       'https://example.com/collections/iot/systems/urn%3Aexample%3Asys%3A001/datastreams'
     );
-  });
-
-  it('throws EndpointError when systems is unavailable', () => {
-    const builder = new CSAPIQueryBuilder(makeCollection({ id: 'empty' }));
-    expect(() => builder.createDataStreamForSystem('x')).toThrow(EndpointError);
   });
 });
 
@@ -955,13 +927,6 @@ describe('createControlStreamForSystem', () => {
       'https://example.com/collections/iot/systems/urn%3Aexample%3Asys%3A001/controlstreams'
     );
   });
-
-  it('throws EndpointError when systems is unavailable', () => {
-    const builder = new CSAPIQueryBuilder(makeCollection({ id: 'empty' }));
-    expect(() => builder.createControlStreamForSystem('x')).toThrow(
-      EndpointError
-    );
-  });
 });
 
 describe('createSamplingFeatureForSystem', () => {
@@ -994,13 +959,6 @@ describe('createSamplingFeatureForSystem', () => {
     );
     expect(url).toBe(
       'https://example.com/collections/iot/systems/urn%3Aexample%3Asys%3A001/samplingFeatures'
-    );
-  });
-
-  it('throws EndpointError when systems is unavailable', () => {
-    const builder = new CSAPIQueryBuilder(makeCollection({ id: 'empty' }));
-    expect(() => builder.createSamplingFeatureForSystem('x')).toThrow(
-      EndpointError
     );
   });
 });
@@ -1039,11 +997,6 @@ describe('createSubdeployment', () => {
     expect(url).toBe(
       'https://example.com/collections/iot/deployments/urn%3Aexample%3Adep%3A001/subdeployments'
     );
-  });
-
-  it('throws EndpointError when deployments is unavailable', () => {
-    const builder = new CSAPIQueryBuilder(makeCollection({ id: 'empty' }));
-    expect(() => builder.createSubdeployment('x')).toThrow(EndpointError);
   });
 });
 
@@ -1383,7 +1336,6 @@ describe('Deployment association and history', () => {
 
 describe('Deployment resource validation', () => {
   it('throws EndpointError when deployments is unavailable', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const builder = new CSAPIQueryBuilder(
       makeCollection({
         id: 'sensors',
@@ -1399,16 +1351,7 @@ describe('Deployment resource validation', () => {
       })
     );
     expect(() => builder.getDeployments()).toThrow(EndpointError);
-    expect(() => builder.getDeployment('x')).toThrow(EndpointError);
     expect(() => builder.createDeployment()).toThrow(EndpointError);
-    expect(() => builder.updateDeployment('x')).toThrow(EndpointError);
-    expect(() => builder.deleteDeployment('x')).toThrow(EndpointError);
-    expect(() => builder.getDeploymentSubdeployments('x')).toThrow(
-      EndpointError
-    );
-    expect(() => builder.getDeploymentSystems('x')).toThrow(EndpointError);
-    expect(() => builder.getDeploymentHistory('x')).toThrow(EndpointError);
-    warnSpy.mockRestore();
   });
 });
 
@@ -1680,13 +1623,7 @@ describe('Procedure resource validation', () => {
       })
     );
     expect(() => builder.getProcedures()).toThrow(EndpointError);
-    expect(() => builder.getProcedure('x')).toThrow(EndpointError);
     expect(() => builder.createProcedure()).toThrow(EndpointError);
-    expect(() => builder.updateProcedure('x')).toThrow(EndpointError);
-    expect(() => builder.deleteProcedure('x')).toThrow(EndpointError);
-    expect(() => builder.getProcedureSystems('x')).toThrow(EndpointError);
-    expect(() => builder.getProcedureDataStreams('x')).toThrow(EndpointError);
-    expect(() => builder.getProcedureHistory('x')).toThrow(EndpointError);
   });
 });
 
@@ -1991,15 +1928,7 @@ describe('SamplingFeature resource validation', () => {
       })
     );
     expect(() => builder.getSamplingFeatures()).toThrow(EndpointError);
-    expect(() => builder.getSamplingFeature('x')).toThrow(EndpointError);
     expect(() => builder.createSamplingFeature()).toThrow(EndpointError);
-    expect(() => builder.updateSamplingFeature('x')).toThrow(EndpointError);
-    expect(() => builder.deleteSamplingFeature('x')).toThrow(EndpointError);
-    expect(() => builder.getSamplingFeatureSystems('x')).toThrow(EndpointError);
-    expect(() => builder.getSamplingFeatureObservations('x')).toThrow(
-      EndpointError
-    );
-    expect(() => builder.getSamplingFeatureHistory('x')).toThrow(EndpointError);
   });
 });
 
