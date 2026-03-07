@@ -337,7 +337,7 @@ Documented in `docs/code-review/110-deferred-enhancement-link-resolution-utiliti
 
 | Item | Location | Note |
 |------|----------|------|
-| SWE Common sub-component parsing in SensorML | `sensorml/parser.ts`, `sensorml/_helpers.ts` | Deferred to Issues #24–#28 |
+| SWE Common sub-component parsing in SensorML | `sensorml/parser.ts`, `sensorml/_helpers.ts` | SWE Common parsers exist (Issues #24–#28, closed Feb 16); deeper recursive sub-component expansion in SensorML is an intentional scope boundary |
 | Full GeoJSON Geometry typing | `swecommon/types.ts` | Out of scope — uses loose typing |
 | Binary DataArray decoding | `swecommon/data-array.ts` | Explicitly out of scope |
 | `sortBy`/`sortOrder` query parameters | `url_builder.ts` | Optional conformance class — not required by core |
