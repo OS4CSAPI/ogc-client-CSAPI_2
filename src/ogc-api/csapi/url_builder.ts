@@ -424,6 +424,31 @@ export default class CSAPIQueryBuilder {
     }
   }
 
+  /**
+   * Guards resource availability for collection-level requests and constructs
+   * the URL. When `id` is provided (per-resource request), the guard is
+   * skipped — per-ID methods do not require top-level endpoint discovery
+   * (see #100).
+   *
+   * @param resourceType - The resource type key (e.g., 'systems', 'datastreams').
+   * @param id - Optional resource ID. When absent, `assertResourceAvailable` is called.
+   * @param subPath - Optional sub-path (e.g., 'schema', 'observations').
+   * @param options - Optional query parameters.
+   * @returns Fully constructed URL string.
+   * @throws {EndpointError} If `id` is absent and the resource type is not available.
+   */
+  private build(
+    resourceType: string,
+    id?: string,
+    subPath?: ResourceSubPath,
+    options?: QueryOptions
+  ): string {
+    if (!id) {
+      this.assertResourceAvailable(resourceType);
+    }
+    return this.buildResourceUrl(resourceType, id, subPath, options);
+  }
+
   // ========================================
   // SYSTEMS METHODS
   // ========================================
@@ -444,8 +469,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
    */
   getSystems(options?: SystemQueryOptions): string {
-    this.assertResourceAvailable('systems');
-    return this.buildResourceUrl('systems', undefined, undefined, options);
+    return this.build('systems', undefined, undefined, options);
   }
 
   /**
@@ -465,7 +489,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
    */
   getSystem(id: string, options?: QueryOptions): string {
-    return this.buildResourceUrl('systems', id, undefined, options);
+    return this.build('systems', id, undefined, options);
   }
 
   /**
@@ -483,8 +507,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
    */
   createSystem(): string {
-    this.assertResourceAvailable('systems');
-    return this.buildResourceUrl('systems');
+    return this.build('systems');
   }
 
   /**
@@ -524,7 +547,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
    */
   updateSystem(id: string): string {
-    return this.buildResourceUrl('systems', id);
+    return this.build('systems', id);
   }
 
   /**
@@ -543,7 +566,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
    */
   deleteSystem(id: string): string {
-    return this.buildResourceUrl('systems', id);
+    return this.build('systems', id);
   }
 
   /**
@@ -563,7 +586,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_system_history
    */
   getSystemHistory(id: string, options?: QueryOptions): string {
-    return this.buildResourceUrl('systems', id, 'history', options);
+    return this.build('systems', id, 'history', options);
   }
 
   /**
@@ -584,7 +607,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
    */
   getSystemSubsystems(id: string, options?: SystemQueryOptions): string {
-    return this.buildResourceUrl('systems', id, 'subsystems', options);
+    return this.build('systems', id, 'subsystems', options);
   }
 
   /**
@@ -605,7 +628,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_system_resources
    */
   createSubsystem(parentId: string): string {
-    return this.buildResourceUrl('systems', parentId, 'subsystems');
+    return this.build('systems', parentId, 'subsystems');
   }
 
   /**
@@ -625,7 +648,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
   getSystemDataStreams(id: string, options?: DatastreamQueryOptions): string {
-    return this.buildResourceUrl('systems', id, 'datastreams', options);
+    return this.build('systems', id, 'datastreams', options);
   }
 
   /**
@@ -648,7 +671,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
   createDataStreamForSystem(systemId: string): string {
-    return this.buildResourceUrl('systems', systemId, 'datastreams');
+    return this.build('systems', systemId, 'datastreams');
   }
 
   /**
@@ -671,7 +694,7 @@ export default class CSAPIQueryBuilder {
     id: string,
     options?: ControlStreamQueryOptions
   ): string {
-    return this.buildResourceUrl('systems', id, 'controlstreams', options);
+    return this.build('systems', id, 'controlstreams', options);
   }
 
   /**
@@ -693,7 +716,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-002/23-002.html#_controlstream_resources
    */
   createControlStreamForSystem(systemId: string): string {
-    return this.buildResourceUrl('systems', systemId, 'controlstreams');
+    return this.build('systems', systemId, 'controlstreams');
   }
 
   /**
@@ -713,7 +736,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_sampling_feature_resources
    */
   getSystemSamplingFeatures(id: string, options?: QueryOptions): string {
-    return this.buildResourceUrl('systems', id, 'samplingFeatures', options);
+    return this.build('systems', id, 'samplingFeatures', options);
   }
 
   /**
@@ -735,7 +758,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_sampling_feature_resources
    */
   createSamplingFeatureForSystem(systemId: string): string {
-    return this.buildResourceUrl('systems', systemId, 'samplingFeatures');
+    return this.build('systems', systemId, 'samplingFeatures');
   }
 
   /**
@@ -755,7 +778,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
    */
   getSystemDeployments(id: string, options?: DeploymentQueryOptions): string {
-    return this.buildResourceUrl('systems', id, 'deployments', options);
+    return this.build('systems', id, 'deployments', options);
   }
 
   /**
@@ -775,7 +798,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
    */
   getSystemProcedures(id: string, options?: QueryOptions): string {
-    return this.buildResourceUrl('systems', id, 'procedures', options);
+    return this.build('systems', id, 'procedures', options);
   }
 
   // ========================================
@@ -799,8 +822,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
    */
   getDeployments(options?: DeploymentQueryOptions): string {
-    this.assertResourceAvailable('deployments');
-    return this.buildResourceUrl('deployments', undefined, undefined, options);
+    return this.build('deployments', undefined, undefined, options);
   }
 
   /**
@@ -820,7 +842,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
    */
   getDeployment(id: string, options?: QueryOptions): string {
-    return this.buildResourceUrl('deployments', id, undefined, options);
+    return this.build('deployments', id, undefined, options);
   }
 
   /**
@@ -838,8 +860,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
    */
   createDeployment(): string {
-    this.assertResourceAvailable('deployments');
-    return this.buildResourceUrl('deployments');
+    return this.build('deployments');
   }
 
   /**
@@ -866,7 +887,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
    */
   updateDeployment(id: string): string {
-    return this.buildResourceUrl('deployments', id);
+    return this.build('deployments', id);
   }
 
   /**
@@ -885,7 +906,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
    */
   deleteDeployment(id: string): string {
-    return this.buildResourceUrl('deployments', id);
+    return this.build('deployments', id);
   }
 
   /**
@@ -909,7 +930,7 @@ export default class CSAPIQueryBuilder {
     id: string,
     options?: DeploymentQueryOptions
   ): string {
-    return this.buildResourceUrl('deployments', id, 'subdeployments', options);
+    return this.build('deployments', id, 'subdeployments', options);
   }
 
   /**
@@ -930,7 +951,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_resources
    */
   createSubdeployment(parentId: string): string {
-    return this.buildResourceUrl('deployments', parentId, 'subdeployments');
+    return this.build('deployments', parentId, 'subdeployments');
   }
 
   /**
@@ -956,7 +977,7 @@ export default class CSAPIQueryBuilder {
         'a standard endpoint (OGC 23-001). Use the deployedSystemsLink property ' +
         'on a fetched Deployment feature instead.'
     );
-    return this.buildResourceUrl('deployments', id, 'systems', options);
+    return this.build('deployments', id, 'systems', options);
   }
 
   /**
@@ -976,7 +997,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_deployment_history
    */
   getDeploymentHistory(id: string, options?: QueryOptions): string {
-    return this.buildResourceUrl('deployments', id, 'history', options);
+    return this.build('deployments', id, 'history', options);
   }
 
   // ========================================
@@ -1001,8 +1022,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
    */
   getProcedures(options?: ProcedureQueryOptions): string {
-    this.assertResourceAvailable('procedures');
-    return this.buildResourceUrl('procedures', undefined, undefined, options);
+    return this.build('procedures', undefined, undefined, options);
   }
 
   /**
@@ -1022,7 +1042,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
    */
   getProcedure(id: string, options?: QueryOptions): string {
-    return this.buildResourceUrl('procedures', id, undefined, options);
+    return this.build('procedures', id, undefined, options);
   }
 
   /**
@@ -1040,8 +1060,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
    */
   createProcedure(): string {
-    this.assertResourceAvailable('procedures');
-    return this.buildResourceUrl('procedures');
+    return this.build('procedures');
   }
 
   /**
@@ -1068,7 +1087,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
    */
   updateProcedure(id: string): string {
-    return this.buildResourceUrl('procedures', id);
+    return this.build('procedures', id);
   }
 
   /**
@@ -1087,7 +1106,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
    */
   deleteProcedure(id: string): string {
-    return this.buildResourceUrl('procedures', id);
+    return this.build('procedures', id);
   }
 
   /**
@@ -1107,7 +1126,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_resources
    */
   getProcedureSystems(id: string, options?: SystemQueryOptions): string {
-    return this.buildResourceUrl('procedures', id, 'systems', options);
+    return this.build('procedures', id, 'systems', options);
   }
 
   /**
@@ -1130,7 +1149,7 @@ export default class CSAPIQueryBuilder {
     id: string,
     options?: DatastreamQueryOptions
   ): string {
-    return this.buildResourceUrl('procedures', id, 'datastreams', options);
+    return this.build('procedures', id, 'datastreams', options);
   }
 
   /**
@@ -1150,7 +1169,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html#_procedure_history
    */
   getProcedureHistory(id: string, options?: QueryOptions): string {
-    return this.buildResourceUrl('procedures', id, 'history', options);
+    return this.build('procedures', id, 'history', options);
   }
 
   // ========================================
