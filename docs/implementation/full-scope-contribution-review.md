@@ -148,16 +148,15 @@ Note: The template expected 87 methods. The actual count is 91 — the additiona
 
 All 9 internal helpers verified NOT exported: `build()`, `buildResourceUrl()`, `buildQueryString()`, `assertResourceAvailable()`, `requireObject()`, `parseBaseStream()`, `isSafeHref()`, `PADDING`, fixture helpers.
 
-### Entry Points — ✅ PASS (with 1 finding)
+### Entry Points — ✅ PASS
 
 | Access Pattern | Status |
 |---|---|
 | `endpoint.hasConnectedSystems` getter | ✅ Present |
 | `endpoint.csapiCollections` getter | ✅ Present |
 | `createCSAPIBuilder(endpoint, collectionId)` factory | ✅ Present |
-| `endpoint.csapi(collectionId)` convenience method | ❌ Not implemented — exists only in JSDoc `@example` blocks |
 
-**Finding: [F2]** — The class-level JSDoc on `CSAPIQueryBuilder` and the `hasConnectedSystems` getter both reference `endpoint.csapi('weather-stations')` as the canonical usage pattern, but no `csapi()` method exists on `OgcApiEndpoint`. The actual entry point is `createCSAPIBuilder(endpoint, collectionId)`. See F2 below.
+Note: JSDoc `@example` blocks previously referenced a non-existent `endpoint.csapi()` convenience method. These have been corrected to use `createCSAPIBuilder()` — see [F2] in Findings.
 
 ---
 
