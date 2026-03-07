@@ -31,6 +31,25 @@ import { parseValidTime } from './geojson.js';
 // Shared Helpers
 // ========================================
 
+/**
+ * Validates that `json` is a non-null object and returns it as a
+ * `Record<string, unknown>` for safe property access.
+ *
+ * Consolidates the identical null-guard + cast boilerplate that was
+ * previously duplicated across all 5 Part 2 parse functions.
+ *
+ * @param json - Raw JSON value from a collection response.
+ * @param fn - Function name for the error message.
+ * @returns The input narrowed to `Record<string, unknown>`.
+ * @throws {Error} When `json` is not a non-null object.
+ */
+function requireObject(json: unknown, fn: string): Record<string, unknown> {
+  if (typeof json !== 'object' || json === null) {
+    throw new Error(`${fn}: input must be a non-null object`);
+  }
+  return json as Record<string, unknown>;
+}
+
 /** Known `resultType` enum values per OGC 23-002. */
 const RESULT_TYPES = new Set([
   'measure',
@@ -112,11 +131,7 @@ function normalizeObservedProperties(arr: unknown[]): string[] {
  * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
  */
 export function parseDatastream(json: unknown): Datastream {
-  if (typeof json !== 'object' || json === null) {
-    throw new Error('parseDatastream: input must be a non-null object');
-  }
-
-  const obj = json as Record<string, unknown>;
+  const obj = requireObject(json, 'parseDatastream');
 
   // Time fields: validTime is optional (undefined if absent),
   // phenomenonTime and resultTime are nullable (null if absent).
@@ -212,11 +227,7 @@ export function parseDatastream(json: unknown): Datastream {
  * @see https://docs.ogc.org/is/23-002/23-002.html#_controlstream_resources
  */
 export function parseControlStream(json: unknown): ControlStream {
-  if (typeof json !== 'object' || json === null) {
-    throw new Error('parseControlStream: input must be a non-null object');
-  }
-
-  const obj = json as Record<string, unknown>;
+  const obj = requireObject(json, 'parseControlStream');
 
   // Time fields: validTime is optional (undefined if absent),
   // issueTime and executionTime are nullable (null if absent).
@@ -324,11 +335,7 @@ export function normalizeStatusCode(
  * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
  */
 export function parseCommand(json: unknown): Command {
-  if (typeof json !== 'object' || json === null) {
-    throw new Error('parseCommand: input must be a non-null object');
-  }
-
-  const obj = json as Record<string, unknown>;
+  const obj = requireObject(json, 'parseCommand');
 
   // executionTime: time interval parsed via parseValidTime() (only present after execution)
   const executionTime: TimeInterval | undefined = parseValidTime(
@@ -405,11 +412,7 @@ export function parseCommand(json: unknown): Command {
  * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
  */
 export function parseObservation(json: unknown): Observation {
-  if (typeof json !== 'object' || json === null) {
-    throw new Error('parseObservation: input must be a non-null object');
-  }
-
-  const obj = json as Record<string, unknown>;
+  const obj = requireObject(json, 'parseObservation');
 
   // parameters: pass through if non-null object, omit otherwise
   const parametersValue = obj.parameters;
@@ -489,11 +492,7 @@ export function parseObservation(json: unknown): Observation {
  * @see https://docs.ogc.org/is/23-002/23-002.html#clause-commandstatus-resource
  */
 export function parseCommandStatus(json: unknown): CommandStatus {
-  if (typeof json !== 'object' || json === null) {
-    throw new Error('parseCommandStatus: input must be a non-null object');
-  }
-
-  const obj = json as Record<string, unknown>;
+  const obj = requireObject(json, 'parseCommandStatus');
 
   // executionTime: time interval parsed via parseValidTime()
   const executionTime: TimeInterval | undefined = parseValidTime(
