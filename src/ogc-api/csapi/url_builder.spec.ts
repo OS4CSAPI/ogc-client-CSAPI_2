@@ -2988,6 +2988,106 @@ describe('Observation resource validation', () => {
   });
 });
 
+describe('Observation nested path support (datastreamId)', () => {
+  function makeNestedObsBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          {
+            rel: 'self',
+            type: '',
+            title: '',
+            href: 'https://example.com/collections/iot',
+          },
+          {
+            rel: 'ogc-cs:datastreams',
+            type: '',
+            title: '',
+            href: '/datastreams',
+          },
+        ],
+      })
+    );
+  }
+
+  it('getObservation builds nested path when datastreamId is provided', () => {
+    const builder = makeNestedObsBuilder();
+    expect(builder.getObservation('obs-001', undefined, 'ds-001')).toBe(
+      'https://example.com/collections/iot/datastreams/ds-001/observations/obs-001'
+    );
+  });
+
+  it('updateObservation builds nested path when datastreamId is provided', () => {
+    const builder = makeNestedObsBuilder();
+    expect(builder.updateObservation('obs-001', 'ds-001')).toBe(
+      'https://example.com/collections/iot/datastreams/ds-001/observations/obs-001'
+    );
+  });
+
+  it('deleteObservation builds nested path when datastreamId is provided', () => {
+    const builder = makeNestedObsBuilder();
+    expect(builder.deleteObservation('obs-001', 'ds-001')).toBe(
+      'https://example.com/collections/iot/datastreams/ds-001/observations/obs-001'
+    );
+  });
+
+  it('getObservationDatastream builds nested path when datastreamId is provided', () => {
+    const builder = makeNestedObsBuilder();
+    expect(builder.getObservationDatastream('obs-001', 'ds-001')).toBe(
+      'https://example.com/collections/iot/datastreams/ds-001/observations/obs-001/datastream'
+    );
+  });
+
+  it('getObservationSamplingFeature builds nested path when datastreamId is provided', () => {
+    const builder = makeNestedObsBuilder();
+    expect(
+      builder.getObservationSamplingFeature('obs-001', undefined, 'ds-001')
+    ).toBe(
+      'https://example.com/collections/iot/datastreams/ds-001/observations/obs-001/samplingFeature'
+    );
+  });
+
+  it('getObservationSystem builds nested path when datastreamId is provided', () => {
+    const builder = makeNestedObsBuilder();
+    expect(builder.getObservationSystem('obs-001', undefined, 'ds-001')).toBe(
+      'https://example.com/collections/iot/datastreams/ds-001/observations/obs-001/system'
+    );
+  });
+
+  it('getObservationHistory builds nested path when datastreamId is provided', () => {
+    const builder = makeNestedObsBuilder();
+    expect(
+      builder.getObservationHistory('obs-001', { limit: 5 }, 'ds-001')
+    ).toBe(
+      'https://example.com/collections/iot/datastreams/ds-001/observations/obs-001/history?limit=5'
+    );
+  });
+
+  it('falls back to top-level path when datastreamId is omitted', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          {
+            rel: 'self',
+            type: '',
+            title: '',
+            href: 'https://example.com/collections/iot',
+          },
+          {
+            rel: 'ogc-cs:observations',
+            type: '',
+            title: '',
+            href: '/observations',
+          },
+        ],
+      })
+    );
+    expect(builder.getObservation('obs-001')).toBe(
+      'https://example.com/collections/iot/observations/obs-001'
+    );
+  });
+});
+
 // ── CONTROL STREAMS ──
 
 describe('getControlStreams', () => {
@@ -3779,6 +3879,115 @@ describe('Command resource validation', () => {
       })
     );
     expect(() => builder.getCommands()).toThrow(EndpointError);
+  });
+});
+
+describe('Command nested path support (controlStreamId)', () => {
+  function makeNestedCmdBuilder() {
+    return new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          {
+            rel: 'self',
+            type: '',
+            title: '',
+            href: 'https://example.com/collections/iot',
+          },
+          {
+            rel: 'ogc-cs:controlStreams',
+            type: '',
+            title: '',
+            href: '/controlstreams',
+          },
+        ],
+      })
+    );
+  }
+
+  it('getCommand builds nested path when controlStreamId is provided', () => {
+    const builder = makeNestedCmdBuilder();
+    expect(builder.getCommand('cmd-001', undefined, 'cs-001')).toBe(
+      'https://example.com/collections/iot/controlstreams/cs-001/commands/cmd-001'
+    );
+  });
+
+  it('updateCommand builds nested path when controlStreamId is provided', () => {
+    const builder = makeNestedCmdBuilder();
+    expect(builder.updateCommand('cmd-001', 'cs-001')).toBe(
+      'https://example.com/collections/iot/controlstreams/cs-001/commands/cmd-001'
+    );
+  });
+
+  it('deleteCommand builds nested path when controlStreamId is provided', () => {
+    const builder = makeNestedCmdBuilder();
+    expect(builder.deleteCommand('cmd-001', 'cs-001')).toBe(
+      'https://example.com/collections/iot/controlstreams/cs-001/commands/cmd-001'
+    );
+  });
+
+  it('getCommandStatus builds nested path when controlStreamId is provided', () => {
+    const builder = makeNestedCmdBuilder();
+    expect(builder.getCommandStatus('cmd-001', undefined, 'cs-001')).toBe(
+      'https://example.com/collections/iot/controlstreams/cs-001/commands/cmd-001/status'
+    );
+  });
+
+  it('getCommandStatus with options builds nested path with query string', () => {
+    const builder = makeNestedCmdBuilder();
+    expect(
+      builder.getCommandStatus(
+        'cmd-001',
+        { statusCode: 'EXECUTING' } as any,
+        'cs-001'
+      )
+    ).toBe(
+      'https://example.com/collections/iot/controlstreams/cs-001/commands/cmd-001/status?statusCode=EXECUTING'
+    );
+  });
+
+  it('updateCommandStatus builds nested path when controlStreamId is provided', () => {
+    const builder = makeNestedCmdBuilder();
+    expect(builder.updateCommandStatus('cmd-001', 'cs-001')).toBe(
+      'https://example.com/collections/iot/controlstreams/cs-001/commands/cmd-001/status'
+    );
+  });
+
+  it('getCommandResult builds nested path when controlStreamId is provided', () => {
+    const builder = makeNestedCmdBuilder();
+    expect(builder.getCommandResult('cmd-001', 'cs-001')).toBe(
+      'https://example.com/collections/iot/controlstreams/cs-001/commands/cmd-001/result'
+    );
+  });
+
+  it('cancelCommand builds nested path when controlStreamId is provided', () => {
+    const builder = makeNestedCmdBuilder();
+    expect(builder.cancelCommand('cmd-001', 'cs-001')).toBe(
+      'https://example.com/collections/iot/controlstreams/cs-001/commands/cmd-001/cancel'
+    );
+  });
+
+  it('falls back to top-level path when controlStreamId is omitted', () => {
+    const builder = new CSAPIQueryBuilder(
+      makeCollection({
+        links: [
+          {
+            rel: 'self',
+            type: '',
+            title: '',
+            href: 'https://example.com/collections/iot',
+          },
+          {
+            rel: 'ogc-cs:commands',
+            type: '',
+            title: '',
+            href: '/commands',
+          },
+        ],
+      })
+    );
+    expect(builder.getCommand('cmd-001')).toBe(
+      'https://example.com/collections/iot/commands/cmd-001'
+    );
   });
 });
 

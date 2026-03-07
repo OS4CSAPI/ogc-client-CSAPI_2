@@ -300,6 +300,39 @@ export default class CSAPIQueryBuilder {
   }
 
   /**
+   * Builds a nested resource URL for servers that only expose child resources
+   * as sub-resources under their parent.
+   *
+   * Produces: `/{parentType}/{parentId}/{childSegment}/{childId}[/{subPath}][?query]`
+   *
+   * @param parentType - Parent resource type (e.g., 'controlStreams', 'datastreams').
+   * @param parentId - Parent resource identifier.
+   * @param childSegment - URL path segment for the child collection (e.g., 'commands').
+   * @param childId - Child resource identifier.
+   * @param subPath - Optional sub-path after the child ID (e.g., 'status').
+   * @param options - Optional query parameters.
+   * @returns Fully constructed nested URL string.
+   *
+   * @see https://docs.ogc.org/is/23-002/23-002.html — §7.5 (nested observations), §7.9 (nested commands)
+   */
+  private buildNestedResourceUrl(
+    parentType: string,
+    parentId: string,
+    childSegment: string,
+    childId: string,
+    subPath?: ResourceSubPath,
+    options?: QueryOptions
+  ): string {
+    const topLevelUrl = this.resourceUrls_.get(parentType);
+    const parentBase = topLevelUrl
+      ? topLevelUrl.replace(/\/+$/, '')
+      : `${this.baseUrl}/${toUrlPathSegment(parentType)}`;
+    let url = `${parentBase}/${encodeResourceId(parentId)}/${childSegment}/${encodeResourceId(childId)}`;
+    if (subPath) url += `/${subPath}`;
+    return url + this.buildQueryString(options);
+  }
+
+  /**
    * Serializes query options into a URL query string.
    * Handles undefined/null skipping, array joining, temporal formatting,
    * and bbox validation.
@@ -1744,18 +1777,29 @@ export default class CSAPIQueryBuilder {
    *
    * @param id - The observation resource identifier.
    * @param options - Optional query parameters (e.g., format selection).
+   * @param datastreamId - Optional parent datastream ID. When provided, builds
+   *   a nested path (`/datastreams/{dsId}/observations/{id}`) for servers that
+   *   only expose observations as sub-resources under datastreams.
    * @returns URL string for the observation resource endpoint.
    * @throws {EndpointError} If 'observations' is not available on this collection.
    *
    * @example
    * ```ts
+   * // Top-level access:
    * const url = builder.getObservation('obs-001');
    * // => "https://example.com/collections/iot/observations/obs-001"
+   *
+   * // Nested access (for servers without top-level /observations):
+   * const url = builder.getObservation('obs-001', undefined, 'ds-001');
+   * // => "https://example.com/collections/iot/datastreams/ds-001/observations/obs-001"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
    */
-  getObservation(id: string, options?: QueryOptions): string {
+  getObservation(id: string, options?: QueryOptions, datastreamId?: string): string {
+    if (datastreamId) {
+      return this.buildNestedResourceUrl('datastreams', datastreamId, 'observations', id, undefined, options);
+    }
     return this.buildResourceUrl('observations', id, undefined, options);
   }
 
@@ -1772,6 +1816,7 @@ export default class CSAPIQueryBuilder {
    * (use `Content-Type: application/json` for Part 2 resources).
    *
    * @param id - The observation resource identifier.
+   * @param datastreamId - Optional parent datastream ID for nested path.
    * @returns URL string for the observation update endpoint (PUT).
    * @throws {EndpointError} If 'observations' is not available on this collection.
    *
@@ -1783,7 +1828,10 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
    */
-  updateObservation(id: string): string {
+  updateObservation(id: string, datastreamId?: string): string {
+    if (datastreamId) {
+      return this.buildNestedResourceUrl('datastreams', datastreamId, 'observations', id);
+    }
     return this.buildResourceUrl('observations', id);
   }
 
@@ -1791,6 +1839,7 @@ export default class CSAPIQueryBuilder {
    * Returns the URL for deleting an observation.
    *
    * @param id - The observation resource identifier.
+   * @param datastreamId - Optional parent datastream ID for nested path.
    * @returns URL string for the observation deletion endpoint (DELETE).
    * @throws {EndpointError} If 'observations' is not available on this collection.
    *
@@ -1802,7 +1851,10 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
    */
-  deleteObservation(id: string): string {
+  deleteObservation(id: string, datastreamId?: string): string {
+    if (datastreamId) {
+      return this.buildNestedResourceUrl('datastreams', datastreamId, 'observations', id);
+    }
     return this.buildResourceUrl('observations', id);
   }
 
@@ -1813,6 +1865,7 @@ export default class CSAPIQueryBuilder {
    * returns a single resource (not a collection).
    *
    * @param id - The observation resource identifier.
+   * @param datastreamId - Optional parent datastream ID for nested path.
    * @returns URL string for the observation's parent datastream endpoint.
    * @throws {EndpointError} If 'observations' is not available on this collection.
    *
@@ -1824,7 +1877,10 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
    */
-  getObservationDatastream(id: string): string {
+  getObservationDatastream(id: string, datastreamId?: string): string {
+    if (datastreamId) {
+      return this.buildNestedResourceUrl('datastreams', datastreamId, 'observations', id, 'datastream');
+    }
     return this.buildResourceUrl('observations', id, 'datastream');
   }
 
@@ -1836,6 +1892,7 @@ export default class CSAPIQueryBuilder {
    *
    * @param id - The observation resource identifier.
    * @param options - Optional query parameters.
+   * @param datastreamId - Optional parent datastream ID for nested path.
    * @returns URL string for the observation's sampling feature endpoint.
    * @throws {EndpointError} If 'observations' is not available on this collection.
    *
@@ -1847,7 +1904,10 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
    */
-  getObservationSamplingFeature(id: string, options?: QueryOptions): string {
+  getObservationSamplingFeature(id: string, options?: QueryOptions, datastreamId?: string): string {
+    if (datastreamId) {
+      return this.buildNestedResourceUrl('datastreams', datastreamId, 'observations', id, 'samplingFeature', options);
+    }
     return this.buildResourceUrl(
       'observations',
       id,
@@ -1864,6 +1924,7 @@ export default class CSAPIQueryBuilder {
    *
    * @param id - The observation resource identifier.
    * @param options - Optional query parameters.
+   * @param datastreamId - Optional parent datastream ID for nested path.
    * @returns URL string for the observation's observing system endpoint.
    * @throws {EndpointError} If 'observations' is not available on this collection.
    *
@@ -1875,7 +1936,10 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
    */
-  getObservationSystem(id: string, options?: QueryOptions): string {
+  getObservationSystem(id: string, options?: QueryOptions, datastreamId?: string): string {
+    if (datastreamId) {
+      return this.buildNestedResourceUrl('datastreams', datastreamId, 'observations', id, 'system', options);
+    }
     return this.buildResourceUrl('observations', id, 'system', options);
   }
 
@@ -1884,6 +1948,7 @@ export default class CSAPIQueryBuilder {
    *
    * @param id - The observation resource identifier.
    * @param options - Optional query parameters for filtering history entries.
+   * @param datastreamId - Optional parent datastream ID for nested path.
    * @returns URL string for the observation history endpoint.
    * @throws {EndpointError} If 'observations' is not available on this collection.
    *
@@ -1895,7 +1960,10 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
    */
-  getObservationHistory(id: string, options?: QueryOptions): string {
+  getObservationHistory(id: string, options?: QueryOptions, datastreamId?: string): string {
+    if (datastreamId) {
+      return this.buildNestedResourceUrl('datastreams', datastreamId, 'observations', id, 'history', options);
+    }
     return this.buildResourceUrl('observations', id, 'history', options);
   }
 
@@ -2205,18 +2273,29 @@ export default class CSAPIQueryBuilder {
    *
    * @param id - The command resource identifier.
    * @param options - Optional query parameters (e.g., format selection).
+   * @param controlStreamId - Optional parent control stream ID. When provided,
+   *   builds a nested path (`/controlstreams/{csId}/commands/{id}`) for servers
+   *   that only expose commands as sub-resources under control streams.
    * @returns URL string for the single command endpoint.
    * @throws {EndpointError} If 'commands' is not available on this collection.
    *
    * @example
    * ```ts
+   * // Top-level access:
    * const url = builder.getCommand('cmd-001');
    * // => "https://example.com/collections/iot/commands/cmd-001"
+   *
+   * // Nested access (for servers without top-level /commands):
+   * const url = builder.getCommand('cmd-001', undefined, 'cs-001');
+   * // => "https://example.com/collections/iot/controlstreams/cs-001/commands/cmd-001"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
    */
-  getCommand(id: string, options?: QueryOptions): string {
+  getCommand(id: string, options?: QueryOptions, controlStreamId?: string): string {
+    if (controlStreamId) {
+      return this.buildNestedResourceUrl('controlStreams', controlStreamId, 'commands', id, undefined, options);
+    }
     return this.buildResourceUrl('commands', id, undefined, options);
   }
 
@@ -2309,6 +2388,7 @@ export default class CSAPIQueryBuilder {
    * (use `Content-Type: application/json` for Part 2 resources).
    *
    * @param id - The command resource identifier.
+   * @param controlStreamId - Optional parent control stream ID for nested path.
    * @returns URL string for the command update endpoint (PUT).
    * @throws {EndpointError} If 'commands' is not available on this collection.
    *
@@ -2320,7 +2400,10 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
    */
-  updateCommand(id: string): string {
+  updateCommand(id: string, controlStreamId?: string): string {
+    if (controlStreamId) {
+      return this.buildNestedResourceUrl('controlStreams', controlStreamId, 'commands', id);
+    }
     return this.buildResourceUrl('commands', id);
   }
 
@@ -2328,6 +2411,7 @@ export default class CSAPIQueryBuilder {
    * Returns the URL for deleting a command.
    *
    * @param id - The command resource identifier.
+   * @param controlStreamId - Optional parent control stream ID for nested path.
    * @returns URL string for the command deletion endpoint (DELETE).
    * @throws {EndpointError} If 'commands' is not available on this collection.
    *
@@ -2339,7 +2423,10 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
    */
-  deleteCommand(id: string): string {
+  deleteCommand(id: string, controlStreamId?: string): string {
+    if (controlStreamId) {
+      return this.buildNestedResourceUrl('controlStreams', controlStreamId, 'commands', id);
+    }
     return this.buildResourceUrl('commands', id);
   }
 
@@ -2351,6 +2438,7 @@ export default class CSAPIQueryBuilder {
    *
    * @param id - The command resource identifier.
    * @param options - Optional query parameters for filtering command status results.
+   * @param controlStreamId - Optional parent control stream ID for nested path.
    * @returns URL string for the command status endpoint.
    * @throws {EndpointError} If 'commands' is not available on this collection.
    *
@@ -2366,7 +2454,13 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
    * @see https://docs.ogc.org/is/23-002/23-002.html#_CommandStatus_Query_Params §13.6.1 Req 61
    */
-  getCommandStatus(id: string, options?: CommandStatusQueryOptions): string {
+  getCommandStatus(id: string, options?: CommandStatusQueryOptions, controlStreamId?: string): string {
+    if (controlStreamId) {
+      return (
+        this.buildNestedResourceUrl('controlStreams', controlStreamId, 'commands', id, 'status') +
+        this.buildQueryString(options)
+      );
+    }
     return (
       this.buildResourceUrl('commands', id, 'status') +
       this.buildQueryString(options)
@@ -2389,6 +2483,7 @@ export default class CSAPIQueryBuilder {
    * (use `Content-Type: application/json` for Part 2 resources).
    *
    * @param id - The command resource identifier.
+   * @param controlStreamId - Optional parent control stream ID for nested path.
    * @returns URL string for the command status update endpoint (PATCH).
    * @throws {EndpointError} If 'commands' is not available on this collection.
    *
@@ -2400,7 +2495,10 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
    */
-  updateCommandStatus(id: string): string {
+  updateCommandStatus(id: string, controlStreamId?: string): string {
+    if (controlStreamId) {
+      return this.buildNestedResourceUrl('controlStreams', controlStreamId, 'commands', id, 'status');
+    }
     return this.buildResourceUrl('commands', id, 'status');
   }
 
@@ -2411,6 +2509,7 @@ export default class CSAPIQueryBuilder {
    * stream's result schema.
    *
    * @param id - The command resource identifier.
+   * @param controlStreamId - Optional parent control stream ID for nested path.
    * @returns URL string for the command result endpoint.
    * @throws {EndpointError} If 'commands' is not available on this collection.
    *
@@ -2422,7 +2521,10 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
    */
-  getCommandResult(id: string): string {
+  getCommandResult(id: string, controlStreamId?: string): string {
+    if (controlStreamId) {
+      return this.buildNestedResourceUrl('controlStreams', controlStreamId, 'commands', id, 'result');
+    }
     return this.buildResourceUrl('commands', id, 'result');
   }
 
@@ -2434,6 +2536,7 @@ export default class CSAPIQueryBuilder {
    * to confirm transition to CANCELED.
    *
    * @param id - The command resource identifier.
+   * @param controlStreamId - Optional parent control stream ID for nested path.
    * @returns URL string for the command cancellation endpoint (POST).
    * @throws {EndpointError} If 'commands' is not available on this collection.
    *
@@ -2445,7 +2548,10 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
    */
-  cancelCommand(id: string): string {
+  cancelCommand(id: string, controlStreamId?: string): string {
+    if (controlStreamId) {
+      return this.buildNestedResourceUrl('controlStreams', controlStreamId, 'commands', id, 'cancel');
+    }
     return this.buildResourceUrl('commands', id, 'cancel');
   }
 }
