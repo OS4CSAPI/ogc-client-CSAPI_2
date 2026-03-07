@@ -87,7 +87,7 @@ type ResourceSubPath =
  *
  * // After (using CSAPIQueryBuilder):
  * const endpoint = await new OgcApiEndpoint(baseUrl);
- * const builder = await endpoint.csapi(collectionId);
+ * const builder = await createCSAPIBuilder(endpoint, collectionId);
  * const url = builder.getSystems({ limit: 50, bbox: [-180, -90, 180, 90] });
  * ```
  *
@@ -98,9 +98,10 @@ type ResourceSubPath =
  * @example Complete workflow — list, filter, and navigate CSAPI resources:
  * ```ts
  * import { OgcApiEndpoint } from '@AugmentedGeo/ogc-client';
+ * import { createCSAPIBuilder } from '@AugmentedGeo/ogc-client/csapi';
  *
  * const endpoint = await new OgcApiEndpoint('https://api.example.com');
- * const builder = await endpoint.csapi('weather-stations');
+ * const builder = await createCSAPIBuilder(endpoint, 'weather-stations');
  *
  * // List systems with spatial and text filters
  * const systemsUrl = builder.getSystems({
@@ -113,7 +114,7 @@ type ResourceSubPath =
  * const systemUrl = builder.getSystem('sys-001');
  *
  * // List observations for a datastream with temporal filter
- * const obsUrl = builder.getObservationsForDatastream('ds-001', {
+ * const obsUrl = builder.getDataStreamObservations('ds-001', {
  *   phenomenonTime: { start: new Date('2024-01-01') },
  *   limit: 100,
  * });

@@ -14,11 +14,11 @@ The Connected Systems API (CSAPI) contribution is **complete, correct, and profe
 
 Code quality is consistent across all 7 development phases. Cross-phase patterns (error handling, URL encoding, naming conventions, JSDoc, test structure, import style, Postel's Law robustness) are followed uniformly. The module is properly isolated — no production code outside `src/ogc-api/csapi/` imports from CSAPI sub-modules, and upstream file modifications are strictly additive (~49 lines in endpoint.ts, ~22 lines in info.ts, ~71 lines in endpoint.spec.ts).
 
-Two areas require attention before upstream submission: (1) the `Event` type in SensorML shadows the DOM global `Event` — a rename to `SensorMLEvent` would prevent accidental collision in browser contexts, and (2) several JSDoc `@example` blocks reference a `csapi()` method on `OgcApiEndpoint` that does not exist — the actual entry point is the standalone `createCSAPIBuilder()` factory function. Neither issue is a blocker.
+Two areas identified during review have been **resolved post-review**: (1) the `Event` type in SensorML was renamed to `SensorMLEvent` to avoid shadowing the DOM global, and (2) JSDoc `@example` blocks were corrected to reference `createCSAPIBuilder()` instead of the non-existent `endpoint.csapi()` method. Both fixes are mechanical renames with zero functional impact.
 
 The contribution is substantial (30 production files, 12,205 lines of implementation, 30 spec files, 16,461 lines of tests) but well-structured and modular. The 1.35:1 test-to-implementation ratio demonstrates disciplined quality practices throughout all 7 phases.
 
-**Final Recommendation: READY WITH CONDITIONS** — resolve the 2 findings below (F1 `Event` rename, F2 JSDoc example correction) before porting to `clean-pr`. Both are low-effort, zero-risk changes.
+**Final Recommendation: READY** — all findings resolved. The contribution is ready for upstream submission via PR #136.
 
 ---
 
@@ -200,11 +200,11 @@ Correct — a server may implement either or both.
 | 3 | Naming Conventions | ✅ PASS | All methods follow `get`/`create`/`update`/`delete` + resource name. Two justified deviations: `cancelCommand` (spec semantics) and `createCommands` (batch) |
 | 4 | JSDoc | ✅ PASS | All public methods have `@param`, `@returns`, `@throws`; most have `@example` and `@see` (OGC spec links) |
 | 5 | Test Structure | ✅ PASS | Consistent `describe`/`it` nesting, type-only imports first, local fixtures, JSDoc headers in integration tests |
-| 6 | Type Naming | ⚠️ PASS WITH NOTE | `Event` interface in `sensorml/types.ts` shadows DOM global — see F1 |
+| 6 | Type Naming | ✅ PASS | `Event` renamed to `SensorMLEvent` — resolved |
 | 7 | Import Style | ✅ PASS | `import type` used consistently for type-only imports across all files |
 | 8 | Postel's Law | ✅ PASS | Required fields validated with clear errors; optional fields degrade gracefully via `?.`, `??`, type guards, `optionalString()` |
 
-**Overall: 7 PASS, 1 PASS WITH NOTE.**
+**Overall: 8 PASS, 0 FAIL.**
 
 ---
 
@@ -351,23 +351,21 @@ None. CSAPI: 1,325/1,325 pass. No skipped or pending tests.
 
 ## Findings
 
-### [F1] NOTE: `Event` Type Shadows DOM Global
+### [F1] ~~NOTE~~ RESOLVED: `Event` Type Renamed to `SensorMLEvent`
 
 **File:** `src/ogc-api/csapi/formats/sensorml/types.ts`
 **Phase:** Phase 3
-**Impact:** Low — could cause accidental collision in browser contexts if consumers import `Event` unqualified
-**Evidence:** `export interface Event extends AbstractSweIdentifiable` — shadows the DOM global `Event`. Currently consumers always qualify with `import type { Event } from '…'`, but this is fragile.
-**Recommendation:** Rename to `SensorMLEvent` or `HistoryEvent` to prevent collision. Low effort, zero functional impact.
+**Impact:** ~~Low~~ → None (resolved)
+**Resolution:** Renamed `Event` → `SensorMLEvent` across 8 files (types.ts, parser.ts, index.ts, types.spec.ts, formats/index.ts, csapi/index.ts). All references updated. CI: tsc ✅, tests 1325/1325 ✅.
 
-### [F2] NOTE: JSDoc `@example` References Non-Existent `csapi()` Method
+### [F2] ~~NOTE~~ RESOLVED: JSDoc `@example` Blocks Corrected
 
-**File:** `src/ogc-api/csapi/url_builder.ts` (class-level JSDoc), `src/ogc-api/endpoint.ts` (getter JSDoc)
+**File:** `src/ogc-api/csapi/url_builder.ts`, `src/ogc-api/endpoint.ts`
 **Phase:** Phase 2 (originally), carried forward
-**Impact:** Low — documentation-only. Consumers following the example will get a runtime error.
-**Evidence:**
-- `url_builder.ts` line ~95: `const builder = await endpoint.csapi(collectionId)` — method does not exist
-- `url_builder.ts` line ~116: `builder.getObservationsForDatastream('ds-001', ...)` — method does not exist (correct name: `getDataStreamObservations`)
-**Recommendation:** Update JSDoc examples to use `createCSAPIBuilder(endpoint, collectionId)` and correct the method name. Low effort.
+**Impact:** ~~Low~~ → None (resolved)
+**Resolution:** Updated 3 JSDoc `@example` blocks:
+- `endpoint.csapi(collectionId)` → `createCSAPIBuilder(endpoint, collectionId)` (2 occurrences in url_builder.ts, 1 in endpoint.ts)
+- `getObservationsForDatastream` → `getDataStreamObservations` (1 occurrence)
 
 ---
 
@@ -401,9 +399,9 @@ None. CSAPI: 1,325/1,325 pass. No skipped or pending tests.
 
 ### Fix Now (before porting to clean-pr)
 
-1. **[F1] Rename `Event` → `SensorMLEvent`** in `sensorml/types.ts` — prevents DOM global collision. Update all references in parsers and spec files. ~10 minutes.
-
-2. **[F2] Fix JSDoc `@example` blocks** in `url_builder.ts` and `endpoint.ts` — replace `endpoint.csapi(...)` with `createCSAPIBuilder(endpoint, ...)` and fix `getObservationsForDatastream` → `getDataStreamObservations`. ~5 minutes.
+All "Fix Now" items resolved:
+- ~~[F1] Rename `Event` → `SensorMLEvent`~~ — ✅ Done
+- ~~[F2] Fix JSDoc `@example` blocks~~ — ✅ Done
 
 ### Fix Before Push (before updating PR #136)
 
@@ -421,12 +419,12 @@ None — no additional items beyond the two above.
 
 ## Final Verdict
 
-**Recommendation: READY WITH CONDITIONS**
+**Recommendation: READY**
 
 The CSAPI contribution is architecturally sound, comprehensively tested, and professionally documented. All CI gates pass cleanly. Module boundaries are properly enforced. Upstream file modifications are minimal and follow existing patterns exactly. Cross-phase consistency is excellent across all 8 checked dimensions.
 
-Two low-effort conditions must be met before porting to `clean-pr`:
-1. Rename `Event` type to avoid DOM global shadowing (F1)
-2. Fix JSDoc examples that reference non-existent methods (F2)
+Both findings from the initial review have been resolved:
+1. ✅ `Event` type renamed to `SensorMLEvent` to avoid DOM global shadowing (F1)
+2. ✅ JSDoc examples corrected to reference `createCSAPIBuilder()` and correct method names (F2)
 
-Both are documentation/naming changes with zero functional impact and can be completed in under 15 minutes combined. Once resolved, the contribution is ready for upstream submission via PR #136.
+All changes are documentation/naming only with zero functional impact. CI gates remain fully green (C1–C4). The contribution is ready for upstream submission via PR #136.

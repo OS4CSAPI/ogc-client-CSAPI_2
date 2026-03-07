@@ -36,7 +36,7 @@ import type {
   LegalConstraint,
   ResponsibleParty,
   ContactLink,
-  Event,
+  SensorMLEvent,
   InputList,
   OutputList,
   ParameterList,
@@ -283,9 +283,9 @@ export function parseDescribedObjectProperties(
     result.documents = json.documents as DescribedObject['documents'];
   }
 
-  // History (Event[])
+  // History (SensorMLEvent[])
   if (Array.isArray(json.history)) {
-    result.history = json.history as Event[];
+    result.history = json.history as SensorMLEvent[];
   }
 
   return result;
