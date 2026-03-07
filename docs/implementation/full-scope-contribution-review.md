@@ -338,9 +338,9 @@ Documented in `docs/code-review/110-deferred-enhancement-link-resolution-utiliti
 | Item | Location | Note |
 |------|----------|------|
 | SWE Common deep validation in SensorML | `sensorml/parser.ts`, `sensorml/_helpers.ts` | SWE Common parsers exist but are not wired into SensorML pass-through points; raw JSON survives correctly typed — intentional scope boundary |
-| Full GeoJSON Geometry typing | `swecommon/types.ts` | Out of scope — uses loose typing |
-| Binary DataArray decoding | `swecommon/data-array.ts` | Explicitly out of scope |
-| `sortBy`/`sortOrder` query parameters | `url_builder.ts` | Optional conformance class — not required by core |
+| Full GeoJSON Geometry typing | `swecommon/types.ts` | GeoJSON geometry is loosely typed (e.g. `Record<string, unknown>`) rather than a strict discriminated union of `Point \| LineString \| Polygon \| …` with precise coordinate shapes. Works fine for passing geometry through; strict compile-time geometry validation is unrelated to Connected Systems and arguably belongs in a GeoJSON library |
+| Binary DataArray decoding | `swecommon/data-array.ts` | SWE Common DataArrays support text and binary encodings. Our parser handles text-encoded arrays. Binary decoding (raw byte streams, float32/int16 interpretation, byte order) is a specialized use case for high-throughput sensor streams — no tested server returns binary encoding. Explicitly out of scope |
+| `sortBy`/`sortOrder` query parameters | `url_builder.ts` | OGC CS API defines optional conformance classes for sorting collection results. The URL builder covers all required query parameters; sorting is optional and can be added incrementally later without breaking changes |
 
 ### Pre-Existing Test Failures
 
