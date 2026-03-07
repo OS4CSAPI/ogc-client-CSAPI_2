@@ -2358,7 +2358,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
    */
   createCommands(controlStreamId: string): string {
-    return this.build('controlStreams', controlStreamId, 'commands');
+    return this.createCommand(controlStreamId);
   }
 
   /**
