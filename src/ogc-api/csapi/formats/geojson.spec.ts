@@ -744,4 +744,13 @@ describe('extractCSAPIFeature', () => {
       'unrecognized or missing featureType'
     );
   });
+
+  it('throws for null properties (RFC 7946 permits properties: null)', () => {
+    // GeoJSON allows `properties: null`. The indirect guard in
+    // getCSAPIResourceType catches this first; the explicit isRecord
+    // guard in extractCSAPIFeature is defense-in-depth.
+    const raw = { type: 'Feature', properties: null, geometry: null };
+    expect(() => extractCSAPIFeature(raw)).toThrow(Error);
+    expect(() => extractCSAPIFeature(raw)).not.toThrow(TypeError);
+  });
 });

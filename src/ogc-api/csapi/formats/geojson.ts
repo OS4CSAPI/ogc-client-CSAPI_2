@@ -20,6 +20,7 @@ import type {
   CSAPIResourceRef,
 } from '../model.js';
 import type { Geometry } from 'geojson';
+import { isRecord } from './_parse-utils.js';
 
 // ========================================
 // Constants
@@ -435,7 +436,12 @@ export function extractCSAPIFeature(
   }
 
   const f = feature as Record<string, unknown>;
-  const p = f.properties as Record<string, unknown>;
+  if (!isRecord(f.properties)) {
+    throw new Error(
+      'Cannot extract CSAPI feature: "properties" must be a non-null object'
+    );
+  }
+  const p = f.properties;
 
   // Parse validTime if present
   const validTime = parseValidTime(p.validTime);
