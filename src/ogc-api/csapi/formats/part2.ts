@@ -486,7 +486,7 @@ export function parseObservation(json: unknown): Observation {
  * // cs.reportTime === '2026-01-14T12:42:21.928728Z' (string pass-through)
  * ```
  *
- * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
+ * @see https://docs.ogc.org/is/23-002/23-002.html#clause-commandstatus-resource
  */
 export function parseCommandStatus(json: unknown): CommandStatus {
   if (typeof json !== 'object' || json === null) {
