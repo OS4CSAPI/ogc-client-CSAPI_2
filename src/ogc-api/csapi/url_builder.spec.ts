@@ -2200,11 +2200,6 @@ describe('Property resource validation', () => {
       })
     );
     expect(() => builder.getProperties()).toThrow(EndpointError);
-    expect(() => builder.getProperty('x')).toThrow(EndpointError);
-    expect(() => builder.getPropertySystems('x')).toThrow(EndpointError);
-    expect(() => builder.getPropertyDataStreams('x')).toThrow(EndpointError);
-    expect(() => builder.getPropertyControlStreams('x')).toThrow(EndpointError);
-    expect(() => builder.getPropertyHistory('x')).toThrow(EndpointError);
   });
 });
 
@@ -2682,16 +2677,7 @@ describe('DataStream resource validation', () => {
       })
     );
     expect(() => builder.getDataStreams()).toThrow(EndpointError);
-    expect(() => builder.getDataStream('x')).toThrow(EndpointError);
     expect(() => builder.createDataStream()).toThrow(EndpointError);
-    expect(() => builder.updateDataStream('x')).toThrow(EndpointError);
-    expect(() => builder.deleteDataStream('x')).toThrow(EndpointError);
-    expect(() => builder.getDataStreamSchema('x')).toThrow(EndpointError);
-    expect(() => builder.getDataStreamObservations('x')).toThrow(EndpointError);
-    expect(() => builder.createObservation('x')).toThrow(EndpointError);
-    expect(() => builder.getDataStreamSystems('x')).toThrow(EndpointError);
-    expect(() => builder.getDataStreamProcedures('x')).toThrow(EndpointError);
-    expect(() => builder.getDataStreamHistory('x')).toThrow(EndpointError);
   });
 });
 
@@ -2999,15 +2985,6 @@ describe('Observation resource validation', () => {
       })
     );
     expect(() => builder.getObservations()).toThrow(EndpointError);
-    expect(() => builder.getObservation('x')).toThrow(EndpointError);
-    expect(() => builder.updateObservation('x')).toThrow(EndpointError);
-    expect(() => builder.deleteObservation('x')).toThrow(EndpointError);
-    expect(() => builder.getObservationDatastream('x')).toThrow(EndpointError);
-    expect(() => builder.getObservationSamplingFeature('x')).toThrow(
-      EndpointError
-    );
-    expect(() => builder.getObservationSystem('x')).toThrow(EndpointError);
-    expect(() => builder.getObservationHistory('x')).toThrow(EndpointError);
   });
 });
 
@@ -3481,18 +3458,7 @@ describe('ControlStream resource validation', () => {
       })
     );
     expect(() => builder.getControlStreams()).toThrow(EndpointError);
-    expect(() => builder.getControlStream('x')).toThrow(EndpointError);
     expect(() => builder.createControlStream()).toThrow(EndpointError);
-    expect(() => builder.updateControlStream('x')).toThrow(EndpointError);
-    expect(() => builder.deleteControlStream('x')).toThrow(EndpointError);
-    expect(() => builder.getControlStreamSchema('x')).toThrow(EndpointError);
-    expect(() => builder.getControlStreamCommands('x')).toThrow(EndpointError);
-    expect(() => builder.checkCommandFeasibility('x')).toThrow(EndpointError);
-    expect(() => builder.getControlStreamSystems('x')).toThrow(EndpointError);
-    expect(() => builder.getControlStreamProcedures('x')).toThrow(
-      EndpointError
-    );
-    expect(() => builder.getControlStreamHistory('x')).toThrow(EndpointError);
   });
 });
 
@@ -3813,32 +3779,6 @@ describe('Command resource validation', () => {
       })
     );
     expect(() => builder.getCommands()).toThrow(EndpointError);
-    expect(() => builder.getCommand('x')).toThrow(EndpointError);
-    expect(() => builder.updateCommand('x')).toThrow(EndpointError);
-    expect(() => builder.deleteCommand('x')).toThrow(EndpointError);
-    expect(() => builder.getCommandStatus('x')).toThrow(EndpointError);
-    expect(() => builder.updateCommandStatus('x')).toThrow(EndpointError);
-    expect(() => builder.getCommandResult('x')).toThrow(EndpointError);
-    expect(() => builder.cancelCommand('x')).toThrow(EndpointError);
-  });
-
-  it('createCommand and createCommands throw when controlStreams is unavailable', () => {
-    const builder = new CSAPIQueryBuilder(
-      makeCollection({
-        id: 'commands-only',
-        links: [
-          {
-            rel: 'self',
-            type: '',
-            title: '',
-            href: 'https://example.com/collections/commands-only',
-          },
-          { rel: 'ogc-cs:commands', type: '', title: '', href: '/commands' },
-        ],
-      })
-    );
-    expect(() => builder.createCommand('x')).toThrow(EndpointError);
-    expect(() => builder.createCommands('x')).toThrow(EndpointError);
   });
 });
 
