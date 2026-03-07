@@ -22,6 +22,34 @@ import {
 } from './helpers.js';
 
 /**
+ * Compile-time-constrained set of sub-path segments that may be appended
+ * after a resource ID in CSAPI URLs.
+ *
+ * Derived from OGC API — Connected Systems Parts 1 & 2 path definitions.
+ * Restricting the type prevents accidental path traversal or typos.
+ */
+type ResourceSubPath =
+  | 'history'
+  | 'subsystems'
+  | 'subdeployments'
+  | 'systems'
+  | 'deployments'
+  | 'samplingFeatures'
+  | 'procedures'
+  | 'datastreams'
+  | 'controlstreams'
+  | 'observations'
+  | 'commands'
+  | 'schema'
+  | 'feasibility'
+  | 'datastream'
+  | 'samplingFeature'
+  | 'system'
+  | 'status'
+  | 'result'
+  | 'cancel';
+
+/**
  * Builds query URLs for the OGC API - Connected Systems specification.
  *
  * Constructs canonical and nested resource endpoint URLs for all 9 CSAPI
@@ -256,7 +284,7 @@ export default class CSAPIQueryBuilder {
   private buildResourceUrl(
     resourceType: string,
     id?: string,
-    subPath?: string,
+    subPath?: ResourceSubPath,
     options?: QueryOptions
   ): string {
     // Use the absolute resource URL when available (top-level pattern),
