@@ -331,7 +331,7 @@ All 4 upstream security finding documents exist and are properly documented:
 
 ### Issue #110 — `@link`/`@id` Resolution Utilities
 
-Documented in `docs/code-review/110-deferred-enhancement-link-resolution-utilities.md`. Status: **Explicitly deferred** — proposes 4 utility functions for resolving `@link` inline references. Depends on unresolved issues #103, #108, #109. Classified as post-PR enhancement.
+Documented in `docs/code-review/110-deferred-enhancement-link-resolution-utilities.md`. Status: **Explicitly deferred** — proposes 4 utility functions for resolving `@link` inline references. Dependencies #103, #108, #109 are now resolved; #110 itself remains deferred as a post-PR enhancement.
 
 ### Other Deferred Features
 
@@ -408,7 +408,7 @@ None — no additional items beyond the two above.
 
 ### Defer (post-merge or separate PR)
 
-1. **Issue #110** — `@link`/`@id` resolution utilities (depends on #103, #108, #109)
+1. **Issue #110** — `@link`/`@id` resolution utilities (dependencies #103, #108, #109 resolved; #110 itself deferred)
 2. **Upstream security findings** (001, 002, 005, 006) — require separate upstream PRs
 3. **`sortBy`/`sortOrder` support** — optional conformance class, can be added incrementally
 4. **Binary DataArray decoding** — specialized use case, explicitly out of scope
