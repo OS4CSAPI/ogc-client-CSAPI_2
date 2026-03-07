@@ -50,6 +50,58 @@ function requireObject(json: unknown, fn: string): Record<string, unknown> {
   return json as Record<string, unknown>;
 }
 
+/**
+ * Fields shared between {@link Datastream} and {@link ControlStream},
+ * corresponding to the `baseStream` schema in OGC 23-002.
+ */
+interface BaseStream {
+  id: string;
+  name: string;
+  description?: string;
+  validTime?: TimeInterval;
+  formats: string[];
+  systemId?: string;
+  links: ResourceLink[];
+}
+
+/**
+ * Extracts the 7 base-stream fields shared by {@link parseDatastream} and
+ * {@link parseControlStream}.
+ *
+ * Both resource types inherit the same `baseStream` schema in OGC 23-002
+ * (§9.2 DataStream, §10.2 ControlStream). This helper consolidates the
+ * duplicated extraction logic into a single location.
+ *
+ * @param fn - Function name for error messages (forwarded to {@link requireObject}).
+ * @param json - Raw JSON value from a collection response.
+ * @returns The extracted base fields and the raw object for resource-specific extraction.
+ */
+function parseBaseStream(
+  fn: string,
+  json: unknown
+): { base: BaseStream; obj: Record<string, unknown> } {
+  const obj = requireObject(json, fn);
+  const validTime: TimeInterval | undefined = parseValidTime(obj.validTime);
+  return {
+    obj,
+    base: {
+      id: typeof obj.id === 'string' ? obj.id : '',
+      name: typeof obj.name === 'string' ? obj.name : '',
+      ...(typeof obj.description === 'string'
+        ? { description: obj.description }
+        : {}),
+      ...(validTime !== undefined ? { validTime } : {}),
+      formats: Array.isArray(obj.formats)
+        ? obj.formats.filter((f): f is string => typeof f === 'string')
+        : [],
+      ...(typeof obj['system@id'] === 'string'
+        ? { systemId: obj['system@id'] as string }
+        : {}),
+      links: Array.isArray(obj.links) ? (obj.links as ResourceLink[]) : [],
+    },
+  };
+}
+
 /** Known `resultType` enum values per OGC 23-002. */
 const RESULT_TYPES = new Set([
   'measure',
@@ -131,11 +183,9 @@ function normalizeObservedProperties(arr: unknown[]): string[] {
  * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
  */
 export function parseDatastream(json: unknown): Datastream {
-  const obj = requireObject(json, 'parseDatastream');
+  const { base, obj } = parseBaseStream('parseDatastream', json);
 
-  // Time fields: validTime is optional (undefined if absent),
-  // phenomenonTime and resultTime are nullable (null if absent).
-  const validTime: TimeInterval | undefined = parseValidTime(obj.validTime);
+  // Time fields: phenomenonTime and resultTime are nullable (null if absent).
   const phenomenonTime: TimeInterval | null =
     parseValidTime(obj.phenomenonTime) ?? null;
   const resultTime: TimeInterval | null =
@@ -154,15 +204,7 @@ export function parseDatastream(json: unknown): Datastream {
     : [];
 
   return {
-    id: typeof obj.id === 'string' ? obj.id : '',
-    name: typeof obj.name === 'string' ? obj.name : '',
-    ...(typeof obj.description === 'string'
-      ? { description: obj.description }
-      : {}),
-    ...(validTime !== undefined ? { validTime } : {}),
-    formats: Array.isArray(obj.formats)
-      ? (obj.formats.filter((f) => typeof f === 'string') as string[])
-      : [],
+    ...base,
     ...(typeof obj.outputName === 'string'
       ? { outputName: obj.outputName }
       : {}),
@@ -175,10 +217,6 @@ export function parseDatastream(json: unknown): Datastream {
     (obj.type === 'status' || obj.type === 'observation')
       ? { type: obj.type as 'status' | 'observation' }
       : {}),
-    ...(typeof obj['system@id'] === 'string'
-      ? { systemId: obj['system@id'] as string }
-      : {}),
-    links: Array.isArray(obj.links) ? (obj.links as ResourceLink[]) : [],
   } satisfies Datastream;
 }
 
@@ -227,11 +265,9 @@ export function parseDatastream(json: unknown): Datastream {
  * @see https://docs.ogc.org/is/23-002/23-002.html#_controlstream_resources
  */
 export function parseControlStream(json: unknown): ControlStream {
-  const obj = requireObject(json, 'parseControlStream');
+  const { base, obj } = parseBaseStream('parseControlStream', json);
 
-  // Time fields: validTime is optional (undefined if absent),
-  // issueTime and executionTime are nullable (null if absent).
-  const validTime: TimeInterval | undefined = parseValidTime(obj.validTime);
+  // Time fields: issueTime and executionTime are nullable (null if absent).
   const issueTime: TimeInterval | null = parseValidTime(obj.issueTime) ?? null;
   const executionTime: TimeInterval | null =
     parseValidTime(obj.executionTime) ?? null;
@@ -242,25 +278,13 @@ export function parseControlStream(json: unknown): ControlStream {
     : [];
 
   return {
-    id: typeof obj.id === 'string' ? obj.id : '',
-    name: typeof obj.name === 'string' ? obj.name : '',
-    ...(typeof obj.description === 'string'
-      ? { description: obj.description }
-      : {}),
-    ...(validTime !== undefined ? { validTime } : {}),
-    formats: Array.isArray(obj.formats)
-      ? (obj.formats.filter((f) => typeof f === 'string') as string[])
-      : [],
+    ...base,
     ...(typeof obj.inputName === 'string' ? { inputName: obj.inputName } : {}),
     controlledProperties,
     issueTime,
     executionTime,
     live: typeof obj.live === 'boolean' ? obj.live : null,
     async: typeof obj.async === 'boolean' ? obj.async : false,
-    ...(typeof obj['system@id'] === 'string'
-      ? { systemId: obj['system@id'] as string }
-      : {}),
-    links: Array.isArray(obj.links) ? (obj.links as ResourceLink[]) : [],
   } satisfies ControlStream;
 }
 
