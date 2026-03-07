@@ -122,14 +122,10 @@ function parseElementType(
   // Link reference (href without type)
   if (isLinkReference(json)) {
     const field: DataField = { name };
-    if (typeof json.href === 'string')
-      (field as Record<string, unknown>).href = json.href;
-    if (typeof json.role === 'string')
-      (field as Record<string, unknown>).role = json.role;
-    if (typeof json.arcrole === 'string')
-      (field as Record<string, unknown>).arcrole = json.arcrole;
-    if (typeof json.title === 'string')
-      (field as Record<string, unknown>).title = json.title;
+    if (typeof json.href === 'string') field.href = json.href;
+    if (typeof json.role === 'string') field.role = json.role;
+    if (typeof json.arcrole === 'string') field.arcrole = json.arcrole;
+    if (typeof json.title === 'string') field.title = json.title;
     return field;
   }
 
@@ -454,9 +450,9 @@ export function decodeValues(
   // Link reference passthrough
   if (
     isRecord(values) &&
-    typeof (values as Record<string, unknown>).href === 'string'
+    typeof values.href === 'string'
   ) {
-    return parseAssociationAttributeGroup(values as Record<string, unknown>);
+    return parseAssociationAttributeGroup(values);
   }
 
   switch (encoding.type) {
@@ -573,12 +569,10 @@ export function parseDataArray(
       values = json.values;
     } else if (
       isRecord(json.values) &&
-      typeof (json.values as Record<string, unknown>).href === 'string'
+      typeof json.values.href === 'string'
     ) {
       // Link reference
-      values = parseAssociationAttributeGroup(
-        json.values as Record<string, unknown>
-      );
+      values = parseAssociationAttributeGroup(json.values);
     }
   }
 
