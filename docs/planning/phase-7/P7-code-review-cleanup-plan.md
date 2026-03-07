@@ -1,6 +1,6 @@
 # Phase 7: Code Review Cleanup — Plan
 
-**Version:** 1.0
+**Version:** 1.1
 **Date:** March 7, 2026
 **Status:** Ready for Execution
 **Scope:** Resolve 17 open issues (11 code-review findings + 6 pre-existing bugs) across 16 steps
@@ -28,6 +28,84 @@ This plan covers the execution of **Phase 7: Code Review Cleanup** — resolving
 - All changes must be within `src/ogc-api/csapi/` (upstream isolation requirement per jahow's PR #136 comment)
   - Exception: #141 touches `endpoint.ts` (upstream file we modified) — minimal diff only
 - Zero public API signature changes unless explicitly required by the issue
+
+---
+
+## Two-Repo Workflow
+
+This work spans two repositories with different purposes:
+
+| Repository | Branch | Purpose |
+|-----------|--------|---------|
+| `OS4CSAPI/ogc-client-CSAPI_2` | `phase-7` (off `phase-6`) | Development — full context, granular commits, planning docs |
+| `OS4CSAPI/ogc-client` | `clean-pr` | PR delivery — squashed commit for upstream review |
+
+### Workflow Steps
+
+**Step 1: Branch in CSAPI_2**
+
+Create a `phase-7` branch off `phase-6` in the development repo. Execute all 16 steps here with one commit per step. This repo has all planning docs, governance files, test infrastructure, and fixture data for full-context development.
+
+**Step 2: Validate in CSAPI_2**
+
+After all 16 steps pass the per-phase validation gates, run the full suite:
+- `tsc --noEmit` — zero type errors
+- `npm test` — all tests pass
+- `npm run lint` — zero lint errors
+- `npx prettier --check src/` — all files formatted
+
+The `phase-7` branch now has a complete, validated implementation with full commit history for our audit trail.
+
+**Step 3: Generate source-only diff**
+
+Extract only the `src/` and `fixtures/` changes as a patch — excluding all `docs/` planning artifacts that don't belong in the upstream PR:
+
+```bash
+git diff phase-6..phase-7 -- src/ fixtures/ > phase-7-cleanup.patch
+```
+
+**Step 4: Apply to `clean-pr` on ogc-client**
+
+Switch to the `ogc-client` fork. Apply the patch to `clean-pr` as a single squashed commit:
+
+```bash
+cd ../ogc-client
+git checkout clean-pr
+git apply ../ogc-client-CSAPI_2/phase-7-cleanup.patch
+git add -A
+git commit -m "fix: address code review findings (17 issues)
+
+- Type safety: validate parseCollectionResponse elements, null-check
+  extractCSAPIFeature properties, replace SensorML raw JSON spread
+- DRY: extract parseBaseStream/requireObject helpers in part2.ts,
+  add build() wrapper in url_builder.ts (resolves getCommandStatus
+  concatenation), delegate createCommands to createCommand
+- Security: encode subPath in buildResourceUrl, validate URL schemes
+  in scanCsapiLinks
+- Bugs: fix paramsSchema data loss, fix getDeploymentSystems URL,
+  remove overly strict assertResourceAvailable from per-ID methods,
+  add nested parent IDs for command/observation CRUD
+- Tests: extract shared integration test fixture factory"
+```
+
+**Step 5: Push and verify**
+
+Push `clean-pr` to update PR #136. Run CI once more on the PR branch. The PR diff now includes the cleanup as part of the contribution.
+
+```bash
+git push origin clean-pr
+```
+
+### Why This Approach
+
+- **Full context during development** — governance docs, planning, all 16 issue descriptions are in CSAPI_2
+- **Granular history preserved** — `phase-7` branch keeps per-step commits for our audit trail
+- **Clean PR presentation** — camptocamp sees one focused commit, not 16 incremental ones
+- **No risk to existing PR** — `clean-pr` is untouched until everything passes in CSAPI_2
+
+### Pre-requisite: Verify `src/` sync
+
+Before starting, confirm that `phase-6` in CSAPI_2 and `clean-pr` in ogc-client have identical `src/` content. If Phase 6 was applied to both, the patch ports cleanly. If they've diverged, reconcile first.
 - All tests must pass after each step
 - Review `docs/governance/AI_OPERATIONAL_CONSTRAINTS.md` before starting implementation
 
@@ -278,12 +356,15 @@ After each phase:
 3. `npm run lint` — zero lint errors
 4. `npx prettier --check src/` — all files formatted
 
-After all phases:
+After all phases (in CSAPI_2):
 
 5. Full integration test suite pass
 6. Visual diff review of all changes
-7. Rebase onto `clean-pr` branch
-8. Push to origin
+
+After porting to ogc-client `clean-pr`:
+
+7. Run full validation suite again on `clean-pr`
+8. Push to update PR #136
 
 ---
 
@@ -297,7 +378,8 @@ After all phases:
 | D: `url_builder.ts` Batch | 6 | 3–5 hours | Medium |
 | E: Security Hardening | 1 | 30 min | Low |
 | F: Test Cleanup | 1 | 30 min–1 hour | None |
-| **Total** | **16** | **6–11 hours** | |
+| Porting to `clean-pr` | — | 30 min | Low |
+| **Total** | **16** | **7–12 hours** | |
 
 ---
 
