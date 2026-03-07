@@ -18,6 +18,7 @@ import type { OgcApiCollectionInfo } from '../../model.js';
 import CSAPIQueryBuilder from '../url_builder.js';
 import { EndpointError } from '../../../shared/errors.js';
 import { parseCollectionResponse } from '../formats/response.js';
+import { makeTestCollection } from './_fixtures.js';
 
 // Identity parseItem — passes elements through unchanged (for envelope tests)
 const identity = (item: unknown) => item;
@@ -37,7 +38,7 @@ import {
 function makeCollection(
   overrides: Partial<OgcApiCollectionInfo> = {}
 ): OgcApiCollectionInfo {
-  return {
+  return makeTestCollection({
     links: [
       {
         rel: 'self',
@@ -57,18 +58,8 @@ function makeCollection(
     title: 'Actuator Network',
     description: 'Systems with command capability',
     id: 'actuators',
-    itemFormats: [],
-    bulkDownloadLinks: {},
-    jsonDownloadLink: '',
-    crs: [],
-    itemCount: 0,
-    queryables: [],
-    sortables: [],
-    mapTileFormats: [],
-    vectorTileFormats: [],
-    supportedTileMatrixSets: [],
     ...overrides,
-  };
+  });
 }
 
 /** Control stream list response (items envelope). */

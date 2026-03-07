@@ -22,6 +22,7 @@
 import type { OgcApiCollectionInfo } from '../../model.js';
 import CSAPIQueryBuilder from '../url_builder.js';
 import { parseCollectionResponse } from '../formats/response.js';
+import { makeTestCollection, ALL_CSAPI_LINKS } from './_fixtures.js';
 
 // Identity parseItem — passes elements through unchanged (for envelope/pagination tests)
 const identity = (item: unknown) => item;
@@ -52,7 +53,7 @@ import { EndpointError } from '../../../shared/errors.js';
 function makeFullCollection(
   overrides: Partial<OgcApiCollectionInfo> = {}
 ): OgcApiCollectionInfo {
-  return {
+  return makeTestCollection({
     links: [
       {
         rel: 'self',
@@ -60,45 +61,13 @@ function makeFullCollection(
         title: '',
         href: 'https://api.example.com/collections/iot',
       },
-      { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
-      { rel: 'ogc-cs:deployments', type: '', title: '', href: '/deployments' },
-      { rel: 'ogc-cs:procedures', type: '', title: '', href: '/procedures' },
-      {
-        rel: 'ogc-cs:samplingFeatures',
-        type: '',
-        title: '',
-        href: '/samplingFeatures',
-      },
-      { rel: 'ogc-cs:datastreams', type: '', title: '', href: '/datastreams' },
-      {
-        rel: 'ogc-cs:observations',
-        type: '',
-        title: '',
-        href: '/observations',
-      },
-      {
-        rel: 'ogc-cs:controlStreams',
-        type: '',
-        title: '',
-        href: '/controlStreams',
-      },
-      { rel: 'ogc-cs:commands', type: '', title: '', href: '/commands' },
+      ...ALL_CSAPI_LINKS.filter((l) => l.rel !== 'ogc-cs:properties'),
     ],
     title: 'IoT Full Collection',
     description: 'Collection with all CSAPI resources',
     id: 'iot',
-    itemFormats: [],
-    bulkDownloadLinks: {},
-    jsonDownloadLink: '',
-    crs: [],
-    itemCount: 0,
-    queryables: [],
-    sortables: [],
-    mapTileFormats: [],
-    vectorTileFormats: [],
-    supportedTileMatrixSets: [],
     ...overrides,
-  };
+  });
 }
 
 /** GeoJSON Feature for a System resource (SOSA Sensor). */

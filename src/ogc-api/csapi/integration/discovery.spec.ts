@@ -15,6 +15,7 @@ import type { OgcApiCollectionInfo } from '../../model.js';
 import CSAPIQueryBuilder from '../url_builder.js';
 import { EndpointError } from '../../../shared/errors.js';
 import { parseCollectionResponse } from '../formats/response.js';
+import { makeTestCollection, ALL_CSAPI_LINKS } from './_fixtures.js';
 
 // Identity parseItem — passes elements through unchanged (for envelope/classification tests)
 const identity = (item: unknown) => item;
@@ -41,7 +42,7 @@ import {
 function makeCSAPICollection(
   overrides: Partial<OgcApiCollectionInfo> = {}
 ): OgcApiCollectionInfo {
-  return {
+  return makeTestCollection({
     links: [
       {
         rel: 'self',
@@ -49,46 +50,13 @@ function makeCSAPICollection(
         title: '',
         href: 'https://api.example.com/collections/weather',
       },
-      { rel: 'ogc-cs:systems', type: '', title: '', href: '/systems' },
-      { rel: 'ogc-cs:deployments', type: '', title: '', href: '/deployments' },
-      { rel: 'ogc-cs:procedures', type: '', title: '', href: '/procedures' },
-      {
-        rel: 'ogc-cs:samplingFeatures',
-        type: '',
-        title: '',
-        href: '/samplingFeatures',
-      },
-      { rel: 'ogc-cs:properties', type: '', title: '', href: '/properties' },
-      { rel: 'ogc-cs:datastreams', type: '', title: '', href: '/datastreams' },
-      {
-        rel: 'ogc-cs:observations',
-        type: '',
-        title: '',
-        href: '/observations',
-      },
-      {
-        rel: 'ogc-cs:controlStreams',
-        type: '',
-        title: '',
-        href: '/controlStreams',
-      },
-      { rel: 'ogc-cs:commands', type: '', title: '', href: '/commands' },
+      ...ALL_CSAPI_LINKS,
     ],
     title: 'Weather Stations',
     description: 'A CSAPI weather station collection',
     id: 'weather',
-    itemFormats: [],
-    bulkDownloadLinks: {},
-    jsonDownloadLink: '',
-    crs: [],
-    itemCount: 0,
-    queryables: [],
-    sortables: [],
-    mapTileFormats: [],
-    vectorTileFormats: [],
-    supportedTileMatrixSets: [],
     ...overrides,
-  };
+  });
 }
 
 /** GeoJSON FeatureCollection with 2 System features. */

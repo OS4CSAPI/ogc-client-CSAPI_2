@@ -14,6 +14,7 @@
 import type { OgcApiCollectionInfo } from '../../model.js';
 import CSAPIQueryBuilder from '../url_builder.js';
 import { parseCollectionResponse } from '../formats/response.js';
+import { makeTestCollection } from './_fixtures.js';
 
 // Identity parseItem — passes elements through unchanged (for envelope/pagination tests)
 const identity = (item: unknown) => item;
@@ -28,7 +29,7 @@ import { getCSAPIResourceType } from '../formats/geojson.js';
 function makeCollection(
   overrides: Partial<OgcApiCollectionInfo> = {}
 ): OgcApiCollectionInfo {
-  return {
+  return makeTestCollection({
     links: [
       {
         rel: 'self',
@@ -48,18 +49,8 @@ function makeCollection(
     title: 'IoT Sensors',
     description: 'IoT sensor collection',
     id: 'iot',
-    itemFormats: [],
-    bulkDownloadLinks: {},
-    jsonDownloadLink: '',
-    crs: [],
-    itemCount: 0,
-    queryables: [],
-    sortables: [],
-    mapTileFormats: [],
-    vectorTileFormats: [],
-    supportedTileMatrixSets: [],
     ...overrides,
-  };
+  });
 }
 
 /** System list response — pick a system to drill down on. */
