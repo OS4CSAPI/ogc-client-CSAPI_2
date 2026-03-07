@@ -2,10 +2,9 @@
 status: upstream
 priority: p1
 issue_id: "002"
-github_issue: "#153"
 tags: [code-review, security, input-encoding, upstream]
 dependencies: []
-related: ["#152"]
+related: ["001"]
 ---
 
 # Query Parameter Injection via `encodeURI` in `getCollectionItemsUrl`

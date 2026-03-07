@@ -2,10 +2,9 @@
 status: upstream
 priority: p1
 issue_id: "001"
-github_issue: "#152"
 tags: [code-review, security, input-encoding, upstream]
 dependencies: []
-related: ["#153"]
+related: ["002"]
 ---
 
 # Path Traversal via Unencoded `itemId` in `getCollectionItem`
