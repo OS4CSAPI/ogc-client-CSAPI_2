@@ -490,13 +490,17 @@ describe('scanCsapiLinks edge cases', () => {
 
 describe('scanCsapiLinks URL scheme validation', () => {
   it('accepts https:// hrefs', () => {
-    const links = [{ rel: 'ogc-cs:systems', href: 'https://example.com/systems' }];
+    const links = [
+      { rel: 'ogc-cs:systems', href: 'https://example.com/systems' },
+    ];
     const result = scanCsapiLinks(links);
     expect(result.get('systems')).toBe('https://example.com/systems');
   });
 
   it('accepts http:// hrefs', () => {
-    const links = [{ rel: 'ogc-cs:systems', href: 'http://example.com/systems' }];
+    const links = [
+      { rel: 'ogc-cs:systems', href: 'http://example.com/systems' },
+    ];
     const result = scanCsapiLinks(links);
     expect(result.get('systems')).toBe('http://example.com/systems');
   });
@@ -514,13 +518,17 @@ describe('scanCsapiLinks URL scheme validation', () => {
   });
 
   it('rejects data: scheme (convention 2 — plain resource name)', () => {
-    const links = [{ rel: 'datastreams', href: 'data:text/html,<script>alert(1)</script>' }];
+    const links = [
+      { rel: 'datastreams', href: 'data:text/html,<script>alert(1)</script>' },
+    ];
     const result = scanCsapiLinks(links);
     expect(result.has('datastreams')).toBe(false);
   });
 
   it('rejects vbscript: scheme (convention 1)', () => {
-    const links = [{ rel: 'ogc-cs:deployments', href: 'vbscript:MsgBox("xss")' }];
+    const links = [
+      { rel: 'ogc-cs:deployments', href: 'vbscript:MsgBox("xss")' },
+    ];
     const result = scanCsapiLinks(links);
     expect(result.has('deployments')).toBe(false);
   });

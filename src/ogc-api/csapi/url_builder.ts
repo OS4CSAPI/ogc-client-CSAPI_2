@@ -327,7 +327,9 @@ export default class CSAPIQueryBuilder {
     const parentBase = topLevelUrl
       ? topLevelUrl.replace(/\/+$/, '')
       : `${this.baseUrl}/${toUrlPathSegment(parentType)}`;
-    let url = `${parentBase}/${encodeResourceId(parentId)}/${childSegment}/${encodeResourceId(childId)}`;
+    let url = `${parentBase}/${encodeResourceId(
+      parentId
+    )}/${childSegment}/${encodeResourceId(childId)}`;
     if (subPath) url += `/${subPath}`;
     return url + this.buildQueryString(options);
   }
@@ -1799,9 +1801,20 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
    */
-  getObservation(id: string, options?: QueryOptions, datastreamId?: string): string {
+  getObservation(
+    id: string,
+    options?: QueryOptions,
+    datastreamId?: string
+  ): string {
     if (datastreamId) {
-      return this.buildNestedResourceUrl('datastreams', datastreamId, 'observations', id, undefined, options);
+      return this.buildNestedResourceUrl(
+        'datastreams',
+        datastreamId,
+        'observations',
+        id,
+        undefined,
+        options
+      );
     }
     return this.build('observations', id, undefined, options);
   }
@@ -1833,7 +1846,12 @@ export default class CSAPIQueryBuilder {
    */
   updateObservation(id: string, datastreamId?: string): string {
     if (datastreamId) {
-      return this.buildNestedResourceUrl('datastreams', datastreamId, 'observations', id);
+      return this.buildNestedResourceUrl(
+        'datastreams',
+        datastreamId,
+        'observations',
+        id
+      );
     }
     return this.build('observations', id);
   }
@@ -1856,7 +1874,12 @@ export default class CSAPIQueryBuilder {
    */
   deleteObservation(id: string, datastreamId?: string): string {
     if (datastreamId) {
-      return this.buildNestedResourceUrl('datastreams', datastreamId, 'observations', id);
+      return this.buildNestedResourceUrl(
+        'datastreams',
+        datastreamId,
+        'observations',
+        id
+      );
     }
     return this.build('observations', id);
   }
@@ -1882,7 +1905,13 @@ export default class CSAPIQueryBuilder {
    */
   getObservationDatastream(id: string, datastreamId?: string): string {
     if (datastreamId) {
-      return this.buildNestedResourceUrl('datastreams', datastreamId, 'observations', id, 'datastream');
+      return this.buildNestedResourceUrl(
+        'datastreams',
+        datastreamId,
+        'observations',
+        id,
+        'datastream'
+      );
     }
     return this.build('observations', id, 'datastream');
   }
@@ -1907,9 +1936,20 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
    */
-  getObservationSamplingFeature(id: string, options?: QueryOptions, datastreamId?: string): string {
+  getObservationSamplingFeature(
+    id: string,
+    options?: QueryOptions,
+    datastreamId?: string
+  ): string {
     if (datastreamId) {
-      return this.buildNestedResourceUrl('datastreams', datastreamId, 'observations', id, 'samplingFeature', options);
+      return this.buildNestedResourceUrl(
+        'datastreams',
+        datastreamId,
+        'observations',
+        id,
+        'samplingFeature',
+        options
+      );
     }
     return this.build('observations', id, 'samplingFeature', options);
   }
@@ -1934,9 +1974,20 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
    */
-  getObservationSystem(id: string, options?: QueryOptions, datastreamId?: string): string {
+  getObservationSystem(
+    id: string,
+    options?: QueryOptions,
+    datastreamId?: string
+  ): string {
     if (datastreamId) {
-      return this.buildNestedResourceUrl('datastreams', datastreamId, 'observations', id, 'system', options);
+      return this.buildNestedResourceUrl(
+        'datastreams',
+        datastreamId,
+        'observations',
+        id,
+        'system',
+        options
+      );
     }
     return this.build('observations', id, 'system', options);
   }
@@ -1958,9 +2009,20 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
    */
-  getObservationHistory(id: string, options?: QueryOptions, datastreamId?: string): string {
+  getObservationHistory(
+    id: string,
+    options?: QueryOptions,
+    datastreamId?: string
+  ): string {
     if (datastreamId) {
-      return this.buildNestedResourceUrl('datastreams', datastreamId, 'observations', id, 'history', options);
+      return this.buildNestedResourceUrl(
+        'datastreams',
+        datastreamId,
+        'observations',
+        id,
+        'history',
+        options
+      );
     }
     return this.build('observations', id, 'history', options);
   }
@@ -2278,9 +2340,20 @@ export default class CSAPIQueryBuilder {
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
    */
-  getCommand(id: string, options?: QueryOptions, controlStreamId?: string): string {
+  getCommand(
+    id: string,
+    options?: QueryOptions,
+    controlStreamId?: string
+  ): string {
     if (controlStreamId) {
-      return this.buildNestedResourceUrl('controlStreams', controlStreamId, 'commands', id, undefined, options);
+      return this.buildNestedResourceUrl(
+        'controlStreams',
+        controlStreamId,
+        'commands',
+        id,
+        undefined,
+        options
+      );
     }
     return this.build('commands', id, undefined, options);
   }
@@ -2388,7 +2461,12 @@ export default class CSAPIQueryBuilder {
    */
   updateCommand(id: string, controlStreamId?: string): string {
     if (controlStreamId) {
-      return this.buildNestedResourceUrl('controlStreams', controlStreamId, 'commands', id);
+      return this.buildNestedResourceUrl(
+        'controlStreams',
+        controlStreamId,
+        'commands',
+        id
+      );
     }
     return this.build('commands', id);
   }
@@ -2411,7 +2489,12 @@ export default class CSAPIQueryBuilder {
    */
   deleteCommand(id: string, controlStreamId?: string): string {
     if (controlStreamId) {
-      return this.buildNestedResourceUrl('controlStreams', controlStreamId, 'commands', id);
+      return this.buildNestedResourceUrl(
+        'controlStreams',
+        controlStreamId,
+        'commands',
+        id
+      );
     }
     return this.build('commands', id);
   }
@@ -2440,9 +2523,20 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-002/23-002.html#_command_resources
    * @see https://docs.ogc.org/is/23-002/23-002.html#_CommandStatus_Query_Params §13.6.1 Req 61
    */
-  getCommandStatus(id: string, options?: CommandStatusQueryOptions, controlStreamId?: string): string {
+  getCommandStatus(
+    id: string,
+    options?: CommandStatusQueryOptions,
+    controlStreamId?: string
+  ): string {
     if (controlStreamId) {
-      return this.buildNestedResourceUrl('controlStreams', controlStreamId, 'commands', id, 'status', options);
+      return this.buildNestedResourceUrl(
+        'controlStreams',
+        controlStreamId,
+        'commands',
+        id,
+        'status',
+        options
+      );
     }
     return this.build('commands', id, 'status', options);
   }
@@ -2477,7 +2571,13 @@ export default class CSAPIQueryBuilder {
    */
   updateCommandStatus(id: string, controlStreamId?: string): string {
     if (controlStreamId) {
-      return this.buildNestedResourceUrl('controlStreams', controlStreamId, 'commands', id, 'status');
+      return this.buildNestedResourceUrl(
+        'controlStreams',
+        controlStreamId,
+        'commands',
+        id,
+        'status'
+      );
     }
     return this.build('commands', id, 'status');
   }
@@ -2503,7 +2603,13 @@ export default class CSAPIQueryBuilder {
    */
   getCommandResult(id: string, controlStreamId?: string): string {
     if (controlStreamId) {
-      return this.buildNestedResourceUrl('controlStreams', controlStreamId, 'commands', id, 'result');
+      return this.buildNestedResourceUrl(
+        'controlStreams',
+        controlStreamId,
+        'commands',
+        id,
+        'result'
+      );
     }
     return this.build('commands', id, 'result');
   }
@@ -2530,7 +2636,13 @@ export default class CSAPIQueryBuilder {
    */
   cancelCommand(id: string, controlStreamId?: string): string {
     if (controlStreamId) {
-      return this.buildNestedResourceUrl('controlStreams', controlStreamId, 'commands', id, 'cancel');
+      return this.buildNestedResourceUrl(
+        'controlStreams',
+        controlStreamId,
+        'commands',
+        id,
+        'cancel'
+      );
     }
     return this.build('commands', id, 'cancel');
   }

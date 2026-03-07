@@ -388,7 +388,9 @@ describe('Discovery workflow — partial collection support', () => {
 
 describe('Discovery workflow — error scenarios', () => {
   it('throws on invalid collection response body', () => {
-    expect(() => parseCollectionResponse(null, identity)).toThrow(/expected an object/);
+    expect(() => parseCollectionResponse(null, identity)).toThrow(
+      /expected an object/
+    );
     expect(() => parseCollectionResponse('string', identity)).toThrow(
       /expected an object/
     );

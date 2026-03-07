@@ -356,7 +356,9 @@ describe('Observation workflow — error handling', () => {
   });
 
   it('throws on malformed observation response (not an object)', () => {
-    expect(() => parseCollectionResponse(42, identity)).toThrow(/expected an object/);
+    expect(() => parseCollectionResponse(42, identity)).toThrow(
+      /expected an object/
+    );
   });
 
   it('propagates EndpointError when datastreams not available', () => {
@@ -377,8 +379,9 @@ describe('Observation workflow — error handling', () => {
     expect(() => builder.getDataStreams()).toThrow(
       /does not support 'datastreams'/
     );
-    expect(() => builder.getDataStreamObservations('ds-001')).toThrow(
-      /does not support 'datastreams'/
+    // Per-ID methods skip assertResourceAvailable (Phase 7 #156/#157)
+    expect(builder.getDataStreamObservations('ds-001')).toEqual(
+      expect.any(String)
     );
   });
 });

@@ -363,10 +363,7 @@ export function parseMatrix(json: unknown): Matrix {
       }
     } else if (Array.isArray(json.values)) {
       values = json.values;
-    } else if (
-      isRecord(json.values) &&
-      typeof json.values.href === 'string'
-    ) {
+    } else if (isRecord(json.values) && typeof json.values.href === 'string') {
       values = parseAssociationAttributeGroup(json.values);
     }
   }
@@ -631,10 +628,7 @@ export function parseGeometry(json: unknown): SweGeometry {
   }
 
   // value — optional GeoJSON geometry
-  if (
-    isRecord(json.value) &&
-    typeof json.value.type === 'string'
-  ) {
+  if (isRecord(json.value) && typeof json.value.type === 'string') {
     // GeoJsonGeometry has [key: string]: unknown index signature,
     // so a Record<string, unknown> with a string 'type' satisfies it.
     const geo = json.value;

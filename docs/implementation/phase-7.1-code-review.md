@@ -35,32 +35,20 @@
 |-------|--------|
 | tsc --noEmit (C1) | ✅ exit 0 — clean |
 | lint (C2) | ✅ exit 0 — clean |
-| test (C3) | ✅ CSAPI: 30 suites (28 pass, 2 fail), 1325 tests (1322 pass, 3 fail). Full suite: 61 suites (55 pass, 6 fail), 1766 tests (1680 pass, 82 fail, 4 skipped). All 82 full-suite failures are upstream WFS timeout errors; 3 CSAPI failures are pre-existing (see below). |
-| prettier (C4) | ⚠️ 9 files with formatting issues (8 introduced in Phase 7, 1 pre-existing) |
+| test (C3) | ✅ CSAPI: 30 suites, 30 pass, 1325 tests, 1325 pass, 0 fail. Full suite: 61 suites (55 pass, 6 fail — all upstream WFS timeouts). |
+| prettier (C4) | ✅ exit 0 — all CSAPI files formatted |
 
-#### C3 — Pre-Existing CSAPI Test Failures (3)
+#### C3 — Pre-Existing CSAPI Test Failures (Resolved)
 
-These failures exist on both the `phase-6` baseline and the `phase-7` branch. They are **intentional behavior changes** from Phase 7 Steps 12–13 (#156/#157): the `assertResourceAvailable` removal means per-ID methods no longer throw when a collection doesn't advertise the resource type link. The integration test error scenarios still expect the old (incorrect) throwing behavior.
+Three error scenario tests previously failed because they expected per-ID methods to throw `EndpointError` after the `assertResourceAvailable` removal in Phase 7 Steps 12–13 (#156/#157). These tests have been **updated** to assert the new correct behavior: per-ID methods now return a URL string without throwing, while collection-level listing methods still throw `EndpointError`.
 
-1. `command.spec.ts` — "throws EndpointError when commands not available" — `getCommand('cmd-001')` no longer throws (expected by design)
-2. `command.spec.ts` — "throws EndpointError when controlStreams not available" — `createCommand('cs-001')` no longer throws (expected by design)
-3. `observation.spec.ts` — "propagates EndpointError when datastreams not available" — `getDataStreamObservations('ds-001')` no longer throws (expected by design)
+1. `command.spec.ts` — `getCommand('cmd-001')` now asserts returns a string ✅
+2. `command.spec.ts` — `createCommand('cs-001')` / `checkCommandFeasibility('cs-001')` now assert return strings ✅
+3. `observation.spec.ts` — `getDataStreamObservations('ds-001')` now asserts returns a string ✅
 
-**Root cause:** The error scenario tests assert that per-ID methods throw `EndpointError` when the resource type is not advertised. Phase 7 intentionally changed this behavior — per-ID methods skip the `assertResourceAvailable` check (only collection-level listing methods retain it). The tests need updating to reflect the new correct behavior.
+#### C4 — Prettier Formatting (Resolved)
 
-#### C4 — Prettier Formatting Issues (9 Files)
-
-| File | Pre-existing? |
-|------|---------------|
-| `formats/response.spec.ts` | No — introduced in Phase 7 |
-| `formats/swecommon/data-array.ts` | No — introduced in Phase 7 |
-| `formats/swecommon/parser.ts` | No — introduced in Phase 7 |
-| `helpers.spec.ts` | No — introduced in Phase 7 |
-| `integration/_fixtures.ts` | Yes — pre-existing from Phase 6 |
-| `integration/discovery.spec.ts` | No — introduced in Phase 7 |
-| `integration/observation.spec.ts` | No — introduced in Phase 7 |
-| `integration/pipeline.spec.ts` | No — introduced in Phase 7 |
-| `url_builder.ts` | No — introduced in Phase 7 |
+`npx prettier --write` applied to all 9 previously affected CSAPI files. `npx prettier --check` now exits cleanly.
 
 ### Diff Stats
 
@@ -177,23 +165,21 @@ No prior Phase 7 code review exists — this is the first Phase 7 review (7.1).
 
 ## Phase 7.1 Findings — New
 
-### [F1] GAP: 3 Integration Test Error Scenarios Need Updating
+### [F1] ~~GAP~~ RESOLVED: 3 Integration Test Error Scenarios Updated
 
-**Severity:** GAP
-**Files:** `integration/command.spec.ts` (lines 396–399, 417–419), `integration/observation.spec.ts` (lines 378–382)
-**Description:** Three error scenario tests expect per-ID methods to throw `EndpointError` when the resource type is not advertised. Phase 7 Steps 12–13 (#156/#157) intentionally removed this behavior — per-ID methods now skip `assertResourceAvailable`. The tests need updating to match the new correct behavior (per-ID methods should succeed, not throw).
+**Severity:** ~~GAP~~ → RESOLVED
+**Files:** `integration/command.spec.ts`, `integration/observation.spec.ts`
+**Description:** Three error scenario tests expected per-ID methods to throw `EndpointError`. Updated to assert per-ID methods return URL strings (new correct behavior after #156/#157 `assertResourceAvailable` removal). Collection-level listing methods still correctly assert `EndpointError`.
 
-**Impact:** Tests fail but production code is correct. Zero user-facing impact.
-**Recommendation:** Update these 3 tests to assert that per-ID methods do NOT throw when the resource type is missing. The collection-level listing tests should continue to assert `EndpointError`.
+**Resolution:** Tests updated, CSAPI suite now 30/30 pass, 1325/1325 pass.
 
-### [F2] GAP: 8 Files With New Prettier Formatting Issues
+### [F2] ~~GAP~~ RESOLVED: Prettier Formatting Fixed
 
-**Severity:** GAP
-**Files:** `response.spec.ts`, `data-array.ts`, `parser.ts`, `helpers.spec.ts`, `discovery.spec.ts`, `observation.spec.ts`, `pipeline.spec.ts`, `url_builder.ts`
-**Description:** Phase 7 introduced formatting drift in 8 files. The project's CI does not currently enforce prettier as a gate (C4 is advisory), but this drift should be cleaned up before porting to `clean-pr`.
+**Severity:** ~~GAP~~ → RESOLVED
+**Files:** 9 CSAPI files
+**Description:** `npx prettier --write` applied to all 9 affected files (8 introduced in Phase 7, 1 pre-existing). `npx prettier --check` now exits cleanly.
 
-**Impact:** Style-only — no functional impact. However, PR reviewers may flag formatting noise.
-**Recommendation:** Run `npx prettier --write` on the 9 affected files (including the 1 pre-existing) as a cleanup commit before porting to `clean-pr`.
+**Resolution:** Formatting normalized. Zero functional impact.
 
 ### [F3] POSITIVE: `requireObject()` Helper Consolidation
 
@@ -318,8 +304,8 @@ No prior Phase 7 code review exists — this is the first Phase 7 review (7.1).
 |------|---------|----------|--------|--------|
 | C1 | `npx tsc --noEmit` | exit 0 | exit 0 | ✅ |
 | C2 | `npm run lint` | exit 0 | exit 0 | ✅ |
-| C3 | `npm test` | CSAPI: all pass | 1322 pass, 3 fail (pre-existing) | ⚠️ |
-| C4 | `npx prettier --check src/` | exit 0 | 9 files with formatting issues (8 new) | ⚠️ |
+| C3 | `npm test` | CSAPI: all pass | 1325 pass, 0 fail | ✅ |
+| C4 | `npx prettier --check src/` | exit 0 | exit 0 | ✅ |
 
 ---
 
@@ -354,12 +340,12 @@ No prior Phase 7 code review exists — this is the first Phase 7 review (7.1).
 |----------|-------|---------|
 | Issues resolved | 17/17 | All 11 code-review findings + 6 pre-existing bugs |
 | Auto-resolved | 1 | #111 via #160 |
-| New findings | 2 | F1 (3 stale error-scenario tests), F2 (8 prettier formatting issues) |
+| New findings (resolved) | 2 | F1 (3 stale error tests — fixed), F2 (prettier — fixed) |
 | Positive findings | 8 | F3–F10 (quality improvements across all categories) |
 | Informational | 4 | F11–F14 (documentation, fallback, type system, deprecation) |
 | Consistency | 2 | F15–F16 (null guard pattern, export scope) |
 | Regressions | 0 | No behavioral regressions detected |
-| Pre-existing failures | 3 | Error scenario tests that expect old throwing behavior |
+| Pre-existing failures | 0 | All resolved |
 
 ---
 
@@ -367,9 +353,9 @@ No prior Phase 7 code review exists — this is the first Phase 7 review (7.1).
 
 ### Fix Now (before porting to clean-pr)
 
-1. **[F1] Update 3 stale error-scenario tests** — Modify the 3 tests in `command.spec.ts` and `observation.spec.ts` to assert that per-ID methods do NOT throw when the resource type is missing. The collection-level listing tests should continue to assert `EndpointError`. This addresses the intentional Phase 7 behavior change from #156/#157.
-
-2. **[F2] Run prettier on 9 affected files** — Execute `npx prettier --write` on the 9 files listed in the C4 section. This is a style-only fix with zero behavioral impact but ensures the `clean-pr` branch has consistent formatting.
+All "Fix Now" items resolved:
+- ~~[F1] Update 3 stale error-scenario tests~~ — ✅ Done
+- ~~[F2] Run prettier on 9 affected files~~ — ✅ Done
 
 ### Fix Before Push (before updating PR #136)
 
@@ -389,9 +375,7 @@ None — no deferred items identified.
 
 **Why not caught during implementation:** Steps 12–13 focused on the `url_builder.ts` source code diff, not the integration test behavioral expectations. The tests were not updated because the commit strategy was "source code changes only" for the assert-removal steps, with test updates planned for Steps 15–17 (build() rewrite). However, Steps 15–17 focused on the new `build()` pattern rather than revisiting the error-scenario test assertions.
 
-**Fix:** Update the 3 tests to match the new behavior:
-- Per-ID methods (e.g., `getCommand('cmd-001')`) should succeed without throwing.
-- Collection-level methods (e.g., `getCommands()`) should still throw `EndpointError`.
+**Fix:** ✅ Tests updated — per-ID methods now assert `toEqual(expect.any(String))` instead of `toThrow()`. Collection-level methods still assert `EndpointError`.
 
 ### F2: Prettier Formatting Drift
 
@@ -399,7 +383,7 @@ None — no deferred items identified.
 
 **Why not caught during implementation:** Prettier was not run between Phase 7 steps. Each step focused on functional correctness (tsc + lint + tests) rather than formatting.
 
-**Fix:** Single `npx prettier --write` pass on the 9 affected files.
+**Fix:** ✅ `npx prettier --write` applied to all 9 affected files. Verified clean with `npx prettier --check`.
 
 ---
 
@@ -407,6 +391,6 @@ None — no deferred items identified.
 
 Phase 7 successfully resolves all 17 issues (11 code-review findings + 6 pre-existing bugs) across 20 execution steps. The work demonstrates consistent quality across all 6 categories (A–F): documentation fixes are correct, DRY extractions preserve behavior while eliminating duplication, type safety improvements close real vulnerability gaps, the `build()` helper achieves the right balance between assertion and flexibility, security hardening covers all identified attack vectors, and test fixture centralization reduces maintenance burden.
 
-Two actionable findings require attention before porting to `clean-pr`: (1) three stale error-scenario tests that expect pre-Phase-7 throwing behavior, and (2) eight files with prettier formatting drift. Both are low-effort fixes with no architectural impact.
+Both actionable findings from the initial review have been resolved: (1) three stale error-scenario tests updated to match the new `assertResourceAvailable` removal behavior, and (2) prettier formatting applied to all 9 affected files. CSAPI test suite now passes 30/30 suites, 1325/1325 tests.
 
-The code is architecturally sound and ready to port to `clean-pr` once the two "Fix Now" items are addressed. The Phase 7 branch introduces +369 net lines — a modest footprint for 17 resolved issues — demonstrating effective consolidation where refactored code is actually smaller than what it replaced (e.g., `part2.ts` parser helpers, SWE Common cast removal, fixture deduplication). No regressions were detected, public API signatures are preserved (with one intentional deprecation), and all upstream-only findings remain untouched.
+The code is architecturally sound and ready to port to `clean-pr`. The Phase 7 branch introduces +369 net lines — a modest footprint for 17 resolved issues — demonstrating effective consolidation where refactored code is actually smaller than what it replaced (e.g., `part2.ts` parser helpers, SWE Common cast removal, fixture deduplication). No regressions were detected, public API signatures are preserved (with one intentional deprecation), and all upstream-only findings remain untouched.

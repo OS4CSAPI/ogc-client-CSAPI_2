@@ -105,26 +105,38 @@ const ITEMS_WITH_PAGINATION = {
 
 describe('parseCollectionResponse — FeatureCollection envelope', () => {
   it('extracts features as the items array', () => {
-    const result = parseCollectionResponse(FEATURE_COLLECTION_RESPONSE, identity);
+    const result = parseCollectionResponse(
+      FEATURE_COLLECTION_RESPONSE,
+      identity
+    );
     expect(result.items).toHaveLength(2);
     expect(result.items[0]).toEqual(FEATURE_COLLECTION_RESPONSE.features[0]);
     expect(result.items[1]).toEqual(FEATURE_COLLECTION_RESPONSE.features[1]);
   });
 
   it('extracts links', () => {
-    const result = parseCollectionResponse(FEATURE_COLLECTION_RESPONSE, identity);
+    const result = parseCollectionResponse(
+      FEATURE_COLLECTION_RESPONSE,
+      identity
+    );
     expect(result.links).toHaveLength(1);
     expect(result.links[0].rel).toBe('next');
   });
 
   it('extracts numberMatched and numberReturned', () => {
-    const result = parseCollectionResponse(FEATURE_COLLECTION_RESPONSE, identity);
+    const result = parseCollectionResponse(
+      FEATURE_COLLECTION_RESPONSE,
+      identity
+    );
     expect(result.numberMatched).toBe(5);
     expect(result.numberReturned).toBe(2);
   });
 
   it('extracts timeStamp', () => {
-    const result = parseCollectionResponse(FEATURE_COLLECTION_RESPONSE, identity);
+    const result = parseCollectionResponse(
+      FEATURE_COLLECTION_RESPONSE,
+      identity
+    );
     expect(result.timeStamp).toBe('2026-01-15T12:00:00Z');
   });
 });
@@ -171,8 +183,14 @@ describe('parseCollectionResponse — items envelope', () => {
 
 describe('parseCollectionResponse — format equivalence', () => {
   it('produces the same items from both envelope formats', () => {
-    const fromFeatures = parseCollectionResponse(FEATURE_COLLECTION_RESPONSE, identity);
-    const fromItems = parseCollectionResponse(ITEMS_ENVELOPE_RESPONSE, identity);
+    const fromFeatures = parseCollectionResponse(
+      FEATURE_COLLECTION_RESPONSE,
+      identity
+    );
+    const fromItems = parseCollectionResponse(
+      ITEMS_ENVELOPE_RESPONSE,
+      identity
+    );
 
     // Same items in the same order
     expect(fromFeatures.items).toEqual(fromItems.items);
@@ -196,13 +214,16 @@ describe('parseCollectionResponse — format equivalence', () => {
 
 describe('parseCollectionResponse — edge cases', () => {
   it('handles an empty features array', () => {
-    const result = parseCollectionResponse({
-      type: 'FeatureCollection',
-      features: [],
-      links: [],
-      numberMatched: 0,
-      numberReturned: 0,
-    }, identity);
+    const result = parseCollectionResponse(
+      {
+        type: 'FeatureCollection',
+        features: [],
+        links: [],
+        numberMatched: 0,
+        numberReturned: 0,
+      },
+      identity
+    );
     expect(result.items).toEqual([]);
     expect(result.numberMatched).toBe(0);
     expect(result.numberReturned).toBe(0);
@@ -237,11 +258,14 @@ describe('parseCollectionResponse — edge cases', () => {
   });
 
   it('ignores non-number pagination values', () => {
-    const result = parseCollectionResponse({
-      items: [],
-      numberMatched: 'many',
-      numberReturned: null,
-    }, identity);
+    const result = parseCollectionResponse(
+      {
+        items: [],
+        numberMatched: 'many',
+        numberReturned: null,
+      },
+      identity
+    );
     expect(result.numberMatched).toBeUndefined();
     expect(result.numberReturned).toBeUndefined();
   });
@@ -259,9 +283,7 @@ describe('parseCollectionResponse — parseItem callback', () => {
 
     // parseItem that extracts a string label from each raw element
     const parseItem = (item: unknown): string =>
-      typeof item === 'object' && item !== null
-        ? 'object'
-        : String(item);
+      typeof item === 'object' && item !== null ? 'object' : String(item);
 
     const result = parseCollectionResponse<string>(body, parseItem);
     expect(result.items).toEqual(['null', '42', 'object']);

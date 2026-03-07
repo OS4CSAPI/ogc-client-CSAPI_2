@@ -78,7 +78,10 @@ describe('end-to-end: Datastream collection pipeline', () => {
 
   it('parses raw JSON collection through envelope + item parser', () => {
     // Extract items and parse each through parseDatastream in one step
-    const collection = parseCollectionResponse(DATASTREAMS_COLLECTION, parseDatastream);
+    const collection = parseCollectionResponse(
+      DATASTREAMS_COLLECTION,
+      parseDatastream
+    );
     expect(collection.items).toHaveLength(1);
     expect(collection.numberMatched).toBe(1);
     expect(collection.numberReturned).toBe(1);
@@ -132,7 +135,10 @@ describe('end-to-end: Datastream collection pipeline', () => {
       numberReturned: 0,
     };
 
-    const collection = parseCollectionResponse(emptyCollection, parseDatastream);
+    const collection = parseCollectionResponse(
+      emptyCollection,
+      parseDatastream
+    );
     expect(collection.items).toHaveLength(0);
   });
 });
@@ -169,7 +175,10 @@ describe('end-to-end: Property collection pipeline', () => {
 
   it('parses GeoJSON FeatureCollection through envelope + property parser', () => {
     // Extract features and parse each through parseProperty in one step
-    const collection = parseCollectionResponse(PROPERTIES_COLLECTION, parseProperty);
+    const collection = parseCollectionResponse(
+      PROPERTIES_COLLECTION,
+      parseProperty
+    );
     expect(collection.items).toHaveLength(1);
 
     // Verify typed output — items are already Property[]

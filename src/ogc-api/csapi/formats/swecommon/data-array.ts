@@ -448,10 +448,7 @@ export function decodeValues(
   encoding: DataEncoding
 ): EncodedValues {
   // Link reference passthrough
-  if (
-    isRecord(values) &&
-    typeof values.href === 'string'
-  ) {
+  if (isRecord(values) && typeof values.href === 'string') {
     return parseAssociationAttributeGroup(values);
   }
 
@@ -567,10 +564,7 @@ export function parseDataArray(
     } else if (Array.isArray(json.values)) {
       // No encoding specified — treat as raw JSON array
       values = json.values;
-    } else if (
-      isRecord(json.values) &&
-      typeof json.values.href === 'string'
-    ) {
+    } else if (isRecord(json.values) && typeof json.values.href === 'string') {
       // Link reference
       values = parseAssociationAttributeGroup(json.values);
     }

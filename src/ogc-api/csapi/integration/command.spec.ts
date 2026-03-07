@@ -394,9 +394,8 @@ describe('Command workflow — error scenarios', () => {
     const builder = new CSAPIQueryBuilder(noCommands);
 
     expect(() => builder.getCommands()).toThrow(EndpointError);
-    expect(() => builder.getCommand('cmd-001')).toThrow(
-      /does not support 'commands'/
-    );
+    // Per-ID methods skip assertResourceAvailable (Phase 7 #156/#157)
+    expect(builder.getCommand('cmd-001')).toEqual(expect.any(String));
   });
 
   it('throws EndpointError when controlStreams not available', () => {
@@ -414,11 +413,10 @@ describe('Command workflow — error scenarios', () => {
     });
     const builder = new CSAPIQueryBuilder(noCS);
 
-    expect(() => builder.createCommand('cs-001')).toThrow(
-      /does not support 'controlStreams'/
-    );
-    expect(() => builder.checkCommandFeasibility('cs-001')).toThrow(
-      /does not support 'controlStreams'/
+    // Per-ID methods skip assertResourceAvailable (Phase 7 #156/#157)
+    expect(builder.createCommand('cs-001')).toEqual(expect.any(String));
+    expect(builder.checkCommandFeasibility('cs-001')).toEqual(
+      expect.any(String)
     );
   });
 
