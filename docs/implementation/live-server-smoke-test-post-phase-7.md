@@ -81,7 +81,7 @@
 | | S1 — OSH | S2 — 52North | S3 — OS4CSAPI-OSH |
 | --- | --- | --- | --- |
 | **URL** | `http://45.55.99.236:8080/sensorhub/api` | `https://csa.demo.52north.org/` | `https://os4csapi-osh.duckdns.org/sensorhub/api` |
-| **Auth** | Basic (ogc:ogc) | None | Basic (os4csapi:ogc134mm) |
+| **Auth** | Basic (credentials via env vars) | None | Basic (credentials via env vars) |
 | **SSL** | None (HTTP) | Expired cert | Valid HTTPS |
 | **Root** | 200 ✅ | 200 ✅ | 200 ✅ |
 | **Conformance** | 33 classes | Unknown (not CSAPI) | 33 classes (identical to S1) |
