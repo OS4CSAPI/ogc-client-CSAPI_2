@@ -217,6 +217,62 @@ describe('parseDatastream', () => {
     ]);
   });
 
+  it('falls back to label when definition is absent (#165)', () => {
+    const input = {
+      id: 'ds-obs-label',
+      name: 'Label-Only Props',
+      formats: [],
+      observedProperties: [
+        { label: 'Temperature', description: 'Air temperature measurement' },
+      ],
+    };
+
+    const result: Datastream = parseDatastream(input);
+
+    expect(result.observedProperties).toEqual(['Temperature']);
+  });
+
+  it('prefers definition over label when both are present (#165)', () => {
+    const input = {
+      id: 'ds-obs-both',
+      name: 'Definition Takes Priority',
+      formats: [],
+      observedProperties: [
+        {
+          definition: 'http://mmisw.org/ont/cf/parameter/air_temperature',
+          label: 'Air Temperature',
+        },
+      ],
+    };
+
+    const result: Datastream = parseDatastream(input);
+
+    expect(result.observedProperties).toEqual([
+      'http://mmisw.org/ont/cf/parameter/air_temperature',
+    ]);
+  });
+
+  it('handles mixed definition, label-only, and string items (#165)', () => {
+    const input = {
+      id: 'ds-obs-mixed',
+      name: 'Mixed Props',
+      formats: [],
+      observedProperties: [
+        { definition: 'http://example.org/temp', label: 'Temp' },
+        { label: 'Humidity' },
+        'http://example.org/pressure',
+      ],
+    };
+
+    const result: Datastream = parseDatastream(input);
+
+    expect(result.observedProperties).toEqual([
+      'http://example.org/temp',
+      'Humidity',
+      'http://example.org/pressure',
+    ]);
+  });
+
   it('wraps a bare-object observedProperties into an array (#163)', () => {
     // Some servers serialize a single-element array as a bare object.
     const input = {
@@ -596,6 +652,21 @@ describe('parseControlStream', () => {
 
     const resultEmpty: ControlStream = parseControlStream(inputEmpty);
     expect(resultEmpty.controlledProperties).toEqual([]);
+  });
+
+  it('falls back to label for controlledProperties when definition is absent (#165)', () => {
+    const input = {
+      id: 'cs-label-prop',
+      name: 'Label-Only Props',
+      formats: [],
+      async: false,
+      controlledProperties: [
+        { label: 'Active' },
+      ],
+    };
+
+    const result: ControlStream = parseControlStream(input);
+    expect(result.controlledProperties).toEqual(['Active']);
   });
 
   it('wraps a bare-object controlledProperties into an array (#163)', () => {

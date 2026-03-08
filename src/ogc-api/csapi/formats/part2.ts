@@ -112,24 +112,42 @@ const RESULT_TYPES = new Set([
 ]);
 
 /**
- * Normalizes the `observedProperties` field from server JSON.
+ * Normalizes the `observedProperties` / `controlledProperties` field from
+ * server JSON into an array of identifier strings.
  *
- * Servers may return either:
- * - An array of objects with a `definition` field: `[{ definition: "uri", label: "..." }]`
- * - A plain string array: `["uri1", "uri2"]`
+ * Extraction priority per item:
+ *   1. String item → used as-is (already a URI or identifier)
+ *   2. Object with `definition` → definition URI extracted
+ *   3. Object with `label` (no `definition`) → label used as fallback
+ *      identifier. This handles real-world data-authoring gaps where
+ *      operators provide human-readable property names without formal
+ *      ontology URIs — a common pattern in early CSAPI deployments
+ *      across multiple server implementations. See P5-F2 analysis.
+ *   4. Otherwise → filtered out
  *
- * This function handles both forms and extracts the URI string for each entry.
- * Empty strings are filtered out.
+ * @remarks
+ * **Design rationale (Postel's Law):** The OGC 23-002 spec defines
+ * `observedProperties` items as objects with a `definition` URI as
+ * the primary semantic identifier. However, the underlying SWE Common
+ * data model treats `label` as the primary human-readable identifier
+ * and `definition` as an optional semantic binding. Since the CSAPI
+ * standard is new and many real-world deployments lack formal ontology
+ * URIs, this function accepts label-only objects rather than silently
+ * discarding them. This is not a server-specific workaround — it's a
+ * cross-implementation interoperability improvement.
  *
  * @param arr - Raw array from the server JSON.
- * @returns Array of property definition URI strings.
+ * @returns Array of property identifier strings (URIs when available,
+ *   labels as fallback).
  */
 function normalizeObservedProperties(arr: unknown[]): string[] {
   return arr
     .map((item) => {
       if (typeof item === 'string') return item;
-      if (typeof item === 'object' && item !== null && 'definition' in item) {
-        return String((item as Record<string, unknown>).definition);
+      if (typeof item === 'object' && item !== null) {
+        const obj = item as Record<string, unknown>;
+        if ('definition' in obj) return String(obj.definition);
+        if ('label' in obj) return String(obj.label);
       }
       return '';
     })
