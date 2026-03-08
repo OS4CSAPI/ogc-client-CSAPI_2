@@ -479,6 +479,107 @@ describe('getSystems', () => {
     );
   });
 
+  // sortBy / sortOrder query parameters
+  it('returns correct URL with sortBy single string', () => {
+    const url = makeIotBuilder().getSystems({ sortBy: 'name' });
+    expect(url).toBe('https://example.com/collections/iot/systems?sortBy=name');
+  });
+
+  it('returns correct URL with sortBy array', () => {
+    const url = makeIotBuilder().getSystems({
+      sortBy: ['phenomenonTime', 'resultTime'],
+    });
+    expect(url).toBe(
+      'https://example.com/collections/iot/systems?sortBy=phenomenonTime%2CresultTime'
+    );
+  });
+
+  it('returns correct URL with sortBy combined with limit', () => {
+    const url = makeIotBuilder().getSystems({ limit: 10, sortBy: 'name' });
+    expect(url).toBe(
+      'https://example.com/collections/iot/systems?limit=10&sortBy=name'
+    );
+  });
+
+  it('returns correct URL with sortBy combined with datetime', () => {
+    const url = makeIotBuilder().getSystems({
+      datetime: new Date('2024-06-01T00:00:00Z'),
+      sortBy: 'name',
+    });
+    expect(url).toBe(
+      'https://example.com/collections/iot/systems?datetime=2024-06-01T00%3A00%3A00.000Z&sortBy=name'
+    );
+  });
+
+  it('skips sortBy when undefined', () => {
+    const url = makeIotBuilder().getSystems({
+      limit: 10,
+      sortBy: undefined,
+    });
+    expect(url).toBe('https://example.com/collections/iot/systems?limit=10');
+  });
+
+  it('returns correct URL with sortOrder asc', () => {
+    const url = makeIotBuilder().getSystems({ sortOrder: 'asc' });
+    expect(url).toBe(
+      'https://example.com/collections/iot/systems?sortOrder=asc'
+    );
+  });
+
+  it('returns correct URL with sortOrder desc', () => {
+    const url = makeIotBuilder().getSystems({ sortOrder: 'desc' });
+    expect(url).toBe(
+      'https://example.com/collections/iot/systems?sortOrder=desc'
+    );
+  });
+
+  it('serializes sortOrder without sortBy', () => {
+    const url = makeIotBuilder().getSystems({ sortOrder: 'desc' });
+    expect(url).toBe(
+      'https://example.com/collections/iot/systems?sortOrder=desc'
+    );
+  });
+
+  it('skips sortOrder when undefined', () => {
+    const url = makeIotBuilder().getSystems({
+      limit: 10,
+      sortOrder: undefined,
+    });
+    expect(url).toBe('https://example.com/collections/iot/systems?limit=10');
+  });
+
+  it('returns correct URL with sortBy and sortOrder together', () => {
+    const url = makeIotBuilder().getSystems({
+      sortBy: 'phenomenonTime',
+      sortOrder: 'desc',
+    });
+    expect(url).toBe(
+      'https://example.com/collections/iot/systems?sortBy=phenomenonTime&sortOrder=desc'
+    );
+  });
+
+  it('returns correct URL with sortBy + sortOrder + limit + q', () => {
+    const url = makeIotBuilder().getSystems({
+      limit: 25,
+      q: 'weather',
+      sortBy: 'name',
+      sortOrder: 'asc',
+    });
+    expect(url).toBe(
+      'https://example.com/collections/iot/systems?limit=25&q=weather&sortBy=name&sortOrder=asc'
+    );
+  });
+
+  it('returns correct URL with sortBy array and sortOrder', () => {
+    const url = makeIotBuilder().getSystems({
+      sortBy: ['phenomenonTime', 'resultTime'],
+      sortOrder: 'desc',
+    });
+    expect(url).toBe(
+      'https://example.com/collections/iot/systems?sortBy=phenomenonTime%2CresultTime&sortOrder=desc'
+    );
+  });
+
   // Systems-specific query parameters
   it('returns correct URL with parent parameter', () => {
     const url = makeIotBuilder().getSystems({ parent: 'urn:parent:1' });
@@ -2791,6 +2892,27 @@ describe('getObservations', () => {
     const url = makeObsBuilder().getObservations({ foiId: 'foi-001' });
     expect(url).toBe(
       'https://example.com/collections/iot/observations?foi=foi-001'
+    );
+  });
+
+  // Cross-resource sort parameter verification
+  it('returns correct URL with sortBy on observations', () => {
+    const url = makeObsBuilder().getObservations({
+      sortBy: 'phenomenonTime',
+      sortOrder: 'desc',
+    });
+    expect(url).toBe(
+      'https://example.com/collections/iot/observations?sortBy=phenomenonTime&sortOrder=desc'
+    );
+  });
+
+  it('returns correct URL with sortBy array on observations', () => {
+    const url = makeObsBuilder().getObservations({
+      limit: 100,
+      sortBy: ['phenomenonTime', 'resultTime'],
+    });
+    expect(url).toBe(
+      'https://example.com/collections/iot/observations?limit=100&sortBy=phenomenonTime%2CresultTime'
     );
   });
 });
