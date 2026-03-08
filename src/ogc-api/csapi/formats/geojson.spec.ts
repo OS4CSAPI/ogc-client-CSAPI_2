@@ -297,6 +297,20 @@ describe('parseValidTime', () => {
     expect(result!.end).toBeUndefined();
   });
 
+  it('parses array format with ".." end sentinel (ISO 8601-2)', () => {
+    const result = parseValidTime([iso, '..']);
+    expect(result).toBeDefined();
+    expect(result!.start).toEqual(new Date(iso));
+    expect(result!.end).toBeUndefined();
+  });
+
+  it('parses array format with ".." start sentinel (ISO 8601-2)', () => {
+    const result = parseValidTime(['..', isoEnd]);
+    expect(result).toBeDefined();
+    expect(result!.start).toBeUndefined();
+    expect(result!.end).toEqual(new Date(isoEnd));
+  });
+
   it('parses object format with Date instances', () => {
     const start = new Date(iso);
     const end = new Date(isoEnd);
@@ -318,6 +332,20 @@ describe('parseValidTime', () => {
     expect(result).toBeDefined();
     expect(result!.start).toEqual(new Date(iso));
     expect(result!.end).toBeUndefined();
+  });
+
+  it('parses object format with ".." end (ISO 8601-2)', () => {
+    const result = parseValidTime({ start: iso, end: '..' });
+    expect(result).toBeDefined();
+    expect(result!.start).toEqual(new Date(iso));
+    expect(result!.end).toBeUndefined();
+  });
+
+  it('parses object format with ".." start (ISO 8601-2)', () => {
+    const result = parseValidTime({ start: '..', end: isoEnd });
+    expect(result).toBeDefined();
+    expect(result!.start).toBeUndefined();
+    expect(result!.end).toEqual(new Date(isoEnd));
   });
 
   it('returns undefined for null', () => {
