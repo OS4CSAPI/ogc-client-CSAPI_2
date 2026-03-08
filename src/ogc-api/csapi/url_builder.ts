@@ -2372,6 +2372,13 @@ export default class CSAPIQueryBuilder {
    * Standard `fetch()` calls will appear to hang. Consumers should use
    * `AbortController` with a timeout, or treat the request as fire-and-forget.
    *
+   * **Async command processing (P7-F4):** Some servers return HTTP
+   * `202 Accepted` instead of `201 Created` when commands are processed
+   * asynchronously. The 202 response may not include a `Location` header —
+   * the command is consumed immediately rather than persisted as a
+   * retrievable resource. Consumers should treat both 201 and 202 as
+   * successful command submission.
+   *
    * @param controlStreamId - The control stream resource identifier.
    * @returns URL string for the command creation endpoint (POST).
    * @throws {EndpointError} If 'controlStreams' is not available on this collection.
@@ -2382,12 +2389,16 @@ export default class CSAPIQueryBuilder {
    * const controller = new AbortController();
    * const timeoutId = setTimeout(() => controller.abort(), 5000);
    * try {
-   *   await fetch(builder.createCommand('cs-001'), {
+   *   const response = await fetch(builder.createCommand('cs-001'), {
    *     method: 'POST',
    *     headers: { 'Content-Type': 'application/json' },
    *     body: JSON.stringify(commandBody),
    *     signal: controller.signal,
    *   });
+   *   // Accept both 201 (created) and 202 (accepted for async processing)
+   *   if (response.status !== 201 && response.status !== 202) {
+   *     throw new Error(`Command submission failed: ${response.status}`);
+   *   }
    * } catch (e) {
    *   if (e.name === 'AbortError') {
    *     // Expected — command was received, connection just stayed open
@@ -2418,6 +2429,11 @@ export default class CSAPIQueryBuilder {
    * Standard `fetch()` calls will appear to hang. Consumers should use
    * `AbortController` with a timeout, or treat the request as fire-and-forget.
    * See {@link createCommand} for a full AbortController example.
+   *
+   * **Async command processing (P7-F4):** Some servers return HTTP
+   * `202 Accepted` instead of `201 Created` when commands are processed
+   * asynchronously. See {@link createCommand} for details and example
+   * response code handling.
    *
    * @param controlStreamId - The control stream resource identifier.
    * @returns URL string for the bulk command creation endpoint (POST).
