@@ -15,7 +15,7 @@
 - All 4 post-ST#24 fixes (#162, #163, #164, #165) validated against live servers
 - All 7 Phase 7 issues (#139, #140, #100, #102, #142, #147, #161) remain verified
 - S2 (52North) fully unreachable — DNS resolution failure (downgrade from "degraded" to "offline")
-- S1 `observedProperties` format change — server now returns proper arrays (P7-F3 fix still correct as defensive code)
+- P7-F3 (bare-object) likely a ST#24 testing artifact — see correction below
 - CRUD 100% on S1 (system, DS, obs); CS create and command POST return 500 (server-side)
 - CRUD 100% on S3 (system, DS, obs); CS create and command POST return 500 (server-side)
 - Test count unchanged at 1,349 (30 suites), 0 tsc errors
@@ -56,7 +56,7 @@
 | --- | --- | --- | --- |
 | **P7-F1** — S1 `/samplingFeatures` 500 | Server-side | **Unchanged** | Still returns 500 on S1 |
 | **P7-F2** — `".."` sentinel | RESOLVED (#162) | **Validated** | S3 uses `".."` in Part 1 GeoJSON; `parseValidTime()` handles correctly |
-| **P7-F3** — Bare-object wrapping | RESOLVED (#163) | **Validated** *(see note)* | S1 server now returns proper arrays — fix remains as defensive code |
+| **P7-F3** — Bare-object wrapping | RESOLVED (#163) | **Likely testing artifact** *(see correction)* | Raw curl confirms S1 returns proper arrays — likely always did (see [ST#24 P7-F3 Correction](#st24-p7-f3-correction)) |
 | **P7-F4** — 202 Accepted docs | RESOLVED (#164) | **Validated** | JSDoc documents 202 Accepted behavior |
 | **P7-F5** — S2 empty FeatureCollection | Server-side | **Superseded** | S2 now fully offline (DNS failure) — see P8-F1 |
 | **P5-F2** — Label-only properties | RESOLVED (#165) | **Validated** | S1 still has 11 label-only DS observedProperties; `normalizeObservedProperties()` label fallback active |
@@ -71,17 +71,21 @@
 | Test Suites | 30 | 30 | 0 |
 | tsc Errors | 0 | 0 | 0 |
 
-### Key Observation: S1 `observedProperties` Format Change
+### ST#24 P7-F3 Correction
 
-In ST#24, S1 Temperature DS (`03tbj7mvqg50`) returned `observedProperties` as a **bare object** `{ label, description }`. In ST#25, the same endpoint now returns a **proper array** `[{ label, description }]`. Raw JSON verified — response starts with `[` not `{`.
+**ST#24 P7-F3 ("S1 observedProperties as Bare Object") was likely a testing artifact, not a real server non-conformance.**
 
-Survey of all 100 S1 datastreams in ST#25:
-- `observedProperties` with `definition`: **462**
-- `observedProperties` label-only (no `definition`): **11**
-- Empty/null `observedProperties`: **0**
-- **Bare-object** `observedProperties`: **0** (was non-zero in ST#24)
+In ST#25, raw `curl.exe` verification of all 100 S1 datastreams confirms that `observedProperties` is a proper JSON array `[{...}]` on the wire — including the specific Temperature DS (`03tbj7mvqg50`) cited in P7-F3. No server changes occurred between ST#24 and ST#25 (same Saturday, hours apart).
 
-The `toArray()` fix from #163 remains correct as defensive code for any server still returning bare objects, but is no longer exercised on current S1 live data.
+**Root cause of the false finding:** The ST#24 observation was made via PowerShell's `Invoke-RestMethod`, which auto-deserializes JSON. PowerShell has a known behavior of unwrapping single-element JSON arrays into bare objects during deserialization. A wire response of `[{ "label": "Temperature" }]` (single-element array) gets presented by PowerShell as a bare PSCustomObject — appearing to be `{ label, description }` instead of an array. This was incorrectly attributed to a server non-conformance.
+
+Survey of all 100 S1 datastreams via raw `curl.exe` in ST#25:
+- `"observedProperties": [` (proper array): **100 out of 100**
+- Bare-object format: **0 out of 100**
+
+**Impact on #163 (toArray):** The `toArray()` helper is harmless defensive code and remains in the codebase. It correctly handles the bare-object scenario if any server ever exhibits it. However, the specific motivation (S1 returning bare objects) was based on a flawed observation. The 2 tests added in #163 remain valid as they test the defensive code path.
+
+**Lesson learned:** Always verify wire format with raw `curl.exe` output, never rely on PowerShell-parsed JSON to determine JSON structure.
 
 ---
 
@@ -269,7 +273,7 @@ All test resources created during CRUD testing were successfully cleaned up (del
 | `parseControlStream` | `controlledProperties` | `[{...}, {...}]` | `[{...}, ...]` | ✅ Array form on both |
 | `parseValidTime` | End sentinel | `"now"` (Part 2), `"now"` (Part 1) | `"now"` (Part 2), `".."` (Part 1) | ✅ Both sentinels handled (#162) |
 | `normalizeObservedProperties` | Label fallback | 11 label-only items | All have definition | ✅ Label fallback active for S1 (#165) |
-| `toArray` | Bare-object wrapping | Not triggered (proper arrays) | Not triggered (proper arrays) | ✅ Defensive code remains (#163) |
+| `toArray` | Bare-object wrapping | Not triggered (wire format is arrays — P7-F3 was likely a testing artifact) | Not triggered | ✅ Defensive code remains (#163) |
 | `extractCSAPIFeature` | `featureType` | Full URI | CURIE (`sosa:Platform`) | ✅ Both handled |
 
 ### normalizeObservedProperties Behavior
@@ -278,7 +282,7 @@ All test resources created during CRUD testing were successfully cleaned up (del
 | --- | --- | --- | --- |
 | `[{ definition: "uri", label: "..." }]` | ✅ (462 props) | ✅ (all props) | ✅ Extracts definition |
 | `[{ label: "..." }]` (no definition) | ✅ (11 props) | Not seen | ✅ Label fallback (#165) |
-| `{ ... }` (bare object) | **Not seen** (was in ST#24) | Not seen | ✅ `toArray()` wraps if encountered (#163) |
+| `{ ... }` (bare object) | **Not seen** (ST#24 claim was likely PowerShell artifact) | Not seen | ✅ `toArray()` wraps if encountered (#163) |
 
 ### isSafeHref Validation (Issue #147)
 
@@ -327,7 +331,7 @@ All 7 Phase 7 issues remain verified. No changes since ST#24 — code unchanged,
 | Issue | Fix | Live Validation |
 | --- | --- | --- |
 | #162 | `parseValidTime()` `".."` sentinel | ✅ S3 Part 1 GeoJSON uses `".."` — parser handles correctly |
-| #163 | `toArray()` bare-object wrapping | ✅ Defensive code verified; S1 now returns proper arrays (no longer exercises bare-object path) |
+| #163 | `toArray()` bare-object wrapping | ✅ Defensive code verified; S1 wire format is proper arrays (P7-F3 was likely a testing artifact — see [correction](#st24-p7-f3-correction)) |
 | #164 | 202 Accepted JSDoc | ✅ Documentation in place; command POST currently returns 500 (P8-F2) rather than 202 |
 | #165 | `normalizeObservedProperties` label fallback | ✅ S1 has 11 label-only DS observedProperties — fallback actively used |
 
@@ -368,7 +372,7 @@ All 7 Phase 7 issues remain verified. No changes since ST#24 — code unchanged,
 | --- | --- | --- | --- |
 | P7-F1 | S1 `/samplingFeatures` 500 | **Unchanged** | Still 500 on S1 |
 | P7-F2 | RESOLVED (#162) | **Validated** | `".."` handling confirmed |
-| P7-F3 | RESOLVED (#163) | **Validated** | Server now returns arrays; fix is defensive |
+| P7-F3 | RESOLVED (#163) | **Likely testing artifact** | Wire format was likely always arrays; PowerShell deserialization misled ST#24 |
 | P7-F4 | RESOLVED (#164) | **Validated** | JSDoc in place; server currently 500 (P8-F2) |
 | P7-F5 | S2 degraded | **Superseded by P8-F1** | S2 now fully offline |
 | P5-F2 | RESOLVED (#165) | **Validated** | 11 label-only props on S1 — fallback active |
@@ -405,7 +409,7 @@ All 7 Phase 7 issues remain verified. No changes since ST#24 — code unchanged,
 | SensorML `definition` | Full URI | CURIE | Parser handles both ✅ |
 | Part 1 `validTime` end | `"now"` | `".."` | ✅ Both handled (#162) |
 | Part 2 `validTime` end | `"now"` | `"now"` | ✅ Same on both |
-| `observedProperties` | Array (was bare object in ST#24) | Array | ✅ Both arrays now; `toArray()` defensive (#163) |
+| `observedProperties` | Array (ST#24 "bare object" claim was likely PowerShell artifact) | Array | ✅ Both arrays on wire; `toArray()` defensive (#163) |
 | Label-only props | 11 label-only | 0 label-only | ✅ Label fallback active on S1 (#165) |
 | CS schema field | `parametersSchema` | `parametersSchema` | ✅ Same — #140 primary path |
 | CS Create | 500 | 500 | ❌ Server-side regression (P8-F2) |
@@ -421,6 +425,6 @@ Two new server-side findings were identified:
 - **P8-F1:** S2 (52North) is now completely offline (DNS failure), downgraded from "degraded" in ST#24
 - **P8-F2:** ControlStream create and command POST return 500 on both OSH servers (was working in ST#24) — server-side regression, no library action needed
 
-Notable positive change: S1 now returns `observedProperties` as proper arrays (no longer bare objects), which means the server-side non-conformance identified in P7-F3 has been corrected upstream.
+ST#24 P7-F3 ("bare object" finding) was likely a testing artifact caused by PowerShell single-element array unwrapping — raw curl confirms S1 wire format is proper arrays and likely always was. The `toArray()` fix from #163 remains as harmless defensive code.
 
 **No library regressions. No code changes required.** The library is stable for clean-pr merge.
