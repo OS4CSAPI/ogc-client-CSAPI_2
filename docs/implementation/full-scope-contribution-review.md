@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-The Connected Systems API (CSAPI) contribution is **complete, correct, and professionally produced**. It implements OGC API - Connected Systems Parts 1 & 2 (OGC 23-001 / OGC 23-002) with 91 public methods covering all 9 resource types, comprehensive SensorML 3.0 and SWE Common 3.0 parsers, and full TypeScript type safety. All 4 CI gates pass cleanly: `tsc`, `lint`, `test` (1,325/1,325), and `prettier`.
+The Connected Systems API (CSAPI) contribution is **complete, correct, and professionally produced**. It implements OGC API - Connected Systems Parts 1 & 2 (OGC 23-001 / OGC 23-002) with 91 public methods covering all 9 resource types, comprehensive SensorML 3.0 and SWE Common 3.0 parsers, and full TypeScript type safety. All 4 CI gates pass cleanly: `tsc`, `lint`, `test` (1,339/1,339), and `prettier`.
 
 Code quality is consistent across all 7 development phases. Cross-phase patterns (error handling, URL encoding, naming conventions, JSDoc, test structure, import style, Postel's Law robustness) are followed uniformly. The module is properly isolated — no production code outside `src/ogc-api/csapi/` imports from CSAPI sub-modules, and upstream file modifications are strictly additive (~49 lines in endpoint.ts, ~22 lines in info.ts, ~71 lines in endpoint.spec.ts).
 
@@ -30,7 +30,7 @@ All gates executed on `phase-7` branch at commit `74aec5b`.
 |------|---------|----------|--------|--------|
 | C1 | `npx tsc --noEmit` | exit 0 | exit 0 — no errors | ✅ |
 | C2 | `npm run lint` | exit 0 | exit 0 — no warnings | ✅ |
-| C3 | `npx jest src/ogc-api/csapi` | all pass | 30 suites, 1,325 tests, 0 failures | ✅ |
+| C3 | `npx jest src/ogc-api/csapi` | all pass | 30 suites, 1,339 tests, 0 failures | ✅ |
 | C4 | `npx prettier --check "src/ogc-api/csapi/**/*.ts"` | exit 0 | "All matched files use Prettier code style!" | ✅ |
 
 ---
@@ -170,7 +170,7 @@ All 9 resource types + CommandStatus defined with proper interfaces, collection 
 
 `buildQueryString` handles: `limit` (validated), `offset`, `bbox` (validated), `datetime`, `phenomenonTime`, `resultTime`, `issueTime`, `executionTime` (all temporal, formatted via `formatDateTimeParameter()`). Wire-name mapping translates TypeScript names to OGC wire names (e.g., `systemId` → `system`, `foiId` → `foi`).
 
-Note: `sortBy`/`sortOrder` not implemented — these are optional conformance class parameters, not required by core.
+Note: `sortBy`/`sortOrder` implemented in Issue #161 (commit `00ea485`). Added to `QueryOptions` interface with 14 dedicated test cases.
 
 ### 3. Conformance Class Detection — ✅ PASS
 
@@ -251,7 +251,7 @@ Correct — a server may implement either or both.
 | `integration/pipeline.spec.ts` | 5 | End-to-end pipelines: Datastream collection, Property collection, Schema response, ControlStream schema |
 | **Subtotal** | **82** | |
 
-**Grand Total: 30 spec files, 1,325 tests (1,312 static + 13 from `it.each()` expansions).**
+**Grand Total: 30 spec files, 1,339 tests (1,326 static + 13 from `it.each()` expansions).**
 
 ### Coverage Gaps
 
@@ -267,7 +267,7 @@ Correct — a server may implement either or both.
 
 ### Pre-Existing Test Failures
 
-**None.** CSAPI suite: 30/30 suites, 1,325/1,325 tests — fully green. No skipped or pending tests.
+**None.** CSAPI suite: 30/30 suites, 1,339/1,339 tests — fully green. No skipped or pending tests.
 
 ---
 
@@ -340,11 +340,11 @@ Documented in `docs/code-review/110-deferred-enhancement-link-resolution-utiliti
 | SWE Common deep validation in SensorML | `sensorml/parser.ts`, `sensorml/_helpers.ts` | SWE Common parsers exist but are not wired into SensorML pass-through points; raw JSON survives correctly typed — intentional scope boundary |
 | Full GeoJSON Geometry typing | `swecommon/types.ts` | GeoJSON geometry is loosely typed (e.g. `Record<string, unknown>`) rather than a strict discriminated union of `Point \| LineString \| Polygon \| …` with precise coordinate shapes. Works fine for passing geometry through; strict compile-time geometry validation is unrelated to Connected Systems and arguably belongs in a GeoJSON library |
 | Binary DataArray decoding | `swecommon/data-array.ts` | SWE Common DataArrays support text and binary encodings. Our parser handles text-encoded arrays. Binary decoding (raw byte streams, float32/int16 interpretation, byte order) is a specialized use case for high-throughput sensor streams — no tested server returns binary encoding. Explicitly out of scope |
-| `sortBy`/`sortOrder` query parameters | `url_builder.ts` | OGC CS API defines optional conformance classes for sorting collection results. The URL builder covers all required query parameters; sorting is optional and can be added incrementally later without breaking changes |
+| ~~`sortBy`/`sortOrder` query parameters~~ | `model.ts`, `url_builder.spec.ts` | **Resolved** — implemented in Issue #161 (commit `00ea485`). Added `sortBy` and `sortOrder` fields to `QueryOptions`; 14 test cases; no builder changes needed |
 
 ### Pre-Existing Test Failures
 
-None. CSAPI: 1,325/1,325 pass. No skipped or pending tests.
+None. CSAPI: 1,339/1,339 pass. No skipped or pending tests.
 
 ---
 
@@ -382,7 +382,7 @@ None. CSAPI: 1,325/1,325 pass. No skipped or pending tests.
 | Public type exports | ~120 |
 | Parser functions (exported) | 15 |
 | Fixture files (external) | 17 |
-| Total test count | 1,325 |
+| Total test count | 1,339 |
 | Test suites | 30 |
 | Development commits (src/fixtures) | 37 |
 | Phases | 7 |
@@ -410,7 +410,7 @@ None — no additional items beyond the two above.
 
 1. **Issue #110** — `@link`/`@id` resolution utilities (dependencies #103, #108, #109 resolved; #110 itself deferred)
 2. **Upstream security findings** (001, 002, 005, 006) — require separate upstream PRs
-3. **`sortBy`/`sortOrder` support** — optional conformance class, can be added incrementally
+3. ~~**`sortBy`/`sortOrder` support**~~ — **Resolved** in Issue #161 (commit `00ea485`)
 4. **Binary DataArray decoding** — specialized use case, explicitly out of scope
 5. **Dedicated spec for `sensorml/_helpers.ts`** — 14 exports tested transitively but no isolated unit tests
 
