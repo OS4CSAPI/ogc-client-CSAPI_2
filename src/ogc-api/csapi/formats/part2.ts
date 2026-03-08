@@ -136,6 +136,26 @@ function normalizeObservedProperties(arr: unknown[]): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Coerces a value to an array for defensive parsing (Postel's Law).
+ *
+ * Some servers (e.g., OSH) serialize single-element JSON arrays as bare
+ * objects when a datastream or controlstream has only one observed/controlled
+ * property. The OGC 23-002 spec defines these fields as arrays, but this
+ * is a common real-world interoperability issue — not specific to any one
+ * server implementation.
+ *
+ * @param value - Raw value that should be an array but may be a bare object.
+ * @returns The value wrapped in an array if it's a non-null object, the
+ *   original value if already an array, or an empty array otherwise.
+ */
+function toArray(value: unknown): unknown[] {
+  if (Array.isArray(value)) return value;
+  if (value !== null && value !== undefined && typeof value === 'object')
+    return [value];
+  return [];
+}
+
 // ========================================
 // parseDatastream
 // ========================================
@@ -198,10 +218,12 @@ export function parseDatastream(json: unknown): Datastream {
       ? (rawResultType as Datastream['resultType'])
       : null;
 
-  // observedProperties: normalize from object or string array form
-  const observedProperties: string[] = Array.isArray(obj.observedProperties)
-    ? normalizeObservedProperties(obj.observedProperties)
-    : [];
+  // observedProperties: normalize from object or string array form.
+  // toArray() handles bare-object input from servers that serialize single-element
+  // arrays as objects (see #163 — common cross-implementation interoperability issue).
+  const observedProperties: string[] = normalizeObservedProperties(
+    toArray(obj.observedProperties)
+  );
 
   return {
     ...base,
@@ -272,10 +294,12 @@ export function parseControlStream(json: unknown): ControlStream {
   const executionTime: TimeInterval | null =
     parseValidTime(obj.executionTime) ?? null;
 
-  // controlledProperties: normalize from object or string array form
-  const controlledProperties: string[] = Array.isArray(obj.controlledProperties)
-    ? normalizeObservedProperties(obj.controlledProperties)
-    : [];
+  // controlledProperties: normalize from object or string array form.
+  // toArray() handles bare-object input from servers that serialize single-element
+  // arrays as objects (see #163 — common cross-implementation interoperability issue).
+  const controlledProperties: string[] = normalizeObservedProperties(
+    toArray(obj.controlledProperties)
+  );
 
   return {
     ...base,

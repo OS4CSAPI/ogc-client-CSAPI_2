@@ -217,6 +217,25 @@ describe('parseDatastream', () => {
     ]);
   });
 
+  it('wraps a bare-object observedProperties into an array (#163)', () => {
+    // Some servers serialize a single-element array as a bare object.
+    const input = {
+      id: 'ds-obs-bare',
+      name: 'Bare Object Form',
+      formats: [],
+      observedProperties: {
+        definition: 'http://mmisw.org/ont/cf/parameter/air_temperature',
+        label: 'Air Temperature',
+      },
+    };
+
+    const result: Datastream = parseDatastream(input);
+
+    expect(result.observedProperties).toEqual([
+      'http://mmisw.org/ont/cf/parameter/air_temperature',
+    ]);
+  });
+
   it('returns null (not undefined) for phenomenonTime when null', () => {
     const input = {
       id: 'ds-null-time',
@@ -577,6 +596,25 @@ describe('parseControlStream', () => {
 
     const resultEmpty: ControlStream = parseControlStream(inputEmpty);
     expect(resultEmpty.controlledProperties).toEqual([]);
+  });
+
+  it('wraps a bare-object controlledProperties into an array (#163)', () => {
+    // Some servers serialize a single-element array as a bare object.
+    const input = {
+      id: 'cs-bare-prop',
+      name: 'Bare Object Form',
+      formats: [],
+      async: false,
+      controlledProperties: {
+        definition: 'http://sensorml.com/ont/swe/property/Location',
+        label: 'Location',
+      },
+    };
+
+    const result: ControlStream = parseControlStream(input);
+    expect(result.controlledProperties).toEqual([
+      'http://sensorml.com/ont/swe/property/Location',
+    ]);
   });
 
   it('omits optional fields when they are absent', () => {
