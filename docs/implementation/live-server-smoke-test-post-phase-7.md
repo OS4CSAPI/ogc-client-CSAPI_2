@@ -25,7 +25,7 @@ After this report was submitted, **4 findings were resolved** through GitHub iss
 | Finding | Issue | Fix Summary | Commit |
 | --- | --- | --- | --- |
 | **P7-F2** — `".."`  sentinel | [#162](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/162) | `parseValidTime()` now recognizes `".."` alongside `"now"` | `29a6646` |
-| **P7-F3** — Bare-object wrapping | [#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163) | `toArray()` helper coerces bare objects into single-element arrays | `1cb3e43` |
+| **P7-F3** — Bare-object wrapping | [#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163) | `toArray()` helper added — **finding was a testing artifact** (see retraction below) | `1cb3e43` |
 | **P5-F2** — Label-only fallback | [#165](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/165) | `normalizeObservedProperties()` falls back to `label` when `definition` absent | `940591e` |
 | **P7-F4** — 202 Accepted docs | [#164](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/164) | JSDoc on `createCommand()`/`createCommands()` documents 202 Accepted | `940939c` |
 
@@ -165,7 +165,7 @@ Test count after all fixes: **1,349 tests** (30 suites), 0 tsc errors.
 - `system@link`: present ✅
 - `outputName`: `"Temperature"` ✅
 - `validTime`: `["2026-01-26T18:32:01.56Z", "now"]` ✅
-- `observedProperties`: bare object `{ label, description }` — **not an array** (see P7-F3)
+- `observedProperties`: `[{ label, description }]` (single-element array) — ~~bare object `{ label, description }` — **not an array** (see P7-F3)~~ **CORRECTED: was always a proper array on the wire; see P7-F3 retraction**
 - `resultType`: `"measure"` ✅ (matches `RESULT_TYPES` set)
 - `formats`: array of strings ✅
 
@@ -266,7 +266,7 @@ Both S1 and S3 use `parametersSchema` (not `paramsSchema`) in CS schema response
 | Parser | Field | S1 Value | S3 Value | Correctly Parsed |
 | --- | --- | --- | --- | --- |
 | `parseDatastream` | `resultType` | `"measure"` | `"record"` | ✅ Both in `RESULT_TYPES` set |
-| `parseDatastream` | `observedProperties` | `{ label, description }` (bare object) | `[{ definition, label }, ...]` (array) | ✅ *(post-report fix)* S1 bare object now wrapped via `toArray()` ([#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163)), label fallback via [#165](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/165); S3 → ✅ |
+| `parseDatastream` | `observedProperties` | `[{ label, description }]` (single-element array — ~~bare object~~ see P7-F3 retraction) | `[{ definition, label }, ...]` (array) | ✅ `toArray()` is a no-op for arrays ([#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163)); label fallback via [#165](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/165); S3 → ✅ |
 | `parseDatastream` | `system@id` | `"03bc5ofvvstg"` | Present | ✅ |
 | `parseDatastream` | `validTime` | `["...", "now"]` | `["...", "now"]` | ✅ Both use `"now"` in Part 2 |
 | `parseControlStream` | `inputName` | `"networkMode"` | `"odasControl"` | ✅ |
@@ -290,7 +290,7 @@ Code: `obj.parametersSchema ?? obj.paramsSchema` — fallback to `paramsSchema` 
 | --- | --- | --- | --- |
 | `[{ definition: "uri" }]` | Not seen | ✅ (SENREP DS) | ✅ Extracts definition URIs |
 | `["uri"]` | Not seen | Not seen | ✅ Pass-through |
-| `{ label: "..." }` (bare object) | ✅ (Temperature DS) | Not seen | ✅ *(post-report fix)* `toArray()` wraps bare objects ([#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163)), `label` used as fallback ([#165](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/165)) |
+| `{ label: "..." }` (bare object) | ~~✅ (Temperature DS)~~ **Not actually seen on wire** (see P7-F3 retraction) | Not seen | ✅ `toArray()` wraps bare objects if encountered ([#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163)), `label` used as fallback ([#165](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/165)) |
 
 ### RESULT_TYPES Validation
 
@@ -447,19 +447,19 @@ No `javascript:`, `data:`, or other dangerous schemes found in any server respon
 
 > **✅ RESOLVED (post-report):** Fixed in [#162](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/162) — `parseValidTime()` now recognizes `".."` alongside `"now"` in all 4 branches (array start/end, object start/end). 4 new tests added. Commit `29a6646`.
 
-#### P7-F3 — S1 `observedProperties` as Bare Object (Server Non-Conformance)
+#### P7-F3 — ~~S1 `observedProperties` as Bare Object (Server Non-Conformance)~~ **RETRACTED — Testing Artifact**
 
 | Attribute | Value |
 | --- | --- |
-| **Severity** | Low |
-| **Category** | Server non-conformance / defensive improvement |
-| **Ownership** | Upstream (OSH server) + optional library improvement |
-| **Root Cause** | S1 returns `observedProperties` as a bare object (`{ label, description }` or `{ definition }`) instead of an array when a datastream has a single property. OGC 23-002 defines `observedProperties` as an array. |
-| **Impact** | `Array.isArray()` check fails → `observedProperties` defaults to `[]`. The property definition URI is silently lost. |
-| **Scope** | S1 single-property datastreams (Temperature, GPS). S3 uses correct array form. |
-| **Action** | Optional defensive wrapping: `const arr = Array.isArray(raw) ? raw : [raw]`. Low priority — server should return arrays per spec. |
+| **Severity** | ~~Low~~ **N/A — false finding** |
+| **Category** | ~~Server non-conformance / defensive improvement~~ **Testing artifact** |
+| **Ownership** | ~~Upstream (OSH server) + optional library improvement~~ **N/A** |
+| **Root Cause** | ~~S1 returns `observedProperties` as a bare object (`{ label, description }` or `{ definition }`) instead of an array when a datastream has a single property. OGC 23-002 defines `observedProperties` as an array.~~ **FALSE.** S1 returns proper JSON arrays on the wire. The "bare object" observation was caused by PowerShell's `Invoke-RestMethod` unwrapping single-element JSON arrays during deserialization. Raw `curl.exe` verification in ST#25 confirmed all 100 S1 datastreams return `"observedProperties": [...]` (proper arrays). |
+| **Impact** | ~~`Array.isArray()` check fails → `observedProperties` defaults to `[]`.~~ No impact — server data was always correct. |
+| **Scope** | N/A — the finding was invalid. |
+| **Action** | ~~Optional defensive wrapping.~~ No server fix needed. The `toArray()` helper from #163 was committed based on this false finding but is functionally inert for real server data (arrays pass through unchanged). Code retained as a harmless defensive measure. |
 
-> **✅ RESOLVED (post-report):** Fixed in [#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163) — `toArray()` helper coerces bare objects into single-element arrays before passing to `normalizeObservedProperties()`. Applied to both `parseDatastream()` and `parseControlStream()`. 2 new tests added. Commit `1cb3e43`.
+> **⚠️ RETRACTED (ST#25 correction):** This finding was a testing artifact. The "bare object" was observed through PowerShell's `Invoke-RestMethod`, which unwraps single-element JSON arrays into PSCustomObjects during deserialization. The server wire format was always a proper array. Issue [#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163) and its fix (commit `1cb3e43`) were created based on this false finding. The `toArray()` code is retained as defensive code but was never needed for any known server. **Lesson learned: always verify JSON wire format with raw `curl`, not parsed objects.**
 
 #### P7-F4 — S3 Command POST Returns 202 Accepted (Async Processing)
 
@@ -526,7 +526,7 @@ No `javascript:`, `data:`, or other dangerous schemes found in any server respon
 | SensorML `definition` | Full URI | CURIE | Parser handles both ✅ |
 | Part 1 `validTime` end | `"now"` (not observed) | `".."` | ✅ **P7-F2 RESOLVED** — `".."` now handled ([#162](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/162)) |
 | Part 2 `validTime` end | `"now"` | `"now"` | ✅ Same on both |
-| `observedProperties` | Bare object | Array | ✅ **P7-F3 RESOLVED** — bare objects now wrapped ([#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163)) |
+| `observedProperties` | Array (single-element — ~~bare object~~ P7-F3 retracted) | Array | ✅ `toArray()` is a no-op for arrays; defensive code retained ([#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163)) |
 | CS schema field | `parametersSchema` | `parametersSchema` | ✅ Same — #140 primary path |
 | Command creation | 201 (assumed) | 202 Accepted (async) | ✅ **P7-F4 RESOLVED** — 202 documented ([#164](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/164)) |
 | Navigation patterns | Same 200/400 set | Same 200/400 set | Identical OSH capabilities |
@@ -543,18 +543,18 @@ Spot-checked 5 builder methods for URL construction consistency:
 
 Phase 7 work is validated. All 7 issues (#139, #140, #100, #102, #142, #147, #161) verified against both code review and live server behavior. The contribution is stable at 1,339 tests with 0 compilation errors.
 
-**S3 (OS4CSAPI-OSH) first contact** reveals a healthy, mission-focused OSH instance with rich schema data, CURIE-style identifiers, and ISO 8601-2 interval notation. Two code improvement opportunities discovered (P7-F2: `".."` sentinel, P7-F3: bare object wrapping) — neither is blocking.
+**S3 (OS4CSAPI-OSH) first contact** reveals a healthy, mission-focused OSH instance with rich schema data, CURIE-style identifiers, and ISO 8601-2 interval notation. One code improvement opportunity discovered (P7-F2: `".."`  sentinel). P7-F3 (bare object wrapping) was a testing artifact — see retraction.
 
 **S2 (52North)** remains severely degraded with empty Part 1 responses and Part 2 500 errors. Useful only for SensorML content negotiation testing.
 
-~~The library is ready for clean-pr merge pending resolution of deferred findings P7-F2 and P7-F3 (recommended but not mandatory).~~
+~~The library is ready for clean-pr merge pending resolution of deferred findings P7-F2 and P7-F3 (recommended but not mandatory).~~ *(P7-F3 was retracted as a testing artifact — see above.)*
 
 ### Post-Report Update (2026-03-08)
 
 All 4 actionable findings from this report have been resolved:
 
 - **P7-F2** (`".."` sentinel) → [#162](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/162) ✅ Closed
-- **P7-F3** (bare-object wrapping) → [#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163) ✅ Closed
+- **P7-F3** (bare-object wrapping) → [#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163) ✅ Closed — **⚠️ finding was a testing artifact** (PowerShell array unwrapping, not server non-conformance; code retained as defensive measure)
 - **P7-F4** (202 Accepted docs) → [#164](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/164) ✅ Closed
 - **P5-F2** (label-only fallback) → [#165](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/165) ✅ Closed
 

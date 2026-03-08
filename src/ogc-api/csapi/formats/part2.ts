@@ -157,11 +157,17 @@ function normalizeObservedProperties(arr: unknown[]): string[] {
 /**
  * Coerces a value to an array for defensive parsing (Postel's Law).
  *
- * Some servers (e.g., OSH) serialize single-element JSON arrays as bare
- * objects when a datastream or controlstream has only one observed/controlled
- * property. The OGC 23-002 spec defines these fields as arrays, but this
- * is a common real-world interoperability issue — not specific to any one
- * server implementation.
+ * Some JSON serializers may unwrap single-element arrays into bare objects.
+ * The OGC 23-002 spec defines `observedProperties` and
+ * `controlledProperties` as arrays, so this helper ensures downstream
+ * code always receives an array regardless of wire format.
+ *
+ * Note: No known CSAPI server currently exhibits this behavior. The
+ * original motivation (ST#24 P7-F3) was a testing artifact caused by
+ * PowerShell's `Invoke-RestMethod` unwrapping single-element JSON arrays
+ * during deserialization. Raw `curl` verification confirmed all servers
+ * return proper arrays on the wire. This helper is retained as a
+ * harmless defensive measure.
  *
  * @param value - Raw value that should be an array but may be a bare object.
  * @returns The value wrapped in an array if it's a non-null object, the
@@ -237,8 +243,9 @@ export function parseDatastream(json: unknown): Datastream {
       : null;
 
   // observedProperties: normalize from object or string array form.
-  // toArray() handles bare-object input from servers that serialize single-element
-  // arrays as objects (see #163 — common cross-implementation interoperability issue).
+  // toArray() is a defensive wrapper — see #163. No known server sends bare
+  // objects here (original finding was a testing artifact), but it's retained
+  // as a Postel's Law safeguard.
   const observedProperties: string[] = normalizeObservedProperties(
     toArray(obj.observedProperties)
   );
@@ -313,8 +320,9 @@ export function parseControlStream(json: unknown): ControlStream {
     parseValidTime(obj.executionTime) ?? null;
 
   // controlledProperties: normalize from object or string array form.
-  // toArray() handles bare-object input from servers that serialize single-element
-  // arrays as objects (see #163 — common cross-implementation interoperability issue).
+  // toArray() is a defensive wrapper — see #163. No known server sends bare
+  // objects here (original finding was a testing artifact), but it's retained
+  // as a Postel's Law safeguard.
   const controlledProperties: string[] = normalizeObservedProperties(
     toArray(obj.controlledProperties)
   );

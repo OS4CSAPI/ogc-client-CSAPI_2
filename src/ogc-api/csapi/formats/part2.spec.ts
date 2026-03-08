@@ -274,7 +274,10 @@ describe('parseDatastream', () => {
   });
 
   it('wraps a bare-object observedProperties into an array (#163)', () => {
-    // Some servers serialize a single-element array as a bare object.
+    // Defensive test: toArray() handles the case where a JSON serializer
+    // unwraps a single-element array into a bare object. No known CSAPI server
+    // exhibits this behavior (ST#24 P7-F3 was a testing artifact), but the
+    // code path is retained as a Postel's Law safeguard.
     const input = {
       id: 'ds-obs-bare',
       name: 'Bare Object Form',
@@ -670,7 +673,10 @@ describe('parseControlStream', () => {
   });
 
   it('wraps a bare-object controlledProperties into an array (#163)', () => {
-    // Some servers serialize a single-element array as a bare object.
+    // Defensive test: toArray() handles the case where a JSON serializer
+    // unwraps a single-element array into a bare object. No known CSAPI server
+    // exhibits this behavior (ST#24 P7-F3 was a testing artifact), but the
+    // code path is retained as a Postel's Law safeguard.
     const input = {
       id: 'cs-bare-prop',
       name: 'Bare Object Form',
