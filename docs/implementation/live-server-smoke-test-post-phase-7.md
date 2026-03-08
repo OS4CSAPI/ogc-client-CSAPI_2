@@ -18,6 +18,19 @@
 - **FIRST CONTACT** with Server 3 (OS4CSAPI-OSH) — full characterization complete
 - Full CRUD on both OSH servers (S1 and S3) — all resources created, verified, and cleaned up
 
+### Post-Report Resolution (2026-03-08)
+
+After this report was submitted, **4 findings were resolved** through GitHub issues created from this report's analysis:
+
+| Finding | Issue | Fix Summary | Commit |
+| --- | --- | --- | --- |
+| **P7-F2** — `".."`  sentinel | [#162](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/162) | `parseValidTime()` now recognizes `".."` alongside `"now"` | `29a6646` |
+| **P7-F3** — Bare-object wrapping | [#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163) | `toArray()` helper coerces bare objects into single-element arrays | `1cb3e43` |
+| **P5-F2** — Label-only fallback | [#165](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/165) | `normalizeObservedProperties()` falls back to `label` when `definition` absent | `940591e` |
+| **P7-F4** — 202 Accepted docs | [#164](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/164) | JSDoc on `createCommand()`/`createCommands()` documents 202 Accepted | `940939c` |
+
+Test count after all fixes: **1,349 tests** (30 suites), 0 tsc errors.
+
 ---
 
 ## Table of Contents
@@ -59,7 +72,7 @@
 | Finding | ST#23 Status | ST#24 Status | Notes |
 | --- | --- | --- | --- |
 | **P5-F1** — Part 2 POST returns 500 | RESOLVED | **Still resolved** | POST returns 201 for all resource types on both S1 and S3 |
-| **P5-F2** — Label-only properties dropped by normalizer | Unchanged | Unchanged | S1 still returns bare `observedProperties` objects (see P7-F3) |
+| **P5-F2** — Label-only properties dropped by normalizer | Unchanged | **RESOLVED** *(post-report)* | `normalizeObservedProperties()` now falls back to `label` when `definition` absent ([#165](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/165)) |
 | **P5-F3** — live/async fields absent from OSH controlstreams | Unchanged | Unchanged | Server-side gap persists |
 | **P5-F4** — Limited statusCode diversity | Unchanged | Unchanged | Only `COMPLETED` status codes found |
 | **P5-F5** — parseResourceRef ignores `type` field | NEW | **RESOLVED** | Code now falls back from `rt` to `type` (Issue #140-era fix in `geojson.ts`) |
@@ -253,13 +266,13 @@ Both S1 and S3 use `parametersSchema` (not `paramsSchema`) in CS schema response
 | Parser | Field | S1 Value | S3 Value | Correctly Parsed |
 | --- | --- | --- | --- | --- |
 | `parseDatastream` | `resultType` | `"measure"` | `"record"` | ✅ Both in `RESULT_TYPES` set |
-| `parseDatastream` | `observedProperties` | `{ label, description }` (bare object) | `[{ definition, label }, ...]` (array) | ⚠️ S1 → `[]` (P7-F3); S3 → ✅ |
+| `parseDatastream` | `observedProperties` | `{ label, description }` (bare object) | `[{ definition, label }, ...]` (array) | ✅ *(post-report fix)* S1 bare object now wrapped via `toArray()` ([#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163)), label fallback via [#165](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/165); S3 → ✅ |
 | `parseDatastream` | `system@id` | `"03bc5ofvvstg"` | Present | ✅ |
 | `parseDatastream` | `validTime` | `["...", "now"]` | `["...", "now"]` | ✅ Both use `"now"` in Part 2 |
 | `parseControlStream` | `inputName` | `"networkMode"` | `"odasControl"` | ✅ |
 | `parseControlStream` | `controlledProperties` | `[{...}, {...}]` | `[{...}, ...]` | ✅ Array form on both |
 | `extractCSAPIFeature` | `featureType` | Full URI (`sosa:Sensor`) | CURIE (`sosa:Platform`) | ✅ Both handled by `getCSAPIResourceType()` |
-| `parseValidTime` | End sentinel | `"now"` (Part 2) | `".."` (Part 1 GeoJSON) | ⚠️ `".."` → `undefined` (P7-F2) |
+| `parseValidTime` | End sentinel | `"now"` (Part 2) | `".."` (Part 1 GeoJSON) | ✅ *(post-report fix)* `".."` now recognized alongside `"now"` ([#162](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/162)) |
 | `parseResourceRef` | `rt` / `type` | Uses `type` field | Uses `type` field | ✅ P5-F5 resolved — fallback works |
 
 ### ControlStream Schema Field
@@ -277,7 +290,7 @@ Code: `obj.parametersSchema ?? obj.paramsSchema` — fallback to `paramsSchema` 
 | --- | --- | --- | --- |
 | `[{ definition: "uri" }]` | Not seen | ✅ (SENREP DS) | ✅ Extracts definition URIs |
 | `["uri"]` | Not seen | Not seen | ✅ Pass-through |
-| `{ label: "..." }` (bare object) | ✅ (Temperature DS) | Not seen | ⚠️ `Array.isArray()` false → `[]` (P7-F3) |
+| `{ label: "..." }` (bare object) | ✅ (Temperature DS) | Not seen | ✅ *(post-report fix)* `toArray()` wraps bare objects ([#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163)), `label` used as fallback ([#165](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/165)) |
 
 ### RESULT_TYPES Validation
 
@@ -432,6 +445,8 @@ No `javascript:`, `data:`, or other dangerous schemes found in any server respon
 | **Action** | Add `".."` as an additional open-ended sentinel alongside `"now"` in `parseValidTime()`. One-line fix: change `endStr !== 'now'` to `endStr !== 'now' && endStr !== '..'`. |
 | **Spec Reference** | ISO 8601-2:2019/Amd 1:2022 — `..` denotes an open-ended interval bound. OGC API - Common Core uses this notation. |
 
+> **✅ RESOLVED (post-report):** Fixed in [#162](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/162) — `parseValidTime()` now recognizes `".."` alongside `"now"` in all 4 branches (array start/end, object start/end). 4 new tests added. Commit `29a6646`.
+
 #### P7-F3 — S1 `observedProperties` as Bare Object (Server Non-Conformance)
 
 | Attribute | Value |
@@ -444,6 +459,8 @@ No `javascript:`, `data:`, or other dangerous schemes found in any server respon
 | **Scope** | S1 single-property datastreams (Temperature, GPS). S3 uses correct array form. |
 | **Action** | Optional defensive wrapping: `const arr = Array.isArray(raw) ? raw : [raw]`. Low priority — server should return arrays per spec. |
 
+> **✅ RESOLVED (post-report):** Fixed in [#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163) — `toArray()` helper coerces bare objects into single-element arrays before passing to `normalizeObservedProperties()`. Applied to both `parseDatastream()` and `parseControlStream()`. 2 new tests added. Commit `1cb3e43`.
+
 #### P7-F4 — S3 Command POST Returns 202 Accepted (Async Processing)
 
 | Attribute | Value |
@@ -455,6 +472,8 @@ No `javascript:`, `data:`, or other dangerous schemes found in any server respon
 | **Impact** | Library code expecting 201 + Location header for command creation would need to handle 202 as an alternative success code. Current CRUD tests treat 202 as success. |
 | **Scope** | S3 only. S1 command creation was not tested with full Location header verification. |
 | **Action** | No immediate code change needed. Document as known server behavior. Future work: ensure library's `createCommand()` handles both 201 and 202 responses. |
+
+> **✅ RESOLVED (post-report):** Fixed in [#164](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/164) — JSDoc on `createCommand()` and `createCommands()` now documents 202 Accepted as a valid response for async command processing. Example code updated to check for both 201 and 202. Commit `940939c`.
 
 #### P7-F5 — S2 Accept: `application/json` Returns Empty FeatureCollection
 
@@ -473,7 +492,7 @@ No `javascript:`, `data:`, or other dangerous schemes found in any server respon
 | Finding | ST#23 | ST#24 | Change |
 | --- | --- | --- | --- |
 | P5-F1 | RESOLVED | Still resolved | POST returns 201 on both S1 and S3 |
-| P5-F2 | Unchanged | Unchanged | Server-side data quality |
+| P5-F2 | Unchanged | **RESOLVED** *(post-report)* | `normalizeObservedProperties()` label fallback ([#165](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/165)) |
 | P5-F3 | Unchanged | Unchanged | Server-side gap |
 | P5-F4 | Unchanged | Unchanged | Server-side gap |
 | P5-F5 | NEW | **RESOLVED** | Code now handles `type` fallback for `rt` in `parseResourceRef()` |
@@ -505,11 +524,11 @@ No `javascript:`, `data:`, or other dangerous schemes found in any server respon
 | --- | --- | --- | --- |
 | `featureType` style | Full URI | CURIE (`sosa:...`) | Parser handles both ✅ |
 | SensorML `definition` | Full URI | CURIE | Parser handles both ✅ |
-| Part 1 `validTime` end | `"now"` (not observed) | `".."` | **P7-F2** — `".."` not handled |
+| Part 1 `validTime` end | `"now"` (not observed) | `".."` | ✅ **P7-F2 RESOLVED** — `".."` now handled ([#162](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/162)) |
 | Part 2 `validTime` end | `"now"` | `"now"` | ✅ Same on both |
-| `observedProperties` | Bare object | Array | **P7-F3** — S1 non-conformant |
+| `observedProperties` | Bare object | Array | ✅ **P7-F3 RESOLVED** — bare objects now wrapped ([#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163)) |
 | CS schema field | `parametersSchema` | `parametersSchema` | ✅ Same — #140 primary path |
-| Command creation | 201 (assumed) | 202 Accepted (async) | **P7-F4** — S3 behavior difference |
+| Command creation | 201 (assumed) | 202 Accepted (async) | ✅ **P7-F4 RESOLVED** — 202 documented ([#164](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/164)) |
 | Navigation patterns | Same 200/400 set | Same 200/400 set | Identical OSH capabilities |
 | Conformance classes | 33 | 33 (identical) | Same CSAPI Part 1/2/3 support |
 
@@ -528,4 +547,15 @@ Phase 7 work is validated. All 7 issues (#139, #140, #100, #102, #142, #147, #16
 
 **S2 (52North)** remains severely degraded with empty Part 1 responses and Part 2 500 errors. Useful only for SensorML content negotiation testing.
 
-The library is ready for clean-pr merge pending resolution of deferred findings P7-F2 and P7-F3 (recommended but not mandatory).
+~~The library is ready for clean-pr merge pending resolution of deferred findings P7-F2 and P7-F3 (recommended but not mandatory).~~
+
+### Post-Report Update (2026-03-08)
+
+All 4 actionable findings from this report have been resolved:
+
+- **P7-F2** (`".."` sentinel) → [#162](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/162) ✅ Closed
+- **P7-F3** (bare-object wrapping) → [#163](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/163) ✅ Closed
+- **P7-F4** (202 Accepted docs) → [#164](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/164) ✅ Closed
+- **P5-F2** (label-only fallback) → [#165](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/165) ✅ Closed
+
+Final test count: **1,349 tests** (30 suites), 0 tsc errors. The library is ready for clean-pr merge with no deferred findings remaining.
