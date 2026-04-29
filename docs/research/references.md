@@ -1927,6 +1927,58 @@ Skipping step 2 has cost us cycles in #166, #167, and #168. The catalog above ex
 
 ---
 
+## Research Findings Not Adopted
+
+This subsection records research investigations that surfaced real, useful operational knowledge but **did not result in a library change** — typically because the proposed change was too opinionated, too consumer-specific, or architecturally premature. Capturing the knowledge here keeps the operational insight without committing the library to maintaining a heuristic API surface.
+
+### Finding 1 — Observation `result` geographic-coordinate naming-convention diversity
+
+**Surfaced by:** [`OS4CSAPI/ogc-client-CSAPI_2#169`](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/169) (closed `wontfix` 2026-04-29 after Phase 8 triage).
+**Origin context:** Live integration testing of the [`ogc-csapi-explorer`](https://github.com/OS4CSAPI/ogc-csapi-explorer) demo app's `MapViewPage.vue` against the [OSHConnect-Python](https://github.com/OS4CSAPI/OSHConnect-Python) 10-publisher fleet (ISS SGP4, OpenSky ADS-B, USGS Earthquake, NWS Surface Obs, NDBC Buoy, CO-OPS Tide, UAS Localizer, etc.) and OSH SensorHub.
+
+**The empirical observation worth preserving:**
+
+CSAPI publishers in our test corpus encode geographic position inside observation `result` payloads using at least **six distinct field-name conventions**, none of which are mandated or even mentioned by OGC 23-002:
+
+| #   | Convention              | Example fields                                 | Observed publishers                                  |
+| --- | ----------------------- | ---------------------------------------------- | ---------------------------------------------------- |
+| 1   | Direct, lowercase short | `lat`, `lon`, `alt`                            | NWS Surface Obs, NDBC Buoy, CO-OPS Tide              |
+| 2   | Nested, capitalized     | `Location.lat`, `Location.lon`, `Location.alt` | UAS Localizer                                        |
+| 3   | Nested, lowercase       | `location.lat`, `location.lon`, `location.alt` | (variant of #2 in some publishers)                   |
+| 4   | Full-word, lowercase    | `latitude`, `longitude`, `altitude`            | OpenSky ADS-B, USGS Earthquake                       |
+| 5   | Full-word, title-case   | `Latitude`, `Longitude`, `Altitude`            | (observed in some triangulated-position datastreams) |
+| 6   | Suffixed with unit hint | `lat_deg`, `lon_deg`, `alt_km`                 | ISS Position (SGP4)                                  |
+
+**Unit ambiguity across the convention set:** Convention 6 's `alt_km` is **kilometers**, while the unsuffixed `altitude` from OpenSky may be meters _or_ feet (varies by publisher), and `Location.alt` from the UAS localizer is unspecified. There is no convention by which a consumer can recover units from the field name alone in the general case.
+
+**Why we did not ship a library-level extraction helper:**
+
+A heuristic extractor (the original Option A in [#169](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/169)) was rejected on five grounds — the issue's status banner has the full reasoning. Headlines:
+
+1. **Unit ambiguity is a silent data-loss footgun.** Returning a single `alt: number` field while the source units span km, m, and ft (and unspecified) silently corrupts altitude semantics. Fixing this requires an `altUnit` field, which defeats the convenience pitch.
+2. **Heuristic false positives are unbounded.** A datastream with calibration parameters coincidentally named `lat`/`lon` would silently match. There is no spec-grounded way to assert "this `lat` field carries WGS 84 latitude in degrees."
+3. **The architecturally correct answer is SWE Common, not field-name matching.** OGC 23-002 references SWE Common for result schemas; SWE Common defines `Vector` types with a proper `referenceFrame` (CRS) and per-component `uom`. A schema-aware extractor reading the datastream's `resultEncoding` / `resultStructure` is the right path. Heuristic field-name matching encodes our 10-publisher fleet as a library opinion.
+4. **Maintenance trap.** Six conventions today; a seventh, eighth, ninth tomorrow as new publishers join. Each addition is a minor version bump downstream consumers must adopt to see the new convention. The Explorer's local 30-line function can be edited in place; an exported library function cannot.
+5. **Sampling-feature ambiguity.** For most publishers, geographic positioning belongs on `SamplingFeature` or `System.position`, not embedded in `result`. The publishers that embed coordinates in result do so because _the position itself is the observation_ (ISS, localizer) — but that is a narrow class. A library helper that normalizes this away discourages publishers from making the architectural choice consciously.
+
+**The right future path (deferred):**
+
+A SWE Common–aware result-vector extractor that consumes the datastream's `resultStructure` to identify components by `definition` URI (e.g. matching SWE Common's standard latitude/longitude definitions) and applies the per-component `uom` to return values with explicit units. This is large enough that it should not block on the heuristic version; it is tracked at [`OS4CSAPI/ogc-client-CSAPI_2#171`](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/171) (deferred until upstream PR #136 lands and library scope is broadened).
+
+**Defensive guidance for consumers (until the SWE Common path lands):**
+
+- Implement a small consumer-local extractor matched to your specific publisher fleet. Six conventions is a lot if you're targeting "any CSAPI server in the world"; it is small and stable if you're targeting a known set of publishers.
+- Always pair coordinate values with a known unit assumption documented in the consumer (do not ship a "best-effort" unit guess).
+- For multi-publisher map views, prefer extracting position from `SamplingFeature` or `System.position` where available — those _are_ standardized by OGC 23-002.
+
+**Cross-references:**
+
+- [`OS4CSAPI/ogc-client-CSAPI_2#169`](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/169) — research issue, closed `wontfix` (status banner has full triage reasoning).
+- [`OS4CSAPI/ogc-client-CSAPI_2#171`](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/171) — deferred follow-up: SWE Common–aware extraction (the architecturally correct future path).
+- [`OS4CSAPI/ogc-csapi-explorer`](https://github.com/OS4CSAPI/ogc-csapi-explorer) — `MapViewPage.vue` 30-line `extractLatLonFromResult()` continues to be the right place for this logic until the SWE Common path is available; an Explorer-side TODO has been filed.
+
+---
+
 ## Notes
 
 ### Document Maintenance
