@@ -47,7 +47,7 @@ function isCollectionInfo(doc: unknown): doc is OgcApiCollectionInfo {
  * const builder = await createCSAPIBuilder(endpoint, 'weather-stations');
  *
  * // 1. Builder → URL string (no network call here)
- * const url = builder.getDataStreams({ limit: 50 });
+ * const url = builder.getDatastreams({ limit: 50 });
  *
  * // 2. Consumer owns the fetch — auth, timeouts, retries, etc.
  * const response = await fetch(url, {

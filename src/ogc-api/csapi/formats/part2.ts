@@ -69,7 +69,7 @@ interface BaseStream {
  * {@link parseControlStream}.
  *
  * Both resource types inherit the same `baseStream` schema in OGC 23-002
- * (§9.2 DataStream, §10.2 ControlStream). This helper consolidates the
+ * (§9.2 Datastream, §10.2 ControlStream). This helper consolidates the
  * duplicated extraction logic into a single location.
  *
  * @param fn - Function name for error messages (forwarded to {@link requireObject}).

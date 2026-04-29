@@ -201,7 +201,7 @@ export function isCSAPIFeature(feature: unknown): boolean {
  * Determines the CSAPI resource type from a GeoJSON Feature's `featureType` property.
  *
  * Only Part 1 resource types are recognized: System, Deployment, Procedure,
- * SamplingFeature. Part 2 resources (DataStreams, Observations, Control Streams,
+ * SamplingFeature. Part 2 resources (Datastreams, Observations, Control Streams,
  * Commands) do not have a `featureType` property and will return `null`.
  *
  * Checks the SOSA vocabulary first, then SSN, then SensorML.
@@ -365,7 +365,7 @@ export function isValidUri(value: unknown): boolean {
  * **Important limitations:**
  *
  * - **Only supports Part 1 resources** — Systems, Deployments, Procedures,
- *   and Sampling Features. Part 2 resources (DataStreams, Observations,
+ *   and Sampling Features. Part 2 resources (Datastreams, Observations,
  *   Control Streams, Commands) are not GeoJSON Features and cannot be
  *   parsed by this function.
  *

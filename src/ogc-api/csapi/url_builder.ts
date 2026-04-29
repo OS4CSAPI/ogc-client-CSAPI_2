@@ -126,7 +126,7 @@ type ResourceSubPath =
  * const systemUrl = builder.getSystem('sys-001');
  *
  * // List observations for a datastream with temporal filter
- * const obsUrl = builder.getDataStreamObservations('ds-001', {
+ * const obsUrl = builder.getDatastreamObservations('ds-001', {
  *   phenomenonTime: { start: new Date('2024-01-01') },
  *   limit: 100,
  * });
@@ -663,13 +663,13 @@ export default class CSAPIQueryBuilder {
    *
    * @example
    * ```ts
-   * const url = builder.getSystemDataStreams('abc123');
+   * const url = builder.getSystemDatastreams('abc123');
    * // => "https://example.com/collections/iot/systems/abc123/datastreams"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  getSystemDataStreams(id: string, options?: DatastreamQueryOptions): string {
+  getSystemDatastreams(id: string, options?: DatastreamQueryOptions): string {
     return this.build('systems', id, 'datastreams', options);
   }
 
@@ -686,13 +686,13 @@ export default class CSAPIQueryBuilder {
    *
    * @example
    * ```ts
-   * const url = builder.createDataStreamForSystem('sys-001');
+   * const url = builder.createDatastreamForSystem('sys-001');
    * // => "https://example.com/collections/iot/systems/sys-001/datastreams"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  createDataStreamForSystem(systemId: string): string {
+  createDatastreamForSystem(systemId: string): string {
     return this.build('systems', systemId, 'datastreams');
   }
 
@@ -1161,13 +1161,13 @@ export default class CSAPIQueryBuilder {
    *
    * @example
    * ```ts
-   * const url = builder.getProcedureDataStreams('proc-001');
+   * const url = builder.getProcedureDatastreams('proc-001');
    * // => "https://example.com/collections/iot/procedures/proc-001/datastreams"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  getProcedureDataStreams(
+  getProcedureDatastreams(
     id: string,
     options?: DatastreamQueryOptions
   ): string {
@@ -1459,13 +1459,13 @@ export default class CSAPIQueryBuilder {
    *
    * @example
    * ```ts
-   * const url = builder.getPropertyDataStreams('temperature-01');
+   * const url = builder.getPropertyDatastreams('temperature-01');
    * // => "https://example.com/collections/iot/properties/temperature-01/datastreams"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  getPropertyDataStreams(id: string, options?: DatastreamQueryOptions): string {
+  getPropertyDatastreams(id: string, options?: DatastreamQueryOptions): string {
     return this.build('properties', id, 'datastreams', options);
   }
 
@@ -1520,7 +1520,7 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for querying all datastreams.
    *
-   * DataStreams represent collections of observations from the same system
+   * Datastreams represent collections of observations from the same system
    * with shared schemas. Supports filtering by system, observed property,
    * and temporal parameters.
    *
@@ -1531,13 +1531,13 @@ export default class CSAPIQueryBuilder {
    *
    * @example
    * ```ts
-   * const url = builder.getDataStreams({ limit: 10, observedPropertyId: 'temperature' });
+   * const url = builder.getDatastreams({ limit: 10, observedPropertyId: 'temperature' });
    * // => "https://example.com/collections/iot/datastreams?limit=10&observedPropertyId=temperature"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  getDataStreams(options?: DatastreamQueryOptions): string {
+  getDatastreams(options?: DatastreamQueryOptions): string {
     return this.build('datastreams', undefined, undefined, options);
   }
 
@@ -1551,13 +1551,13 @@ export default class CSAPIQueryBuilder {
    *
    * @example
    * ```ts
-   * const url = builder.getDataStream('ds-001');
+   * const url = builder.getDatastream('ds-001');
    * // => "https://example.com/collections/iot/datastreams/ds-001"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  getDataStream(id: string, options?: QueryOptions): string {
+  getDatastream(id: string, options?: QueryOptions): string {
     return this.build('datastreams', id, undefined, options);
   }
 
@@ -1572,13 +1572,13 @@ export default class CSAPIQueryBuilder {
    *
    * @example
    * ```ts
-   * const url = builder.createDataStream();
+   * const url = builder.createDatastream();
    * // => "https://example.com/collections/iot/datastreams"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  createDataStream(): string {
+  createDatastream(): string {
     return this.build('datastreams');
   }
 
@@ -1602,13 +1602,13 @@ export default class CSAPIQueryBuilder {
    *
    * @example
    * ```ts
-   * const url = builder.updateDataStream('ds-001');
+   * const url = builder.updateDatastream('ds-001');
    * // => "https://example.com/collections/iot/datastreams/ds-001"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  updateDataStream(id: string): string {
+  updateDatastream(id: string): string {
     return this.build('datastreams', id);
   }
 
@@ -1621,13 +1621,13 @@ export default class CSAPIQueryBuilder {
    *
    * @example
    * ```ts
-   * const url = builder.deleteDataStream('ds-001');
+   * const url = builder.deleteDatastream('ds-001');
    * // => "https://example.com/collections/iot/datastreams/ds-001"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  deleteDataStream(id: string): string {
+  deleteDatastream(id: string): string {
     return this.build('datastreams', id);
   }
 
@@ -1650,13 +1650,13 @@ export default class CSAPIQueryBuilder {
    * @example
    * ```ts
    * // Without obsFormat — server returns the default schema:
-   * const url = builder.getDataStreamSchema('ds-001');
+   * const url = builder.getDatastreamSchema('ds-001');
    * // => "https://example.com/collections/iot/datastreams/ds-001/schema"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#req_datastream_schema
    */
-  getDataStreamSchema(id: string, options?: QueryOptions): string {
+  getDatastreamSchema(id: string, options?: QueryOptions): string {
     return this.build('datastreams', id, 'schema', options);
   }
 
@@ -1675,13 +1675,13 @@ export default class CSAPIQueryBuilder {
    *
    * @example
    * ```ts
-   * const url = builder.getDataStreamObservations('ds-001', { resultTime: 'latest', limit: 100 });
+   * const url = builder.getDatastreamObservations('ds-001', { resultTime: 'latest', limit: 100 });
    * // => "https://example.com/collections/iot/datastreams/ds-001/observations?resultTime=latest&limit=100"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_observation_resources
    */
-  getDataStreamObservations(
+  getDatastreamObservations(
     id: string,
     options?: ObservationQueryOptions
   ): string {
@@ -1720,13 +1720,13 @@ export default class CSAPIQueryBuilder {
    *
    * @example
    * ```ts
-   * const url = builder.getDataStreamSystems('ds-001');
+   * const url = builder.getDatastreamSystems('ds-001');
    * // => "https://example.com/collections/iot/datastreams/ds-001/systems"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  getDataStreamSystems(id: string, options?: SystemQueryOptions): string {
+  getDatastreamSystems(id: string, options?: SystemQueryOptions): string {
     return this.build('datastreams', id, 'systems', options);
   }
 
@@ -1740,13 +1740,13 @@ export default class CSAPIQueryBuilder {
    *
    * @example
    * ```ts
-   * const url = builder.getDataStreamProcedures('ds-001');
+   * const url = builder.getDatastreamProcedures('ds-001');
    * // => "https://example.com/collections/iot/datastreams/ds-001/procedures"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  getDataStreamProcedures(id: string, options?: QueryOptions): string {
+  getDatastreamProcedures(id: string, options?: QueryOptions): string {
     return this.build('datastreams', id, 'procedures', options);
   }
 
@@ -1760,13 +1760,13 @@ export default class CSAPIQueryBuilder {
    *
    * @example
    * ```ts
-   * const url = builder.getDataStreamHistory('ds-001', { limit: 5 });
+   * const url = builder.getDatastreamHistory('ds-001', { limit: 5 });
    * // => "https://example.com/collections/iot/datastreams/ds-001/history?limit=5"
    * ```
    *
    * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
    */
-  getDataStreamHistory(id: string, options?: QueryOptions): string {
+  getDatastreamHistory(id: string, options?: QueryOptions): string {
     return this.build('datastreams', id, 'history', options);
   }
 
@@ -2053,7 +2053,7 @@ export default class CSAPIQueryBuilder {
    * Returns the URL for querying all control streams.
    *
    * ControlStreams represent command interfaces for controlling actuators
-   * and systems. They mirror DataStreams architecturally but for
+   * and systems. They mirror Datastreams architecturally but for
    * control/actuation rather than observation/sensing.
    *
    * @param options - Optional query parameters including `systemId`,

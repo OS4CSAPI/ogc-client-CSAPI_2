@@ -34,7 +34,7 @@
  * // 1. Endpoint → 2. Builder → 3. URL → 4. fetch → 5. parse
  * const endpoint = new OgcApiEndpoint('https://api.example.com');
  * const builder = await createCSAPIBuilder(endpoint, 'weather-stations');
- * const url = builder.getDataStreams({ limit: 10 });
+ * const url = builder.getDatastreams({ limit: 10 });
  * const response = await fetch(url, {
  *   headers: { Authorization: 'Bearer ...' },
  * });

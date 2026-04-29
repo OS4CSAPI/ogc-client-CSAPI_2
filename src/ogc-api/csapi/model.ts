@@ -10,7 +10,7 @@ import type { Geometry } from 'geojson';
 /**
  * Extends {@link DateTimeParameter} with the CSAPI Part 2 `'latest'` keyword.
  *
- * The `resultTime` parameter on DataStream and Observation endpoints supports
+ * The `resultTime` parameter on Datastream and Observation endpoints supports
  * the special value `'latest'` to retrieve the most recent result. This type
  * alias keeps the `'latest'` keyword scoped to CSAPI without modifying the
  * shared `DateTimeParameter` used by EDR and other OGC API modules.
@@ -260,7 +260,7 @@ export interface PropertyQueryOptions extends QueryOptions {
 }
 
 /**
- * Query options for DataStream list endpoints.
+ * Query options for Datastream list endpoints.
  * @see https://docs.ogc.org/is/23-002/23-002.html#_datastream_resources
  */
 export interface DatastreamQueryOptions extends QueryOptions {
@@ -558,9 +558,9 @@ export interface Property {
 // ========================================
 
 /**
- * A DataStream resource.
+ * A Datastream resource.
  *
- * DataStreams represent a stream of observations from a system, linking
+ * Datastreams represent a stream of observations from a system, linking
  * a system to its observed properties and observation results.
  *
  * Required properties: `name`, `system@link`, `observedProperties`,
