@@ -1831,6 +1831,102 @@ Fork of camptocamp/ogc-client used as the source for PR #136. Contains the clean
 
 ---
 
+### connected-systems-go Demo Server (Go / PostGIS)
+
+**URL:** https://129-80-248-53.sslip.io/csapi-go (representative deployment, as of April 2026)  
+**Repository:** https://github.com/OS4CSAPI/connected-systems-go  
+**Status:** Active — early/in-development; multiple known conformance gaps tracked in that repo's issues  
+**Operator:** OS4CSAPI
+
+Go-based CSAPI server backed by PostGIS. Surfaced post–Phase 6 during the [`ogc-csapi-explorer`](https://github.com/OS4CSAPI/ogc-csapi-explorer) demo-app effort and the OSHConnect-Python publisher fleet migration. Default page size differs materially from OpenSensorHub (Go default is small — typically 10 — vs. OSH's 100), and several spec-required behaviors are not yet implemented or are partially implemented.
+
+**Key Relevance:**
+
+- Third independent implementation in our test corpus, beyond OpenSensorHub (Java) and 52°North (Python). Critical for surfacing single-server-corpus blind spots — both [#166](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/166) (Part 2 `@link` fallback) and [#167](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/167) (pagination-contract documentation) were identified by exercising this server.
+- Emits Part 2 cross-references using the `@link` form (object) where OSH emits the `@id` form (scalar). Both are spec-legal per OGC 23-002 §16.1; the existence of two encodings in the wild is the motivation for [#166](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/166).
+- Default `limit` of 10 (vs. OSH's 100) makes pagination correctness materially more important; documented in [#167](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/167).
+- Several open conformance issues against the server are tracked at [`OS4CSAPI/connected-systems-go`](https://github.com/OS4CSAPI/connected-systems-go/issues) — see the "Known Server Conformance Gaps" subsection below for the catalog as it bears on our client.
+
+---
+
+### Known Server Conformance Gaps
+
+This subsection records empirically-observed deviations from the OGC API — Connected Systems specifications that we have encountered while testing our client against live servers. It is **not** a comprehensive conformance audit; it is a working log of behaviors that have shaped client-side decisions (or that explicitly did **not** result in client-side changes, with rationale).
+
+**Purpose:** Future contributors investigating "why doesn't my query work as the spec says?" should consult this catalog before assuming the bug is in our library. Issues in our repo (e.g. [#168](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/168)) have been incorrectly framed as library bugs in the past; this catalog is the institutional memory that keeps that from recurring.
+
+#### Gap 1 — `connected-systems-go`: Temporal query parameters silently ignored
+
+**Server:** `connected-systems-go` (all builds as of April 2026).  
+**Tracked at:** [`OS4CSAPI/connected-systems-go#11`](https://github.com/OS4CSAPI/connected-systems-go/issues/11)  
+**Surfaced by:** [`OS4CSAPI/ogc-client-CSAPI_2#168`](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/168) (originally filed as a client-side library bug; closed `wontfix` after empirical re-test reattributed the failure to the server).
+
+**Spec citation:** OGC 23-002r0 §13.3.2 `/req/advanced-filtering/obs-by-resulttime`, statement D — _"the parameter SHALL also support the special value `latest`. When this special value is used, only observations with the latest result time SHALL be included in the result set."_ Plus the broader OGC 23-002 temporal-parameter family (`datetime`, `phenomenonTime`, `resultTime`, `issueTime`, `executionTime`).
+
+**Empirical behavior (probed 2026-04-17, recorded against `https://129-80-248-53.sslip.io/csapi-go`):**
+
+| Request                                                 | Observed response                                                                 | Implication                                                     |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `?resultTime=latest`                                    | 200 OK, server's default page (10 items, unfiltered)                              | `latest` keyword silently discarded                             |
+| `?resultTime=latest&limit=1`                            | 200 OK, 1 item — happens to be the newest because Go's default sort is descending | "Works" by accident; the parameter still has no semantic effect |
+| `?resultTime=frobnicate`                                | 200 OK, 10 items (default page, unfiltered)                                       | Invalid values silently accepted; no validation                 |
+| `?resultTime=` (empty)                                  | 200 OK, 10 items from today (default page, unfiltered)                            | Empty values silently accepted                                  |
+| `?resultTime=2026-01-01T00:00:00Z/2026-01-02T00:00:00Z` | Behavior consistent with above — interval form also appears unfiltered            | Whole temporal-parameter family appears non-functional          |
+
+**Scope of the gap on the server:** Probably broader than `resultTime=latest`. The probe pattern (silent acceptance of invalid values, default page returned regardless) is consistent with all five temporal keys (`datetime`, `phenomenonTime`, `resultTime`, `issueTime`, `executionTime`) being non-functional on this server. Not all five have been individually probed; the assumption that the gap covers the family is informed by the uniform behavior across the values that _have_ been probed.
+
+**Client-side disposition:** No change. Our client correctly serializes every temporal parameter and `latest` keyword per spec ([`src/ogc-api/csapi/helpers.ts:26-28`](src/ogc-api/csapi/helpers.ts#L26-L28), [`src/ogc-api/csapi/url_builder.ts:351-358`](src/ogc-api/csapi/url_builder.ts#L351-L358)). The library does the right thing; the server discards it silently. Adding a server-specific compatibility shim was considered ([#168](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/168) Option A) and rejected — see that issue's status banner for full reasoning. Summary of the rejection: shimming one keyword of one parameter of five is selective and unprincipled; the deprecation path (remove once Go ships the fix) means we'd be adding a method we already plan to remove; consumer-side ergonomic problems belong in consumer repos. A consumer-side helper for the [`ogc-csapi-explorer`](https://github.com/OS4CSAPI/ogc-csapi-explorer) `MapViewPage.vue` use case is tracked separately.
+
+**Defensive guidance for consumers of our library:** If you target a server that may belong to this class, do not assume `resultTime=latest` (or any temporal filter) has narrowed the result set. Verify temporal-filter behavior empirically against your target server before relying on it. The server is required by spec to honor these parameters; relying on them is correct in principle, but defensive coding (`limit=1` + sort-aware fallback) is a reasonable belt-and-suspenders strategy when targeting servers in this class.
+
+#### Gap 2 — `connected-systems-go`: `?uid=` filter silently ignored on list endpoints
+
+**Server:** `connected-systems-go` (all builds as of April 2026).  
+**Tracked at:** [`OS4CSAPI/connected-systems-go#5`](https://github.com/OS4CSAPI/connected-systems-go/issues/5)  
+**Surfaced by:** [OSHConnect-Python publisher fleet migration](https://github.com/OS4CSAPI/OSHConnect-Python/issues/4) — `find_by_uid` returned `None` for resources that existed; root-caused to the server returning the unfiltered default page when `?uid=` was supplied.
+
+**Spec citation:** OGC 23-001 — Common query parameters; servers expose `uid` as a queryable filter on resource list endpoints.
+
+**Empirical behavior:** Server returns its default unfiltered page regardless of `?uid=` value. Workaround on the consumer side: client-side filter loop with `&limit=1000` to paper over the missing server-side filter. Documented as fragile in the consumer-side bug ([`OSHConnect-Python#4`](https://github.com/OS4CSAPI/OSHConnect-Python/issues/4)) — `limit=1000` is a magic number that breaks at scale.
+
+**Client-side disposition:** No change. Filter-honoring is a server obligation; clients construct correct URLs (which we do).
+
+**Cross-cutting interaction:** When this gap and Gap 1 above co-occur on the same server (as they currently do on `connected-systems-go`), client-side correctness depends on (a) following `next` HATEOAS links per spec, and (b) not relying on temporal filters to narrow result sets. Both are spec-required of conformant clients regardless of server quirks; both are documented as consumer obligations in the JSDoc work tracked by [#167](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/167).
+
+#### Gap 3 — `connected-systems-go`: Default page size of 10 (small relative to OSH)
+
+**Server:** `connected-systems-go`.  
+**Tracked at:** Behavior, not defect — fully spec-legal per OGC 23-001 §7.6 (default page size is server-defined). Surfaced as a _client documentation_ issue at [#167](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/167).
+
+**Empirical behavior:** Default `limit` is 10 (vs. OSH's 100). Spec-legal but enough smaller than OSH that consumers who never tested against this server class can experience silent first-page-only behavior in production.
+
+**Client-side disposition:** Documentation-only fix (Phase 8 finding 167). JSDoc on every public list method explicitly documents the pagination contract (the server picks the default; consumers must follow `next` HATEOAS links to retrieve subsequent pages). No behavior change.
+
+#### Gap 4 — `52°North`: Part 2 endpoints non-functional + expired SSL
+
+**Server:** 52°North demo (as of March–April 2026).  
+**Tracked at:** Out-of-repo — 52°North project's own tracker.
+
+**Empirical behavior:** Public demo SSL certificate expired (CONNECT fails); separately, Part 2 endpoints are not yet functional on the public instance per their own roadmap. We have not been able to probe Part 2 conformance against this server.
+
+**Client-side disposition:** No change possible — server unreachable. Recorded here so future contributors don't waste cycles re-discovering the same wall.
+
+#### Pattern observed across gaps
+
+Three of the four cataloged gaps come from one server (`connected-systems-go`) and were surfaced post–Phase 6 by stress-testing the client against a wider implementation corpus. The pattern is: **each gap was at first reflexively framed as a client-side bug, then re-attributed to the server after empirical re-test.** This is the pattern the catalog exists to break — before filing a "library doesn't honor X" issue against this repo, probe the server's behavior independently and confirm the failure is on the client side.
+
+**Empirical-probe template** for future contributors investigating an apparent client bug:
+
+1. Build the URL with our library (manually verify it matches the spec).
+2. `curl -v` (or browser DevTools) the same URL directly against the server.
+3. Compare what came back to what the spec mandates.
+4. If server response disagrees with spec → file in the _server's_ repo, record here, leave the client alone.
+5. If client URL disagrees with spec → file against the client.
+
+Skipping step 2 has cost us cycles in #166, #167, and #168. The catalog above exists so that cost doesn't repeat.
+
+---
+
 ## Notes
 
 ### Document Maintenance
