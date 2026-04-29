@@ -21,6 +21,7 @@ import type {
 } from '../model.js';
 import type { Geometry } from 'geojson';
 import { isRecord } from './_parse-utils.js';
+import { EndpointError } from '../../../shared/errors.js';
 
 // ========================================
 // Constants
@@ -447,14 +448,14 @@ export function extractCSAPIFeature(
 ): System | Deployment | Procedure | SamplingFeature {
   const resourceType = getCSAPIResourceType(feature);
   if (resourceType === null) {
-    throw new Error(
+    throw new EndpointError(
       'Cannot extract CSAPI feature: unrecognized or missing featureType'
     );
   }
 
   const f = feature as Record<string, unknown>;
   if (!isRecord(f.properties)) {
-    throw new Error(
+    throw new EndpointError(
       'Cannot extract CSAPI feature: "properties" must be a non-null object'
     );
   }

@@ -26,6 +26,7 @@ import {
   type TimeInterval,
 } from '../model.js';
 import { parseValidTime } from './geojson.js';
+import { EndpointError } from '../../../shared/errors.js';
 
 // ========================================
 // Shared Helpers
@@ -41,11 +42,11 @@ import { parseValidTime } from './geojson.js';
  * @param json - Raw JSON value from a collection response.
  * @param fn - Function name for the error message.
  * @returns The input narrowed to `Record<string, unknown>`.
- * @throws {Error} When `json` is not a non-null object.
+ * @throws {EndpointError} When `json` is not a non-null object.
  */
 function requireObject(json: unknown, fn: string): Record<string, unknown> {
   if (typeof json !== 'object' || json === null) {
-    throw new Error(`${fn}: input must be a non-null object`);
+    throw new EndpointError(`${fn}: input must be a non-null object`);
   }
   return json as Record<string, unknown>;
 }
