@@ -68,6 +68,7 @@ This roadmap breaks Phase 8 into 10 numbered tasks ordered by dependency and ris
 
 1. **Task A1 — Finding 017: URL-Builder Framing in Module Docs** (Low complexity)
 
+   - **GitHub issue:** [#172](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/172) (Phase 8 / Task A1) — labels: `phase-8`, `locked-decision`, `code-review`, `documentation`
    - **Authoritative source:** [`017-pending-p3-docs-url-builder-framing.md`](../../code-review/017-pending-p3-docs-url-builder-framing.md)
    - **Implementation guide:** [§4.1](P8-implementation-guide.md#41-finding-017--url-builder-framing-in-module-docs)
    - **Goal:** A consumer reading any of `csapi/index.ts`'s module docblock, `createCSAPIBuilder`'s JSDoc, `CSAPIQueryBuilder`'s class JSDoc, or the README cannot miss that the module returns URL strings and the consumer owns every `fetch()` call.
@@ -82,6 +83,7 @@ This roadmap breaks Phase 8 into 10 numbered tasks ordered by dependency and ris
 
 2. **Task A2 — Finding 022: Constructor Type Decoupling (`CSAPICollectionRef`)** (Low complexity)
 
+   - **GitHub issue:** [#173](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/173) (Phase 8 / Task A2) — labels: `phase-8`, `locked-decision`, `code-review`, `type-safety`
    - **Authoritative source:** [`022-pending-p3-constructor-exposes-collection-info-type.md`](../../code-review/022-pending-p3-constructor-exposes-collection-info-type.md)
    - **Implementation guide:** [§4.3](P8-implementation-guide.md#43-finding-022--constructor-exposes-ogcapicollectioninfo-type)
    - **Goal:** `CSAPIQueryBuilder`'s constructor parameter type is owned by the CSAPI module. Refactoring `OgcApiCollectionInfo` upstream cannot become a breaking change to the CSAPI public API.
@@ -98,6 +100,7 @@ This roadmap breaks Phase 8 into 10 numbered tasks ordered by dependency and ris
 
 3. **Task A3 — Finding 023: `availableResources` `ReadonlySet<CSAPIResourceType>` Tightening** (Low complexity)
 
+   - **GitHub issue:** [#174](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/174) (Phase 8 / Task A3) — labels: `phase-8`, `locked-decision`, `code-review`, `type-safety`
    - **Authoritative source:** [`023-pending-p3-availableresources-set-typing.md`](../../code-review/023-pending-p3-availableresources-set-typing.md)
    - **Implementation guide:** [§4.4](P8-implementation-guide.md#44-finding-023--availableresources-type-tightening)
    - **Goal:** Consumer code that mutates the set fails to compile; consumer code iterating the set narrows automatically to the resource-type union.
@@ -110,6 +113,7 @@ This roadmap breaks Phase 8 into 10 numbered tasks ordered by dependency and ris
 
 4. **Task A4 — Issue #167: Pagination-Contract JSDoc on List Methods** (Low complexity)
 
+   - **GitHub issue:** [#167](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/167) (Phase 8 / Task A4 — absorbed in place per Roadmap Summary directive; original finding preserved verbatim in issue body) — labels: `phase-8`, `locked-decision`, `code-review`, `documentation`. Wrapper [#175](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/175) closed as `duplicate_of: 167`.
    - **Authoritative source:** [Issue #167](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/167)
    - **Implementation guide:** [§5.2](P8-implementation-guide.md#52-issue-167--pagination-contract-jsdoc-on-list-methods)
    - **Goal:** Every list method on `CSAPIQueryBuilder` carries JSDoc that explicitly documents the pagination contract — server picks default page size, consumer follows `next` HATEOAS links to retrieve subsequent pages.
@@ -143,6 +147,7 @@ This roadmap breaks Phase 8 into 10 numbered tasks ordered by dependency and ris
 
 5. **Task B1 — Finding 019: `DataStream` → `Datastream` Method Rename** (Medium complexity, mechanical)
 
+   - **GitHub issue:** [#176](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/176) (Phase 8 / Task B1) — labels: `phase-8`, `locked-decision`, `code-review`, `breaking-change`
    - **Authoritative source:** [`019-pending-p2-method-naming-datastream-vs-datastream.md`](../../code-review/019-pending-p2-method-naming-datastream-vs-datastream.md) — Option A locked (straight rename, no aliases)
    - **Implementation guide:** [§4.2](P8-implementation-guide.md#42-finding-019--datastream--datastream-method-rename)
    - **Goal:** Single coherent spelling everywhere. `git grep "DataStream" -- src/ogc-api/csapi/` returns 0 matches. Method names match the existing `Datastream` type, `parseDatastream` parser, and `'datastreams'` resource constant.
@@ -160,6 +165,7 @@ This roadmap breaks Phase 8 into 10 numbered tasks ordered by dependency and ris
 
 6. **Task B2 — Finding 021: Validators Throw `EndpointError`** (Medium complexity)
 
+   - **GitHub issue:** [#177](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/177) (Phase 8 / Task B2) — labels: `phase-8`, `locked-decision`, `code-review`, `error-handling`
    - **Authoritative source:** [`021-pending-p2-validators-throw-plain-error.md`](../../code-review/021-pending-p2-validators-throw-plain-error.md) — Decision locked: `EndpointError` only, no subclass
    - **Implementation guide:** [§4.5](P8-implementation-guide.md#45-finding-021--validators-throw-plain-error)
    - **Goal:** Every error a CSAPI consumer can catch is `instanceof EndpointError`. `git grep "throw new Error\|throw new TypeError" -- src/ogc-api/csapi/` returns 0 matches.
@@ -198,6 +204,7 @@ This roadmap breaks Phase 8 into 10 numbered tasks ordered by dependency and ris
 
 7. **Task C1 — Issue #166: Part 2 `@link` Fallback in Cross-Reference Fields** (Medium complexity)
 
+   - **GitHub issue:** [#166](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/166) (Phase 8 / Task C1 — absorbed in place per Roadmap Summary directive; original finding preserved verbatim in issue body) — labels: `phase-8`, `locked-decision`, `code-review`, `bug`, `server-interop`. Wrapper [#178](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/178) closed as `duplicate_of: 166`.
    - **Authoritative source:** [Issue #166](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/166); spec authority [OGC 23-002 §16.1](https://docs.ogc.org/is/23-002/23-002.html)
    - **Implementation guide:** [§5.1](P8-implementation-guide.md#51-issue-166--part-2-link-fallback-in-cross-reference-fields)
    - **Goal:** All Part 2 parsers extract cross-reference IDs from either the `@id` (scalar string) form or the `@link` (object with `href`) form. Library is conformant for `connected-systems-go` and any future server emitting the object form.
@@ -229,6 +236,7 @@ This roadmap breaks Phase 8 into 10 numbered tasks ordered by dependency and ris
 
 8. **Task D1 — Findings 018 + 024 (Coordinated): `endpoint.csapi()` + Re-Privatization** (High complexity)
 
+   - **GitHub issue:** [#179](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/179) (Phase 8 / Task D1 — coordinated 018 + 024) — labels: `phase-8`, `locked-decision`, `code-review`, `breaking-change`, `high-risk`
    - **Authoritative sources:**
      - [`018-pending-p3-endpoint-csapi-convenience-method.md`](../../code-review/018-pending-p3-endpoint-csapi-convenience-method.md)
      - [`024-pending-p2-endpoint-root-publicly-exposed.md`](../../code-review/024-pending-p2-endpoint-root-publicly-exposed.md) — Option A3 locked
@@ -279,6 +287,7 @@ This roadmap breaks Phase 8 into 10 numbered tasks ordered by dependency and ris
 
 9. **Task E1 — Full CI Gate + Source Patch Generation** (Low complexity)
 
+   - **GitHub issue:** [#180](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/180) (Phase 8 / Task E1) — labels: `phase-8`, `delivery`, `ci`
    - **Implementation guide:** [§8.2](P8-implementation-guide.md#82-full-ci-gate) + [§11 steps 2–3](P8-implementation-guide.md#11-two-repo-delivery-sequence)
    - **Goal:** All five CI gates exit 0 on `phase-8`; source-only patch generated and saved.
    - **Actions:**
@@ -296,6 +305,7 @@ This roadmap breaks Phase 8 into 10 numbered tasks ordered by dependency and ris
 
 10. **Task E2 — Squash onto `clean-pr` + Push + PR #136 Refresh** (Low complexity)
 
+    - **GitHub issue:** [#181](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/181) (Phase 8 / Task E2) — labels: `phase-8`, `delivery`, `upstream-pr`
     - **Implementation guide:** [§11 steps 4–8](P8-implementation-guide.md#11-two-repo-delivery-sequence) + squashed commit message template
     - **Goal:** PR #136 carries one new squashed commit titled "Phase 8: API design refinements + CS-Go server-interop fixes"; CI green on the PR; @jahow tagged for final review.
     - **Actions:**
@@ -338,7 +348,22 @@ This roadmap breaks Phase 8 into 10 numbered tasks ordered by dependency and ris
 
 > **Total Code:** ~950 lines added across `src/ogc-api/` and its specs (no `app/`, no `src-node/`, no `docs/` flowing to `clean-pr`).
 >
-> **GitHub Issue Mapping:** Tasks 1–8 each map to one new "Phase 8 / Task X" GitHub issue on `OS4CSAPI/ogc-client-CSAPI_2`; Task 9 and Task 10 may collapse into a single delivery issue ("Phase 8 / Task 9-10: Verify, squash, deliver"). Existing issues #166 and #167 already cover Tasks 7 and Task A4 respectively — those issues should be referenced in the corresponding Phase 8 task issue rather than duplicated.
+> **GitHub Issue Mapping (filed on `OS4CSAPI/ogc-client-CSAPI_2`):**
+>
+> | Task | Issue                                                             | State | Title                                                                                |
+> | ---- | ----------------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------ |
+> | A1   | [#172](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/172) | open  | Finding 017 — URL-builder framing in module docs                                     |
+> | A2   | [#173](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/173) | open  | Finding 022 — Constructor type decoupling (`CSAPICollectionRef`)                     |
+> | A3   | [#174](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/174) | open  | Finding 023 — `availableResources` `ReadonlySet` typing                              |
+> | A4   | [#167](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/167) | open  | Issue #167 — Pagination-contract JSDoc on list methods _(absorbed in place)_         |
+> | B1   | [#176](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/176) | open  | Finding 019 — `DataStream` → `Datastream` method rename                              |
+> | B2   | [#177](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/177) | open  | Finding 021 — Validators throw `EndpointError`                                       |
+> | C1   | [#166](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/166) | open  | Issue #166 — Part 2 `@link` fallback in cross-reference fields _(absorbed in place)_ |
+> | D1   | [#179](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/179) | open  | Findings 018 + 024 (coordinated) — `endpoint.csapi()` + re-privatization             |
+> | E1   | [#180](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/180) | open  | Full CI gate + source patch generation                                               |
+> | E2   | [#181](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/181) | open  | Squash onto `clean-pr` + push + PR #136 refresh                                      |
+>
+> **Closed wrappers (duplicates of absorbed issues):** [#175](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/175) → `duplicate_of: 167`; [#178](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/178) → `duplicate_of: 166`. Per the directive in this Roadmap Summary, existing issues #166 and #167 already covered Tasks C1 and A4 respectively and were absorbed in place rather than wrapped — wrapper issues filed during initial Phase 8 issue creation were closed as duplicates and the Phase 8 Task spec was merged into the existing issue body (original finding preserved verbatim below a separator).
 
 **Why This Structure (the principled rationale):**
 
