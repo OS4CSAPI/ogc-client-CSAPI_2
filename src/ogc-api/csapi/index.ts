@@ -70,6 +70,7 @@ export type {
   SystemTypeUri,
   TimeInterval,
   ResourceLink,
+  CSAPICollectionRef,
   CSAPIResourceRef,
   CsapiDateTimeParameter,
   QueryOptions as CSAPIQueryOptions,

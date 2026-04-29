@@ -109,6 +109,33 @@ export interface TimeInterval {
 export type ResourceLink = OgcApiDocumentLink;
 
 /**
+ * Minimal collection descriptor required to construct a {@link CSAPIQueryBuilder}.
+ *
+ * Structurally compatible with the upstream `OgcApiCollectionInfo` shape but
+ * defined locally so that the CSAPI module's public API does not depend on
+ * the upstream OGC API collection-info type. Refactors of
+ * `OgcApiCollectionInfo` cannot become breaking changes to the CSAPI public
+ * API.
+ *
+ * Most consumers obtain a `CSAPICollectionRef` implicitly by calling
+ * {@link createCSAPIBuilder}. Direct construction of `CSAPIQueryBuilder` is
+ * the documented workaround for servers that don't advertise CSAPI link
+ * relations — see the `CSAPIQueryBuilder` constructor JSDoc for the
+ * `resourceUrls` pattern.
+ *
+ * @see https://docs.ogc.org/is/23-001/23-001.html#_collection_metadata
+ * @public
+ */
+export interface CSAPICollectionRef {
+  /** Stable collection identifier. */
+  id: string;
+  /** Optional human-readable title. */
+  title?: string;
+  /** Resource links discovered from the collection document. */
+  links: ResourceLink[];
+}
+
+/**
  * Parsed form of a CS API `@link` inline property.
  *
  * `@link` properties appear on Part 1 GeoJSON resources to encode structural

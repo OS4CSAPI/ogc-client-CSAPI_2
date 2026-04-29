@@ -1,4 +1,3 @@
-import type { OgcApiCollectionInfo } from '../model.js';
 import type {
   QueryOptions,
   SystemQueryOptions,
@@ -11,6 +10,7 @@ import type {
   ControlStreamQueryOptions,
   CommandQueryOptions,
   CommandStatusQueryOptions,
+  CSAPICollectionRef,
 } from './model.js';
 import { EndpointError } from '../../shared/errors.js';
 import {
@@ -216,7 +216,7 @@ export default class CSAPIQueryBuilder {
    * @see https://docs.ogc.org/is/23-001/23-001.html
    */
   constructor(
-    private collection_: Pick<OgcApiCollectionInfo, 'id' | 'title' | 'links'>,
+    private collection_: CSAPICollectionRef,
     resourceUrls?: Map<string, string>
   ) {
     this.resourceUrls_ = resourceUrls ?? new Map();
