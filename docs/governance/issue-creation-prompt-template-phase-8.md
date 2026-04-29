@@ -199,11 +199,12 @@ The Phase 8 roadmap defines a **specific verification command** for each task. P
 1. **Tick every Acceptance Criteria box.** Edit the issue body so every `[ ]` becomes `[x]`. The boxes are the contract; un-ticked boxes mean unfinished work, not optional work.
 2. **Commit and sync.** All implementation changes are committed locally and pushed to the GitHub remote (`origin/<branch>`). The commit SHA must appear in the closing summary comment.
 3. **Close with a summary comment.** Post one comment that contains, at minimum:
- - The commit SHA (with a GitHub commit-link).
- - The list of files modified (from the "Files to Modify" table — confirm reality matched plan).
- - The acceptance-gate command output (or a tight summary: "prettier --check OK, typecheck OK, lint OK, test:node 1793/1793 passed, test:browser modulo pre-existing X").
- - Any deviation from the locked decision (or `Deviation from locked decision: none.`).
- - Then close the issue (`state=closed`, `state_reason=completed`).
+
+- The commit SHA (with a GitHub commit-link).
+- The list of files modified (from the "Files to Modify" table — confirm reality matched plan).
+- The acceptance-gate command output (or a tight summary: "prettier --check OK, typecheck OK, lint OK, test:node 1793/1793 passed, test:browser modulo pre-existing X").
+- Any deviation from the locked decision (or `Deviation from locked decision: none.`).
+- Then close the issue (`state=closed`, `state_reason=completed`).
 
 **Forbidden shortcuts:**
 
