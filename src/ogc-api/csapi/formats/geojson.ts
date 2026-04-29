@@ -324,7 +324,11 @@ export function parseValidTime(value: unknown): TimeInterval | undefined {
       }
 
       let end: Date | undefined;
-      if (typeof obj.end === 'string' && obj.end !== 'now' && obj.end !== '..') {
+      if (
+        typeof obj.end === 'string' &&
+        obj.end !== 'now' &&
+        obj.end !== '..'
+      ) {
         end = new Date(obj.end);
         if (isNaN(end.getTime())) return undefined;
       }

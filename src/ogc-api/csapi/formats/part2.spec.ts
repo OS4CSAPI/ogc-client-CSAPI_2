@@ -663,9 +663,7 @@ describe('parseControlStream', () => {
       name: 'Label-Only Props',
       formats: [],
       async: false,
-      controlledProperties: [
-        { label: 'Active' },
-      ],
+      controlledProperties: [{ label: 'Active' }],
     };
 
     const result: ControlStream = parseControlStream(input);
