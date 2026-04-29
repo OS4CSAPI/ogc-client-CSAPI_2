@@ -1,7 +1,7 @@
 ---
 status: deferred
 priority: enhancement
-issue_id: "026"
+issue_id: '026'
 tags: [code-review, api-design, enhancement, pagination]
 dependencies: []
 phase: 8
@@ -20,10 +20,13 @@ auto-iterate pages.
 A consumer who wants to walk all pages must currently:
 
 ```ts
-const nextLink = result.links.find(l => l.rel === 'next');
+const nextLink = result.links.find((l) => l.rel === 'next');
 if (nextLink) {
   const nextResponse = await fetch(nextLink.href);
-  const nextResult = parseCollectionResponse(await nextResponse.json(), parseDatastream);
+  const nextResult = parseCollectionResponse(
+    await nextResponse.json(),
+    parseDatastream
+  );
 }
 ```
 
@@ -32,6 +35,7 @@ This works but is boilerplate every consumer reimplements.
 ## Findings
 
 **Files:**
+
 - `src/ogc-api/csapi/formats/response.ts` — `CollectionResponse<T>` shape and
   `parseCollectionResponse` already provide the data.
 - `src/ogc-api/csapi/index.ts` — no `followNext` / `followLinks` /
@@ -49,7 +53,7 @@ export async function followNext<T>(
   result: CollectionResponse<T>,
   parseItem: (raw: unknown) => T
 ): Promise<CollectionResponse<T> | null> {
-  const next = result.links.find(l => l.rel === 'next');
+  const next = result.links.find((l) => l.rel === 'next');
   if (!next?.href) return null;
   const response = await fetch(next.href);
   return parseCollectionResponse(await response.json(), parseItem);

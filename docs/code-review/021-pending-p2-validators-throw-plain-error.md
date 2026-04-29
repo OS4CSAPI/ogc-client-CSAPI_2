@@ -1,7 +1,7 @@
 ---
 status: pending
 priority: p2
-issue_id: "021"
+issue_id: '021'
 tags: [code-review, error-handling, api-design]
 dependencies: []
 phase: 8
@@ -13,14 +13,14 @@ phase: 8
 
 The CSAPI module's error contract mixes three error types depending on failure mode:
 
-| Failure mode | Error type | Has `httpStatus`? |
-|---|---|---|
-| CSAPI not supported | `EndpointError` | No |
-| Invalid collection document | `EndpointError` | No |
-| Network failure (propagated from `OgcApiEndpoint`) | `TypeError` | No |
-| Resource type unavailable | `EndpointError` | No |
-| Invalid `limit` / `bbox` / `datetime` | plain `Error` | No |
-| Malformed response body | plain `Error` | No |
+| Failure mode                                       | Error type      | Has `httpStatus`? |
+| -------------------------------------------------- | --------------- | ----------------- |
+| CSAPI not supported                                | `EndpointError` | No                |
+| Invalid collection document                        | `EndpointError` | No                |
+| Network failure (propagated from `OgcApiEndpoint`) | `TypeError`     | No                |
+| Resource type unavailable                          | `EndpointError` | No                |
+| Invalid `limit` / `bbox` / `datetime`              | plain `Error`   | No                |
+| Malformed response body                            | plain `Error`   | No                |
 
 Consumer `catch (e) { if (e instanceof EndpointError) ... }` patterns work for
 some failure modes and silently miss others. Validators in `helpers.ts` and
@@ -68,7 +68,7 @@ reliably narrow — remains valid.
 ## Ownership Assessment
 
 100% ours — all changes inside `src/ogc-api/csapi/`. The `TypeError` originally
-comes from upstream's `OgcApiEndpoint`, but our fix is to wrap *in our factory*,
+comes from upstream's `OgcApiEndpoint`, but our fix is to wrap _in our factory_,
 not modify upstream.
 
 ## Triage

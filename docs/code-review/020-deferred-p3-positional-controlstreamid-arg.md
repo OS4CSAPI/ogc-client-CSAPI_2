@@ -1,9 +1,9 @@
 ---
 status: deferred
 priority: p3
-issue_id: "020"
+issue_id: '020'
 tags: [code-review, api-design, ergonomics]
-dependencies: ["#102"]
+dependencies: ['#102']
 phase: 8
 ---
 

@@ -1,7 +1,7 @@
 ---
 status: pending
 priority: p2
-issue_id: "024"
+issue_id: '024'
 tags: [code-review, api-design, upstream-surface]
 dependencies: []
 phase: 8
@@ -55,7 +55,7 @@ async _getCSAPIBootstrap(collectionId: string): Promise<{
 ```
 
 Pros: minimum new public surface, factory becomes trivial, easy to evolve.
-Cons: still adds *one* new public method; an underscore prefix is a convention
+Cons: still adds _one_ new public method; an underscore prefix is a convention
 not a guarantee.
 
 ### Option B: Keep public + document in PR description
@@ -69,7 +69,7 @@ Cons: forever a public commitment for the maintainer; harder to refactor.
 ### Option C: Move the factory inside `OgcApiEndpoint` as a method
 
 Promote `endpoint.csapi(collectionId)` (see [018](018-pending-p3-endpoint-csapi-convenience-method.md))
-to *the* entry point and have it use `private` access internally. Drop or
+to _the_ entry point and have it use `private` access internally. Drop or
 re-privatize the standalone `createCSAPIBuilder`, or keep it as a
 re-export that delegates.
 

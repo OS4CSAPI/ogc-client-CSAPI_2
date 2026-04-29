@@ -1,7 +1,7 @@
 ---
 status: pending
 priority: p3
-issue_id: "018"
+issue_id: '018'
 tags: [code-review, api-design, ergonomics]
 dependencies: []
 phase: 8
@@ -31,6 +31,7 @@ exploring `OgcApiEndpoint` in their IDE won't find the CSAPI entry point.
 ## Findings
 
 **Files:**
+
 - `src/ogc-api/endpoint.ts` (no `csapi()` method exists)
 - `src/ogc-api/csapi/factory.ts` (the standalone factory)
 - EDR comparison: `endpoint.edr()` is defined on `OgcApiEndpoint`

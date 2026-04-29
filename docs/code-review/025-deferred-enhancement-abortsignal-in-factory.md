@@ -1,7 +1,7 @@
 ---
 status: deferred
 priority: enhancement
-issue_id: "025"
+issue_id: '025'
 tags: [code-review, api-design, enhancement, cancellation]
 dependencies: []
 phase: 8

@@ -1,7 +1,7 @@
 ---
 status: pending
 priority: p3
-issue_id: "017"
+issue_id: '017'
 tags: [code-review, docs, api-design]
 dependencies: []
 phase: 8

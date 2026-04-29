@@ -1,7 +1,7 @@
 ---
 status: pending
 priority: p2
-issue_id: "019"
+issue_id: '019'
 tags: [code-review, api-design, naming]
 dependencies: []
 phase: 8
@@ -36,6 +36,7 @@ spec writes "Datastream" as one word, which matches the type/parser side.
 ## Findings
 
 **Files:**
+
 - `src/ogc-api/csapi/url_builder.ts` — all method names use `DataStream`
 - `src/ogc-api/csapi/model.ts` — types use `Datastream`
 - `src/ogc-api/csapi/formats/part2.ts` — parsers use `parseDatastream`
