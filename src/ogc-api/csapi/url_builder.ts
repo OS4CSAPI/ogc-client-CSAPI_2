@@ -56,6 +56,17 @@ type ResourceSubPath =
  * resource types (Part 1: systems, deployments, procedures, samplingFeatures,
  * properties; Part 2: datastreams, observations, controlStreams, commands).
  *
+ * **URL builder, NOT an HTTP client.** Every `get*()` method on this class
+ * returns a URL **string** — no network request is made. The consumer is
+ * responsible for issuing the `fetch()` call (auth headers, timeouts,
+ * retries, `AbortSignal`, error handling, content-negotiation) and for
+ * passing the parsed JSON body to the matching parser function
+ * (`parseDatastream`, `parseObservation`, `parseSystem`, …). This mirrors
+ * the design of `EDRQueryBuilder` from the sibling `ogc-api/edr` module —
+ * same pattern, same rationale. See the {@link module:csapi | csapi module
+ * docblock} for the full 5-step request pattern and a complete worked
+ * example.
+ *
  * ## Resource Discovery
  *
  * Available resources are discovered automatically from the collection's link
@@ -97,8 +108,8 @@ type ResourceSubPath =
  *
  * @example Complete workflow — list, filter, and navigate CSAPI resources:
  * ```ts
- * import { OgcApiEndpoint } from '@AugmentedGeo/ogc-client';
- * import { createCSAPIBuilder } from '@AugmentedGeo/ogc-client/csapi';
+ * import { OgcApiEndpoint } from '@camptocamp/ogc-client';
+ * import { createCSAPIBuilder } from '@camptocamp/ogc-client/csapi';
  *
  * const endpoint = await new OgcApiEndpoint('https://api.example.com');
  * const builder = await createCSAPIBuilder(endpoint, 'weather-stations');

@@ -87,3 +87,47 @@ Run examples with:
 npm run build
 node examples/stac-query.js
 ```
+
+### OGC API — Connected Systems (Parts 1 & 2)
+
+The `csapi` sub-module provides a **URL builder + response parsers** for the
+[OGC API — Connected Systems](https://docs.ogc.org/is/23-002/23-002.html)
+standards. It is **not an HTTP client** — `CSAPIQueryBuilder.get*()` methods
+return URL strings, and the consumer owns the `fetch()` call (auth headers,
+timeouts, retries, `AbortSignal`, error handling). This mirrors the design of
+`EDRQueryBuilder` (see [`src/ogc-api/edr`](./src/ogc-api/edr)) — same pattern,
+same rationale.
+
+**The 5-step request pattern:**
+
+1. Construct an `OgcApiEndpoint` for the API root.
+2. Build a `CSAPIQueryBuilder` for the target collection.
+3. Call a `get*()` method to obtain a URL string.
+4. Issue the request yourself with `fetch` (or any HTTP client).
+5. Hand the parsed JSON body to the matching parser.
+
+```ts
+import { OgcApiEndpoint } from '@camptocamp/ogc-client';
+import {
+  createCSAPIBuilder,
+  parseDatastream,
+} from '@camptocamp/ogc-client/csapi';
+
+// 1. Endpoint → 2. Builder → 3. URL
+const endpoint = new OgcApiEndpoint('https://api.example.com');
+const builder = await createCSAPIBuilder(endpoint, 'weather-stations');
+const url = builder.getDataStreams({ limit: 10 });
+
+// 4. Consumer-owned fetch — add auth, timeouts, retries as needed
+const response = await fetch(url, {
+  headers: { Authorization: 'Bearer <token>' },
+  signal: AbortSignal.timeout(10_000),
+});
+if (!response.ok) {
+  throw new Error(`CSAPI request failed: ${response.status}`);
+}
+
+// 5. Parse the body with the matching parser
+const body = (await response.json()) as { items: unknown[] };
+const datastreams = body.items.map(parseDatastream);
+```
