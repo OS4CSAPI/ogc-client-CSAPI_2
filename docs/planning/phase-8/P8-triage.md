@@ -30,18 +30,18 @@ The review produced 10 distinct findings. Each has a tracking MD file under
 [docs/code-review/](../../code-review/) numbered 017–026. The table below
 summarizes triage decisions; rationale lives in each finding's MD.
 
-| #    | Finding                                                                      | Triage                               | MD                                                                                  |
-| ---- | ---------------------------------------------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------- |
-| 1    | URL-builder framing not obvious in docs                                      | **Accept** (docs only)               | [017](../../code-review/017-pending-p3-docs-url-builder-framing.md)                 |
-| 2a   | No `endpoint.csapi()` convenience method (asymmetry with `endpoint.edr()`)   | **Accept**                           | [018](../../code-review/018-pending-p3-endpoint-csapi-convenience-method.md)        |
-| 2b   | `DataStream` (methods) vs `Datastream` (types/parsers) naming split          | **Accept** (decide rename vs. alias) | [019](../../code-review/019-pending-p2-method-naming-datastream-vs-datastream.md)   |
-| 2c   | `getCommand(id, undefined, controlStreamId)` positional awkwardness          | **Defer**                            | [020](../../code-review/020-deferred-p3-positional-controlstreamid-arg.md)          |
-| 2e/5 | Validators throw plain `Error`; factory propagates `TypeError`               | **Accept**                           | [021](../../code-review/021-pending-p2-validators-throw-plain-error.md)             |
-| 3a   | Constructor exposes internal `OgcApiCollectionInfo` type                     | **Accept**                           | [022](../../code-review/022-pending-p3-constructor-exposes-collection-info-type.md) |
-| 3b   | `availableResources: Set<string>` should be `ReadonlySet<CSAPIResourceType>` | **Accept**                           | [023](../../code-review/023-pending-p3-availableresources-set-typing.md)            |
-| 3c   | `OgcApiEndpoint.root` and `getCollectionDocument` newly public               | **Investigate**                      | [024](../../code-review/024-pending-p2-endpoint-root-publicly-exposed.md)           |
-| 4    | No `AbortSignal` for `createCSAPIBuilder` init fetches                       | **Defer** (enhancement)              | [025](../../code-review/025-deferred-enhancement-abortsignal-in-factory.md)         |
-| 6    | No pagination helper (`followNext` / async iterator)                         | **Defer** (enhancement)              | [026](../../code-review/026-deferred-enhancement-follownext-pagination-helper.md)   |
+| #    | Finding                                                                      | Triage                         | MD                                                                                  |
+| ---- | ---------------------------------------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------- |
+| 1    | URL-builder framing not obvious in docs                                      | **Accept** (docs only)         | [017](../../code-review/017-pending-p3-docs-url-builder-framing.md)                 |
+| 2a   | No `endpoint.csapi()` convenience method (asymmetry with `endpoint.edr()`)   | **Accept**                     | [018](../../code-review/018-pending-p3-endpoint-csapi-convenience-method.md)        |
+| 2b   | `DataStream` (methods) vs `Datastream` (types/parsers) naming split          | **Accept** (Option A — rename) | [019](../../code-review/019-pending-p2-method-naming-datastream-vs-datastream.md)   |
+| 2c   | `getCommand(id, undefined, controlStreamId)` positional awkwardness          | **Defer**                      | [020](../../code-review/020-deferred-p3-positional-controlstreamid-arg.md)          |
+| 2e/5 | Validators throw plain `Error`; factory propagates `TypeError`               | **Accept**                     | [021](../../code-review/021-pending-p2-validators-throw-plain-error.md)             |
+| 3a   | Constructor exposes internal `OgcApiCollectionInfo` type                     | **Accept**                     | [022](../../code-review/022-pending-p3-constructor-exposes-collection-info-type.md) |
+| 3b   | `availableResources: Set<string>` should be `ReadonlySet<CSAPIResourceType>` | **Accept**                     | [023](../../code-review/023-pending-p3-availableresources-set-typing.md)            |
+| 3c   | `OgcApiEndpoint.root` and `getCollectionDocument` newly public               | **Investigate**                | [024](../../code-review/024-pending-p2-endpoint-root-publicly-exposed.md)           |
+| 4    | No `AbortSignal` for `createCSAPIBuilder` init fetches                       | **Defer** (enhancement)        | [025](../../code-review/025-deferred-enhancement-abortsignal-in-factory.md)         |
+| 6    | No pagination helper (`followNext` / async iterator)                         | **Defer** (enhancement)        | [026](../../code-review/026-deferred-enhancement-follownext-pagination-helper.md)   |
 
 ### Counts
 
@@ -70,10 +70,11 @@ on our side is wrapping in our `factory.ts`, tracked in [021](../../code-review/
 
 ## Open Questions (need user input before drafting an execution plan)
 
-1. **For finding 2b (`DataStream` → `Datastream` rename):** can we still make
-   breaking public-API changes on the `clean-pr` branch, or has PR #136 reached
-   a state where renaming is off the table? The decision drives whether we
-   rename (clean) or alias-and-deprecate (compatible but messier).
+1. ~~**For finding 2b (`DataStream` → `Datastream` rename):**~~ **RESOLVED
+   April 28, 2026 — Option A (straight rename).** PR #136 has not been merged
+   upstream and the CSAPI feature set has never shipped, so there are no
+   downstream consumers; "breaking change" framing does not apply. See
+   [019](../../code-review/019-pending-p2-method-naming-datastream-vs-datastream.md).
 
 2. **For finding 3c (`OgcApiEndpoint.root` exposed):** is reverting acceptable,
    or do we need to keep the surface change and document it in the PR description

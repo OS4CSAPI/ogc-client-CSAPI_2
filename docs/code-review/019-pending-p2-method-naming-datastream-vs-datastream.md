@@ -1,11 +1,12 @@
 ---
-status: pending
+status: accepted
 priority: p2
 issue_id: '019'
 tags: [code-review, api-design, naming]
 dependencies: []
 phase: 8
-blocking-decision: true
+blocking-decision: false
+decision: 'Option A — straight rename'
 ---
 
 # `DataStream` (Methods) vs `Datastream` (Types and Parsers) Naming Split
@@ -71,15 +72,33 @@ identifies it as the most legitimate consistency finding in the report.
 
 100% ours — all naming is in `src/ogc-api/csapi/`.
 
-## Decision Needed
+## Decision
 
-**Can we still make breaking public-API changes on `clean-pr` before upstream
-merge?**
+**Option A — straight rename.** Decided April 28, 2026.
 
-- If **yes** → Option A (rename).
-- If **no** → Option B (alias + deprecate).
-- Option C only if neither A nor B is acceptable.
+Rationale: PR #136 has not been merged upstream. The CSAPI feature set
+(including all `*DataStream*` methods) is not present in any released
+version of `ogc-client`, so there are no downstream consumers whose code
+would break. "Breaking change" framing only applies when a library has
+shipped to users; here, the only "consumer" is the unmerged PR itself.
+
+Adding deprecated aliases (Option B) would ship two names for every method
+on a feature set that has never been released, creating permanent cruft and
+inviting maintainer pushback ("who is this deprecation cycle for?").
+Option C (status quo) is rejected because the reviewer correctly identified
+this as the most legitimate consistency finding in the report.
+
+## Execution Notes
+
+- Rename all 13 builder methods in `src/ogc-api/csapi/url_builder.ts` from
+  `*DataStream*` to `*Datastream*`.
+- Update all internal call sites: tests, integration specs, factory,
+  command-routing, and anywhere else the methods are referenced inside
+  `src/ogc-api/csapi/`.
+- Update any references in `app/` (demo) and other code under our control.
+- Update exports in `src/ogc-api/csapi/index.ts`.
+- No alias layer, no `@deprecated` tags — clean rename.
 
 ## Triage
 
-**Accept — Phase 8.** Approach (A vs B) blocked on the decision above.
+**Accept — Phase 8, Option A.**
