@@ -4,9 +4,14 @@
 
 **Usage:** Copy the template below, fill in the placeholders (marked with `{{...}}`), and create the issue via the GitHub API or UI.
 
-**Version:** 1.0
+**Version:** 1.1
 **Date:** April 29, 2026
 **Complements:** [`issue-creation-prompt-template-code-review.md`](issue-creation-prompt-template-code-review.md) (v1.0) — that template is the general-purpose form for findings outside a phase. **Use _this_ template for every Phase 8 task (A1–E2) on the [P8-ROADMAP](../planning/phase-8/P8-ROADMAP.md).**
+
+**v1.1 changelog (operator directive, April 29, 2026):**
+
+- **No manual-review acceptance gates.** Every gate must be an automated command whose exit code or output decides pass/fail. Wording like "Manual review confirmation — paste a one-paragraph statement that …" is forbidden in any Acceptance Gate, Acceptance Criteria checkbox, or Expected Output bullet. If a gate cannot be expressed as `prettier --check` / `npm run typecheck` / `npm run lint` / `npm run test:browser` / `npm run test:node` / `git grep` / `npx tsc --noEmit` / a scratch script — surface that to the user; do **not** smuggle in a manual step.
+- **Closing the issue with a summary comment is part of the issue's own definition of done.** An issue is not complete until: (1) every Acceptance Criteria checkbox in the body is ticked `[x]`, (2) all changes are committed and pushed/synced to the GitHub remote, and (3) the issue is closed with a summary comment posted in the same step. If any of those three is missing, the issue is still open work.
 
 ---
 
@@ -20,7 +25,8 @@ The general-purpose code-review template was built for **discovery-mode** findin
 - Adds a **Phase 8 Task** header (A1 / A2 / … / D1 / E1 / E2) that points at the [P8-ROADMAP](../planning/phase-8/P8-ROADMAP.md) row.
 - Adds a **Source** field with three valid values: `Senior dev code review #2` / `CS-Go integration testing` / `Roadmap delivery task`.
 - Collapses ownership verification to one line — every Phase 8 task is `Ours (CSAPI module + endpoint composition)`.
-- Adds a per-task **Acceptance Gate** subsection inside Acceptance Criteria carrying the exact `git grep` / CI command from the roadmap.
+- Adds a per-task **Acceptance Gate** subsection inside Acceptance Criteria carrying the exact `git grep` / CI command from the roadmap. **Automated commands only — no manual-review gates.**
+- Adds a **Definition of Done / Closing Workflow** section that codifies the three-step close: tick boxes → commit & sync → close with summary comment.
 - Makes **Dependencies** mandatory and points at the roadmap's dependency graph.
 - Updates the **Operational Constraints** precedence chain to insert the trio above per-finding MDs.
 
@@ -155,31 +161,56 @@ Quick reference for filling in the **Phase 8 Task** header. See [P8-ROADMAP.md](
 - [ ] {{Specific change implemented per the locked decision and implementation guide section}}
 - [ ] {{Test additions / updates per the implementation guide's "Test impact" subsection}}
 - [ ] All modified files pass `npx prettier --check`
+- [ ] `npm run format:check` exits 0
 - [ ] `npm run typecheck` exits 0
 - [ ] `npm run lint` exits 0
 - [ ] `npm run test:browser` exits 0
 - [ ] `npm run test:node` exits 0
 
+> **Forbidden:** Do **not** add an acceptance-criteria checkbox that requires a manual-review paragraph, a hand-written confirmation statement, or any other human-judgment artifact. Every box must resolve to a command exit code, a `git grep` line count, a test pass/fail, or a checked-in file's contents.
+
 ### Acceptance Gate (verification command)
 
-The Phase 8 roadmap defines a **specific verification command** for each task. Paste the output of this command on the issue before closing:
+The Phase 8 roadmap defines a **specific verification command** for each task. Paste the output of this command on the issue before closing. **The gate must be 100% automated** — no "paste a paragraph confirming X" steps; if a check cannot be automated, surface that to the user instead of inserting a manual step.
 
 ```powershell
 {{Exact command from P8-ROADMAP §"Acceptance gate" for this task. Examples:
-- A1 — manual review across 4 doc surfaces; npx prettier --check
-- A2 — git grep -n "OgcApiCollectionInfo" -- src/ogc-api/csapi/url_builder.ts
-- A3 — npx tsc --noEmit + scratch attempt to mutate availableResources
-- A4 — manual review of every list method's JSDoc
-- B1 — git grep -n "DataStream" -- 'src/ogc-api/csapi/'
-- B2 — git grep -n "throw new Error\|throw new TypeError" -- src/ogc-api/csapi/
+- A1 — npx prettier --check src/ogc-api/csapi/index.ts src/ogc-api/csapi/factory.ts src/ogc-api/csapi/url_builder.ts README.md; full upstream QA suite (format:check / typecheck / lint / test:browser / test:node)
+- A2 — git grep -n "OgcApiCollectionInfo" -- src/ogc-api/csapi/url_builder.ts (must return 0 lines)
+- A3 — npx tsc --noEmit + scratch script that attempts to mutate availableResources fails to compile
+- A4 — automated JSDoc-presence check (e.g., grep for the pagination contract phrase across every list method)
+- B1 — git grep -n "DataStream" -- 'src/ogc-api/csapi/' (must return 0 lines outside intentional history references)
+- B2 — git grep -n "throw new Error\|throw new TypeError" -- src/ogc-api/csapi/ (must return 0 lines)
 - C1 — npm run test:browser src/ogc-api/csapi/formats/part2.spec.ts
-- D1 — combined: git grep "public root\|public getCollectionDocument", git grep "isCollectionInfo", new endpoint.csapi() suite green
+- D1 — combined: git grep "public root\|public getCollectionDocument" (0 lines), git grep "isCollectionInfo" (0 lines), new endpoint.csapi() suite green
 - E1 — all five CI commands exit 0; phase-8.patch generated
 - E2 — PR #136 shows new squashed commit; CI green; description updated
 }}
 ```
 
-**Expected output:** {{What the command must return for the gate to be green — typically "0 lines" or a specific success indicator.}}
+**Expected output:** {{What the command must return for the gate to be green — typically "0 lines", "exit 0", or a specific test pass count. Must be checkable by reading the command output, not by reading prose.}}
+
+## Definition of Done / Closing Workflow
+
+> **An issue is not complete until it is closed with a summary comment.** Closing-with-comment is part of the issue's own definition of done — if you have not done all three steps below, you are not finished.
+
+**Three-step close (in order):**
+
+1. **Tick every Acceptance Criteria box.** Edit the issue body so every `[ ]` becomes `[x]`. The boxes are the contract; un-ticked boxes mean unfinished work, not optional work.
+2. **Commit and sync.** All implementation changes are committed locally and pushed to the GitHub remote (`origin/<branch>`). The commit SHA must appear in the closing summary comment.
+3. **Close with a summary comment.** Post one comment that contains, at minimum:
+ - The commit SHA (with a GitHub commit-link).
+ - The list of files modified (from the "Files to Modify" table — confirm reality matched plan).
+ - The acceptance-gate command output (or a tight summary: "prettier --check OK, typecheck OK, lint OK, test:node 1793/1793 passed, test:browser modulo pre-existing X").
+ - Any deviation from the locked decision (or `Deviation from locked decision: none.`).
+ - Then close the issue (`state=closed`, `state_reason=completed`).
+
+**Forbidden shortcuts:**
+
+- ❌ Closing the issue without a summary comment.
+- ❌ Posting the summary comment but leaving the issue open.
+- ❌ Ticking the boxes locally in a working file but not updating the GitHub issue body.
+- ❌ Pushing the commit but not running the acceptance-gate commands (or running them but not recording the result).
 
 ## Dependencies
 
@@ -249,6 +280,21 @@ Apply these labels consistently to every Phase 8 issue:
 
 If, while implementing a Phase 8 issue, an instinct arises to revisit the locked decision (e.g., "what if we add deprecated aliases just to be safe?"), **stop**. The Phase 8 trio is the contract. Surface the concern to the user; do not silently re-decide. The "Locked Decision" section of this template exists to make that boundary unmistakable.
 
+### No-Manual-Gate Policy
+
+Every acceptance gate must be **automated** — a command whose exit code, output line-count, or test result decides pass/fail without human reading. Phrases that signal a manual gate has crept in (and must be removed before the issue is filed):
+
+- "Manual review confirmation — paste a one-paragraph statement that …"
+- "Confirm by reading the file that …"
+- "Paragraph affirmatively states …"
+- "Reviewer-attested paragraph …"
+
+If a property genuinely cannot be checked by a command (rare; usually means the gate is mis-specified), surface it to the user before filing the issue. **Do not** ship an issue containing a manual gate; the operator has explicitly rejected manual-review steps as a matter of standing policy.
+
+### Closing-with-Comment Policy
+
+The issue's last step is **always** a summary comment immediately followed by closing the issue. This step is part of the issue's own definition of done — not a courtesy, not optional, not separately tracked. An issue with all boxes ticked and the commit pushed but no closing comment is **still open work**. See the "Definition of Done / Closing Workflow" section of the template for the required comment contents.
+
 ### Coordinated Tasks (D1)
 
 Findings 018 and 024 must execute as **one indivisible unit** — splitting them re-introduces the unsound `isCollectionInfo` runtime cast. The single Task D1 issue covers both findings; do not file separate issues for 018 and 024.
@@ -311,7 +357,9 @@ Before submitting a Phase 8 issue, confirm:
 - [ ] Source field is one of the three valid values (`Senior dev code review #2` / `CS-Go integration testing` / `Roadmap delivery task`)
 - [ ] Locked Decision section names the decision and links the lock-in source
 - [ ] Files to Modify table matches the implementation guide's files-modified list for this task
-- [ ] Acceptance Gate command is the exact command from P8-ROADMAP for this task
+- [ ] Acceptance Gate command is the exact command from P8-ROADMAP for this task **and is 100% automated** (zero manual-review steps)
+- [ ] No Acceptance Criteria checkbox requires a manual-review paragraph or human-judgment artifact
+- [ ] **Definition of Done / Closing Workflow** section is present and unmodified — three-step close (tick boxes → commit & sync → close with summary comment) is intact
 - [ ] Dependencies section walks the roadmap dependency graph (especially A2 + B2 → D1)
 - [ ] Labels include both `phase-8` and `locked-decision` at minimum
 - [ ] References table includes the trio (P8-contribution-goal-and-definition / P8-implementation-guide / P8-ROADMAP) plus the per-finding MD or issue
