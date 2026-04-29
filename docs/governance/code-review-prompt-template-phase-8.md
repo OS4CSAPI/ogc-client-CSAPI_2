@@ -110,11 +110,18 @@ Phase 8 resolves **7 code-review findings** (017, 018, 019, 021, 022, 023, 024) 
    - GitHub Issue #166 → Task C1 (`@link` fallback)
    - GitHub Issue #167 → Task A4 (pagination JSDoc)
 
-4. **Run CI verification gates** — execute and record results:
-   - `npx tsc --noEmit` (C1 — type check)
-   - `npm run lint` (C2 — ESLint)
-   - `npm test` (C3 — full test suite)
-   - `npx prettier --check src/` (C4 — formatting)
+4. **Run CI verification gates — the EXACT 5 upstream QA commands** (mirroring [`.github/workflows/qa.yml`](../../.github/workflows/qa.yml), which is identical to camptocamp's upstream QA workflow). These are the gates the upstream PR #136 will be measured against. Execute in this order and record results:
+   - `npm run format:check` (C1 — Prettier formatting; **this is the one that bit us last time** — see [`docs/upstream-pr-preparation/03-lessons-learned-ci-formatting.md`](../upstream-pr-preparation/03-lessons-learned-ci-formatting.md))
+   - `npm run typecheck` (C2 — TypeScript type check)
+   - `npm run lint` (C3 — ESLint)
+   - `npm run test:browser` (C4 — Jest browser tests)
+   - `npm run test:node` (C5 — Jest Node tests)
+
+   **Then verify the QA workflow itself ran green on the checkpoint HEAD commit:**
+   - Open <https://github.com/OS4CSAPI/ogc-client-CSAPI_2/actions/workflows/qa.yml>
+   - Confirm the most recent run on the `phase-8` branch (or, at Checkpoint final, on `clean-pr`) is green for the commit being reviewed
+   - Record the run URL and conclusion in the report's CI Gates table
+   - If the workflow has not yet been triggered for the HEAD commit, dispatch it manually via the **Run workflow** button (workflow_dispatch is enabled) and wait for completion before continuing the review
 
 5. **Run per-task acceptance gates** — execute the verification commands defined in `P8-ROADMAP.md` for every task in the active checkpoint. Record exact command output. These are the **acceptance gates** — if any fail, the checkpoint is not done. (See Section "Per-Task Acceptance Gates" below for the canonical command list.)
 
@@ -272,14 +279,16 @@ Phase 8 resolves **7 code-review findings** (017, 018, 019, 021, 022, 023, 024) 
     - **REGRESSION** — behavior that worked before Phase 8 but is now broken (including Phase 7 fixes)
     - **LOCKED-DECISION-DEVIATION** — implementation diverges from the P8 trio's locked decision; requires either revert-to-spec or a P8-F finding to formally re-open the decision
 
-14. **Generate the CI verification matrix:**
+14. **Generate the CI verification matrix** — must mirror the upstream QA workflow exactly:
 
     | Gate | Command | Expected | Actual | Status |
     |------|---------|----------|--------|--------|
-    | C1 | `npx tsc --noEmit` | exit 0 | {{result}} | ✅/❌ |
-    | C2 | `npm run lint` | exit 0 | {{result}} | ✅/❌ |
-    | C3 | `npm test` | all pass | {{N}} pass, {{N}} fail | ✅/❌ |
-    | C4 | `npx prettier --check src/` | exit 0 | {{result}} | ✅/❌ |
+    | C1 | `npm run format:check` | exit 0 | {{result}} | ✅/❌ |
+    | C2 | `npm run typecheck` | exit 0 | {{result}} | ✅/❌ |
+    | C3 | `npm run lint` | exit 0 | {{result}} | ✅/❌ |
+    | C4 | `npm run test:browser` | all pass | {{N}} pass, {{N}} fail | ✅/❌ |
+    | C5 | `npm run test:node` | all pass | {{N}} pass, {{N}} fail | ✅/❌ |
+    | QA workflow | `.github/workflows/qa.yml` run on HEAD commit | conclusion: success | {{run URL}} | ✅/❌ |
 
 15. **Generate the per-task acceptance-gate matrix** (the canonical Phase 8 quality gate, drawn from `P8-ROADMAP.md`):
 
@@ -371,14 +380,16 @@ Use this exact structure:
 
 ## Verification Status
 
-### CI Gates
+### CI Gates (mirror of upstream `.github/workflows/qa.yml`)
 
-| Check | Result |
-|-------|--------|
-| tsc --noEmit (C1) | ✅/❌ {{result}} |
-| lint (C2) | ✅/❌ {{result}} |
-| test (C3) | ✅ {{N}} passing, {{N}} failing |
-| prettier (C4) | ✅/❌ {{result}} |
+| Check | Command | Result |
+|-------|---------|--------|
+| format:check (C1) | `npm run format:check` | ✅/❌ {{result}} |
+| typecheck (C2) | `npm run typecheck` | ✅/❌ {{result}} |
+| lint (C3) | `npm run lint` | ✅/❌ {{result}} |
+| test:browser (C4) | `npm run test:browser` | ✅ {{N}} passing, {{N}} failing |
+| test:node (C5) | `npm run test:node` | ✅ {{N}} passing, {{N}} failing |
+| **QA workflow run** | <https://github.com/OS4CSAPI/ogc-client-CSAPI_2/actions/workflows/qa.yml> | ✅/❌ {{run URL}} |
 
 ### Per-Task Acceptance Gates
 
@@ -441,14 +452,16 @@ git diff --stat {{previous-checkpoint-anchor}}..phase-8 -- src/
 |------|------------------|-------|------------|---------------------|-------|--------|
 | ... | ... | ... | ... | ... | ... | ... |
 
-## CI Verification Matrix
+## CI Verification Matrix (mirrors upstream `.github/workflows/qa.yml`)
 
 | Gate | Command | Expected | Actual | Status |
 |------|---------|----------|--------|--------|
-| C1 | `npx tsc --noEmit` | exit 0 | {{result}} | ✅/❌ |
-| C2 | `npm run lint` | exit 0 | {{result}} | ✅/❌ |
-| C3 | `npm test` | all pass | {{N}} pass | ✅/❌ |
-| C4 | `npx prettier --check src/` | exit 0 | {{result}} | ✅/❌ |
+| C1 | `npm run format:check` | exit 0 | {{result}} | ✅/❌ |
+| C2 | `npm run typecheck` | exit 0 | {{result}} | ✅/❌ |
+| C3 | `npm run lint` | exit 0 | {{result}} | ✅/❌ |
+| C4 | `npm run test:browser` | all pass | {{N}} pass | ✅/❌ |
+| C5 | `npm run test:node` | all pass | {{N}} pass | ✅/❌ |
+| QA workflow | <https://github.com/OS4CSAPI/ogc-client-CSAPI_2/actions/workflows/qa.yml> | conclusion: success | {{run URL}} | ✅/❌ |
 
 ## Phase 8 Finding Traceability
 
@@ -525,7 +538,8 @@ After the review report is generated:
 
 Every Phase 8 code review report MUST include:
 
-- [ ] All CI verification commands executed and results recorded (C1–C4)
+- [ ] All 5 CI verification commands executed and results recorded (C1–C5) — these are the EXACT upstream `qa.yml` commands
+- [ ] QA workflow run URL recorded with conclusion (must be `success` for the HEAD commit being reviewed)
 - [ ] All per-task acceptance-gate commands from `P8-ROADMAP.md` executed and results recorded (for tasks in scope of the active checkpoint)
 - [ ] Locked-Decision Fidelity table with one row per locked decision in P8 trio
 - [ ] Diff stats recorded and compared against expected band for the checkpoint
@@ -611,17 +625,17 @@ When performing a Phase 8 code review, the reviewer should have access to:
 
 For reviewers familiar with the Phase 7 template, these are the substantive changes:
 
-| Section                      | Phase 7                                                                                     | Phase 8                                                                                              |
-| ---------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Quality dimension categories | A1–F1 (quick wins, parser cleanup, type safety, url_builder batch, security, test fixtures) | A1–A4 / B1–B2 / C1 / D1 / E1–E2 (10 tasks across 5 phases per P8-ROADMAP)                            |
-| Cadence                      | Once at end of phase                                                                        | **Per-checkpoint** (A / B / C / D / final) — same cadence as the smoke test                          |
-| Verification gates           | 4 CI (C1–C4) + diff stats                                                                   | 4 CI (C1–C4) + **per-task acceptance-gate matrix from P8-ROADMAP** + diff stats                      |
-| Traceability                 | 20-row issue resolution heatmap + 16-finding doc traceability                               | 10-row task resolution heatmap + 7-finding + 2-issue traceability + Phase 7 carry-forward spot-check |
-| Re-litigation                | Implicit                                                                                    | **Explicit non-relitigation policy** — P8 trio locks decisions; review confirms exact match          |
-| New severity label           | n/a                                                                                         | **LOCKED-DECISION-DEVIATION** — implementation diverges from P8 trio                                 |
-| Pattern references           | `build()` helper, `parseBaseStream`, `requireObject`, `isSafeHref`, `makeTestCollection`    | `endpoint.csapi()`, value-shaped `createCSAPIBuilder`, `CSAPICollectionRef`, `EndpointError`-only    |
-| Scope basis                  | 20 Phase 7 steps resolving 17 issues                                                        | 10 Phase 8 tasks resolving 7 findings + 2 issues                                                     |
-| Review source                | Senior developer code review (16 finding documents)                                         | Phase 8 trio (3 docs) + 7 finding docs + Issues #166/#167                                            |
-| Issue-creation template      | `issue-creation-prompt-template-code-review.md`                                             | **`issue-creation-prompt-template-phase-8.md`** (Phase 8 variant)                                    |
-| Backward-compatibility lens  | "Zero public API breakage"                                                                  | **"Intentional public API breakage where locked, ergonomic on-ramps elsewhere"**                     |
-| Recommendation tiers         | "Fix Before Push" (before updating PR #136)                                                 | "Fix Now" (next checkpoint) / "Fix Before Push" (E2) / "Defer" (Phase 9)                             |
+| Section                      | Phase 7                                                                                     | Phase 8                                                                                                                                     |
+| ---------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Quality dimension categories | A1–F1 (quick wins, parser cleanup, type safety, url_builder batch, security, test fixtures) | A1–A4 / B1–B2 / C1 / D1 / E1–E2 (10 tasks across 5 phases per P8-ROADMAP)                                                                   |
+| Cadence                      | Once at end of phase                                                                        | **Per-checkpoint** (A / B / C / D / final) — same cadence as the smoke test                                                                 |
+| Verification gates           | 4 CI (C1–C4) + diff stats                                                                   | **5 CI (C1–C5) mirroring upstream `qa.yml` exactly** + QA workflow run check + per-task acceptance-gate matrix from P8-ROADMAP + diff stats |
+| Traceability                 | 20-row issue resolution heatmap + 16-finding doc traceability                               | 10-row task resolution heatmap + 7-finding + 2-issue traceability + Phase 7 carry-forward spot-check                                        |
+| Re-litigation                | Implicit                                                                                    | **Explicit non-relitigation policy** — P8 trio locks decisions; review confirms exact match                                                 |
+| New severity label           | n/a                                                                                         | **LOCKED-DECISION-DEVIATION** — implementation diverges from P8 trio                                                                        |
+| Pattern references           | `build()` helper, `parseBaseStream`, `requireObject`, `isSafeHref`, `makeTestCollection`    | `endpoint.csapi()`, value-shaped `createCSAPIBuilder`, `CSAPICollectionRef`, `EndpointError`-only                                           |
+| Scope basis                  | 20 Phase 7 steps resolving 17 issues                                                        | 10 Phase 8 tasks resolving 7 findings + 2 issues                                                                                            |
+| Review source                | Senior developer code review (16 finding documents)                                         | Phase 8 trio (3 docs) + 7 finding docs + Issues #166/#167                                                                                   |
+| Issue-creation template      | `issue-creation-prompt-template-code-review.md`                                             | **`issue-creation-prompt-template-phase-8.md`** (Phase 8 variant)                                                                           |
+| Backward-compatibility lens  | "Zero public API breakage"                                                                  | **"Intentional public API breakage where locked, ergonomic on-ramps elsewhere"**                                                            |
+| Recommendation tiers         | "Fix Before Push" (before updating PR #136)                                                 | "Fix Now" (next checkpoint) / "Fix Before Push" (E2) / "Defer" (Phase 9)                                                                    |
