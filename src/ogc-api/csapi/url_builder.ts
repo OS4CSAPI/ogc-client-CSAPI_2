@@ -11,6 +11,7 @@ import type {
   CommandQueryOptions,
   CommandStatusQueryOptions,
   CSAPICollectionRef,
+  CSAPIResourceType,
 } from './model.js';
 import { EndpointError } from '../../shared/errors.js';
 import {
@@ -166,7 +167,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see {@link scanCsapiLinks} for the recognized link conventions
    */
-  public readonly availableResources: Set<string>;
+  public readonly availableResources: ReadonlySet<CSAPIResourceType>;
 
   /** Base URL for resource endpoints, derived from collection links. */
   private baseUrl: string;
@@ -269,12 +270,16 @@ export default class CSAPIQueryBuilder {
    * @returns Set of available resource type names (e.g., 'systems', 'datastreams').
    * @see https://docs.ogc.org/is/23-001/23-001.html
    */
-  private extractAvailableResources(): Set<string> {
+  private extractAvailableResources(): Set<CSAPIResourceType> {
     const links = this.collection_.links;
     if (!Array.isArray(links)) {
-      return new Set<string>();
+      return new Set<CSAPIResourceType>();
     }
-    return new Set(scanCsapiLinks(links).keys());
+    // scanCsapiLinks emits only CSAPIResourceType keys (Conventions 2 & 3
+    // gate by `knownTypes`; Convention 1's `ogc-cs:` prefix is reserved for
+    // spec resource types). The cast aligns the static type with this
+    // runtime invariant without changing behavior.
+    return new Set(scanCsapiLinks(links).keys()) as Set<CSAPIResourceType>;
   }
 
   /**
@@ -428,7 +433,10 @@ export default class CSAPIQueryBuilder {
    * @see {@link scanCsapiLinks} for the link conventions used during discovery
    */
   private assertResourceAvailable(resourceType: string): void {
-    if (!this.availableResources.has(resourceType)) {
+    // Widen the `has` lookup to accept arbitrary string inputs from internal
+    // call sites; the public type of `availableResources` remains
+    // `ReadonlySet<CSAPIResourceType>`. See Phase 8 / Task A3 / Finding 023.
+    if (!(this.availableResources as ReadonlySet<string>).has(resourceType)) {
       throw new EndpointError(
         `Collection '${this.collection_.id}' does not support '${resourceType}' resource. ` +
           `Available resources: ${Array.from(this.availableResources).join(
