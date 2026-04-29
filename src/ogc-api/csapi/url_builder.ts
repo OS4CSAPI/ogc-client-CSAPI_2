@@ -74,6 +74,30 @@ type ResourceSubPath =
  * relations. Attempting to build a URL for an unavailable resource throws an
  * {@link EndpointError}. Check `availableResources` to inspect what is available.
  *
+ * ## Pagination
+ *
+ * All list methods (`get*` returning collection URLs) follow the
+ * [OGC API Common](https://docs.ogc.org/is/19-072/19-072.html#_pagination)
+ * pagination contract:
+ *
+ * - **The server chooses the default page size** if `limit` is unspecified.
+ *   Defaults vary by implementation — `connected-systems-go` defaults to
+ *   `limit=10`; OpenSensorHub defaults to `limit=100`. Code that processes
+ *   only the first response may silently lose data on low-default servers.
+ *
+ * - **The server returns `next` HATEOAS links** in the response body's
+ *   `links` array (`rel: "next"`) when more pages are available. The
+ *   consumer is responsible for following them; this library does not
+ *   auto-paginate.
+ *
+ * - **A future enhancement** (deferred — see issue
+ *   [#170](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/170))
+ *   may add an opt-in async-iterator / `followNext` helper. Until then,
+ *   consumer code MUST follow `next` links explicitly to avoid data loss.
+ *
+ * Every list method on this class carries a `@remarks` Pagination block
+ * that points back at this section.
+ *
  * ## Error Handling
  *
  * All URL-building methods throw {@link EndpointError} when the requested
@@ -478,6 +502,12 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for listing systems.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param options - Optional query parameters for filtering systems.
    * @returns URL string for the systems list endpoint.
    * @throws {EndpointError} If 'systems' is not available on this collection.
@@ -594,6 +624,12 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for retrieving a system's version history.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The system resource identifier.
    * @param options - Optional query parameters for filtering history entries.
    * @returns URL string for the system history endpoint.
@@ -613,6 +649,12 @@ export default class CSAPIQueryBuilder {
 
   /**
    * Returns the URL for listing subsystems of a system.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param id - The parent system resource identifier.
    * @param options - Optional query parameters. Supports `recursive` parameter
@@ -656,6 +698,12 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for listing datastreams associated with a system.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The system resource identifier.
    * @param options - Optional query parameters for filtering datastreams.
    * @returns URL string for the system's datastreams endpoint.
@@ -698,6 +746,12 @@ export default class CSAPIQueryBuilder {
 
   /**
    * Returns the URL for listing control streams associated with a system.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param id - The system resource identifier.
    * @param options - Optional query parameters for filtering control streams.
@@ -744,6 +798,12 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for listing sampling features associated with a system.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The system resource identifier.
    * @param options - Optional query parameters for filtering sampling features.
    * @returns URL string for the system's sampling features endpoint.
@@ -786,6 +846,12 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for listing deployments associated with a system.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The system resource identifier.
    * @param options - Optional query parameters for filtering deployments.
    * @returns URL string for the system's deployments endpoint.
@@ -805,6 +871,12 @@ export default class CSAPIQueryBuilder {
 
   /**
    * Returns the URL for listing procedures associated with a system.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param id - The system resource identifier.
    * @param options - Optional query parameters for filtering procedures.
@@ -829,6 +901,12 @@ export default class CSAPIQueryBuilder {
 
   /**
    * Returns the URL for querying the deployments collection.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param options - Optional query parameters for filtering, pagination, bbox,
    *   datetime, sorting, and deployment-specific filters.
@@ -934,6 +1012,12 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for listing subdeployments of a deployment.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The parent deployment resource identifier.
    * @param options - Optional query parameters. Supports `recursive` parameter
    *   to include nested subdeployments at all levels.
@@ -986,6 +1070,12 @@ export default class CSAPIQueryBuilder {
    * within a Deployment feature representation (Table 43). Use the parsed
    * `deployedSystemsLink` property on a fetched `CSAPIDeployment` instead.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The deployment resource identifier.
    * @param options - Optional query parameters for filtering systems.
    * @returns URL string for the (non-standard) deployment systems endpoint.
@@ -1004,6 +1094,12 @@ export default class CSAPIQueryBuilder {
 
   /**
    * Returns the URL for retrieving a deployment's version history.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param id - The deployment resource identifier.
    * @param options - Optional query parameters for filtering history entries.
@@ -1028,6 +1124,12 @@ export default class CSAPIQueryBuilder {
 
   /**
    * Returns the URL for listing procedures.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param options - Optional query parameters for filtering procedures.
    *   Procedures support: `id`, `uid`, `q`, `limit`, `offset`, `f`.
@@ -1134,6 +1236,12 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for listing systems that implement a procedure.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The procedure resource identifier.
    * @param options - Optional query parameters for filtering systems.
    * @returns URL string for the procedure's systems endpoint.
@@ -1153,6 +1261,12 @@ export default class CSAPIQueryBuilder {
 
   /**
    * Returns the URL for listing datastreams associated with a procedure.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param id - The procedure resource identifier.
    * @param options - Optional query parameters for filtering datastreams.
@@ -1177,6 +1291,12 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for retrieving a procedure's version history.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The procedure resource identifier.
    * @param options - Optional query parameters for filtering history entries.
    * @returns URL string for the procedure history endpoint.
@@ -1200,6 +1320,12 @@ export default class CSAPIQueryBuilder {
 
   /**
    * Returns the URL for listing sampling features.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param options - Optional query parameters for filtering sampling features.
    *   Sampling features support: `id`, `uid`, `q`, `bbox`, `datetime`, `limit`, `offset`, `f`.
@@ -1306,6 +1432,12 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for listing systems associated with a sampling feature.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The sampling feature resource identifier.
    * @param options - Optional query parameters for filtering systems.
    * @returns URL string for the sampling feature's systems endpoint.
@@ -1329,6 +1461,12 @@ export default class CSAPIQueryBuilder {
    * This is a Part 2 cross-reference endpoint linking Part 1 sampling features
    * to Part 2 observation data.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The sampling feature resource identifier.
    * @param options - Optional query parameters for filtering observations.
    * @returns URL string for the sampling feature's observations endpoint.
@@ -1351,6 +1489,12 @@ export default class CSAPIQueryBuilder {
 
   /**
    * Returns the URL for retrieving a sampling feature's version history.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param id - The sampling feature resource identifier.
    * @param options - Optional query parameters for filtering history entries.
@@ -1383,6 +1527,12 @@ export default class CSAPIQueryBuilder {
    *
    * Properties are **read-only** — there are no create, update, or delete
    * endpoints for Properties in the CSAPI specification.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param options - Optional query parameters for filtering properties.
    *   Properties support: `system`, `baseProperty`, `id`, `uid`, `q`,
@@ -1429,6 +1579,12 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for listing systems that observe or actuate a property.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The property resource identifier.
    * @param options - Optional query parameters for filtering systems.
    * @returns URL string for the property's systems endpoint.
@@ -1451,6 +1607,12 @@ export default class CSAPIQueryBuilder {
    *
    * This is a Part 2 cross-reference endpoint linking Part 1 properties
    * to Part 2 datastream data.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param id - The property resource identifier.
    * @param options - Optional query parameters for filtering datastreams.
@@ -1475,6 +1637,12 @@ export default class CSAPIQueryBuilder {
    * This is a Part 2 cross-reference endpoint linking Part 1 properties
    * to Part 2 control stream data.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The property resource identifier.
    * @param options - Optional query parameters for filtering control streams.
    * @returns URL string for the property's control streams endpoint.
@@ -1497,6 +1665,12 @@ export default class CSAPIQueryBuilder {
 
   /**
    * Returns the URL for retrieving a property's version history.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param id - The property resource identifier.
    * @param options - Optional query parameters for filtering history entries.
@@ -1523,6 +1697,12 @@ export default class CSAPIQueryBuilder {
    * Datastreams represent collections of observations from the same system
    * with shared schemas. Supports filtering by system, observed property,
    * and temporal parameters.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param options - Optional query parameters including `systemId`, `observedPropertyId`,
    *   `phenomenonTime`, `resultTime`, plus standard pagination and filtering.
@@ -1667,6 +1847,12 @@ export default class CSAPIQueryBuilder {
    * including the special `latest` value for `resultTime`.
    * Supports cursor-based pagination via the `cursor` parameter.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The datastream resource identifier.
    * @param options - Optional query parameters including `phenomenonTime`,
    *   `resultTime`, `cursor`, plus standard pagination and filtering.
@@ -1713,6 +1899,12 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for listing systems that produce a datastream.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The datastream resource identifier.
    * @param options - Optional query parameters for filtering systems.
    * @returns URL string for the datastream's systems endpoint.
@@ -1733,6 +1925,12 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for listing procedures associated with a datastream.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The datastream resource identifier.
    * @param options - Optional query parameters for filtering procedures.
    * @returns URL string for the datastream's procedures endpoint.
@@ -1752,6 +1950,12 @@ export default class CSAPIQueryBuilder {
 
   /**
    * Returns the URL for retrieving a datastream's version history.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param id - The datastream resource identifier.
    * @param options - Optional query parameters for filtering history entries.
@@ -1779,6 +1983,12 @@ export default class CSAPIQueryBuilder {
    * temporal filtering via `phenomenonTime` and `resultTime` (including
    * the special `'latest'` value), plus cursor-based pagination for
    * efficient streaming of large time series.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param options - Optional query parameters including `phenomenonTime`,
    *   `resultTime`, plus standard pagination and filtering.
@@ -2015,6 +2225,12 @@ export default class CSAPIQueryBuilder {
   /**
    * Returns the URL for retrieving an observation's version history.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The observation resource identifier.
    * @param options - Optional query parameters for filtering history entries.
    * @param datastreamId - Optional parent datastream ID for nested path.
@@ -2055,6 +2271,12 @@ export default class CSAPIQueryBuilder {
    * ControlStreams represent command interfaces for controlling actuators
    * and systems. They mirror Datastreams architecturally but for
    * control/actuation rather than observation/sensing.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param options - Optional query parameters including `systemId`,
    *   `controlledPropertyId`, plus standard pagination and filtering.
@@ -2198,6 +2420,12 @@ export default class CSAPIQueryBuilder {
    * Supports temporal filtering via `issueTime` and `executionTime`,
    * and cursor-based pagination via the `cursor` parameter.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The control stream resource identifier.
    * @param options - Optional query parameters including `issueTime`,
    *   `executionTime`, `currentStatus`, plus standard pagination and filtering.
@@ -2246,6 +2474,12 @@ export default class CSAPIQueryBuilder {
    * (mapped to `sosa:madeByActuator`) — the System that receives commands from
    * this control channel.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The control stream resource identifier.
    * @param options - Optional query parameters for filtering systems.
    * @returns URL string for the control stream's systems endpoint.
@@ -2270,6 +2504,12 @@ export default class CSAPIQueryBuilder {
    * (mapped to `sosa:usedProcedure`) — the procedure used to process commands
    * received in this control channel.
    *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
+   *
    * @param id - The control stream resource identifier.
    * @param options - Optional query parameters for filtering procedures.
    * @returns URL string for the control stream's procedures endpoint.
@@ -2292,6 +2532,12 @@ export default class CSAPIQueryBuilder {
 
   /**
    * Returns the URL for retrieving a control stream's version history.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param id - The control stream resource identifier.
    * @param options - Optional query parameters for filtering history entries.
@@ -2318,6 +2564,12 @@ export default class CSAPIQueryBuilder {
    * Commands represent tasking requests sent to systems for actuation via
    * control streams. They are the control equivalent of Observations —
    * instructions that flow to systems rather than data that flows from them.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param options - Optional query parameters including `issueTime`,
    *   `executionTime`, `currentStatus`, plus standard pagination and filtering.
@@ -2540,6 +2792,12 @@ export default class CSAPIQueryBuilder {
    *
    * Command status tracks lifecycle state transitions: PENDING → ACCEPTED →
    * EXECUTING → COMPLETED/FAILED/CANCELED.
+   *
+   * @remarks
+   * **Pagination:** server picks the default `limit` if unspecified; the
+   * consumer must follow `next` HATEOAS links from the response body to
+   * retrieve subsequent pages. See the Pagination section of the
+   * {@link CSAPIQueryBuilder} class docblock.
    *
    * @param id - The command resource identifier.
    * @param options - Optional query parameters for filtering command status results.

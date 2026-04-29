@@ -42,6 +42,20 @@
  * const datastreams = body.items.map(parseDatastream);
  * ```
  *
+ * ## Pagination
+ *
+ * All `get*()` list methods follow the OGC API Common pagination contract:
+ * the **server** picks the default page size when `limit` is unspecified
+ * (defaults vary — `connected-systems-go` returns 10, OpenSensorHub returns
+ * 100), and the consumer is responsible for following `rel: "next"` links
+ * from the response body's `links` array to retrieve subsequent pages.
+ * This module does **not** auto-paginate. See
+ * [`integration/observation.spec.ts`](./integration/observation.spec.ts)
+ * for the canonical link-walking pattern, and the
+ * {@link CSAPIQueryBuilder} class docblock for the full contract. An
+ * opt-in async-iterator helper is deferred to issue
+ * [#170](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/170).
+ *
  * @see {@link CSAPIQueryBuilder} — all available URL-building methods
  * @see {@link createCSAPIBuilder} — the factory entry point
  * @see https://docs.ogc.org/is/23-001/23-001.html — OGC API CS Part 1

@@ -170,7 +170,16 @@ export interface CSAPIResourceRef {
  * @see https://docs.ogc.org/is/23-001/23-001.html#_query_parameters
  */
 export interface QueryOptions {
-  /** Maximum number of resources to return. */
+  /**
+   * Maximum number of resources to return.
+   *
+   * Optional. When omitted, the server applies its own default page size,
+   * which varies by implementation (`connected-systems-go` defaults to
+   * `limit=10`; OpenSensorHub defaults to `limit=100`). To retrieve all
+   * results, follow the `next` link in the response body's `links` array.
+   * See the Pagination section of {@link CSAPIQueryBuilder}'s class
+   * docblock for the full pagination contract.
+   */
   limit?: number;
   /** Offset-based pagination: number of resources to skip. */
   offset?: number;
