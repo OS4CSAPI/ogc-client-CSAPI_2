@@ -2860,23 +2860,6 @@ describe('OgcApiEndpoint with CSAPI', () => {
     });
   });
 
-  describe('getCollectionDocument', () => {
-    beforeEach(() => {
-      endpoint = new OgcApiEndpoint('http://local/csapi/sample-data-hub');
-    });
-
-    it('returns the expected collection document for a CSAPI collection', async () => {
-      const doc = await endpoint.getCollectionDocument('iot-sensors');
-      expect(doc).toBeTruthy();
-      expect(doc.id).toBe('iot-sensors');
-      expect(doc.links).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ rel: 'ogc-cs:systems' }),
-        ])
-      );
-    });
-  });
-
   describe('csapi()', () => {
     describe('happy path', () => {
       beforeEach(() => {
@@ -2909,7 +2892,7 @@ describe('OgcApiEndpoint with CSAPI', () => {
       it('wraps unexpected errors from getCollectionDocument in EndpointError', async () => {
         endpoint = new OgcApiEndpoint('http://local/csapi/sample-data-hub');
         jest
-          .spyOn(endpoint, 'getCollectionDocument')
+          .spyOn(endpoint as any, 'getCollectionDocument')
           .mockRejectedValue(new TypeError('fetch failed'));
 
         await expect(endpoint.csapi('iot-sensors')).rejects.toThrow(
@@ -2924,7 +2907,7 @@ describe('OgcApiEndpoint with CSAPI', () => {
         endpoint = new OgcApiEndpoint('http://local/csapi/sample-data-hub');
         const original = new EndpointError('Collection not found: nope');
         jest
-          .spyOn(endpoint, 'getCollectionDocument')
+          .spyOn(endpoint as any, 'getCollectionDocument')
           .mockRejectedValue(original);
 
         await expect(endpoint.csapi('nope')).rejects.toBe(original);

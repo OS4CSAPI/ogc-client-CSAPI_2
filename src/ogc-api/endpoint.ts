@@ -70,7 +70,7 @@ export default class OgcApiEndpoint {
   private collection_id_to_edr_builder_: Map<string, EDRQueryBuilder> =
     new Map();
 
-  public get root(): Promise<OgcApiDocument> {
+  private get root(): Promise<OgcApiDocument> {
     if (!this.root_) {
       this.root_ = fetchRoot(this.baseUrl).catch((e) => {
         throw new EndpointError(`The endpoint appears non-conforming, the following error was encountered:
@@ -417,7 +417,7 @@ ${e.message}`);
     return this.tileMatrixSetsFull.then((sets) => sets.map((set) => set.id));
   }
 
-  public getCollectionDocument(collectionId: string): Promise<OgcApiDocument> {
+  private getCollectionDocument(collectionId: string): Promise<OgcApiDocument> {
     return Promise.all([this.allCollections, this.data])
       .then(([collections, data]) => {
         if (!collections.find((collection) => collection.name === collectionId))
