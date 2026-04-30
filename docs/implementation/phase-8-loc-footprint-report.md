@@ -37,13 +37,13 @@ characterizes where every line went.
 
 ## Headline numbers
 
-| Scope                                | Files | Insertions | Deletions | **Net** |
-| ------------------------------------ | ----- | ---------- | --------- | ------- |
-| `git diff phase-7..phase-8 -- src/ fixtures/` (issue's literal scope) | 30 | 1425 | 372 | +1053 |
-| Phase 8 only — excludes upstream WMS leakage | 22    | 1173       | 369       | **+804** |
-| **Production code** (no `*.spec.ts`) | **9** | **166**    | **40**    | **+126** |
-| Tests                                | 13    | 1007       | 329       | +678    |
-| Fixtures                             | 0     | 0          | 0         | 0       |
+| Scope                                                                 | Files | Insertions | Deletions | **Net**  |
+| --------------------------------------------------------------------- | ----- | ---------- | --------- | -------- |
+| `git diff phase-7..phase-8 -- src/ fixtures/` (issue's literal scope) | 30    | 1425       | 372       | +1053    |
+| Phase 8 only — excludes upstream WMS leakage                          | 22    | 1173       | 369       | **+804** |
+| **Production code** (no `*.spec.ts`)                                  | **9** | **166**    | **40**    | **+126** |
+| Tests                                                                 | 13    | 1007       | 329       | +678     |
+| Fixtures                                                              | 0     | 0          | 0         | 0        |
 
 **Phase 8 added 126 net lines of production logic** across 9 files for
 8 tasks (A1–A4, B1, B2, C1, D1). The remaining ~678 LOC is tests; the
@@ -120,22 +120,21 @@ src/ogc-api/index.ts src/index.ts`:
 9 files changed, 166 insertions(+), 40 deletions(-)
 ```
 
-| File                                              | +ins | −del | Net  | Driver task(s)            |
-| ------------------------------------------------- | ---- | ---- | ---- | ------------------------- |
-| `src/ogc-api/csapi/url_builder.ts`                | 317  | 40   | +277 | A1, A3, A4, B1            |
-| `src/ogc-api/csapi/index.ts`                      | 56   | 6    | +50  | A4, A2, A3                |
-| `src/ogc-api/endpoint.ts`                         | 60   | 7    | +53  | D1b (`csapi()` facade)    |
-| `src/ogc-api/csapi/factory.ts`                    | 42   | 53   | **−11** | D1b (reshape)          |
-| `src/ogc-api/csapi/model.ts`                      | 43   | 3    | +40  | A2 (`CSAPICollectionRef`) |
-| `src/ogc-api/csapi/formats/part2.ts`              | 79   | 14   | +65  | C1 (`@link` fallback)     |
-| `src/ogc-api/csapi/helpers.ts`                    | 26   | 3    | +23  | A2, A4                    |
-| `src/ogc-api/csapi/formats/{geojson,property,response,schema-response}.ts` | 32 | 6 | +26 | A3 type tightening |
-| `src/ogc-api/csapi/formats/swecommon/{_helpers,parser}.ts` | 7 | 2 | +5 | A3 type tightening    |
-| `src/index.ts`                                    | 1    | 0    | +1   | A2 export                 |
+| File                                                                       | +ins | −del | Net     | Driver task(s)            |
+| -------------------------------------------------------------------------- | ---- | ---- | ------- | ------------------------- |
+| `src/ogc-api/csapi/url_builder.ts`                                         | 317  | 40   | +277    | A1, A3, A4, B1            |
+| `src/ogc-api/csapi/index.ts`                                               | 56   | 6    | +50     | A4, A2, A3                |
+| `src/ogc-api/endpoint.ts`                                                  | 60   | 7    | +53     | D1b (`csapi()` facade)    |
+| `src/ogc-api/csapi/factory.ts`                                             | 42   | 53   | **−11** | D1b (reshape)             |
+| `src/ogc-api/csapi/model.ts`                                               | 43   | 3    | +40     | A2 (`CSAPICollectionRef`) |
+| `src/ogc-api/csapi/formats/part2.ts`                                       | 79   | 14   | +65     | C1 (`@link` fallback)     |
+| `src/ogc-api/csapi/helpers.ts`                                             | 26   | 3    | +23     | A2, A4                    |
+| `src/ogc-api/csapi/formats/{geojson,property,response,schema-response}.ts` | 32   | 6    | +26     | A3 type tightening        |
+| `src/ogc-api/csapi/formats/swecommon/{_helpers,parser}.ts`                 | 7    | 2    | +5      | A3 type tightening        |
+| `src/index.ts`                                                             | 1    | 0    | +1      | A2 export                 |
 
 The single file with the largest delta is `url_builder.ts` (+277 net).
-**+258 of those are JSDoc paragraphs**, not executable code — see Section
-3.
+**+258 of those are JSDoc paragraphs**, not executable code — see Section 3.
 
 ---
 
@@ -144,13 +143,13 @@ The single file with the largest delta is `url_builder.ts` (+277 net).
 Per-commit breakdown of `url_builder.ts` from
 `git log --shortstat phase-7..phase-8 -- src/ogc-api/csapi/url_builder.ts`:
 
-| Commit    | Task   | +ins | −del | Net  | Nature                                        |
-| --------- | ------ | ---- | ---- | ---- | --------------------------------------------- |
+| Commit    | Task    | +ins | −del | Net  | Nature                                                  |
+| --------- | ------- | ---- | ---- | ---- | ------------------------------------------------------- |
 | `4f3a7b7` | A4/#167 | 258  | 0    | +258 | **JSDoc only** — pagination contract on 39 list methods |
-| `f3ebcbc` | B1/#176 | 31   | 31   | 0    | `DataStream` → `Datastream` rename            |
-| `0dc8805` | A3      | 13   | 5    | +8   | `ReadonlySet<CSAPIResourceType>` types        |
-| `935830b` | A1/#172 | 13   | 2    | +11  | URL-builder framing comments                  |
-| `29d0c49` | A2      | 2    | 2    | 0    | `CSAPICollectionRef` constructor type swap    |
+| `f3ebcbc` | B1/#176 | 31   | 31   | 0    | `DataStream` → `Datastream` rename                      |
+| `0dc8805` | A3      | 13   | 5    | +8   | `ReadonlySet<CSAPIResourceType>` types                  |
+| `935830b` | A1/#172 | 13   | 2    | +11  | URL-builder framing comments                            |
+| `29d0c49` | A2      | 2    | 2    | 0    | `CSAPICollectionRef` constructor type swap              |
 
 **81 % of `url_builder.ts`'s growth (+258 / +317) is documentation per a
 locked decision in #167.** That decision (Option B, docs-only) was chosen
@@ -189,14 +188,14 @@ src/ogc-api/endpoint.spec.ts`:
 13 files changed, 1007 insertions(+), 329 deletions(-) = +678 net
 ```
 
-| File                                              | +ins | −del | Net  | Driver task(s)              |
-| ------------------------------------------------- | ---- | ---- | ---- | --------------------------- |
-| `src/ogc-api/csapi/formats/part2.spec.ts`         | 290  | 5    | +285 | C1 (`@link` fallback tests) |
-| `src/ogc-api/csapi/factory.spec.ts`               | 134  | 84   | +50  | D1b (rewrite)               |
-| `src/ogc-api/csapi/url_builder.spec.ts`           | 80   | 50   | +30  | A2/A3/B1 type updates       |
-| `src/ogc-api/endpoint.spec.ts`                    | 60   | 3    | +57  | D1b (`csapi()` block)       |
-| `src/ogc-api/csapi/integration/observation.spec.ts` | 13 | 7    | +6   | C1                          |
-| Other (5 spec files: `geojson`, `discovery`, `navigation`, etc.) | sundry | sundry | ~+250 | A2/A3/B1 mechanical |
+| File                                                             | +ins   | −del   | Net   | Driver task(s)              |
+| ---------------------------------------------------------------- | ------ | ------ | ----- | --------------------------- |
+| `src/ogc-api/csapi/formats/part2.spec.ts`                        | 290    | 5      | +285  | C1 (`@link` fallback tests) |
+| `src/ogc-api/csapi/factory.spec.ts`                              | 134    | 84     | +50   | D1b (rewrite)               |
+| `src/ogc-api/csapi/url_builder.spec.ts`                          | 80     | 50     | +30   | A2/A3/B1 type updates       |
+| `src/ogc-api/endpoint.spec.ts`                                   | 60     | 3      | +57   | D1b (`csapi()` block)       |
+| `src/ogc-api/csapi/integration/observation.spec.ts`              | 13     | 7      | +6    | C1                          |
+| Other (5 spec files: `geojson`, `discovery`, `navigation`, etc.) | sundry | sundry | ~+250 | A2/A3/B1 mechanical         |
 
 The two largest deltas are:
 
@@ -211,17 +210,17 @@ The two largest deltas are:
 
 ## Section 5 — Per-task LOC attribution
 
-| Task | Issue | What                                                | Prod LOC | Test LOC | Notes                                       |
-| ---- | ----- | --------------------------------------------------- | -------- | -------- | ------------------------------------------- |
-| A1   | #172  | URL-builder framing in module docs                  | +11      | 0        | Code-comment polish                         |
-| A2   | #173  | `CSAPICollectionRef` (decouple from `OgcApiCollectionInfo`) | +40 | +25      | New type, propagates                        |
-| A3   | #174  | `ReadonlySet<CSAPIResourceType>`                    | +8       | small    | Type tightening                             |
-| A4   | #167  | Pagination JSDoc (locked: docs-only)                | +258 JSDoc | +14   | Documentation per locked decision           |
-| B1   | #176  | `DataStream` → `Datastream` rename                  | 0 net    | small    | Pure rename                                 |
-| B2   | #177  | Validators throw `EndpointError`                    | small    | small    | Error-class consolidation                   |
-| C1   | #166  | `@link` cross-reference fallback (cs-go interop)    | +65      | +285     | **Only behavior bugfix in Phase 8**         |
-| D1b  | #183  | `csapi()` facade + value-shaped factory             | +53/−11  | +57      | API design refinement (Finding 024 / A3)    |
-| D1c  | #184  | Re-privatize `root` + `getCollectionDocument`       | net 0    | −18      | Visibility flip; deletes redundant test     |
+| Task | Issue | What                                                        | Prod LOC   | Test LOC | Notes                                    |
+| ---- | ----- | ----------------------------------------------------------- | ---------- | -------- | ---------------------------------------- |
+| A1   | #172  | URL-builder framing in module docs                          | +11        | 0        | Code-comment polish                      |
+| A2   | #173  | `CSAPICollectionRef` (decouple from `OgcApiCollectionInfo`) | +40        | +25      | New type, propagates                     |
+| A3   | #174  | `ReadonlySet<CSAPIResourceType>`                            | +8         | small    | Type tightening                          |
+| A4   | #167  | Pagination JSDoc (locked: docs-only)                        | +258 JSDoc | +14      | Documentation per locked decision        |
+| B1   | #176  | `DataStream` → `Datastream` rename                          | 0 net      | small    | Pure rename                              |
+| B2   | #177  | Validators throw `EndpointError`                            | small      | small    | Error-class consolidation                |
+| C1   | #166  | `@link` cross-reference fallback (cs-go interop)            | +65        | +285     | **Only behavior bugfix in Phase 8**      |
+| D1b  | #183  | `csapi()` facade + value-shaped factory                     | +53/−11    | +57      | API design refinement (Finding 024 / A3) |
+| D1c  | #184  | Re-privatize `root` + `getCollectionDocument`               | net 0      | −18      | Visibility flip; deletes redundant test  |
 
 The "feature" total: +126 production LOC across 8 tasks. There is no
 hidden feature work.
@@ -230,12 +229,12 @@ hidden feature work.
 
 ## Section 6 — Comparison to expectations
 
-| Source                                                    | Predicted total | Actual |
-| --------------------------------------------------------- | --------------- | ------ |
-| #180 issue body                                           | ~400 src + ~550 test = ~950 | n/a |
-| Initial broad-pathspec measurement (with WMS leakage)     | n/a             | +1053  |
-| **Tight-pathspec measurement (Phase 8 only)**             | n/a             | **+804** |
-| Phase 8 "production logic" (excludes JSDoc + tests)       | n/a             | **+126** |
+| Source                                                | Predicted total             | Actual   |
+| ----------------------------------------------------- | --------------------------- | -------- |
+| #180 issue body                                       | ~400 src + ~550 test = ~950 | n/a      |
+| Initial broad-pathspec measurement (with WMS leakage) | n/a                         | +1053    |
+| **Tight-pathspec measurement (Phase 8 only)**         | n/a                         | **+804** |
+| Phase 8 "production logic" (excludes JSDoc + tests)   | n/a                         | **+126** |
 
 The `+804` figure is **−15 % under the issue's `~950` estimate**, well
 within the ±20 % tolerance the issue's acceptance gate specifies. The
