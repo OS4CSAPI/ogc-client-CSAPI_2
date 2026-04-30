@@ -107,6 +107,26 @@ Machine-readable OpenAPI definition of the CSAPI Part 2 REST API. Describes all 
 
 ---
 
+### Conformance Class Identifiers — Canonical Form
+
+**Status:** Verified against live servers and OGC 23-001/23-002 (April 29, 2026 — issue [#186](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/186))
+
+The canonical URI base for Connected Systems conformance classes uses **no hyphen** between `connected` and `systems`:
+
+- Part 1 base: `http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/`
+- Part 2 base: `http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/`
+
+Confirmed live against:
+
+- csapi-go reference implementation: <https://129-80-248-53.sslip.io/csapi-go/conformance>
+- OpenSensorHub: <http://45.55.99.236:8080/sensorhub/api/conformance>
+
+**Detection guidance:** Per OGC 23-001 §6, *"There is no Core requirements class"* for Part 1. CSAPI support MUST be detected by **prefix match** against either base above; checking for any single specific class (e.g. a draft-era `/conf/core` or `/conf/dynamic-data`) is unsafe and excludes spec-conformant servers like csapi-go. See `src/ogc-api/info.ts` (`CSAPI_PART1_CONFORMANCE_PREFIX`, `CSAPI_PART2_CONFORMANCE_PREFIX`) for the implementation.
+
+**Documentation note:** Older drafts of in-repo research used `ogcapi-connected-systems-` (with hyphen). Several research artefacts still contain that form and are scheduled for find-replace; the no-hyphen form above is canonical.
+
+---
+
 ## Related OGC Standards
 
 ### OGC SensorML 3.0

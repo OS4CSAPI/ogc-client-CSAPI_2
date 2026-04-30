@@ -1051,20 +1051,20 @@ Capabilities:
     "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
     "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/landing-page",
     "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/api-common",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/system",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/subsystem",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/deployment",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/advanced-filtering",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/create-replace-delete",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/update",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/geojson",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/api-common",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/datastream",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/advanced-filtering",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/create-replace-delete",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/json",
-    "http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/swecommon-json"
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/system",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/subsystem",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/deployment",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/advanced-filtering",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/create-replace-delete",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/update",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/geojson",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/api-common",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/datastream",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/advanced-filtering",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/create-replace-delete",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/json",
+    "http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/swecommon-json"
   ]
 }
 ```
@@ -1074,42 +1074,42 @@ Capabilities:
 **Part 1 Conformance URI Base:**
 
 ```
-http://www.opengis.net/spec/ogcapi-connected-systems-1/1.0/conf/
+http://www.opengis.net/spec/ogcapi-connectedsystems-1/1.0/conf/
 ```
 
 **Part 2 Conformance URI Base:**
 
 ```
-http://www.opengis.net/spec/ogcapi-connected-systems-2/1.0/conf/
+http://www.opengis.net/spec/ogcapi-connectedsystems-2/1.0/conf/
 ```
 
 **Full Conformance URIs:**
 
-- Part 1 Common: `.../ogcapi-connected-systems-1/1.0/conf/api-common`
-- Part 1 System: `.../ogcapi-connected-systems-1/1.0/conf/system`
-- Part 1 Subsystem: `.../ogcapi-connected-systems-1/1.0/conf/subsystem`
-- Part 1 Deployment: `.../ogcapi-connected-systems-1/1.0/conf/deployment`
-- Part 1 Subdeployment: `.../ogcapi-connected-systems-1/1.0/conf/subdeployment`
-- Part 1 Procedure: `.../ogcapi-connected-systems-1/1.0/conf/procedure`
-- Part 1 Sampling Features: `.../ogcapi-connected-systems-1/1.0/conf/sf`
-- Part 1 Property: `.../ogcapi-connected-systems-1/1.0/conf/property`
-- Part 1 Advanced Filtering: `.../ogcapi-connected-systems-1/1.0/conf/advanced-filtering`
-- Part 1 Create/Replace/Delete: `.../ogcapi-connected-systems-1/1.0/conf/create-replace-delete`
-- Part 1 Update: `.../ogcapi-connected-systems-1/1.0/conf/update`
-- Part 1 GeoJSON: `.../ogcapi-connected-systems-1/1.0/conf/geojson`
-- Part 1 SensorML: `.../ogcapi-connected-systems-1/1.0/conf/sensorml`
-- Part 2 Common: `.../ogcapi-connected-systems-2/1.0/conf/api-common`
-- Part 2 DataStreams: `.../ogcapi-connected-systems-2/1.0/conf/datastream`
-- Part 2 ControlStreams: `.../ogcapi-connected-systems-2/1.0/conf/controlstream`
-- Part 2 Feasibility: `.../ogcapi-connected-systems-2/1.0/conf/feasibility`
-- Part 2 System Events: `.../ogcapi-connected-systems-2/1.0/conf/system-event`
-- Part 2 Advanced Filtering: `.../ogcapi-connected-systems-2/1.0/conf/advanced-filtering`
-- Part 2 Create/Replace/Delete: `.../ogcapi-connected-systems-2/1.0/conf/create-replace-delete`
-- Part 2 Update: `.../ogcapi-connected-systems-2/1.0/conf/update`
-- Part 2 JSON: `.../ogcapi-connected-systems-2/1.0/conf/json`
-- Part 2 SWE Common JSON: `.../ogcapi-connected-systems-2/1.0/conf/swecommon-json`
-- Part 2 SWE Common Text: `.../ogcapi-connected-systems-2/1.0/conf/swecommon-text`
-- Part 2 SWE Common Binary: `.../ogcapi-connected-systems-2/1.0/conf/swecommon-binary`
+- Part 1 Common: `.../ogcapi-connectedsystems-1/1.0/conf/api-common`
+- Part 1 System: `.../ogcapi-connectedsystems-1/1.0/conf/system`
+- Part 1 Subsystem: `.../ogcapi-connectedsystems-1/1.0/conf/subsystem`
+- Part 1 Deployment: `.../ogcapi-connectedsystems-1/1.0/conf/deployment`
+- Part 1 Subdeployment: `.../ogcapi-connectedsystems-1/1.0/conf/subdeployment`
+- Part 1 Procedure: `.../ogcapi-connectedsystems-1/1.0/conf/procedure`
+- Part 1 Sampling Features: `.../ogcapi-connectedsystems-1/1.0/conf/sf`
+- Part 1 Property: `.../ogcapi-connectedsystems-1/1.0/conf/property`
+- Part 1 Advanced Filtering: `.../ogcapi-connectedsystems-1/1.0/conf/advanced-filtering`
+- Part 1 Create/Replace/Delete: `.../ogcapi-connectedsystems-1/1.0/conf/create-replace-delete`
+- Part 1 Update: `.../ogcapi-connectedsystems-1/1.0/conf/update`
+- Part 1 GeoJSON: `.../ogcapi-connectedsystems-1/1.0/conf/geojson`
+- Part 1 SensorML: `.../ogcapi-connectedsystems-1/1.0/conf/sensorml`
+- Part 2 Common: `.../ogcapi-connectedsystems-2/1.0/conf/api-common`
+- Part 2 DataStreams: `.../ogcapi-connectedsystems-2/1.0/conf/datastream`
+- Part 2 ControlStreams: `.../ogcapi-connectedsystems-2/1.0/conf/controlstream`
+- Part 2 Feasibility: `.../ogcapi-connectedsystems-2/1.0/conf/feasibility`
+- Part 2 System Events: `.../ogcapi-connectedsystems-2/1.0/conf/system-event`
+- Part 2 Advanced Filtering: `.../ogcapi-connectedsystems-2/1.0/conf/advanced-filtering`
+- Part 2 Create/Replace/Delete: `.../ogcapi-connectedsystems-2/1.0/conf/create-replace-delete`
+- Part 2 Update: `.../ogcapi-connectedsystems-2/1.0/conf/update`
+- Part 2 JSON: `.../ogcapi-connectedsystems-2/1.0/conf/json`
+- Part 2 SWE Common JSON: `.../ogcapi-connectedsystems-2/1.0/conf/swecommon-json`
+- Part 2 SWE Common Text: `.../ogcapi-connectedsystems-2/1.0/conf/swecommon-text`
+- Part 2 SWE Common Binary: `.../ogcapi-connectedsystems-2/1.0/conf/swecommon-binary`
 
 ---
 
@@ -1204,72 +1204,72 @@ class CSAPIClient {
     return {
       // Part 1
       hasSystems: this.hasConformance(
-        'ogcapi-connected-systems-1/1.0/conf/system'
+        'ogcapi-connectedsystems-1/1.0/conf/system'
       ),
       hasSubsystems: this.hasConformance(
-        'ogcapi-connected-systems-1/1.0/conf/subsystem'
+        'ogcapi-connectedsystems-1/1.0/conf/subsystem'
       ),
       hasDeployments: this.hasConformance(
-        'ogcapi-connected-systems-1/1.0/conf/deployment'
+        'ogcapi-connectedsystems-1/1.0/conf/deployment'
       ),
       hasSubdeployments: this.hasConformance(
-        'ogcapi-connected-systems-1/1.0/conf/subdeployment'
+        'ogcapi-connectedsystems-1/1.0/conf/subdeployment'
       ),
       hasProcedures: this.hasConformance(
-        'ogcapi-connected-systems-1/1.0/conf/procedure'
+        'ogcapi-connectedsystems-1/1.0/conf/procedure'
       ),
       hasSamplingFeatures: this.hasConformance(
-        'ogcapi-connected-systems-1/1.0/conf/sf'
+        'ogcapi-connectedsystems-1/1.0/conf/sf'
       ),
       hasProperties: this.hasConformance(
-        'ogcapi-connected-systems-1/1.0/conf/property'
+        'ogcapi-connectedsystems-1/1.0/conf/property'
       ),
       hasAdvancedFiltering: this.hasConformance(
-        'ogcapi-connected-systems-1/1.0/conf/advanced-filtering'
+        'ogcapi-connectedsystems-1/1.0/conf/advanced-filtering'
       ),
       hasCRUD: this.hasConformance(
-        'ogcapi-connected-systems-1/1.0/conf/create-replace-delete'
+        'ogcapi-connectedsystems-1/1.0/conf/create-replace-delete'
       ),
       hasUpdate: this.hasConformance(
-        'ogcapi-connected-systems-1/1.0/conf/update'
+        'ogcapi-connectedsystems-1/1.0/conf/update'
       ),
       hasGeoJSON: this.hasConformance(
-        'ogcapi-connected-systems-1/1.0/conf/geojson'
+        'ogcapi-connectedsystems-1/1.0/conf/geojson'
       ),
       hasSensorML: this.hasConformance(
-        'ogcapi-connected-systems-1/1.0/conf/sensorml'
+        'ogcapi-connectedsystems-1/1.0/conf/sensorml'
       ),
 
       // Part 2
       hasDataStreams: this.hasConformance(
-        'ogcapi-connected-systems-2/1.0/conf/datastream'
+        'ogcapi-connectedsystems-2/1.0/conf/datastream'
       ),
       hasControlStreams: this.hasConformance(
-        'ogcapi-connected-systems-2/1.0/conf/controlstream'
+        'ogcapi-connectedsystems-2/1.0/conf/controlstream'
       ),
       hasFeasibility: this.hasConformance(
-        'ogcapi-connected-systems-2/1.0/conf/feasibility'
+        'ogcapi-connectedsystems-2/1.0/conf/feasibility'
       ),
       hasSystemEvents: this.hasConformance(
-        'ogcapi-connected-systems-2/1.0/conf/system-event'
+        'ogcapi-connectedsystems-2/1.0/conf/system-event'
       ),
       hasAdvancedFilteringPart2: this.hasConformance(
-        'ogcapi-connected-systems-2/1.0/conf/advanced-filtering'
+        'ogcapi-connectedsystems-2/1.0/conf/advanced-filtering'
       ),
       hasCRUDPart2: this.hasConformance(
-        'ogcapi-connected-systems-2/1.0/conf/create-replace-delete'
+        'ogcapi-connectedsystems-2/1.0/conf/create-replace-delete'
       ),
       hasUpdatePart2: this.hasConformance(
-        'ogcapi-connected-systems-2/1.0/conf/update'
+        'ogcapi-connectedsystems-2/1.0/conf/update'
       ),
       hasSWEJSON: this.hasConformance(
-        'ogcapi-connected-systems-2/1.0/conf/swecommon-json'
+        'ogcapi-connectedsystems-2/1.0/conf/swecommon-json'
       ),
       hasSWEText: this.hasConformance(
-        'ogcapi-connected-systems-2/1.0/conf/swecommon-text'
+        'ogcapi-connectedsystems-2/1.0/conf/swecommon-text'
       ),
       hasSWEBinary: this.hasConformance(
-        'ogcapi-connected-systems-2/1.0/conf/swecommon-binary'
+        'ogcapi-connectedsystems-2/1.0/conf/swecommon-binary'
       ),
     };
   }
@@ -1391,7 +1391,7 @@ This section documents conformance and capability detection for CSAPI client lib
 **Conformance Detection:**
 
 - `/conformance` endpoint lists all implemented conformance classes
-- URI pattern: `http://www.opengis.net/spec/ogcapi-connected-systems-{1|2}/1.0/conf/{class}`
+- URI pattern: `http://www.opengis.net/spec/ogcapi-connectedsystems-{1|2}/1.0/conf/{class}`
 - Client fetches at initialization and caches conformance set
 
 **Capability Discovery:**
