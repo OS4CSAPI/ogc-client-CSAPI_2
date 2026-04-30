@@ -12,3 +12,4 @@ full-browser-output.txt
 run-browser-tests.ps1
 jest-output.txt
 csapi-test-results.txt
+phase-8.patch
