@@ -49,6 +49,12 @@ import {
 } from '../shared/mime-type.js';
 import { getBaseUrl, getChildPath } from '../shared/url-utils.js';
 import EDRQueryBuilder from './edr/url_builder.js';
+// Type-only import keeps the CSAPI module out of the main bundle's static
+// dependency graph (the runtime values from `./csapi/factory.js` and
+// `./csapi/helpers.js` are loaded via dynamic import inside `csapi()` to
+// preserve the dependency-edge contract from issue #122 / commit 20a35d2).
+import type CSAPIQueryBuilder from './csapi/url_builder.js';
+import type { CSAPICollectionRef } from './csapi/model.js';
 
 /**
  * Represents an OGC API endpoint advertising various collections and services.
@@ -345,6 +351,63 @@ ${e.message}`);
     const result = new EDRQueryBuilder(collection);
     cache.set(collection_id, result);
     return result;
+  }
+
+  /**
+   * Returns a CSAPI (Connected Systems) query builder scoped to a single
+   * collection. Mirrors {@link edr} for the CSAPI capability.
+   *
+   * @param collectionId - The collection identifier to build queries against.
+   * @returns A {@link CSAPIQueryBuilder} for the given collection.
+   * @throws {EndpointError} If the endpoint does not advertise Connected
+   *   Systems support, or if the collection metadata cannot be fetched.
+   *
+   * @remarks
+   * Loads `./csapi/factory.js` and `./csapi/helpers.js` via **dynamic**
+   * import to keep CSAPI out of the main entry-point bundle for consumers
+   * who never call this method. Static imports re-introduce the
+   * dependency edge that issue #122 (commit `20a35d2`) deliberately
+   * removed — do not change to static.
+   *
+   * @see {@link edr} for the analogous EDR builder factory
+   * @see https://docs.ogc.org/is/23-001/23-001.html
+   * @see https://docs.ogc.org/is/23-002/23-002.html
+   */
+  public async csapi(collectionId: string): Promise<CSAPIQueryBuilder> {
+    if (!(await this.hasConnectedSystems)) {
+      throw new EndpointError('Endpoint does not support Connected Systems');
+    }
+    let collectionDoc: OgcApiDocument;
+    let rootDoc: OgcApiDocument;
+    try {
+      collectionDoc = await this.getCollectionDocument(collectionId);
+      rootDoc = await this.root;
+    } catch (e) {
+      if (e instanceof EndpointError) throw e;
+      throw new EndpointError(
+        `Failed to initialize CSAPI builder for collection '${collectionId}': ${
+          e instanceof Error ? e.message : String(e)
+        }`
+      );
+    }
+    // Shape the raw collection document into a value-typed
+    // CSAPICollectionRef. We do not route through getCollectionInfo()
+    // because parseBaseCollectionInfo strips `links` via destructuring
+    // (info.ts:130), and CSAPIQueryBuilder.extractAvailableResources
+    // depends on collection.links to discover supported CSAPI resources.
+    const collection: CSAPICollectionRef = {
+      id:
+        typeof collectionDoc.id === 'string' ? collectionDoc.id : collectionId,
+      title:
+        typeof collectionDoc.title === 'string'
+          ? collectionDoc.title
+          : undefined,
+      links: Array.isArray(collectionDoc.links) ? collectionDoc.links : [],
+    };
+    const rootLinks = Array.isArray(rootDoc?.links) ? rootDoc.links : [];
+    const { createCSAPIBuilder } = await import('./csapi/factory.js');
+    const { scanCsapiLinks } = await import('./csapi/helpers.js');
+    return createCSAPIBuilder(collection, scanCsapiLinks(rootLinks));
   }
 
   /**
