@@ -391,6 +391,133 @@ work). Phase 9 smoke-test discipline should hit all three.
 
 ---
 
+## Cross-repo corroboration — the explorer repo's `docs/implementation` archive
+
+A third repo in our orbit,
+[`OS4CSAPI/ogc-csapi-explorer`](https://github.com/OS4CSAPI/ogc-csapi-explorer)
+(branch `demo/acoustic-cuas-targeting`) — a Vue/TypeScript front-end that
+consumes this library against live CSAPI servers — keeps a ~330 KB
+`docs/implementation/` archive of phased code reviews, smoke tests, and
+design notes. An exhaustive sweep of that archive turned up multiple
+load-bearing artifacts that corroborate, extend, or in one case explicitly
+fail to corroborate Issue #188's four sub-findings.
+
+### A. The explorer repo already concluded the Postel's Law argument
+
+The single most consequential file is
+[`design-notes-validation-extraction-decoupling.md`](https://github.com/OS4CSAPI/ogc-csapi-explorer/blob/demo/acoustic-cuas-targeting/docs/implementation/design-notes-validation-extraction-decoupling.md)
+(14 KB). It is **entirely** about validation-extraction decoupling and
+reaches the same conclusion we just renamed Implication #1:
+
+> **Postel's Law** — Be liberal in what you accept from servers.
+> Server-side responsibility for validation, client-side responsibility for
+> access. The mature WMS/WFS/WMTS handlers follow this; STAC's inline
+> validation is the exception.
+
+> A client library that blocks access to usable server data is failing its
+> core purpose. **Validators can only block, never enable.**
+
+> The validators were the scaffolding; the types and extractors are the
+> building.
+
+The trigger was finding **F49**: OSH SamplingFeatures lacked the spec-required
+`sampledFeature@link` property, and `extractCSAPIFeature()` called
+`validateCSAPIFeature()` as a hard gate, so **100 % of OSH SamplingFeatures
+became inaccessible through the client library** despite carrying perfectly
+usable geometry / uid / name / featureType / validTime. The explorer repo's
+chosen remedy — **delete the validator layer entirely** (Issue #52 in that
+repo) — is the most aggressive form of the same Postel's Law conclusion
+Issue #188 is asking us to apply to the *discovery* layer specifically.
+
+This is now the second independent prior articulation of the same lesson in
+our orbit (the first was [Phase 3 Lesson 2](../docs-archive-PHASE-3-CODE-REVIEW.md)
+folded in earlier in this doc). Two of three sister repos converged on it
+without coordination. Implication #1 is therefore not a Phase-9 invention;
+it is a re-discovery.
+
+### B. Findings #1, #2, #3 are independently corroborated; Finding #4 is not
+
+Mapped against Issue #188's sub-findings:
+
+| #188 sub-finding | Explorer-repo evidence | Strength |
+|---|---|---|
+| **#1 — null-deref in collection getters** | `design-notes-validation-extraction-decoupling.md` (F49: extraction blocked by validator gate); `server-quirks-reference.md` F82 (OSH items envelope missing `links` key — already mitigated by `parseCollectionResponse()` defaulting to `[]`); F85 (deployments have absent `validTime` and code uses `validTime!` non-null assertion) | **Load-bearing** |
+| **#2 — `collectionsUrl` rel allowlist too narrow** | [`cross-server-interoperability-analysis.md`](https://github.com/OS4CSAPI/ogc-csapi-explorer/blob/demo/acoustic-cuas-targeting/docs/implementation/cross-server-interoperability-analysis.md) F1 (query params on href broke Convention 3 parser — fixed by Issue #34) and F2 (52°North uses `featuresOfInterest`, our scanner only knew `samplingFeatures` — fixed by Issue #35 by adding the alias). The remediation pattern is the same one #188 calls for: widen the recogniser, don't tighten the allowlist. | **Corroborative** |
+| **#3 — `parseCollections` ignoring `featureType`** | [`server-quirks-reference.md`](https://github.com/OS4CSAPI/ogc-csapi-explorer/blob/demo/acoustic-cuas-targeting/docs/implementation/server-quirks-reference.md) F40 (OSH uses SensorML namespace not SOSA), F41 (52°North emits `featureType: null` for all 3 systems), F83 (one OSH deployment uses SSN not SOSA), F84 (52°North procedure misclassified as System because its `featureType` is `sosa:Sensor`); plus [`d1-d3-d4-fix-recommendations.md`](https://github.com/OS4CSAPI/ogc-csapi-explorer/blob/demo/acoustic-cuas-targeting/docs/implementation/d1-d3-d4-fix-recommendations.md) D-1 (twin `SystemTypeUris` inventories — one CURIE-only, one CURIE+full-URI — bearing witness to how messy the real `featureType` value space is). | **Load-bearing** |
+| **#4 — `getCollectionDocument` blindly follows `self`** | **Zero hits.** No mention of self-link verification, ID mismatch detection, or blind link-following in any of the 14 prioritised files (~330 KB). | **Null result — recorded** |
+
+Finding #4's null result is itself useful evidence. The explorer repo's
+smoke tests have hit OSH and 52°North hard for months and never observed
+the failure mode @nsnarayanam called out. That means either (a) it has not
+yet manifested against the two servers under test, (b) it is specific to
+third-party servers we have not tried (pygeoapi, QGIS-as-server, ldproxy),
+or (c) it is currently theoretical. Phase 9 should treat it as
+**defensive-coding territory**: the fix is cheap (`assert returned.id ===
+requested`), the absence of observed failures is not the absence of the
+bug, and adding a guard costs nothing.
+
+### C. The explorer repo's server-quirks catalog is the discovery-layer test oracle
+
+[`server-quirks-reference.md`](https://github.com/OS4CSAPI/ogc-csapi-explorer/blob/demo/acoustic-cuas-targeting/docs/implementation/server-quirks-reference.md)
+(40 KB, ~90 numbered findings F1–F85+) is structured as a per-server
+quirks catalog (OSH vs 52°North) with a cross-server comparison table.
+For Phase 9, this is the closest thing we have to a **discovery-layer
+conformance fixture** — every quirk in it is a real shape that landed in a
+real client over real HTTP, and any fix we ship for #188's four findings
+should be checked against that table before we mark the issue resolved.
+Concretely, the items the catalog flags as still-relevant for the
+discovery layer are: response-envelope variation (`{items: [...]}` vs
+`FeatureCollection`), validTime as array vs scalar vs `null`, `Accept`
+header ignored in favour of `?f=` query param (F71), top-level vs
+collection-scoped resource URLs, and the `featureType` namespace zoo.
+
+### D. New process lesson: AI drift can fabricate findings then "verify" them
+
+[`f57-content-negotiation-correction.md`](https://github.com/OS4CSAPI/ogc-csapi-explorer/blob/demo/acoustic-cuas-targeting/docs/implementation/f57-content-negotiation-correction.md)
+(18 KB) documents a retracted finding. The explorer repo's AI agent
+silently changed the `Accept` header between smoke tests, filed F57
+based on the wrong data, "verified" F57 using the same wrong header, and
+initially dismissed the human's correct counter-observation as a browser
+cache artefact. The retraction lesson, codified there as **L13**, lines
+up exactly with the no-skilled-human-reviewer accepted-risk framing later
+in this doc:
+
+> The finding survived because re-verification was performed in the same
+> context that produced the error.
+
+This is durable evidence for our governance posture: every Phase 9 filing
+must record the exact request (URL, method, headers, query params, body)
+that produced the observed shape, not just the shape itself. A second
+agent should be able to replay the request verbatim and reproduce the
+observation independently. **The reproduction step is the only check on
+AI drift we actually have.**
+
+### E. Explorer-repo files reviewed (citation-strength rating)
+
+| File | Size | Strength | Why it mattered |
+|---|---:|---|---|
+| `design-notes-validation-extraction-decoupling.md` | 14 KB | Load-bearing | Independent prior articulation of Postel's Law / Implication #1 |
+| `server-quirks-reference.md` | 40 KB | Load-bearing | The discovery-layer conformance fixture (~90 findings) |
+| `cross-server-interoperability-analysis.md` | 10 KB | Corroborative | F1/F2 directly parallel #188 finding #2 |
+| `d1-d3-d4-fix-recommendations.md` | 10 KB | Corroborative | `SystemTypeUris` dual-inventory parallels #188 finding #3 |
+| `f57-content-negotiation-correction.md` | 18 KB | Process-lesson | L13 — AI drift survives same-context re-verification |
+| `final-project-code-review.md` | 38 KB | Background | Confirms validator-removal landed (Issue #52) |
+| `phase-6-architecture-verification.md` | 19 KB | Process-lesson | Smoke-test cadence and regression-tracking template |
+| `outstanding-findings-status-report.md` | 9 KB | Background | Status bookkeeping; no new lesson classes |
+| `deferred-findings-final-disposition.md` | 9 KB | Corroborative | F82 (`links` defaulting) precedent for #188 finding #1 |
+| `f70-design-findings-investigation.md` | 6 KB | Tangential | Phase-6 introduced no architecture debt |
+| `note-crud-smoke-test-readiness.md` | 10 KB | Tangential | CRUD scope clarification; not discovery-layer |
+| `p4-findings-code-vs-docs-reassessment.md` | 8 KB | Tangential | Scope discipline reinforcement |
+| `p5-findings-coverage-analysis.md` | 11 KB | Background | Findings-to-phase mapping |
+| `note-F71-osh-accept-header-noncompliance.md` | 3 KB | Corroborative | OSH `Accept` non-compliance — discovery-layer relevant |
+
+Total: 14 files, ~205 KB of the archive's ~330 KB read in detail. The
+remaining ~125 KB is largely per-phase code-review and per-phase smoke-test
+files; the keyword-targeted skim across them surfaced no novel
+discovery-layer pitfalls beyond what the table above already captures.
+
+---
+
 ## Process discipline borrowed from cs-go
 
 `connected-systems-go`'s
@@ -551,7 +678,17 @@ What it surfaces, but does not yet decide:
    alternative — file as a camptocamp issue with full evidence, one at a
    time, never as an unsolicited PR. The `csapiCollections` getter and the
    `info.ts` `hasConnectedSystems` rel block are unambiguously ours and are
-   unblocked.
+   unblocked. **Sub-finding #4 (`getCollectionDocument` blindly follows
+   `self`) carries an additional asterisk:** the explorer repo's
+   `docs/implementation/` smoke-test archive (~330 KB, 14 files reviewed
+   in detail) contains **zero observations** of self-link ID mismatch
+   in the wild against OSH or 52°North. The fix is therefore
+   **defensive coding**, not a response to an observed failure. Filing
+   it upstream against camptocamp without a live reproduction would
+   violate filing gate 6a below; the appropriate disposition is to
+   land the guard in the OS4CSAPI fork with the null-result evidence
+   captured, and only escalate upstream when a real server makes the
+   bug fire.
 4. **Process gap on cross-server smoke testing — now three-server.**
    [docs/implementation/cross-server-interoperability-analysis.md](../../implementation/cross-server-interoperability-analysis.md)
    recommendation #8 prescribed every-phase smoke testing on OSH +
@@ -574,10 +711,17 @@ What it surfaces, but does not yet decide:
    convenience-of-fix; if `references.md` does not contain a source
    needed for a filing, the gap is surfaced before drafting, never
    self-sourced.
-6. **Filing gates inherited from cs-go's #9 invalid disposition.**
-   Before any Phase 9 finding is filed against camptocamp:
+6. **Filing gates inherited from cs-go's #9 invalid disposition and the
+   explorer repo's F57 retraction.** Before any Phase 9 finding is
+   filed against camptocamp:
    (a) the wire-level defect must be reproduced against at least one
-   live CSAPI server and the request/response captured in the filing;
+   live CSAPI server and the *exact request* (URL, method, headers,
+   query params, body) captured in the filing — not just the response
+   shape. The explorer repo's L13 lesson (`f57-content-negotiation-correction.md`)
+   is that AI-authored findings can survive re-verification when the
+   re-verification reuses the same broken request context that
+   produced the original observation. Capturing the request verbatim
+   is the only check on this drift mode we have;
    (b) any spec-authority section that turns on interpretive language
    (rel-name semantics, featureType vocabulary scope, `self` link
    authority, null-shape conformance) must quote the normative sentence
@@ -585,7 +729,11 @@ What it surfaces, but does not yet decide:
    fix; (c) AI-authored filings must self-review the spec-authority
    block against the verbatim normative text before filing — see
    "Accepted risk" below for why the cs-go human-reviewer step is not
-   available on this effort.
+   available on this effort;
+   (d) every reproduction must be replayable from the captured request
+   alone — if a second agent (or a future return to this work) cannot
+   reproduce the observation from the captured request verbatim, the
+   finding is held until it can.
 
 ### Accepted risk — no skilled human-in-the-loop reviewer available
 
