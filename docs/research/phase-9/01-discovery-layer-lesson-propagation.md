@@ -372,8 +372,13 @@ camptocamp:
 4. **AI-authored filings are at elevated risk of spec misreads.** The
    maintainer's disposition cites the AI specifically. Phase 9 filings
    that touch interpretive spec text (rel name semantics, featureType
-   vocabulary scope, "self" link authority) need a human-in-the-loop
-   review of the spec-authority block before filing.
+   vocabulary scope, "self" link authority) are at elevated risk of
+   the same failure mode. **No domain-skilled human reviewer is
+   available on this effort** (see "Accepted risk" under Implications
+   below); the mitigation is structural — verbatim normative text,
+   explicit acknowledgement of alternative readings, mandatory live
+   reproduction, one claim per filing, durable capture of rejected
+   filings as signal.
 
 ---
 
@@ -416,8 +421,53 @@ What it surfaces, but does not yet decide:
    (rel-name semantics, featureType vocabulary scope, `self` link
    authority, null-shape conformance) must quote the normative sentence
    verbatim and acknowledge alternative readings before recommending a
-   fix; (c) AI-authored filings get a human-in-the-loop review of the
-   spec-authority block before filing.
+   fix; (c) AI-authored filings must self-review the spec-authority
+   block against the verbatim normative text before filing — see
+   "Accepted risk" below for why the cs-go human-reviewer step is not
+   available on this effort.
+
+### Accepted risk — no skilled human-in-the-loop reviewer available
+
+This effort does not have a domain-skilled human reviewer available to
+sign off on AI-authored filings before they are posted upstream. The
+cs-go #9 disposition demonstrates the concrete cost of that gap: an
+AI-authored filing with full evidence chain, asymmetry table, and SWE
+Common 3.0 citation was still rejected as a spec misread. We do not have
+the resources to add the reviewer step that would have caught it.
+
+This is an **accepted risk for Phase 9**, not a deferred one. The
+mitigation posture is "maximum diligence the AI workflow can supply,"
+specifically:
+
+- **Mandatory live reproduction before filing** (gate 5a above) — the
+  AI cannot misread wire output the way it can misread spec prose, so
+  any finding that cannot be reproduced live is held back, not filed.
+- **Verbatim normative text in every spec-authority block** (gate 5b
+  above) — paraphrase is the failure mode that produced #9. The filing
+  template requires the quoted sentence; if the sentence does not
+  unambiguously support the recommended fix, the filing is held.
+- **Acknowledge alternative readings explicitly** — when interpretive
+  spec language admits more than one reading, list them and state which
+  reading the filing leads with and why. The maintainer can then push
+  back on the choice rather than the framing.
+- **Adjacent findings filed separately, not folded in** — cs-go #9's
+  carve-out of the `updatable`/`updateable` spelling defect is the
+  pattern. One claim per filing.
+- **Accept-and-record rejected filings as durable evidence.** When a
+  filing is rejected (as #9 was), the disposition comment is captured
+  verbatim in the per-issue report's "Maintainer disposition" section
+  and the filing is not re-litigated. Rejected filings are durable
+  signal about where AI-authored research is unreliable, and that
+  signal feeds back into this gate list.
+- **No PRs, only issues** (already a standing decision from the cs-go
+  workflow) — limits the blast radius of a misread to a closeable
+  issue, not a code change requiring revert.
+
+The risk this leaves on the table is filings that pass all the gates
+above but still misread interpretive spec text in a way only a
+domain-skilled reviewer would catch. We do not have a way to close that
+gap on this effort. Phase 9 proceeds with the gap acknowledged.
+
 6. **No code changes proposed yet.** This is research. Triage,
    maintainer-vs-us classification per sub-finding, plan/report drafting per
    the cs-go workflow, and PR scoping all come next.
