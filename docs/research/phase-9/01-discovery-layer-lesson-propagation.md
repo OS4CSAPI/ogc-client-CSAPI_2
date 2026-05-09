@@ -213,6 +213,149 @@ were standing, we did not walk one room over."*
 
 ---
 
+## Prior research in this repo we already had
+
+A 2026-05-09 sweep of `docs/research/` (every subfolder except `phase-9/`)
+plus `docs/governance/` confirmed that not only did we know each of the
+four lesson classes, we had **already codified the design principle that
+would have prevented all of them** — and applied it elsewhere. The
+discovery layer was not part of that elsewhere.
+
+### The canonical fix principle is already on file
+
+[`docs/governance/phase-3-lessons-learned.md`](../../governance/phase-3-lessons-learned.md)
+Lesson 2 ("Postel's Law"):
+
+> *"Never gate extraction on validation. Recognition (can we identify
+> what this is?) should gate extraction, not validation (does this
+> meet all spec requirements?)."*
+
+Phase 3 closed by deleting ~500 lines of upstream validation that violated
+this principle. The four sub-issues in #188 are textbook violations of
+the same rule, applied at the discovery layer:
+
+- The 6 collection getters validate (`info.collections.filter(...)`)
+  before they recognize the null shape.
+- `collectionsUrl` validates rel name against an allowlist before
+  recognizing that the link is a collections link.
+- `parseCollections` validates featureType against `^ogc-cs:.+$` before
+  recognizing that the resource is connected-systems-shaped.
+- `getCollectionDocument` validates nothing — extracts the self href
+  and follows it without recognizing whether the returned resource ID
+  matches the requested one.
+
+Phase 3's lesson was *"recognize first, validate at the boundary you
+control."* The discovery layer recognizes nothing and validates
+everything by accident.
+
+### The vocabulary we ignore is mapped in our own design docs
+
+[`docs/research/design/collections-reader/collections-reader-analysis.md`](../design/collections-reader/collections-reader-analysis.md)
+already enumerates the full featureType vocabulary `parseCollections`
+should be tolerating:
+
+> *Part 1 Feature Resources (use `featureType`): `http://www.w3.org/ns/sosa/System`, `http://www.w3.org/ns/sosa/Deployment`, `http://www.w3.org/ns/sosa/Procedure`, `http://www.w3.org/ns/sosa/Sample`. Part 2 Non-Feature Resources (use `itemType`): `http://www.w3.org/ns/sosa/Property`. Part 2 Resources may use shorter names without full URIs, unlike Part 1.*
+>
+> *Detection Logic: Check BOTH `itemType` AND `featureType` properties.*
+
+The `info.ts:313-320` `hasConnectedSystems` rel block matches
+`^ogc-cs:.+$` only. Our own design doc says *check both properties and
+expect SOSA URIs as well as short names.* The design doc predates the
+discovery-layer code that ignores it.
+
+### The methodological precedent for the rel/property divergence claim
+
+[`docs/research/phase-6/findings/osh-server-property-name-divergence.md`](../phase-6/findings/osh-server-property-name-divergence.md)
+captured cross-server property-name divergence with bytecode-decompiled
+proof:
+
+| Server | Build | `controlStream/schema` field | Command payload |
+|---|---|---|---|
+| Oracle Cloud OSH | from source (`e74e12e2`) | `paramsSchema` | `params` |
+| DigitalOcean OSH | pre-built distribution | `parametersSchema` | `parameters` |
+| 52°North CSA Demo | different implementation | `parametersSchema` | `parameters` |
+
+Methodology: `javap -c -p` on compiled JAR files to find hardcoded
+string constants (bypasses GitHub-source vs deployed-binary skew). This
+is the shape #188's sub-issue 2 (rel-name divergence) is asserting at
+the link layer rather than the schema field layer. The methodology
+transfers directly.
+
+### Issue #186 already established the prefix-match rule
+
+[`docs/research/references.md`](../references.md) records:
+
+> *CSAPI support MUST be detected by **prefix match** against either
+> base… checking for any single specific class (e.g. a draft-era
+> `/conf/core` or `/conf/dynamic-data`) is unsafe and excludes
+> spec-conformant servers like csapi-go.*
+
+The `hasConnectedSystems` block in `info.ts:313-320` is exactly the
+"single specific class" pattern #186 ruled out at the conformance
+layer. The conformance reader was fixed; the collections discovery
+layer was not. Same lesson, two adjacent rooms.
+
+### The smoke-test discipline is on file too
+
+[`docs/governance/phase-2-lessons-learned.md`](../../governance/phase-2-lessons-learned.md)
+Lesson 8 ("Multi-Server Tolerance"):
+
+> *"Smoke test against BOTH servers before marking complete.
+> OpenSensorHub (auth required) and 52North."*
+
+[`docs/governance/known-server-quirks.md`](../../governance/known-server-quirks.md)
+inventories Smoke Test #18 (OSH: 33 systems, 16 deployments, 100
+datastreams; `/controlstreams` lowercase path required) and 52°North
+(partial Part 2, expired SSL on demo). The infrastructure to reproduce
+all four sub-issues against live servers exists and is documented.
+
+### The HATEOAS principle Finding 4 turns on is also on file
+
+[`docs/research/upstream/url-building-analysis.md`](../upstream/url-building-analysis.md)
+§1:
+
+> *Do: Extract URLs from link relations. Don't: Construct URLs
+> manually. OGC APIs are hypermedia-driven.*
+
+Finding 4 is not in tension with this — it sharpens it. *Extract* the
+self link, yes. But extraction is not authority: the server can
+extract-and-emit an href to a resource other than the one requested.
+The HATEOAS principle says "prefer link extraction over URL
+construction"; it does not say "trust the extracted link unconditionally."
+`getCollectionDocument`'s gap is the missing
+*recognize-then-extract-then-validate* discipline that Phase 3's
+Postel's Law lesson would have specified.
+
+### What the survey did NOT find
+
+The survey is also informative for what it didn't turn up:
+
+1. **No prior mention of Issue #188 itself** anywhere in
+   `docs/research/`. The four sub-issues were not pre-flagged as a
+   coordinated discovery-layer concern by us.
+2. **No documented crash-guard analysis** of the 6 collection getters.
+   Collections nullability is known (the type is optional in
+   `OgcApiDocument`) but no code review records the runtime null-deref
+   pattern. Sub-issue 1 is genuinely the first time it has been named
+   in this corpus.
+3. **No prior `getCollectionDocument` self-link mismatch case.** The
+   foundational HATEOAS principle is documented; the
+   sanity-check-against-requested-ID gap is novel.
+4. **No live coordinated-reproduction artifact.** Phase 2 Lesson 8
+   prescribes both-server smoke testing; the smoke test inventory shows
+   we did this once (ST#5) and tapered. The four sub-issues have not
+   yet been reproduced as a set against either OSH or 52°North in our
+   own logs.
+
+The first and second null results are the most important: this is not a
+case where we already had the report and forgot it. We had every
+*ingredient* and never assembled the dish. That distinction matters for
+the maintainer-vs-us framing — sub-issues 1, 3, and 4 are first-time
+discoveries by us *as system-level concerns*, even though every
+component lesson is on file.
+
+---
+
 ## Cross-repo corroboration — the same lesson classes show up server-side
 
 The pattern is not isolated to client-side code. The
@@ -387,13 +530,21 @@ camptocamp:
 This document is initial research only. It establishes the diagnostic frame.
 What it surfaces, but does not yet decide:
 
-1. **Lesson-propagation pass as a first-class deliverable.** Phase 9 should
+1. **Postel's Law is the design principle, on the record.** Phase 3
+   Lesson 2 ([docs/governance/phase-3-lessons-learned.md](../../governance/phase-3-lessons-learned.md))
+   is binding governance: *"Never gate extraction on validation.
+   Recognition (can we identify what this is?) should gate extraction,
+   not validation (does this meet all spec requirements?)."* All four
+   sub-issues are violations of that rule at the discovery layer. Any
+   Phase 9 fix or upstream filing must lead with this principle as the
+   architectural rationale, not as a coding-style preference.
+2. **Lesson-propagation pass as a first-class deliverable.** Phase 9 should
    include an explicit pass that, for each lesson we previously fixed in
    CSAPI, audits the upstream-inherited `OgcApiEndpoint` surface for the same
    class and either fixes it (if ours), files an upstream issue with
    evidence (per the cs-go discipline), or contributes upstream where the
    maintainer signals interest.
-2. **Maintainer-vs-us boundary, per finding.** Sub-issues 1 (5 of 6 getters),
+3. **Maintainer-vs-us boundary, per finding.** Sub-issues 1 (5 of 6 getters),
    2, and 4 sit in upstream camptocamp code. Our governance precedent
    ([docs/code-review/upstream-findings-report.md](../../code-review/upstream-findings-report.md))
    says hands-off in our PRs. The cs-go workflow gives us a constructive
@@ -401,19 +552,29 @@ What it surfaces, but does not yet decide:
    time, never as an unsolicited PR. The `csapiCollections` getter and the
    `info.ts` `hasConnectedSystems` rel block are unambiguously ours and are
    unblocked.
-3. **Process gap on cross-server smoke testing — now three-server.**
+4. **Process gap on cross-server smoke testing — now three-server.**
    [docs/implementation/cross-server-interoperability-analysis.md](../../implementation/cross-server-interoperability-analysis.md)
    recommendation #8 prescribed every-phase smoke testing on OSH +
-   52°North. That doc predates cs-go's deployment. The smoke-test pair is
-   now a trio (OSH `45.55.99.236`, 52°North, cs-go-upstream
-   `129-80-248-53.sslip.io`). Re-establishing the discipline is a Phase 9
-   process task, not a code task.
-4. **Authoritative-references contract.** Any upstream-filing work in
-   Phase 9 must begin by re-reading
+   52°North.
+   [docs/governance/phase-2-lessons-learned.md](../../governance/phase-2-lessons-learned.md)
+   Lesson 8 made it mandatory. That doc predates cs-go's deployment. The
+   smoke-test pair is now a trio (OSH `45.55.99.236`, 52°North,
+   cs-go-upstream `129-80-248-53.sslip.io`).
+   [docs/governance/known-server-quirks.md](../../governance/known-server-quirks.md)
+   already inventories ST#18 with concrete OSH resource counts.
+   Re-establishing the discipline is a Phase 9 process task, not a code
+   task.
+5. **Authoritative-references contract, with precedence rule.** Any
+   upstream-filing work in Phase 9 must begin by re-reading
    [docs/research/references.md](../references.md) and may only cite
-   sources from that list. This is the same contract cs-go research is
-   bound by.
-5. **Filing gates inherited from cs-go's #9 invalid disposition.**
+   sources from that list. The
+   [`AI_OPERATIONAL_CONSTRAINTS.md`](../../governance/AI_OPERATIONAL_CONSTRAINTS.md)
+   precedence rule is binding: Specs (1) → Agreement (2) → Issue desc
+   (3) → Code/docs (4) → Conversation (5). Spec authority outranks
+   convenience-of-fix; if `references.md` does not contain a source
+   needed for a filing, the gap is surfaced before drafting, never
+   self-sourced.
+6. **Filing gates inherited from cs-go's #9 invalid disposition.**
    Before any Phase 9 finding is filed against camptocamp:
    (a) the wire-level defect must be reproduced against at least one
    live CSAPI server and the request/response captured in the filing;
@@ -439,10 +600,10 @@ This is an **accepted risk for Phase 9**, not a deferred one. The
 mitigation posture is "maximum diligence the AI workflow can supply,"
 specifically:
 
-- **Mandatory live reproduction before filing** (gate 5a above) — the
+- **Mandatory live reproduction before filing** (gate 6a above) — the
   AI cannot misread wire output the way it can misread spec prose, so
   any finding that cannot be reproduced live is held back, not filed.
-- **Verbatim normative text in every spec-authority block** (gate 5b
+- **Verbatim normative text in every spec-authority block** (gate 6b
   above) — paraphrase is the failure mode that produced #9. The filing
   template requires the quoted sentence; if the sentence does not
   unambiguously support the recommended fix, the filing is held.
@@ -468,7 +629,7 @@ above but still misread interpretive spec text in a way only a
 domain-skilled reviewer would catch. We do not have a way to close that
 gap on this effort. Phase 9 proceeds with the gap acknowledged.
 
-6. **No code changes proposed yet.** This is research. Triage,
+7. **No code changes proposed yet.** This is research. Triage,
    maintainer-vs-us classification per sub-finding, plan/report drafting per
    the cs-go workflow, and PR scoping all come next.
 
