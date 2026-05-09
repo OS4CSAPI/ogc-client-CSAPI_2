@@ -3,26 +3,74 @@
 **Date:** 2026-05-09
 **Branch:** `phase-9`
 **Status:** Draft (initial research, pre-triage)
-**Scope:** Account for the failure classes surfaced by external Issue
-[#188](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/188) by retelling
-each as findings *we* independently made earlier in the project, identifying
-where the lesson got fixed, and where it never propagated.
+**Scope:** Consolidate this project's existing body of research on
+discovery-layer correctness in `OgcApiEndpoint`, then fold in Issue
+[#188](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/188) (filed
+2026-05-03 by [@nsnarayanam](https://github.com/nsnarayanam) against the
+`phase-7` branch) as the latest external input to that body. The doc
+is primarily *ours*: nine-plus months of CSAPI smoke tests, code
+reviews, governance lessons, and cross-repo corroboration. #188 is one
+more piece of evidence — the first to surface from a second
+independent consumer (the `ogc-csapi-agent` Python ADK project) —
+converging on the same conclusions our research had already reached.
 
 ---
 
 ## Premise
 
-Every failure class in Issue #188 is a recurrence of a lesson we already
-learned and documented. None of these are fresh discoveries. The pattern across
-all four sub-issues is consistent:
+This project carries an existing, multi-phase body of research on
+discovery-layer correctness. Across the smoke-test inventory
+([known-server-quirks.md](../../governance/known-server-quirks.md)),
+the phase governance docs ([phase-2](../../governance/phase-2-lessons-learned.md),
+[phase-3](../../governance/phase-3-lessons-learned.md)), the design
+research ([collections-reader-analysis.md](../design/collections-reader/collections-reader-analysis.md),
+[references.md](../references.md)), and the closed-issue history
+([#34](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/34),
+[#35](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/35),
+[#49](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/49),
+[#50](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/50),
+[#76](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/76),
+[#99](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/99),
+[#143](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/143),
+[#149](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/149),
+[#186](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/186)),
+we had independently identified, named, and partially fixed each
+failure class that Issue #188 reports. We had also codified the design
+principle that would have prevented all of them — Postel's Law
+(Phase 3 Lesson 2) — and applied it elsewhere.
+
+The pattern across that body of research, restated in our own terms:
 
 > Each lesson got fixed at the layer where we first discovered it (CSAPI
 > module, formats, URL builder), and never propagated up into the
 > `OgcApiEndpoint` discovery layer one floor above.
 
-This document retells each finding from our own perspective and timeline,
-without referencing the external reporter's framing, so we can ground Phase 9
-work in our own discovery history rather than treating any of this as new.
+Issue #188 arrived 2026-05-03 from a second independent consumer of
+the library (the `ogc-csapi-agent` Python ADK project, the first
+being `ogc-csapi-explorer`). It catalogues four sub-findings against
+the `phase-7` branch — the same four failure classes our internal
+research had been circling. Treated the right way, #188 is therefore
+*not the prompt* this document is responding to; it is the most
+recent and most concrete piece of external evidence converging on
+conclusions the research already held. This document retells each
+failure class from our own perspective and timeline first, then maps
+#188's four sub-findings into that retelling.
+
+### How Issue #188's four sub-findings map into our existing research
+
+| #188 sub-finding | The internal-research thread it lands on | Strongest prior artefact |
+|---|---|---|
+| **#1 — `csapiCollections` + 5 sibling getters null-deref when `data` is null** | Finding 3 below — "null-shape responses crash typed parsers, recurring." Three closed instances ([#143](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/143), [#149](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/149), and pending P1 [finding 003](../../code-review/003-pending-p1-unchecked-generic-cast-response.md)) plus the Postel's Law lesson. | Phase 3 Lesson 2 + finding 003 |
+| **#2 — `collectionsUrl` rel allowlist rejects `rel: "collections"`** | Finding 1 below — "OSH doesn't speak `ogc-cs:`. Neither do its collections." Issues [#34](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/34)/[#35](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/35) and Issue [#186](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/186)'s prefix-match rule already established that real-server rel naming is heterogeneous. | Issues #34/#35, #186 |
+| **#3 — `parseCollections` ignores `featureType`-based CSAPI signaling** | Finding 2 below — "OSH puts `featureType` in the wrong namespace. Then sometimes leaves it `null`. Then sometimes uses SSN." Three closed issues ([#49](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/49)/[#50](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/50)/[#76](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/76)) plus an open ROADMAP TODO since Phase 6. | [collections-reader-analysis.md](../design/collections-reader/collections-reader-analysis.md), [ROADMAP line 369](../../planning/ROADMAP.md) |
+| **#4 — `getCollectionDocument` follows `self` link blindly without validating returned ID** | Finding 4 below — "OSH ignores resource IDs. The server returns whatever it wants." The corollary of [#99](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/99) (link-driven content negotiation) and [#122](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/122)/[#179](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/179) (`getCollectionDocument` visibility churn) we had not yet stated outright. Server-side ghost-resource evidence in OSHConnect-Python (folded in below) makes this the only sub-finding with new wire-level reproduction. | #99, plus OSH ghost-resource reproduction (cross-repo section below) |
+
+The rest of this document is structured around the four findings as
+*we* named them, with #188's sub-findings appearing as "the latest
+restatement of" each. The cross-repo corroboration sections downstream
+(cs-go server side, ogc-csapi-explorer front-end, OSHConnect-Python
+client) further situate #188 inside a four-repo CSAPI-ecosystem
+research corpus rather than treating it as an isolated bug report.
 
 ---
 
@@ -189,17 +237,17 @@ function open on our desk. We did not connect them.
 
 ---
 
-## Synthesis — What our own findings tell us
+## Synthesis — What our own findings tell us, and where #188 fits
 
-Across roughly nine months of CSAPI work we independently discovered, named,
-fixed, or filed every failure class involved here:
+Across roughly nine months of CSAPI work we independently discovered,
+named, fixed, or filed every failure class involved here:
 
-| Failure class | Our prior name(s) for it |
-|---|---|
-| 6 sibling getters null-deref | F1/F2 + #143 + #149 + finding 003 (null-shape and rel-naming, both classes we know) |
-| `collectionsUrl` rel allowlist | F1 — we saw OSH-style rel mismatches in late 2025 and fixed them in our walls |
-| `parseCollections` ignores featureType | F40 + F41 + F83 + ROADMAP line 369 — the featureType-vocabulary lesson we learned three times |
-| `getCollectionDocument` follows self link blindly | The unstated corollary of #99 / #122 / #179 — self links are server-authored, not authoritative |
+| Failure class | Our prior name(s) for it | #188 sub-finding it now corresponds to |
+|---|---|---|
+| 6 sibling getters null-deref | F1/F2 + #143 + #149 + finding 003 (null-shape and rel-naming, both classes we know) | **#1** |
+| `collectionsUrl` rel allowlist | F1 — we saw OSH-style rel mismatches in late 2025 and fixed them in our walls | **#2** |
+| `parseCollections` ignores featureType | F40 + F41 + F83 + ROADMAP line 369 — the featureType-vocabulary lesson we learned three times | **#3** |
+| `getCollectionDocument` follows self link blindly | The unstated corollary of #99 / #122 / #179 — self links are server-authored, not authoritative | **#4** |
 
 The pattern is consistent: **each lesson got fixed at the layer where we
 discovered it, and never propagated.** OSH burned us, we patched the specific
@@ -210,6 +258,18 @@ and got every one of these lessons exactly zero times.
 
 That is not a fresh-eyes problem. That is *"we knew, we fixed it where we
 were standing, we did not walk one room over."*
+
+What Issue #188 contributes to that picture is not the discovery of any
+of the four lesson classes — we owned each one independently — but
+**the first concrete, runnable end-to-end reproduction of all four
+classes landing on a single client call** (`createCSAPIBuilder('weather-stations')`
+against the OpenSensorHub demo). The reporter
+([@nsnarayanam](https://github.com/nsnarayanam)) worked around all
+four locally and confirmed the call then succeeds end-to-end. That
+empirical chain is the artefact our internal research lacked: we had
+each lesson, we had no integrated reproduction tying them together.
+Phase 9 inherits #188's reproduction as the canonical exit-criterion
+fixture for the propagation pass.
 
 ---
 
