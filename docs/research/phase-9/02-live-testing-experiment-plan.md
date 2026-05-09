@@ -134,33 +134,82 @@ evidence must be replayable. We hold the filing.
 ## Test targets — the server menagerie
 
 To test Hypothesis 2 (that the OpenSensorHub bugs are
-implementation-specific, not spec-compliant), we need more than
-one server. The strength of the upstream awareness issue depends
-directly on how many spec-compliant servers we can show *don't*
-reproduce the bugs.
+implementation-specific, not spec-compliant), we need server
+diversity along two axes: **implementation diversity** (different
+codebases) and **control diversity** (instances we own versus
+public demos run by their projects). The strength of the upstream
+awareness issue depends directly on how many spec-compliant
+servers we can show *don't* reproduce the bugs, and how cleanly
+we can reproduce captures.
 
-### Tier 1 — Servers we already know about
+### Tier 1 — Servers we already have access to
 
-| Server | Base URL | What we already know about it |
-|---|---|---|
-| **OpenSensorHub demo** | `http://45.55.99.236:8080/sensorhub/api` | Where Issue #188 reproduces. The *subject* of the experiment, not a control. Covered in detail in our existing known-server-quirks document. |
-| **52North CSAPI demo** | `https://csa.demo.52north.org/` | Active server, runs `connected-systems-pygeoapi` (different implementation from OpenSensorHub). Has its own quirks documented (e.g. `featureType: "sosa:Sensor"` for procedures, different conformance declaration history). |
-| **cs-go upstream demo** | `https://129-80-248-53.sslip.io` | Reference Go-language CSAPI server. Smaller deployment but useful as a third independent implementation. |
+| Server | Base URL | Who controls it | Implementation | Role in experiment |
+|---|---|---|---|---|
+| **Our Oracle OSH** | `https://129-80-248-53.sslip.io/sensorhub/api` | **Us** | OpenSensorHub | Self-hosted OSH for controlled bug-diagnosis work and stable replay target. |
+| **Our Oracle cs-go** | `https://129-80-248-53.sslip.io/csapi-go-upstream/` | **Us** | cs-go (Go-language reference) | Self-hosted independent implementation; primary control for Hypothesis 2. |
+| **Upstream OSH demo** | `http://45.55.99.236:8080/sensorhub/api` | OpenSensorHub project | OpenSensorHub | Where Issue #188 was originally reported. The *subject* of the experiment. Not a control. |
+| **52North CSAPI demo** | `https://csa.demo.52north.org/` | 52North | `connected-systems-pygeoapi` | Third independent implementation; second control for Hypothesis 2. Has its own server-side quirks documented (e.g. `featureType: "sosa:Sensor"` for procedures). |
 
-Three independent servers from three independent implementations is
-the minimum we need to argue "OpenSensorHub-specific behavior."
+We already have three independent CSAPI implementations
+represented (OpenSensorHub, cs-go, `connected-systems-pygeoapi`)
+and we control instances of two of them (OSH and cs-go on our
+Oracle box). The major gap is that we do **not** yet control a
+`connected-systems-pygeoapi` instance — we only have access to
+52North's public demo.
 
-### Tier 2 — Servers we should try to find
+### Tier 2 — Self-hosted `connected-systems-pygeoapi` (proposed)
 
-Adding more spec-compliant CSAPI servers strengthens Hypothesis 2.
+Stand up a clean, latest `connected-systems-pygeoapi` instance on
+our Oracle account, point our publishers at it, and load it with
+sample data. Source: [52North/connected-systems-pygeoapi](https://github.com/52North/connected-systems-pygeoapi).
+
+This closes the implementation-diversity matrix: we'd have
+self-hosted instances of all three CSAPI implementations we know
+about, plus the two public demos.
+
+Why this matters for the experiment specifically:
+- **Stable replay target for the pygeoapi family.** The 52North
+  public demo can change underneath us. Threat #1 in the
+  validity section directly. Captures we publish in an upstream
+  awareness issue stay reproducible against a server we control.
+- **Data-shape control.** We can load both well-formed data and
+  deliberately malformed/edge-case fixtures (sparse links,
+  missing optional fields, items deleted while `/collections`
+  still references them) and observe how each implementation
+  reacts. Without that, we only see whatever data each project
+  chose to load on their public demo.
+- **Cross-implementation diff under identical data.** When all
+  three of our self-hosted instances (OSH, cs-go, pygeoapi) have
+  the **same publisher data**, any behavioral difference is
+  guaranteed to be implementation-driven, not data-driven. This
+  is the cleanest possible evidence for Hypothesis 2.
+- **Maintainer credibility.** Filing an upstream awareness issue
+  with "and here's what three independent self-hosted instances
+  of three different CSAPI implementations did against identical
+  data" is materially stronger than "we tried it on three public
+  demos."
+
+Setup requirements to record:
+- Source commit hash of `connected-systems-pygeoapi` deployed.
+- Python version, pygeoapi version, dependency lockfile.
+- Publisher configuration (what data sources, what mappings).
+- Sample data fixtures, version-pinned in our repo.
+- Replay readme: how to stand up the same instance from scratch
+  and load the same data.
+
+### Tier 3 — Servers we should try to find
+
+Beyond what we have and what we'll stand up, the experiment
+strengthens further with additional independent deployments.
 Sources to investigate:
 
 - **The OGC Connected Systems Standards Working Group** maintains
   a list of demo servers; check for any we haven't tested.
-- **Other deployments of the same `connected-systems-pygeoapi` and
-  OpenSensorHub codebases** by other organizations (different demo
-  data, same software). Those don't add implementation diversity
-  but do help spot data-driven differences.
+- **Other deployments of the same codebases by other
+  organizations** (different demo data, same software). These
+  don't add implementation diversity but do help spot
+  data-driven differences within an implementation.
 - **Upstream PR #136's own validation list.** Check what servers
   the upstream maintainer has used to validate other contributions;
   those are servers the maintainer already considers credible.
@@ -168,39 +217,28 @@ Sources to investigate:
   these. The May 2026 Code Sprint that @nsnarayanam mentioned in
   Issue #188 may have produced fresh demo URLs.
 
-For each Tier 2 server we find, we record: base URL, implementation
+For each Tier 3 server we find, we record: base URL, implementation
 software, deployment owner, and whether it returns a CSAPI
 conformance declaration on `/conformance`.
 
-### Tier 3 — Local self-hosted instance
+### Tier 4 — Optional: additional self-hosted instances
 
-If feasible, stand up a local OpenSensorHub instance from source
-and a local `connected-systems-pygeoapi` instance from source. Why:
+If we want to deepen evidence further, additional value comes from:
 
-- **For Hypothesis 5 (replayability),** a server we control is the
-  cleanest replay target. Public demos can change underneath us.
-- **For deep-diagnostic work on sub-finding #4,** we want to vary
-  the server's response and see what changes downstream. We can't
-  do that on someone else's demo.
-- **For maintainer credibility,** if we file the awareness issue
-  with both "live demo reproduction" and "self-hosted source-build
-  reproduction," that is materially stronger evidence than "live
-  demo only."
+- **A second self-hosted OpenSensorHub instance** at a different
+  pinned version, to diff bug behavior across OSH releases (does
+  the bug exist in latest? main? a tagged release?). Useful for
+  sub-finding #4's awareness-issue framing if we want to claim
+  the bug is current rather than historical.
+- **A locally-built mock CSAPI server.** A tiny server we write
+  that emits one bug per deployment configuration. Useful for
+  isolating sub-finding #4 from OSH-specific weirdness — if our
+  mock emits a wrong `self` link, we can show the upstream library
+  follows it blindly without any OSH-specific complications
+  muddying the trace.
 
-Document the version (commit hash) of each self-hosted instance.
-
-### Tier 4 — Hand-crafted minimal server (optional but valuable)
-
-Write a tiny mock CSAPI server that emits exactly one bug per
-deployment configuration. Useful for:
-
-- **Isolating sub-finding #4 from OSH-specific weirdness.** If our
-  mock server emits a `self` link that points to a wrong URL, we
-  can show the upstream library follows it blindly without any
-  OSH-specific complications muddying the trace.
-- **Confirming the upstream library's exact behavior at the bug
-  point.** When we file the awareness issue, "and here's a 50-line
-  mock server that reproduces this" is a gift to the maintainer.
+Both are optional. Pursue only if the Tier 1 + Tier 2 captures
+leave gaps we can't otherwise close.
 
 ---
 
@@ -255,17 +293,19 @@ per server:
 
 ```
 docs/research/phase-9/captures/
-├── opensensorhub/
+├── oracle-osh/                  (our Oracle-hosted OSH)
 │   ├── 2026-05-DD-landing-page.txt
 │   ├── 2026-05-DD-collections.json
 │   ├── 2026-05-DD-collection-self-follow-trace.txt
 │   ├── 2026-05-DD-collection-self-follow-response.json
-│   └── README.md          (what each file is, and how to replay it)
-├── 52north/
-│   ├── ... same shape ...
-├── cs-go-upstream/
-│   ├── ... same shape ...
-└── local-osh-build/       (if Tier 3 happens)
+│   └── README.md                (what each file is, and how to replay it)
+├── oracle-csgo/                 (our Oracle-hosted cs-go)
+│   └── ... same shape ...
+├── upstream-osh/                (the OpenSensorHub project's public demo)
+│   └── ... same shape ...
+├── 52north-demo/                (52North's public pygeoapi demo)
+│   └── ... same shape ...
+└── oracle-pygeoapi/             (our Oracle-hosted pygeoapi — Tier 2)
     └── ... same shape ...
 ```
 
@@ -418,8 +458,11 @@ at all, and what the upstream library's CSAPI rel-name matcher
 server resolve to the actual item resource, or to something else
 (parent collection, ghost resource, error page).
 
-**Servers:** All Tier 1, plus any Tier 2 we have, plus Tier 3
-self-hosted if feasible.
+**Servers:** All Tier 1 servers, plus the Tier 2 pygeoapi instance
+once we stand it up, plus any Tier 3 servers we discover, plus
+Tier 4 alternate-version OSH if we add one. Sub-finding #4 is
+the centerpiece of this experiment, so we want maximum server
+diversity here.
 
 **What we capture:**
 - The `/collections` response from each server.
@@ -672,15 +715,22 @@ Listed honestly so the scope is visible up front.
   inspection for sub-finding #4.
 
 ### Server access
-- Network reachability to OpenSensorHub demo
-  (`http://45.55.99.236:8080`) — note the `http`, not `https`,
-  which is itself worth recording.
-- Network reachability to 52North demo
+- Admin/SSH access to our Oracle box hosting OSH at
+  `https://129-80-248-53.sslip.io/sensorhub/api` and cs-go at
+  `https://129-80-248-53.sslip.io/csapi-go-upstream/`. We control
+  these; we can pin versions, capture from inside the box, and
+  load whatever data we want.
+- Network reachability to the upstream OpenSensorHub project's
+  public demo (`http://45.55.99.236:8080/sensorhub/api`) — note
+  the `http`, not `https`, which is itself worth recording.
+- Network reachability to 52North's public demo
   (`https://csa.demo.52north.org/`).
-- Network reachability to cs-go upstream demo
-  (`https://129-80-248-53.sslip.io`).
-- For Tier 3 (optional, valuable): local Docker capacity to stand
-  up self-hosted instances.
+- For Tier 2: Oracle account capacity to stand up a fresh
+  `connected-systems-pygeoapi` instance, plus a CSAPI
+  conformance-class-aware publisher configuration and the sample
+  data we want loaded.
+- For Tier 4 (optional): additional Oracle capacity for
+  alternate-version OSH or local mock server.
 
 ### Specifications
 - All documents listed in `docs/research/references.md`.
@@ -734,24 +784,28 @@ A suggested order, with the reasoning:
    captures are fresh. The verbatim spec text shapes how we
    interpret the captures.
 
-4. **Tier 2 server discovery.** While doing Experiments 1–3, also
-   look for additional servers. Add any we find.
+4. **Stand up the Tier 2 pygeoapi instance.** Can run in parallel
+   with Experiment 1–3 captures from the existing servers. Once
+   live, add it to the captures matrix and re-run Experiments 1–3
+   against it.
 
-5. **Experiment 4 (sub-finding #4) — the big one.** Done after
+5. **Tier 3 server discovery.** While doing Experiments 1–3, also
+   look for additional public servers. Add any we find.
+
+6. **Experiment 4 (sub-finding #4) — the big one.** Done after
    Experiments 1–3 because we have the lay of the land at that
    point and know what to look for. Two sessions: initial
-   captures, then replay-verification on a different day.
+   captures, then replay-verification on a different day. Our
+   Oracle OSH instance is the primary diagnostic surface here
+   since we control it and can vary conditions; the upstream OSH
+   demo is the validation surface that the bug exists in the wild.
 
-6. **Experiment 5 (call-stack trace)** — done last because it
+7. **Experiment 5 (call-stack trace)** — done last because it
    requires the library's logging instrumentation, which is the
    most setup-heavy piece.
 
-7. **Tier 3 self-hosted instances** — done in parallel with
-   Experiment 4 if time allows; skipped if not.
-
-8. **Tier 4 mock server** — only if Experiment 4 results suggest
-   we need it. This is a tool to deepen evidence, not a required
-   step.
+8. **Tier 4 alternate-version instances or mock server** — only if
+   Experiment 4 results suggest we need it. Optional.
 
 9. **Results document and decision** — once all data is in.
    Compare against the decision criteria table; produce the
