@@ -518,6 +518,158 @@ discovery-layer pitfalls beyond what the table above already captures.
 
 ---
 
+## Cross-repo corroboration — OSHConnect-Python's `docs/research` archive
+
+A fourth sister repo, [`OS4CSAPI/OSHConnect-Python`](https://github.com/OS4CSAPI/OSHConnect-Python),
+is the Python-client side of the same CSAPI ecosystem and originated
+the SensorML silent-field-loss PR earlier in this effort. Its
+`docs/research/` folder (~50 files, ~1 MB) was surveyed with the same
+thoroughness posture as the explorer sweep; 19 files (~310 KB) directly
+bear on #188's four sub-findings. The lower-priority remainder
+(USGS publishers, LOB triangulation, simulator portability, NDBC/NWS
+buoy specifics, ISS orbit work, UAS scenario packs) was
+keyword-skimmed and contains no #188-relevant signal.
+
+### A. Sub-finding #4 is no longer a null result — server-side ghost-resource evidence
+
+The explorer-repo sweep recorded #188 sub-finding #4
+(`getCollectionDocument` blindly follows the `self` link when the
+target ID does not match the requested ID) as a *null result* — defensive
+coding, not a response to an observed failure.
+[`OSH_Ghost_Resource_Stale_Index_Bug.md`](https://github.com/OS4CSAPI/OSHConnect-Python/blob/main/docs/research/OSH_Ghost_Resource_Stale_Index_Bug.md)
+(20 KB) overturns that disposition with a live wire-level reproduction
+against OSH SensorHub:
+
+- A dual-registered system (top-level + subsystem) is deleted from the
+  resource store, but **persists in the collection listing**.
+- `GET /systems/{id}` → **404 NOT FOUND**.
+- `GET /systems?limit=100` → **ghost entry returned with full GeoJSON
+  payload**, but the entry is unreachable by direct fetch.
+- `DELETE /systems/{id}` on the ghost → **404** (cannot purge).
+- A subsequent POST with the same UID **reuses the ghost's ID**, but a
+  GET on that ID *still* returns 404. The collection-listing index and
+  the individual-resource store are *desynchronized*.
+
+This is the exact failure mode #188 finding #4 warns against: a client
+that enumerates `/collections`, picks an entry, and then follows the
+entry's `self` link without validating that the returned document's ID
+matches the requested ID will silently consume ghost data. The OSH bug
+turns `getCollectionDocument` from a defensive-coding concern into one
+with a documented live reproduction. The Phase 9 disposition for #4
+should be revised: the guard belongs in the fork *and* the finding now
+clears filing gate 6a (live reproduction exists). It remains held by
+gate 6b until interpretive spec text on `self` link authority is
+quoted verbatim.
+
+### B. Sub-finding #1 — load-bearing server-side evidence of the silent-drop pattern
+
+Four documents establish that OSH systematically accepts spec-defined
+`@link` array fields with HTTP 201, then silently discards them on
+read-back:
+
+- [`OSH_DeployedSystems_Conformance_Gap.md`](https://github.com/OS4CSAPI/OSHConnect-Python/blob/main/docs/research/OSH_DeployedSystems_Conformance_Gap.md)
+  (22 KB) — `deployedSystems@link` (required per OGC 23-001 §8.5
+  Table 10): PUT 204 → GET absent.
+- [`OSH_Deployment_Link_Persistence_Gap.md`](https://github.com/OS4CSAPI/OSHConnect-Python/blob/main/docs/research/OSH_Deployment_Link_Persistence_Gap.md)
+  (19 KB) — `deployment@link` on Datastreams: same silent-drop pattern.
+- [`OSH_SamplingFeature_Link_Persistence_Gap.md`](https://github.com/OS4CSAPI/OSHConnect-Python/blob/main/docs/research/OSH_SamplingFeature_Link_Persistence_Gap.md)
+  (7 KB) — third instance: `samplingFeature@link` on Observations.
+  *"OSH persists `@link` fields that follow its internal hierarchy
+  (`platform@link` on deployments, `system@link` on datastreams). It
+  drops cross-cutting associations."*
+- [`NWS_NDBC_Hollow_SensorML_Metadata.md`](https://github.com/OS4CSAPI/OSHConnect-Python/blob/main/docs/research/NWS_NDBC_Hollow_SensorML_Metadata.md)
+  (13 KB) — bootstrap writes rich SensorML; server returns hollow
+  shells on GET. *"Characteristics without group wrapper, documents
+  with flat `url` key instead of `link` object"* are silently dropped.
+
+The pattern triple-corroborates Postel's Law / Implication #1: clients
+that assume spec-defined fields will be present in collection responses
+will null-deref against compliant-on-paper servers. The previous
+load-bearing citations were the explorer repo's F49 / F82 / F85.
+OSH-Python adds **server-side wire evidence** for the same class.
+
+### C. Sub-finding #2 — corroborative evidence of missing rel advertisements
+
+[`OSH_Deployment_Hierarchy_and_System_Association.md`](https://github.com/OS4CSAPI/OSHConnect-Python/blob/main/docs/research/OSH_Deployment_Hierarchy_and_System_Association.md)
+(27 KB) and
+[`OSH_DeployedSystems_Conformance_Probe.md`](https://github.com/OS4CSAPI/OSHConnect-Python/blob/main/docs/research/OSH_DeployedSystems_Conformance_Probe.md)
+(15 KB) document that OSH advertises `subdeployments` as a link rel
+on deployments but **does not advertise `deployedSystems` on
+deployments or `deployments` on systems**. The corresponding endpoint
+(`GET /deployments/{id}/deployedSystems`) returns `400 "Invalid
+resource name"`. Distinct from #188 finding #2 (an *allowlist*
+rejecting valid rels), this is the dual mode: the server *omits* the
+rel entirely, forcing clients to either hardcode URL paths or fail
+discovery silently. Either failure mode lands in the same place — a
+client whose discovery is brittle to the rel vocabulary the server
+actually emits. This sweep raises #188 finding #2's strength from
+*corroborative* (paralleled by explorer Issues #34/#35) to
+*corroborative across two failure modes* (allowlist *and* omission).
+
+### D. Sub-finding #3 — informational, not load-bearing
+
+No evidence in OSHConnect-Python that `featureType` is *deliberately
+filtered out* during collection parsing. Field loss is documented
+(NWS hollow metadata, SensorML field shapes silently dropped) but as
+incidental loss within the broader silent-drop pattern, not as a
+dedicated discrimination-stripping path. The disposition for #3
+(weakly load-bearing in the explorer sweep via F40/F41/F83/F84) is
+unchanged; this repo neither strengthens nor refutes it.
+
+### E. New process lesson — 302-redirect error masking
+
+[`OSH_Datastream_Creation_Format_Requirements.md`](https://github.com/OS4CSAPI/OSHConnect-Python/blob/main/docs/research/OSH_Datastream_Creation_Format_Requirements.md)
+(26 KB) documents a discovery-layer pitfall not previously named in
+our governance: when a client POSTs with a near-correct content type
+(`application/json` instead of `application/swe+json`) or a
+near-correct schema key (`resultSchema` instead of `recordSchema`),
+the OSH server returns a **302 redirect** rather than a 4xx error.
+The redirect masks the validation failure — the client follows it,
+receives a 200, and only discovers the silent-drop on subsequent
+GET. The *write/read asymmetry* (server reads back as
+`application/om+json` even when written as `application/swe+json`)
+compounds it.
+
+For Phase 9 filing gates this surfaces a concrete failure mode worth
+calling out: **300-class responses on write paths must be treated as
+validation failures, not as successful redirects, when the original
+request carried a body the server is silently re-routing.** This
+generalises gate 6a (capture exact request) — the captured request
+must include the *response status chain* (every redirect followed,
+each status code) so a second agent replaying it can distinguish a
+clean 200 from a 302→200 that masked a silent drop.
+
+### F. OSHConnect-Python files reviewed (citation-strength rating)
+
+| File | Size | Strength | Why it mattered |
+|---|---:|---|---|
+| `OSH_Ghost_Resource_Stale_Index_Bug.md` | 20 KB | Load-bearing | Live wire reproduction of #188 finding #4 (collection→fetch ID desync) |
+| `OSH_DeployedSystems_Conformance_Gap.md` | 22 KB | Load-bearing | Server-side silent-drop of spec-required `@link` arrays |
+| `OSH_Deployment_Link_Persistence_Gap.md` | 19 KB | Load-bearing | Three-mechanism failure: `deployment@link`, endpoint, `deployedSystems@link` |
+| `OSH_SamplingFeature_Link_Persistence_Gap.md` | 7 KB | Load-bearing | Third instance of array-`@link` silent-drop pattern |
+| `NWS_NDBC_Hollow_SensorML_Metadata.md` | 13 KB | Load-bearing | Hollow metadata returned for spec-defined SensorML fields |
+| `OSH_Datastream_Creation_Format_Requirements.md` | 26 KB | Load-bearing | New process lesson: 302-redirect error masking on write paths |
+| `OSH_DeployedSystems_Conformance_Probe.md` | 15 KB | Corroborative | Empirical proof: `/deployments/{id}/deployedSystems` → 400 |
+| `OSH_Deployment_Hierarchy_and_System_Association.md` | 27 KB | Corroborative | Required link rels not advertised by server |
+| `Deployment_Scoped_Queries_Conformance_Report.md` | 64 KB | Corroborative | `GET /deployments/{id}/datastreams` → 400; rel omission |
+| `OSH_Global_Datastreams_Endpoint_500_Bug.md` | 5 KB | Corroborative | Collection-level crash on malformed datastream schema |
+| `CSAPI_Go_Server_Integration_Report_2026-04-17.md` | 42 KB | Background | Cross-server integration patterns |
+| `OSH_Sampling_Features_Implementation_Analysis.md` | 19 KB | Informational | Feature-not-supported vs. feature-broken indistinguishable |
+| `Localizer_Datastream_Deletion_Incident_2026-03-10.md` | 7 KB | Corroborative | Null-fallback failures in real client code |
+| `OSH_Cascade_Delete_Experiment.md` | 14 KB | Tangential | DELETE 400 vs 409 conformance gap (not discovery-layer) |
+| `OSH_Delete_Cascade_and_Reparenting.md` | 15 KB | Tangential | Resource lifecycle complexity (not discovery-layer) |
+| `OSH_Observation_Count_API_Gap.md` | 5 KB | Informational | Missing `numberMatched`/`numberReturned` on collections |
+| `Gold_Dots_SamplingFeature_Analysis.md` | 5 KB | Informational | Modeling trade-offs under server gaps |
+| `CSAPI_Deployment_Modeling_Standards_Conformance.md` | 12 KB | Informational | Spec/OAS divergence on deployment-scoped endpoints |
+| `CSAPI_Deployment_Semantics_Analysis.md` | 19 KB | Informational | Mental-model clarification (deployments don't own data) |
+
+Total: 19 files, ~356 KB read in detail. The remaining ~30 files
+(~640 KB) are domain-specific publisher / simulator / LOB /
+deployment-modelling work; keyword-targeted skim surfaced no
+discovery-layer signal beyond what the table captures.
+
+---
+
 ## Process discipline borrowed from cs-go
 
 `connected-systems-go`'s
@@ -679,16 +831,19 @@ What it surfaces, but does not yet decide:
    time, never as an unsolicited PR. The `csapiCollections` getter and the
    `info.ts` `hasConnectedSystems` rel block are unambiguously ours and are
    unblocked. **Sub-finding #4 (`getCollectionDocument` blindly follows
-   `self`) carries an additional asterisk:** the explorer repo's
-   `docs/implementation/` smoke-test archive (~330 KB, 14 files reviewed
-   in detail) contains **zero observations** of self-link ID mismatch
-   in the wild against OSH or 52°North. The fix is therefore
-   **defensive coding**, not a response to an observed failure. Filing
-   it upstream against camptocamp without a live reproduction would
-   violate filing gate 6a below; the appropriate disposition is to
-   land the guard in the OS4CSAPI fork with the null-result evidence
-   captured, and only escalate upstream when a real server makes the
-   bug fire.
+   `self`) was previously held as defensive-coding-only** because the
+   explorer repo's smoke-test archive contained zero observations of
+   the failure in the wild. The OSHConnect-Python sweep (above) **lifts
+   that hold**:
+   [`OSH_Ghost_Resource_Stale_Index_Bug.md`](https://github.com/OS4CSAPI/OSHConnect-Python/blob/main/docs/research/OSH_Ghost_Resource_Stale_Index_Bug.md)
+   documents a live OSH wire-level reproduction where
+   `GET /systems?limit=100` returns ghost entries that 404 on direct
+   fetch — the exact desync between collection listing and resource
+   store that #4 warns against. The disposition is therefore: land the
+   guard in the OS4CSAPI fork *and* draft an upstream filing against
+   camptocamp citing the OSH ghost-resource reproduction. The filing
+   still must clear gate 6b (verbatim normative text on `self` link
+   authority and alternative readings) before it goes out.
 4. **Process gap on cross-server smoke testing — now three-server.**
    [docs/implementation/cross-server-interoperability-analysis.md](../../implementation/cross-server-interoperability-analysis.md)
    recommendation #8 prescribed every-phase smoke testing on OSH +
@@ -733,7 +888,15 @@ What it surfaces, but does not yet decide:
    (d) every reproduction must be replayable from the captured request
    alone — if a second agent (or a future return to this work) cannot
    reproduce the observation from the captured request verbatim, the
-   finding is held until it can.
+   finding is held until it can;
+   (e) the captured request must include the **full response status
+   chain** (every redirect followed, each intermediate status code,
+   final body) — the OSHConnect-Python sweep surfaced a 302-redirect
+   error-masking pattern on write paths where the client receives
+   200 OK on a request the server silently re-routed and re-validated.
+   A second agent replaying a captured request without the status
+   chain cannot tell a clean 200 from a 302→200 that masked a silent
+   drop.
 
 ### Accepted risk — no skilled human-in-the-loop reviewer available
 
