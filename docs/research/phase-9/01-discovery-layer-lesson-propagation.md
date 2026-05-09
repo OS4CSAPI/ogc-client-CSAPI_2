@@ -295,6 +295,88 @@ upstream-filing work is bound by the same rule.
 
 ---
 
+## Maintainer-engagement signals from the cs-go filing pass
+
+As of 2026-05-09, eleven of the cs-go backlog items have been filed against
+[`SomethingCreativeStudios/connected-systems-go`](https://github.com/SomethingCreativeStudios/connected-systems-go/issues?q=is%3Aissue).
+Three early dispositions calibrate what Phase 9 should expect when filing
+discovery-layer findings against camptocamp:
+
+### Signal A — Concrete structural evidence + matching prior-fix pattern → merged in hours
+
+[Issue #3](https://github.com/SomethingCreativeStudios/connected-systems-go/issues/3)
+(`ControlStream` emits `"Systems": null`) — filed with one-line struct-tag
+diff against the parent fix `2dc09f7`, plus live curl on the deployed binary
+showing the literal `"Systems": null` member on `GET /controlstreams/{id}`.
+**Closed and merged via PR #13 ~10 hours after filing.**
+
+This is the exact wire shape Finding 3 ("null-shape responses crash typed
+parsers") defends against, captured live on a third independent CSAPI
+server. The defensive parser hardening we did at lower layers is justified
+by **observed wire output**, not just speculation.
+
+### Signal B — Spec-conformance argument with cited authority → merged
+
+[Issue #10](https://github.com/SomethingCreativeStudios/connected-systems-go/issues/10)
+(inline `@link.href` absolutization across 11 sites in 4 resource types) —
+filed with the OAS31 `format: uri` constraint, RFC 3986 §4.3, and a static
+file-by-file enumeration. **Linked PR #15 ("Absolute links everywhere")
+will close.** Validates Finding 4's premise that server-emitted self / inline
+links are heterogeneous and only normalized opportunistically. Even where the
+maintainer is responsive, the normalization landed late and one resource type
+at a time — which is precisely why our client cannot trust them as authority.
+
+### Signal C — Misread of spec semantics → closed as invalid
+
+[Issue #9](https://github.com/SomethingCreativeStudios/connected-systems-go/issues/9)
+(`DatastreamDataComponent.Updatable` orphaned in validator) — filed with full
+static evidence chain, asymmetry table, and SWE Common 3.0 citation.
+**Closed as `invalid` ~11 hours after filing**, with the maintainer's
+verbatim disposition:
+
+> *"Marking as invalid as the AI falsly assumed updatable is meta for
+> datastream schema, instead its for the observation value: 'Specifies
+> if the value of a data component can be updated externally (i.e., is
+> variable)'. The spelling difference of updatable between datastream
+> and controlstream is valid however, and can be opened as a new issue."*
+
+The filing's recommended-fix block had even acknowledged the dual reading
+(*"SWE Common's `updatable` flag admits two readings: (a) the component's
+definition cannot change… and (b) recorded values for that component cannot
+change"*) and explicitly recommended leading with reading (a) — which is the
+reading the maintainer rejected as a misread of the spec.
+
+**This is the directly-relevant signal for Phase 9.** The cs-go workflow
+(per-issue research plan, per-issue report, authoritative-references
+contract, public-facing extract) ran in full and *still* shipped an AI-authored
+filing that misread the underlying spec language. The discipline is necessary
+but not sufficient. Implications for any Phase 9 upstream filing against
+camptocamp:
+
+1. The spec-authority section must include the **verbatim normative
+   sentence**, not a paraphrase, and must distinguish between alternative
+   readings before recommending a fix. Issue #9's "two readings" caveat
+   was correct *and ignored* in the recommended-fix selection.
+2. **Live evidence beats structural inference.** Issues #3 and #10 (merged)
+   both lead with observed wire output. Issue #9 (rejected) is structural
+   inference + asymmetry table, no live behavior demonstrating the claimed
+   defect. Phase 9 findings should be filed only after the wire-level
+   defect is reproduced against at least one CSAPI server.
+3. **Adjacent findings are a pattern.** Maintainer carved out the
+   "spelling difference of `updatable` vs `updateable`" as a separately
+   filable wire-format defect. This is the same mode our findings exhibit
+   ("we kept finding featureType variants, kept filing them at lower
+   layers, never propagated"). Adjacent findings should be flagged in the
+   filing and fielded in batched follow-ups, not silently absorbed into
+   the parent claim.
+4. **AI-authored filings are at elevated risk of spec misreads.** The
+   maintainer's disposition cites the AI specifically. Phase 9 filings
+   that touch interpretive spec text (rel name semantics, featureType
+   vocabulary scope, "self" link authority) need a human-in-the-loop
+   review of the spec-authority block before filing.
+
+---
+
 ## Implications for Phase 9
 
 This document is initial research only. It establishes the diagnostic frame.
@@ -326,7 +408,17 @@ What it surfaces, but does not yet decide:
    [docs/research/references.md](../references.md) and may only cite
    sources from that list. This is the same contract cs-go research is
    bound by.
-5. **No code changes proposed yet.** This is research. Triage,
+5. **Filing gates inherited from cs-go's #9 invalid disposition.**
+   Before any Phase 9 finding is filed against camptocamp:
+   (a) the wire-level defect must be reproduced against at least one
+   live CSAPI server and the request/response captured in the filing;
+   (b) any spec-authority section that turns on interpretive language
+   (rel-name semantics, featureType vocabulary scope, `self` link
+   authority, null-shape conformance) must quote the normative sentence
+   verbatim and acknowledge alternative readings before recommending a
+   fix; (c) AI-authored filings get a human-in-the-loop review of the
+   spec-authority block before filing.
+6. **No code changes proposed yet.** This is research. Triage,
    maintainer-vs-us classification per sub-finding, plan/report drafting per
    the cs-go workflow, and PR scoping all come next.
 
