@@ -1008,294 +1008,231 @@ gap on this effort. Phase 9 proceeds with the gap acknowledged.
 
 ## Courses of action
 
-### Workflow context this section operates inside
+### What you need to know before reading the options
 
-This repo (`OS4CSAPI/ogc-client-CSAPI_2`) is the **exploratory build
-space**. The donation pathway runs:
+There are three repositories in play. Keeping them straight is the
+whole point of this section.
 
-```
-OS4CSAPI/ogc-client-CSAPI_2  (exploratory; this repo)
-            │
-            ▼  clean rebase, curated history
-OS4CSAPI/ogc-client          (clean fork; source branch for PR #136)
-            │
-            ▼  donation
-camptocamp/ogc-client PR #136
-```
+1. **This repository** (`OS4CSAPI/ogc-client-CSAPI_2`). This is where
+   we do the messy exploratory work — building, testing, breaking
+   things, learning. Issue #188 was filed here.
+2. **Our clean rebased fork** (`OS4CSAPI/ogc-client`). When the
+   exploratory work in repository #1 is ready, we re-do it as a
+   clean, tidy series of commits in this second repository. This is
+   the source of our donation pull request.
+3. **The upstream library** (`camptocamp/ogc-client`). This is the
+   project we are donating our work to. Our donation is **pull
+   request #136**.
 
-Two project rules already in effect constrain what any COA can
-recommend:
+Two project rules already in effect:
 
-1. **PR #136 ships only the CSAPI contribution.** Pre-existing upstream
-   defects we discover during the work are deliberately **not fixed in
-   the PR** — that scope discipline is what keeps PR #136 reviewable.
-2. **Pre-existing upstream defects are an awareness-issue path,
-   not a fix path for this team.** When our research plus external
-   evidence (now including #188) validates a defect that lives in
-   pre-existing upstream code, the appropriate move is to file an
-   issue against `camptocamp/ogc-client` informing the maintainer,
-   citing the evidence, and leave the fix to the maintainer or to a
-   future contribution by us *after* PR #136 lands.
+- **Rule 1: Pull request #136 only contains our own new code** —
+  the CSAPI feature we are adding. We do not use pull request #136
+  to fix bugs that already exist in the upstream library, even if
+  we discover them while working. Doing that would balloon the
+  pull request and make it harder for the upstream maintainer to
+  review and accept.
+- **Rule 2: When we find a bug that is already in the upstream
+  library, we tell the maintainer about it by filing an issue on
+  their repository.** We do not fix it ourselves. We let them know
+  it exists and let them decide what to do. We could come back and
+  contribute a fix later, after pull request #136 is accepted.
 
-Issue #188 was filed against this exploratory repo by
-[@nsnarayanam](https://github.com/nsnarayanam) — the first external
-party besides the project's two-person team to engage. The reporter
-has no visibility into the workflow above and filed in good faith
-against the repo where the bug reproduces. Their reproduction is
-correct; what changes is **where** each sub-finding's fix
-appropriately lives.
+Issue #188 was filed by an outside contributor named
+[@nsnarayanam](https://github.com/nsnarayanam). They are the first
+person outside our small team to engage with the project. They had
+no way of knowing about the workflow above when they filed. Their
+bug report is correct and useful. What we have to figure out is:
+*for each of their four sub-findings, where does the actual fix
+need to go?*
 
-### Where each #188 sub-finding actually lives
+### Where each of the four sub-findings actually lives
 
-Three buckets, mapped per sub-finding:
+Sub-finding #1 (six getters that crash when collection list is
+missing) and sub-finding #3 (the part that needs to recognize
+`featureType` as a CSAPI signal) live in **code we wrote ourselves**
+as part of the CSAPI feature. So fixing them belongs in our pull
+request #136.
 
-- **Bucket A — Our CSAPI contribution code.** Fix goes into PR #136
-  via the clean rebased fork. The defect is in code we authored
-  and are donating.
-- **Bucket B — Pre-existing upstream code.** Fix is *not* in PR
-  #136's scope. If the evidence package clears the gates, file an
-  awareness issue upstream. Otherwise hold.
-- **Bucket C — Mixed / interpretive.** Some of the failure surface
-  is ours, some is upstream's, or the disposition turns on
-  spec-authority text we cannot satisfy at gate 6b. Patch the
-  unambiguously-ours portion in PR #136, hold the rest.
+Sub-finding #2 (the rel-name allow-list) and sub-finding #4 (the
+self-link blind-follow problem) live in **code that was already in
+the upstream library before we started**. So under Rule 2, the
+right move is to file issues on the upstream library to let the
+maintainer know about them. We do not fix them ourselves.
 
-| #188 | Surface | Bucket | Notes |
-|---|---|---|---|
-| #1 null-deref × 6 sibling getters (`csapiCollections` + `recordCollections`, `featureCollections`, `edrCollections`, `vectorTileCollections`, `mapTileCollections`) | The **null-guard pattern** is upstream's — `allCollections` already implements it. The **six sibling getters** are our CSAPI contribution code that failed to mirror the upstream pattern. | **A** | This is straightforward propagation of an upstream-established defensive pattern into our additions. Goes into PR #136. |
-| #2 `collectionsUrl` rel allowlist rejects `'collections'` | `endpoint.ts:88-96` is **pre-existing upstream code** (`OgcApiEndpoint` discovery, predates our CSAPI work). Our CSAPI getters depend on it but did not author it. | **B** | Awareness-issue candidate. Issue [#186](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/186)'s prefix-match precedent is our prior art. Upstream [#116](https://github.com/camptocamp/ogc-client/issues/116) demonstrates @jahow is open to discovery-layer adjustments when the case is concrete. |
-| #3 `parseCollections` ignores `featureType` | `info.ts:294-301` `parseCollections` is **pre-existing upstream code**, but the `^ogc-cs:.+$` rel matcher (the part #188 #3 wants extended) is **our CSAPI addition** to that function. Extending it to also recognize `featureType: "system"` etc. is extending our own code. | **C → A** | The patch is to our CSAPI additions to `parseCollections`. Goes into PR #136 as a permissive extension (recognize `featureType` as alternative CSAPI signal; do not remove the `ogc-cs:` rel matcher). The "should upstream `parseCollections` also do this for non-CSAPI vocabularies?" question is held — that's interpretive and not our fight. |
-| #4 `getCollectionDocument` follows `self` link blindly | `endpoint.ts:359-377` `getCollectionDocument` is **pre-existing upstream code**. The OSH ghost-resource live reproduction (captured in the OSHConnect-Python sweep above) lands on this exact upstream function. | **B, prioritized** | Strongest upstream awareness-issue candidate. Upstream [#116](https://github.com/camptocamp/ogc-client/issues/116) is *already* about `getCollectionDocument`, and @jahow already agreed in principle that per-collection fetches via that path are reconsiderable. #188 #4 docks naturally onto that thread as wire-level evidence of a *correctness* problem (not just an efficiency problem) on the same function. |
+Here is that summary as a table:
 
-### Upstream evidence supporting Bucket B candidates
-
-A scan of `camptocamp/ogc-client`'s seven open issues (2026-05-09) for
-adjacent maintainer signals:
-
-| Upstream issue | Signal | Relevance |
+| Sub-finding (from Issue #188) | Whose code is it? | What we should do |
 |---|---|---|
-| [#116](https://github.com/camptocamp/ogc-client/issues/116) `getCollectionItemsUrl` unnecessary fetch via `getCollectionDocument` (C-Loftus, Sep 2025) | @jahow agreed the per-collection fetch is reconsiderable. **Same function as #188 #4.** | Direct docking point for #188 #4 awareness issue. Reframes #4 as "while reconsidering this fetch, note also the correctness problem on the resulting `self`-link follow." |
-| [#138](https://github.com/camptocamp/ogc-client/issues/138) constructor `unhandledRejection` (mborne, ~Apr 2026) | Maintainer-side acknowledgement that error-handling-on-discovery has rough edges. | Adjacent to #188 #1 (defensive coding philosophy) but not the same defect. Cite as context, not as evidence. |
-| [#99](https://github.com/camptocamp/ogc-client/issues/99) `setFetchOptionsUpdateCallback` bundling | Already woven into our Finding 4. | No new signal. |
-| #117, #134, #98, #65 | Async-syntax refactor, Vite worker bug, auth headers, WFS-T scope question. | Not relevant to #188's surface. |
+| #1 — six collection-getter functions crash when the server omits the `data` link | **Our code** (we wrote these six getters) | Fix it in our pull request #136 |
+| #2 — the `collectionsUrl` function only accepts certain rel-name strings and rejects `"collections"` | **Upstream's code** (existed before we got there) | File an awareness issue on the upstream library |
+| #3 — the `parseCollections` function does not recognize `featureType` as a CSAPI signal | **Our addition to upstream's function.** The function is upstream's, but the part we want to extend (the `ogc-cs:` matcher) is something we added. | Fix it in our pull request #136 — but only the part we own. The broader question of whether the upstream function should recognize non-CSAPI vocabularies is a different question and not ours to answer. |
+| #4 — the `getCollectionDocument` function blindly follows the `self` link without checking it returned the right thing | **Upstream's code** (existed before we got there) | File an awareness issue on the upstream library |
 
-The signal is consistent: the discovery layer is actively maintained,
-maintainers are responsive on concrete cases, but the bar is concrete
-evidence and small claims (cs-go #9 is the precedent for what "not
-small enough / not concrete enough" looks like).
+### Helpful context from the upstream library's open issues
 
-### Five COAs
+I checked the upstream library's open issue list. One of them is
+directly relevant:
 
-Each COA below is stated with its scope, cost, and risk under the
-workflow constraints above. The recommendation follows.
+[**Upstream issue #116**](https://github.com/camptocamp/ogc-client/issues/116) —
+filed by C-Loftus in September 2025 — is about the *exact same
+function* as our sub-finding #4 (`getCollectionDocument`). The
+upstream maintainer (`@jahow`) has already replied agreeing that the
+behavior of that function is reconsiderable. So if we file an
+awareness issue about sub-finding #4, there is already an open
+conversation about that function for it to attach to. That is the
+best landing spot we are going to get.
 
-### COA 1 — Close #188 as out-of-scope, take no action
+The other open upstream issues (about constructor error handling,
+async syntax, Vite bundling, auth headers, WFS support) are not
+related to what Issue #188 is reporting.
 
-**Scope.** Reply on #188 acknowledging the four sub-findings, point
-the reporter at the workaround they already implemented locally, and
-close. Make no PR-#136 changes. File no upstream awareness issues.
+### The five options
 
-**Cost.** Near zero engineering cost.
+#### Option 1 — Do nothing
 
-**Risk.** High. Three of the four sub-findings (#1, #2, #3) already
-have closed-issue ancestry in this repo (#143, #149, #34/#35, #186,
-#49/#50/#76). Closing #188 as out-of-scope re-buries lessons that
-the project has already paid to learn. The next consumer who hits
-the same surface will refile, and the integrity claim of the
-phase-9 research corpus weakens because we documented a propagation
-gap and then declined to close it. Recommended only if the project
-is being shelved.
+Reply on Issue #188, thank the reporter, point them at their own
+local fix as a workaround, close the issue. Make no changes to our
+code. File no awareness issues upstream.
 
-### COA 2 — Patch all four sub-findings in PR #136 (ignore the bucket boundary)
+**Cost:** Almost no work.
 
-**Scope.** Land four fixes in PR #136 via the standard exploratory →
-clean rebase → PR-#136 path, treating all four sub-findings as in
-scope for the donation:
-- #188 #1: mirror the `allCollections` null-guard pattern across the
-  six sibling getters in `endpoint.ts`.
-- #188 #2: add `'collections'` to the `collectionsUrl` rel allowlist
-  in `endpoint.ts`. **(But this touches pre-existing upstream code —
-  Bucket B; this COA ignores that boundary.)**
-- #188 #3: introduce a `CSAPI_FEATURE_TYPES` Set in `info.ts` and
-  extend the `^ogc-cs:.+$` rel matcher in `parseCollections` to also
-  treat `featureType` as a CSAPI signal. (Our CSAPI addition — Bucket A.)
-- #188 #4: post-fetch ID validation in `getCollectionDocument`,
-  returning a typed error when the `self` link resolves to a parent
-  URL. **(Pre-existing upstream code — Bucket B; this COA ignores
-  that boundary.)**
+**Downside:** We have closed-issue history in our own repository
+showing we have already learned three of these four lessons before
+(in our issues #143, #149, #34, #35, #186, #49, #50, #76). Closing
+Issue #188 with no action means we re-bury those lessons. The next
+person who runs into the same bugs will file the same report again.
+And our donation pull request still has bug #1 in it because we
+wrote that code and never fixed it.
 
-**Cost.** Low engineering cost. All four fixes are well-bounded.
+#### Option 2 — Put fixes for all four sub-findings into pull request #136
 
-**Risk.** High in a different way. This COA violates the project's
-standing rule that **PR #136 ships only the CSAPI contribution and
-does not fix pre-existing upstream defects**. Including #2 and #4
-fixes in PR #136 widens the PR's scope onto code paths the
-maintainer did not invite us to touch (`endpoint.ts:88-96`
-discovery-layer rel allowlist; `endpoint.ts:359-377`
-`getCollectionDocument`). cs-go #9's rejection demonstrates the cost
-of expanding scope into adjacent maintainer-owned territory. Recommended only
-if the project has decided to relax the PR-#136-scope rule.
+Add four fixes to our donation pull request: one for each
+sub-finding.
 
-### COA 3 — Awareness-issues-only against camptocamp/ogc-client; no PR-#136 changes
+**Cost:** Not much code. The four fixes are small.
 
-**Scope.** File two awareness issues against `camptocamp/ogc-client`
-under gates 6a–6e:
-- One on **#188 #2** — discovery-layer `rel` heterogeneity, leaning
-  on Issue [#186](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/186)
-  prefix-match prior art.
-- One on **#188 #4** — `getCollectionDocument` `self`-link authority,
-  docking onto upstream [#116](https://github.com/camptocamp/ogc-client/issues/116)'s
-  already-acknowledged thread on the same function. Cite the OSH
-  ghost-resource live reproduction.
+**Downside:** Two of the four sub-findings (#2 and #4) are bugs in
+upstream code that existed before we started. Fixing those in our
+donation pull request **breaks Rule 1** — it adds scope the
+maintainer did not invite. That kind of scope creep makes pull
+requests harder to accept, and we have prior experience with a
+similar over-scoped donation getting rejected on a sister project.
 
-Hold #188 #3 (interpretive, gate 6b cannot be satisfied without
-clean normative text on `featureType`-vocabulary scope). Take no
-action on #188 #1 (it lives in our CSAPI code; ignoring it leaves
-our own contribution broken — that is the cost of this COA).
+#### Option 3 — File awareness issues for the two upstream bugs but make no changes to our code
 
-**Cost.** Medium. Two filings, full evidence package each.
+File two awareness issues upstream (one for sub-finding #2, one for
+sub-finding #4). Do nothing about sub-findings #1 and #3.
 
-**Risk.** This COA leaves #188 #1 unresolved in the very code we
-intend to donate. nsnarayanam's reproduction continues to crash on
-the merged PR-#136 contribution. That contradicts the purpose of
-PR #136. Recommended only as a stopgap if upstream filings are the
-only available work for some reason.
+**Cost:** Moderate. Each awareness issue takes work to write up
+properly with evidence.
 
-### COA 4 — Bucket-disciplined hybrid (Bucket A → PR #136, Bucket B → upstream awareness issues, Bucket C held)
+**Downside:** Sub-finding #1 lives in **our own code**. Leaving it
+alone means our donation still has the bug in it. The whole point
+of the donation is to give the upstream library a working CSAPI
+feature, and "working" includes "doesn't crash on the
+OpenSensorHub demo server". This option leaves the donation broken.
 
-**Scope.** Disposition each sub-finding by which bucket the table
-above places it in:
+#### Option 4 — Do the right thing for each sub-finding separately *(recommended)*
 
-| #188 | Bucket | PR #136 (via `OS4CSAPI/ogc-client` rebase) | Upstream awareness issue against `camptocamp/ogc-client` | Notes |
-|---|---|---|---|---|
-| #1 null-deref × 6 sibling getters | A | **Yes** — mirror `allCollections` null-guard pattern across our six CSAPI sibling getters | **No** — the upstream pattern is already correct on `allCollections`; we are propagating it into our additions | Pure propagation of an upstream-established defensive pattern into our CSAPI contribution code. No upstream filing needed; the fix *is* the donation. |
-| #2 `collectionsUrl` rel allowlist | B | **No** — `endpoint.ts:88-96` is pre-existing upstream code we deliberately do not modify in PR #136 | **Yes** — file awareness issue; lean on Issue #186 prefix-match prior art | Single claim per filing per the cs-go workflow. Acknowledge that nsnarayanam's local fix is the simplest patch, but leave the disposition to @jahow / @mborne. |
-| #3 `parseCollections` ignores `featureType` | C → A | **Yes (permissive extension)** — extend our existing `^ogc-cs:.+$` CSAPI matcher in `parseCollections` to *also* treat `featureType` as a CSAPI signal. The `ogc-cs:` matcher is our addition; extending it stays inside our donation scope. | **Held** — the broader question ("should `parseCollections` recognize non-CSAPI vocabularies via `featureType`?") is interpretive and not our fight. Held at gate 6b. | Permissive framing avoids removing any existing matcher; it only widens the CSAPI-recognition surface our contribution supplies. |
-| #4 `getCollectionDocument` self-link blind follow | B, prioritized | **No** — `endpoint.ts:359-377` is pre-existing upstream code | **Yes, file first** — strongest evidence package; OSH ghost-resource live reproduction already captured; docks onto upstream #116 (@jahow already engaged on this function) | Frame the issue as "concretely dangerous companion to the efficiency concern in #116, on the same function." |
+Treat each sub-finding on its own merits:
 
-**Communication back to nsnarayanam.** Reply on #188 explaining:
-(a) the workflow (this repo is exploratory; the donation goes via
-the rebased clean fork → PR #136); (b) per-sub-finding disposition
-mapping to that workflow; (c) thanks for the reproduction, which
-becomes the canonical exit-criterion fixture; (d) link to any
-upstream awareness issues we file. nsnarayanam's local fixes are
-acknowledged as a valid workaround for downstream consumers in the
-interim.
+- **Sub-finding #1** — fix in our pull request #136. (Our code.)
+- **Sub-finding #2** — file an awareness issue upstream. Do not
+  modify the upstream code ourselves.
+- **Sub-finding #3** — fix in our pull request #136, but only the
+  part that lives in our own code. Leave the broader question
+  about upstream behavior alone.
+- **Sub-finding #4** — file an awareness issue upstream, attached
+  to the existing conversation in upstream issue #116 (same
+  function, maintainer already engaged).
 
-**Cost.** Medium. The most expensive piece is the upstream filings
-(two: #2 and #4) — same evidence-package work the gates demand.
-The PR-#136 patches (#1 and #3 permissive) are well-bounded and
-already inside scope we own.
+Then reply on Issue #188 explaining all of this to the reporter,
+thanking them, and pointing them at the upstream issues we filed
+on their behalf for #2 and #4.
 
-**Risk.** Lowest of the action-taking options under the actual
-project rules. Bucket discipline keeps PR #136 scope intact. Gate 6
-discipline caps the cs-go-#9-style misread blast radius. Holding
-#3 at gate 6b respects the same precedent. The OSH ghost-resource
-evidence is uniquely strong for #4 and the upstream #116 thread is
-a natural docking point.
+**Cost:** Moderate. Two fixes to our own code (small) plus two
+awareness issues to write up (the bigger expense).
 
-### COA 5 — Treat phase-9 as the propagation pass and refactor the discovery layer
+**Downside:** This is the most work of any of the four "do
+something" options, but it is the only one that keeps Rule 1 and
+Rule 2 intact, fixes the bugs in our own code, and gets the
+upstream bugs to the maintainer's attention without overstepping.
 
-**Scope.** Take the propagation diagnosis in the Premise section as
-the main phase-9 work item: walk every CSAPI lesson the project has
-accumulated (Postel's Law, rel-naming heterogeneity, `featureType`
-vocabulary, self-link authority, null-shape responses) into the
-`OgcApiEndpoint` discovery layer systematically. Produce the triage
-matrix the Status section names. Refactor.
+#### Option 5 — Use phase 9 to clean up the upstream library's discovery layer
 
-**Cost.** High. Multi-week effort with API-surface implications.
+Take this whole research document seriously and walk every lesson
+we have learned over the past nine months into the upstream
+library's discovery code as a major cleanup.
 
-**Risk.** Bucket boundaries collapse. The propagation diagnosis is
-correct (the doc above argues it), but executing it would require
-modifying pre-existing upstream code at scale — directly contrary
-to the PR-#136-scope rule. Without a domain-skilled human reviewer,
-the larger the refactor surface, the larger the blast radius of any
-single misread. cs-go #9 is the precedent: the safer posture is "do
-less, more carefully." The propagation work is a Phase 10+ candidate
-*after* PR #136 lands and the donation establishes our standing
-with the maintainer.
+**Cost:** Several weeks of work, with risk of breaking things.
+
+**Downside:** This breaks Rule 1 in a much bigger way than Option
+2 does — it is a large change to upstream code that the maintainer
+has not asked for. The diagnosis behind this option is correct
+(the propagation gap is real and is documented above), but the
+right time to do this work is **after** pull request #136 is
+accepted and we have a working relationship with the maintainer.
+Doing it now puts the donation at risk.
 
 ---
 
-### Recommendation
+### Recommendation: Option 4
 
-**Adopt COA 4 (bucket-disciplined hybrid).**
+Option 4 is the only option that:
 
-It is the only option that:
+- Respects the rules we already set for ourselves (the donation is
+  only our new code; pre-existing upstream bugs go to the
+  maintainer as awareness issues, not fixes from us).
+- Actually fixes the parts of Issue #188 that are in our code, so
+  our donation stops crashing.
+- Tells the upstream maintainer about the parts of Issue #188 that
+  are in their code, with strong evidence, so they can decide what
+  to do.
+- Treats `@nsnarayanam` like a real contributor: explains the
+  workflow honestly, thanks them for the report, and shows them
+  what we did with each part of their finding.
 
-- respects the standing **PR-#136-scope rule** (donation ships only
-  the CSAPI contribution; pre-existing upstream defects are
-  awareness-issues, not fixes);
-- closes the parts of #188 that genuinely live in our donation code
-  (#1, #3 permissive extension) inside PR #136 — making the
-  donation correct against nsnarayanam's reproduction;
-- gives the parts of #188 that live in pre-existing upstream code
-  (#2, #4) a path that informs the maintainer with concrete
-  evidence rather than ignoring them;
-- exploits the strongest evidence package we have (OSH ghost-resource
-  live reproduction for #4) on the upstream issue thread where it
-  has the best landing surface (upstream #116 already engaged on the
-  same function);
-- holds #3's interpretive portion at gate 6b rather than filing
-  speculatively, respecting the cs-go #9 precedent;
-- closes #188 with an honest workflow explanation back to
-  nsnarayanam.
+**Suggested order of work:**
 
-**Suggested execution order, gated by the existing process discipline:**
+1. Fix sub-finding #1 in our exploratory repository, then carry
+   the fix into our clean rebased fork, so it lands in pull
+   request #136.
+2. Fix the part of sub-finding #3 that lives in our code, same way.
+3. Write up the awareness issue for sub-finding #4 and file it on
+   the upstream library. Mention the existing conversation in
+   upstream issue #116. File this one first — the evidence is
+   strongest and the landing spot is best.
+4. Write up the awareness issue for sub-finding #2 and file it on
+   the upstream library.
+5. Reply on Issue #188 explaining what we did and why, thanking
+   the reporter, and linking to the upstream issues we filed.
+6. Close Issue #188 once the fixes for sub-findings #1 and #3 are
+   in our clean rebased fork. The upstream awareness issues
+   (sub-findings #2 and #4) are tracked separately because their
+   resolution is the upstream maintainer's call, not ours.
 
-1. **Triage matrix document** in this folder (the "next document"
-   the Status section already names). Re-key to the Bucket A/B/C
-   structure above. Columns: sub-finding, surface, bucket, PR-#136
-   disposition, upstream-awareness disposition, gate-6 readiness
-   checklist, evidence artefact pointer.
-2. **PR-#136 contribution patch for #1** (six sibling getters mirror
-   `allCollections` null-guard). Behind unit-test fixtures. Goes
-   through the standard exploratory→clean-rebase→PR-#136 path.
-3. **PR-#136 contribution patch for #3** as a *permissive extension
-   only* (extend our `ogc-cs:` rel matcher in `parseCollections` to
-   also recognize `featureType`; do not touch the upstream-owned
-   surface of `parseCollections`).
-4. **Upstream awareness issue for #4** against `camptocamp/ogc-client`.
-   File first while the OSH ghost-resource evidence is freshest.
-   Reference upstream #116 as the natural docking thread. Gate 6
-   compliant (live wire reproduction, verbatim normative text on
-   self-link authority, alternative readings, replayable request,
-   full status chain).
-5. **Upstream awareness issue for #2** against `camptocamp/ogc-client`.
-   Single-claim filing. Lean on Issue #186 prefix-match prior art.
-6. **Reply on #188** explaining the workflow, the per-sub-finding
-   disposition, the upstream issues filed, the held disposition for
-   #3, and a thank-you for the reproduction (which becomes the
-   canonical exit-criterion fixture for the propagation pass).
-7. **Close #188** when steps 2 and 3 are merged into the clean
-   rebase. The upstream issues (steps 4, 5) tracked separately from
-   #188's closure since their disposition is the maintainer's, not
-   ours. #3's held interpretive question stays in this research
-   doc, surfaced as a `references.md` gap if the relevant
-   normative text turns out not to exist.
+**Things I am specifically not recommending:**
 
-**What this recommendation deliberately does not include:**
-
-- **No fixes to pre-existing upstream code in PR #136.** That is
-  the standing rule and the reason for the bucket split.
-- **No upstream PRs against `camptocamp/ogc-client` outside PR #136.**
-  Standing decision from the cs-go workflow: issues only.
-- **No COA 5 propagation refactor in phase-9.** Phase 10+ candidate
-  after PR #136 lands.
-- **No fold-in of sub-findings into a single upstream issue.** cs-go
-  #9's `updatable`/`updateable` carve-out is the precedent — one
-  claim per filing.
-- **No re-litigation if an upstream awareness issue is rejected.**
-  Disposition captured verbatim, filing not refiled. Our PR-#136
-  patches (#1, #3) stand on their own merits regardless of how the
-  awareness issues land.
+- I am not recommending we fix the upstream library's pre-existing
+  bugs ourselves in pull request #136. That breaks Rule 1.
+- I am not recommending we open a pull request on the upstream
+  library for the bugs in their code. We file issues, not pull
+  requests, when raising awareness about pre-existing bugs.
+- I am not recommending we do the big phase-9 cleanup of the
+  upstream library's discovery layer right now. That is a
+  conversation to have with the maintainer **after** pull request
+  #136 lands.
+- I am not recommending we combine multiple sub-findings into a
+  single upstream issue. One bug per issue makes them easier to
+  triage and accept or reject independently.
 
 ---
 
 ## Status
 
-- Draft — initial framing only.
-- Next document in this folder should be a triage matrix mapping each
-  sub-finding to its bucket (A/B/C), its propagation surface, its
-  PR-#136 disposition, its upstream-awareness disposition, and its
-  gate-6 readiness state.
+- Draft.
+- The next document in this folder should be a planning document
+  that walks through the recommended order of work above, one step
+  at a time, with the specific files, line numbers, and evidence
+  each step needs.
