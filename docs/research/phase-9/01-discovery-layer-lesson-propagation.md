@@ -1006,6 +1006,195 @@ gap on this effort. Phase 9 proceeds with the gap acknowledged.
 
 ---
 
+## Courses of action
+
+Five COAs are on the table for disposing of Issue #188 and the
+broader propagation gap this research surfaces. Each is stated with
+its scope, cost, and the risk it carries. The recommendation follows.
+
+### COA 1 — Close #188 as out-of-scope, take no action
+
+**Scope.** Reply on #188 acknowledging the four sub-findings, point
+the reporter at the workaround they already implemented locally, and
+close. Do not patch the fork. Do not file upstream.
+
+**Cost.** Near zero engineering cost.
+
+**Risk.** High. Three of the four sub-findings (#1, #2, #3) already
+have closed-issue ancestry in this repo (#143, #149, #34/#35, #186,
+#49/#50/#76). Closing #188 as out-of-scope re-buries lessons that
+the project has already paid to learn. The next consumer who hits
+the same surface will refile, and the integrity claim of the
+phase-9 research corpus weakens because we documented a propagation
+gap and then declined to close it. Recommended only if the project
+is being shelved.
+
+### COA 2 — Fix in the OS4CSAPI fork only; do not file upstream
+
+**Scope.** Land four small, surgical fixes on `phase-9` (or a child
+branch):
+- #188 #1: mirror the `allCollections` null-guard pattern across the
+  six sibling getters in `endpoint.ts`.
+- #188 #2: add `'collections'` to the `collectionsUrl` rel allowlist.
+- #188 #3: introduce a `CSAPI_FEATURE_TYPES` Set in `info.ts` and
+  extend `parseCollections` to treat `featureType` as an alternative
+  CSAPI signal alongside `^ogc-cs:.+$`.
+- #188 #4: post-fetch ID validation in `getCollectionDocument`,
+  returning a typed error rather than the wrong resource when the
+  `self` link resolves to a parent URL.
+
+Each fix is paired with the unit-test fixture it would need plus
+the OSH demo as the integration smoke target. #188 stays open as
+the tracking issue and is closed by the merging PR.
+
+**Cost.** Low. All four fixes are well-bounded; #1 and #2 are
+single-token edits; #3 is the largest, on the order of 15–25 lines
+plus tests; #4 is ~10 lines plus a typed error path.
+
+**Risk.** Medium. The fork diverges further from camptocamp/ogc-client
+on exactly the surface (`OgcApiEndpoint` discovery layer) where
+divergence hurts most. Future upstream sync becomes a four-way
+merge each time camptocamp touches `endpoint.ts` or `info.ts`. The
+"never propagated" pattern this doc names is reproduced one floor
+up: we'd be fixing CSAPI ghost lessons in our walls and not walking
+them into the discovery layer of the upstream library.
+
+### COA 3 — File upstream against camptocamp/ogc-client; defer fork patches
+
+**Scope.** Open four separate issues against
+`camptocamp/ogc-client`, one per sub-finding, each conforming to
+gates 6a–6e (live reproduction, verbatim normative text, alternative
+readings, replayable request capture, full response status chain).
+Wait for maintainer disposition before patching the fork.
+
+**Cost.** Medium. Each filing requires the full evidence package the
+gates demand. #1 is the easiest filing (null-shape responses are
+clearly defensive); #2 is the second-easiest (rel allowlist
+heterogeneity has multi-server reproduction); #3 is interpretive
+(the `featureType`-vs-rel-pattern question is a vocabulary debate
+the spec does not resolve cleanly); #4 is the strongest filing
+because it has wire-level OSH ghost-resource reproduction
+(captured in the OSHConnect-Python cross-repo section above).
+
+**Risk.** Medium-high. The cs-go #9 disposition is the precedent:
+AI-authored upstream filings against camptocamp can be rejected as
+spec misreads even with full evidence chains, and we have no
+domain-skilled human reviewer (see "Accepted risk" above). #3 in
+particular admits more than one reading and could land as #9 did.
+While the filings are pending, the OSH consumer base remains broken
+on the fork too, because we deferred the fork patches.
+
+### COA 4 — Hybrid: patch the fork now, file upstream in parallel, per sub-finding
+
+**Scope.** Disposition each sub-finding independently rather than as
+a single block:
+
+| Sub-finding | Fork patch | Upstream filing | Rationale |
+|---|---|---|---|
+| #188 #1 (null-deref × 6 getters) | **Yes, immediate** | **Yes** — defensive-coding filing | Pure defensive coding; no spec interpretation. Filing is low-risk per gate 6b because there is no normative text to misread. Closed-issue ancestry (#143, #149, finding 003) makes the recurrence claim verifiable. |
+| #188 #2 (`collectionsUrl` rel allowlist) | **Yes, immediate** | **Yes** — rel-naming-heterogeneity filing | Issue #186's prefix-match precedent already established that real-server rel naming is heterogeneous. Filing leans on existing OS4CSAPI prior art rather than fresh spec interpretation. |
+| #188 #3 (`parseCollections` ignores `featureType`) | **Yes, immediate** as a permissive extension (treat `featureType` as alternative signal, do not remove `ogc-cs:` rel matcher) | **Hold** pending verbatim normative text on featureType-vocabulary scope | This is the interpretive sub-finding. Gate 6b cannot be satisfied without a clean spec quote on whether `featureType` is in-scope as a CSAPI collection signal. Filing held; fork patch ships behind a permissive matcher so the OSH demo works. |
+| #188 #4 (`self`-link blind follow) | **Yes, immediate** — post-fetch ID validation with typed error | **Yes, prioritized** — strongest filing | This is the only sub-finding with live wire-level reproduction (OSH ghost-resource bug captured in the OSHConnect-Python sweep). Gate 6a is satisfied uniquely well. File this one first. |
+
+The fork patches land on `phase-9` behind their unit-test fixtures
+plus the OSH demo smoke. Upstream filings go out one at a time per
+the cs-go process discipline (one claim per filing, no folding-in).
+#188 is closed by the merging fork PR, with a comment linking the
+upstream filings.
+
+**Cost.** Higher than COA 2 or COA 3 alone, but the cost is
+amortized: the evidence captured for the fork patches is the same
+evidence the upstream filings need, captured once.
+
+**Risk.** Lowest of the action-taking options. The accepted-risk
+posture (live reproduction mandatory, verbatim normative text,
+alternative readings, no PRs only issues, separate filings) caps
+the blast radius of any one misread to a single closeable upstream
+issue. The fork patches are reversible. #188 #3 is held at the
+spec-authority gate rather than filed and rejected.
+
+### COA 5 — Treat phase-9 as the propagation pass and refactor the discovery layer
+
+**Scope.** Beyond #188's four points, take the propagation diagnosis
+in the Premise section as the main work item: walk every CSAPI
+lesson the fork has accumulated (Postel's Law, rel-naming
+heterogeneity, featureType vocabulary, self-link authority,
+null-shape responses) into the `OgcApiEndpoint` discovery layer
+systematically. Produce a triage matrix per the existing Status
+section's "next document" plan. Refactor.
+
+**Cost.** High. This is a multi-week effort with API-surface
+implications and full regression-test work.
+
+**Risk.** Variable. The work is correct in principle — the doc
+above argues the propagation gap is real — but it overshoots #188.
+Without a domain-skilled reviewer, the larger the refactor surface,
+the larger the blast radius of any single misread. The cs-go #9
+precedent suggests "do less, more carefully" is the safer posture.
+
+---
+
+### Recommendation
+
+**Adopt COA 4 (hybrid, per-sub-finding disposition).**
+
+It is the only option that:
+- closes #188 with concrete code rather than ceremony;
+- satisfies gate 6a uniquely well on sub-finding #4 (the OSH
+  ghost-resource live reproduction is already captured);
+- holds sub-finding #3 at gate 6b rather than filing it
+  speculatively, respecting the cs-go #9 precedent;
+- patches the fork *and* files upstream from the same evidence
+  package, amortizing the cost across both;
+- caps the blast radius per the accepted-risk posture (no PRs
+  upstream, one claim per filing, separate filings).
+
+**Suggested execution order, gated by the existing process discipline:**
+
+1. **Triage matrix document** in this folder (the "next document"
+   the Status section already names). One row per sub-finding,
+   columns: failure class, propagation surface, fork disposition,
+   upstream disposition, gate-6 readiness checklist, evidence
+   artefact pointer.
+2. **Fork patches for #1 and #2** (lowest-interpretive-risk pair,
+   smallest diffs). Land behind unit tests + OSH demo smoke.
+3. **Upstream filing for #4** (strongest evidence package; ghost-resource
+   reproduction already captured; file this one first while the
+   evidence is freshest).
+4. **Fork patch for #4** (post-fetch ID validation with typed
+   error). Land in parallel with the upstream filing — fork does
+   not wait on maintainer disposition.
+5. **Fork patch for #3** as a *permissive extension only* (treat
+   `featureType` as an alternative CSAPI signal; do not remove
+   the existing `ogc-cs:` rel matcher). The permissive framing is
+   what lets this ship without a clean spec authority block.
+6. **Upstream filing for #1, then #2.** Separate filings, gate 6
+   compliance each.
+7. **Upstream filing for #3 — held** pending verbatim normative
+   text on `featureType`-vocabulary scope. Surfaced as a
+   `references.md` gap if the source does not exist; not
+   self-sourced. Re-evaluated when the spec authority resolves.
+8. **Close #188** when steps 2, 4, 5 are merged. Comment on the
+   issue with links to the upstream filings (1, 2, 4) and the
+   held disposition for #3.
+
+**What this recommendation deliberately does not include:**
+
+- No COA 5 propagation refactor in phase-9. The propagation
+  diagnosis stays in this research doc as a Phase 10+ candidate.
+  Doing the refactor without a domain-skilled reviewer reproduces
+  the cs-go #9 risk pattern at larger scale.
+- No PR upstream against `camptocamp/ogc-client`. Standing
+  decision from the cs-go workflow: issues only.
+- No fold-in of any sub-finding into another's filing. cs-go #9's
+  carve-out pattern (the `updatable`/`updateable` spelling defect)
+  is the precedent: one claim per filing.
+- No re-litigation if any upstream filing is rejected. Per the
+  accepted-risk posture, the disposition comment is captured
+  verbatim and the filing is not refiled. The fork patch stays.
+
+---
+
 ## Status
 
 - Draft — initial framing only.
