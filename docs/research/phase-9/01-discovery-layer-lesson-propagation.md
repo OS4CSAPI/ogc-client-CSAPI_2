@@ -213,6 +213,88 @@ were standing, we did not walk one room over."*
 
 ---
 
+## Cross-repo corroboration — the same lesson classes show up server-side
+
+The pattern is not isolated to client-side code. The
+[`OS4CSAPI/connected-systems-go`](https://github.com/OS4CSAPI/connected-systems-go)
+repo — our fork of the Go-based CSAPI server we deploy at
+`129-80-248-53.sslip.io/csapi-go-upstream/` — closed 24 of 26 issues in early
+2026 and parked a 16-item upstream-followup backlog
+([upstream-followup-backlog.md](https://github.com/OS4CSAPI/connected-systems-go/blob/main/docs/research/upstream-followup-backlog.md))
+to file against `SomethingCreativeStudios/connected-systems-go`. Several of
+those backlog items are server-side mirrors of the same lesson classes
+catalogued above:
+
+| Lesson class (client side) | Server-side counterpart in cs-go backlog |
+|---|---|
+| **Null-shape responses** (Finding 3) | Backlog #5 — `ControlStream.Systems` field JSON-leak: GET returns `"Systems": null` at top level (sibling of `Datastream.Systems` fix that landed in `2dc09f7`). The exact null shape our endpoint getters fail on. |
+| **Link-rel divergence / featureType vocabulary** (Findings 1 + 2) | Backlog #15 — Inline `@link` absolutization not applied to 5 of 7 resource types (`d2d1347` only fixed Datastream + ControlStream). Server emits inconsistent `@link` shapes across resource types — exactly the heterogeneity our client has to defend against. |
+| **Untrusted-self-link surface** (Finding 4) | Backlog #16 — Inline `@link` Type/Title/UID enrichment incomplete (per maintainer's *"not all fully enriched"* self-ack). Server's own self-link metadata is partial and inconsistent across resources, validating our suspicion that `self` is server-authored signal, not authority. |
+| **Silent shape changes between server versions** | Backlog item #17 — silent SensorML field loss exposed by upstream commit `a467aba`'s strict decode. The same pre-strict OSH server that previously accepted broken shapes silently dropped fields on GET. The lesson — *server permissiveness varies by build, never trust the round-trip* — is one we already learned with [#140 closed (paramsSchema vs parametersSchema)](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/140) on the client. |
+
+**What this adds:** the four lesson classes in our findings are not OSH
+quirks. They are CSAPI ecosystem patterns visible on at least three servers
+(OSH Java at `45.55.99.236`, 52°North, and cs-go). Phase 9 propagation work
+should assume *every* CSAPI server will exhibit some subset of these classes,
+not just OSH.
+
+**A third server we can smoke-test against.** The
+[cross-server-interoperability-analysis.md](../../implementation/cross-server-interoperability-analysis.md)
+recommendation #8 named OSH and 52°North as the two-server pair. That doc
+predates cs-go's deployment to Oracle Cloud. The pair is now a **trio** and
+we have CRUD permission on cs-go (per
+[OSHConnect-Python](https://github.com/OS4CSAPI/OSHConnect-Python) PR #6
+work). Phase 9 smoke-test discipline should hit all three.
+
+---
+
+## Process discipline borrowed from cs-go
+
+`connected-systems-go`'s
+[upstream-followup-plan.md](https://github.com/OS4CSAPI/connected-systems-go/blob/main/docs/research/upstream-followup-plan.md)
+codified a four-step workflow for moving each finding from triage to filed
+upstream issue:
+
+1. **Per-issue research plan** at `docs/research/upstream-issues/plan-NN-<slug>.md`
+   identifying sources, evidence files, maintainer-triage signal, upstream
+   commit context, re-verification commands, and spec-authority citations.
+2. **Per-issue report** at `docs/research/upstream-issue-reports/report-NN-<slug>.md`
+   synthesizing findings with static + live evidence, alternatives weighed,
+   recommended fix, scope guard, fork-side context, and a clearly-marked
+   *public-facing extract* section that becomes the upstream issue body
+   verbatim.
+3. **File the issue** as a mechanical copy of the public-facing extract — the
+   issue body is never freshly written, always copied from the report.
+4. **Update tracking** — backlog item moves from "Open" to "Closed/superseded"
+   with the upstream issue URL.
+
+Two standing decisions from that plan are directly relevant to Phase 9:
+
+- *"All upstream submissions are filed as **issues**, never as direct pull
+  requests — even for one-line fixes. The maintainer owns the canonical repo
+  and decides what merges; our job is to surface findings with full evidence
+  and let them choose the fix shape and timing."*
+- *"Issues are drafted and filed **one at a time**, not in batches."*
+
+Our governance precedent
+([docs/code-review/upstream-findings-report.md](../../code-review/upstream-findings-report.md))
+already says hands-off on upstream code in our PRs. The cs-go workflow gives
+us a **constructive alternative** — file as an issue with full evidence,
+don't patch around it silently and don't open uninvited PRs. Phase 9's
+sub-issues 1 (5 upstream getters), 2 (`collectionsUrl`), and 4
+(`getCollectionDocument` self-link) are exactly the shape that workflow was
+built for.
+
+**Authoritative references contract.** The cs-go research plan template
+opens with: *"Mandatory first action when authoring or working from any
+research plan: re-read the curated authoritative-references list at*
+[`OS4CSAPI/ogc-client-CSAPI_2:phase-8/docs/research/references.md`](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/blob/phase-8/docs/research/references.md)
+*. Self-sourcing references is forbidden; gaps must be surfaced to the user
+before drafting."* That references file is in this repo and Phase 9
+upstream-filing work is bound by the same rule.
+
+---
+
 ## Implications for Phase 9
 
 This document is initial research only. It establishes the diagnostic frame.
@@ -221,23 +303,32 @@ What it surfaces, but does not yet decide:
 1. **Lesson-propagation pass as a first-class deliverable.** Phase 9 should
    include an explicit pass that, for each lesson we previously fixed in
    CSAPI, audits the upstream-inherited `OgcApiEndpoint` surface for the same
-   class and either fixes it (if ours), patches around it (if not), or
-   contributes upstream (if camptocamp would accept it).
+   class and either fixes it (if ours), files an upstream issue with
+   evidence (per the cs-go discipline), or contributes upstream where the
+   maintainer signals interest.
 2. **Maintainer-vs-us boundary, per finding.** Sub-issues 1 (5 of 6 getters),
    2, and 4 sit in upstream camptocamp code. Our governance precedent
    ([docs/code-review/upstream-findings-report.md](../../code-review/upstream-findings-report.md))
-   says hands-off. Phase 9 needs to revisit whether that precedent should
-   extend to *consumer-facing* failures the upstream maintainer has not
-   prioritized. The `csapiCollections` getter and the `info.ts`
-   `hasConnectedSystems` rel block are unambiguously ours and are unblocked.
-3. **Process gap on cross-server smoke testing.**
+   says hands-off in our PRs. The cs-go workflow gives us a constructive
+   alternative — file as a camptocamp issue with full evidence, one at a
+   time, never as an unsolicited PR. The `csapiCollections` getter and the
+   `info.ts` `hasConnectedSystems` rel block are unambiguously ours and are
+   unblocked.
+3. **Process gap on cross-server smoke testing — now three-server.**
    [docs/implementation/cross-server-interoperability-analysis.md](../../implementation/cross-server-interoperability-analysis.md)
-   recommendation #8 prescribed every-phase smoke testing on both OSH and
-   52°North. Smoke Test inventory shows we did this once (ST#5) and tapered
-   off. Re-establishing the discipline is a Phase 9 process task, not a code
-   task.
-4. **No code changes proposed yet.** This is research. Triage,
-   maintainer-vs-us classification per sub-finding, and PR scoping come next.
+   recommendation #8 prescribed every-phase smoke testing on OSH +
+   52°North. That doc predates cs-go's deployment. The smoke-test pair is
+   now a trio (OSH `45.55.99.236`, 52°North, cs-go-upstream
+   `129-80-248-53.sslip.io`). Re-establishing the discipline is a Phase 9
+   process task, not a code task.
+4. **Authoritative-references contract.** Any upstream-filing work in
+   Phase 9 must begin by re-reading
+   [docs/research/references.md](../references.md) and may only cite
+   sources from that list. This is the same contract cs-go research is
+   bound by.
+5. **No code changes proposed yet.** This is research. Triage,
+   maintainer-vs-us classification per sub-finding, plan/report drafting per
+   the cs-go workflow, and PR scoping all come next.
 
 ---
 
