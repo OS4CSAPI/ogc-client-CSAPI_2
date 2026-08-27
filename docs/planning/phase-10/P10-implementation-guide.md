@@ -1,7 +1,7 @@
 # Phase 10: Upstream Synchronization and Documentation Maintenance — Implementation Guide
 
-- **Version:** 0.1
-- **Status:** Draft for project-owner review
+- **Version:** 1.0
+- **Status:** Approved
 - **Date:** August 27, 2026
 - **Branch:** `phase-10`
 - **Authority:** Derived from the approved [Phase 10 Contribution Goal and Definition](./P10-contribution-goal-and-definition.md)
@@ -559,15 +559,8 @@ After this guide is approved, the Roadmap must:
 9. Require issue-closing comments with commit, files, gates, and deviations.
 10. Contain no live-server acceptance gate.
 
-## 18. Approval Gate
+## 18. Approval Record
 
-This draft is ready for project-owner review. Approval will establish Version 1.0 as the authoritative technical plan and authorize drafting the Phase 10 Roadmap.
+The project owner approved this Implementation Guide on August 27, 2026. Version 1.0 is the authoritative Phase 10 technical plan from which the Roadmap must be derived.
 
-Until approval, do not:
-
-- integrate upstream;
-- modify source, tests, package metadata, workflow, formatter rules, or public documentation;
-- run the formatter in write mode;
-- draft the Roadmap;
-- create Phase 10 GitHub issues;
-- modify delivery `clean-pr` or PR #136.
+Approval authorizes drafting the Roadmap only. It does not authorize upstream integration, source changes, formatter writes, GitHub issue creation, delivery-branch modification, or PR updates.
