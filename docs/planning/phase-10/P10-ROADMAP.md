@@ -1,7 +1,7 @@
 # Phase 10 Roadmap
 
-- **Version:** 0.1
-- **Status:** Draft for project-owner review
+- **Version:** 1.0
+- **Status:** Approved
 - **Date:** August 27, 2026
 - **Branch:** `phase-10`
 - **Scope authority:** [Phase 10 Contribution Goal and Definition](./P10-contribution-goal-and-definition.md)
@@ -468,14 +468,8 @@ After Roadmap approval:
 7. Add issue links to this Roadmap in a separate post-creation documentation commit.
 8. Begin A1 only after issue creation and mapping audit are complete.
 
-## 14. Approval Gate
+## 14. Approval Record
 
-This draft is ready for project-owner review. Approval will establish Version 1.0 as the authoritative Phase 10 execution sequence and authorize creating the 12 corresponding GitHub issues.
+The project owner approved this Roadmap on August 27, 2026. Version 1.0 is the authoritative Phase 10 execution sequence and authorizes creating exactly 12 corresponding GitHub issues.
 
-Until approval, do not:
-
-- create Phase 10 GitHub issues;
-- integrate upstream;
-- modify source, tests, package metadata, workflow, formatter rules, or public documentation;
-- run the formatter in write mode;
-- modify delivery `clean-pr` or PR #136.
+Approval does not authorize implementation, upstream integration, formatter writes, delivery-branch modification, or PR updates. Each action becomes authorized only through its dependency-ready GitHub issue.
