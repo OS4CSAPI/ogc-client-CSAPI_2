@@ -64,7 +64,7 @@ F3 Push clean-pr, refresh PR #136, and verify checks
 
 ### Task A1 — Revalidate and Lock the Upstream Baseline
 
-- **GitHub issue:** Not created; pending Roadmap approval.
+- **GitHub issue:** [#189](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/189).
 - **Objective:** Establish the exact upstream commit and conflict forecast that Task A2 is permitted to merge.
 - **Acceptance criteria advanced:** P10-A1, P10-A2.
 - **Dependencies:** None.
@@ -89,7 +89,7 @@ F3 Push clean-pr, refresh PR #136, and verify checks
 
 ### Task A2 — Integrate the Locked Upstream Commit in the Workbench
 
-- **GitHub issue:** Not created; pending Roadmap approval.
+- **GitHub issue:** [#190](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/190).
 - **Objective:** Merge the A1-recorded upstream commit into `phase-10` while preserving current upstream architecture and the existing CSAPI contribution.
 - **Acceptance criteria advanced:** P10-A1, P10-A2, P10-A4, P10-A5.
 - **Dependencies:** A1.
@@ -116,7 +116,7 @@ F3 Push clean-pr, refresh PR #136, and verify checks
 
 ### Task A3 — Audit Upstream and CSAPI Preservation
 
-- **GitHub issue:** Not created; pending Roadmap approval.
+- **GitHub issue:** [#191](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/191).
 - **Objective:** Prove that Task A2 preserved both current upstream changes and the Phase 8 CSAPI public surface before maintenance edits begin.
 - **Acceptance criteria advanced:** P10-A2, P10-A3, P10-A4, P10-A5.
 - **Dependencies:** A2.
@@ -144,7 +144,7 @@ F3 Push clean-pr, refresh PR #136, and verify checks
 
 ### Task B1 — Align Workbench QA and Formatting Boundaries
 
-- **GitHub issue:** Not created; pending Roadmap approval.
+- **GitHub issue:** [#192](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/192).
 - **Objective:** Make current upstream QA runnable on `phase-10` without formatting historical workbench-only records.
 - **Acceptance criteria advanced:** P10-B1, P10-B2, P10-B4.
 - **Dependencies:** A3.
@@ -169,7 +169,7 @@ F3 Push clean-pr, refresh PR #136, and verify checks
 
 ### Task B2 — Apply the Mechanical Prettier 3 Migration
 
-- **GitHub issue:** Not created; pending Roadmap approval.
+- **GitHub issue:** [#193](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/193).
 - **Objective:** Reformat the exact contribution-relevant file population required by current upstream Prettier 3 without semantic edits.
 - **Acceptance criteria advanced:** P10-B1, P10-B2, P10-B3.
 - **Dependencies:** B1.
@@ -197,7 +197,7 @@ F3 Push clean-pr, refresh PR #136, and verify checks
 
 ### Task C1 — Correct Stale Public CSAPI Usage
 
-- **GitHub issue:** Not created; pending Roadmap approval.
+- **GitHub issue:** [#194](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/194).
 - **Objective:** Make every current public CSAPI example describe the real endpoint facade, method spelling, advanced factory signature, and supported package subpath.
 - **Acceptance criteria advanced:** P10-C1, P10-C2, P10-C3.
 - **Dependencies:** B2.
@@ -224,7 +224,7 @@ F3 Push clean-pr, refresh PR #136, and verify checks
 
 ### Task D1 — Add the CSAPI Entry Point to TypeDoc and VitePress
 
-- **GitHub issue:** Not created; pending Roadmap approval.
+- **GitHub issue:** [#195](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/195).
 - **Objective:** Render the existing public CSAPI subpath in the current API-reference page with its correct consumer import path.
 - **Acceptance criteria advanced:** P10-C3, P10-C4, P10-C5, P10-C6.
 - **Dependencies:** C1.
@@ -254,7 +254,7 @@ F3 Push clean-pr, refresh PR #136, and verify checks
 
 ### Task E1 — Run Full Repository and Documentation QA
 
-- **GitHub issue:** Not created; pending Roadmap approval.
+- **GitHub issue:** [#196](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/196).
 - **Objective:** Prove the completed workbench tree passes every repository and documentation gate under the approved runtime.
 - **Acceptance criteria advanced:** P10-A3, P10-A5, P10-B2, P10-B4, P10-C6, P10-D1, P10-D2, P10-D3, P10-D4, P10-D7.
 - **Dependencies:** D1.
@@ -278,7 +278,7 @@ F3 Push clean-pr, refresh PR #136, and verify checks
 
 ### Task E2 — Prove the Production Package and Clean-Consumer Imports
 
-- **GitHub issue:** Not created; pending Roadmap approval.
+- **GitHub issue:** [#197](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/197).
 - **Objective:** Demonstrate that the production artifact contains and resolves both the root and CSAPI JavaScript/declaration entry points.
 - **Acceptance criteria advanced:** P10-A4, P10-D5, P10-D6, P10-D7.
 - **Dependencies:** E1.
@@ -306,7 +306,7 @@ F3 Push clean-pr, refresh PR #136, and verify checks
 
 ### Task F1 — Generate the Reviewed Delivery Manifest and Patch
 
-- **GitHub issue:** Not created; pending Roadmap approval.
+- **GitHub issue:** [#198](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/198).
 - **Objective:** Produce a binary-safe patch containing only accepted contribution-bearing Phase 10 content.
 - **Acceptance criteria advanced:** P10-E1, P10-E2.
 - **Dependencies:** E2.
@@ -333,7 +333,7 @@ F3 Push clean-pr, refresh PR #136, and verify checks
 
 ### Task F2 — Prepare and Verify `clean-pr` Locally
 
-- **GitHub issue:** Not created; pending Roadmap approval.
+- **GitHub issue:** [#199](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/199).
 - **Objective:** Construct the reviewer-facing delivery locally and prove it matches the verified workbench before any remote change.
 - **Acceptance criteria advanced:** P10-A4, P10-E2, P10-E3.
 - **Dependencies:** F1.
@@ -363,7 +363,7 @@ F3 Push clean-pr, refresh PR #136, and verify checks
 
 ### Task F3 — Push Delivery, Refresh PR #136, and Verify Checks
 
-- **GitHub issue:** Not created; pending Roadmap approval.
+- **GitHub issue:** [#200](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/200).
 - **Objective:** Publish the verified local delivery, make PR #136 accurately describe Phase 10, and confirm the required remote checks.
 - **Acceptance criteria advanced:** P10-E4, P10-E5.
 - **Dependencies:** F2 and explicit confirmation that its local delivery evidence passed.
