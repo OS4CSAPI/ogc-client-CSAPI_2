@@ -35,7 +35,7 @@ import { EndpointError } from '../../../shared/errors.js';
  *
  * Schema fields are delegated to the existing SWE Common parser layer:
  * - `resultSchema` and `recordSchema` → {@link parseSWEComponent}
- * - `encoding` → {@link parseEncoding}
+ * - `encoding` → `parseEncoding`
  *
  * Fields are only delegated when present and are non-null objects. If absent
  * or not an object, the field is omitted from the result (`undefined`).
@@ -115,7 +115,7 @@ export function parseDatastreamSchemaResponse(
  *
  * Schema fields are delegated to the existing SWE Common parser layer:
  * - `parametersSchema` → {@link parseSWEComponent}
- * - `encoding` → {@link parseEncoding}
+ * - `encoding` → `parseEncoding`
  *
  * Fields are only delegated when present and are non-null objects. If absent
  * or not an object, the field is omitted from the result (`undefined`).

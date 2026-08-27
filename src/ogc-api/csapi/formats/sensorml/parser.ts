@@ -6,10 +6,10 @@
  * union value. Type discrimination reads the `type` property and delegates
  * to the appropriate sub-parser:
  *
- * - `'SimpleProcess'` → {@link parseSimpleProcess} (`simple-process.ts`)
- * - `'AggregateProcess'` → {@link parseAggregateProcess} (`aggregate-process.ts`)
- * - `'PhysicalComponent'` → {@link parsePhysicalComponent} (`physical-system.ts`)
- * - `'PhysicalSystem'` → {@link parsePhysicalSystem} (`physical-system.ts`)
+ * - `'SimpleProcess'` → `parseSimpleProcess` (`simple-process.ts`)
+ * - `'AggregateProcess'` → `parseAggregateProcess` (`aggregate-process.ts`)
+ * - `'PhysicalComponent'` → `parsePhysicalComponent` (`physical-system.ts`)
+ * - `'PhysicalSystem'` → `parsePhysicalSystem` (`physical-system.ts`)
  *
  * Also exports shared parsing helpers for DescribedObject, AbstractProcess,
  * and AbstractPhysicalProcess property groups, plus CapabilityList and
@@ -395,10 +395,10 @@ export function parseAbstractPhysicalProcessProperties(
  *
  * | `type` value          | Sub-parser                |
  * |-----------------------|---------------------------|
- * | `'SimpleProcess'`     | {@link parseSimpleProcess}     |
- * | `'AggregateProcess'`  | {@link parseAggregateProcess}  |
- * | `'PhysicalComponent'` | {@link parsePhysicalComponent} |
- * | `'PhysicalSystem'`    | {@link parsePhysicalSystem}    |
+ * | `'SimpleProcess'`     | `parseSimpleProcess`     |
+ * | `'AggregateProcess'`  | `parseAggregateProcess`  |
+ * | `'PhysicalComponent'` | `parsePhysicalComponent` |
+ * | `'PhysicalSystem'`    | `parsePhysicalSystem`    |
  *
  * @example
  * ```typescript

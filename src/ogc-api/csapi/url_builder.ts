@@ -64,9 +64,8 @@ type ResourceSubPath =
  * passing the parsed JSON body to the matching parser function
  * (`parseDatastream`, `parseObservation`, `parseSystem`, …). This mirrors
  * the design of `EDRQueryBuilder` from the sibling `ogc-api/edr` module —
- * same pattern, same rationale. See the {@link module:csapi | csapi module
- * docblock} for the full 5-step request pattern and a complete worked
- * example.
+ * same pattern, same rationale. See the CSAPI module documentation for the
+ * full 5-step request pattern and a complete worked example.
  *
  * ## Resource Discovery
  *
@@ -180,15 +179,14 @@ function toUrlPathSegment(resourceType: string): string {
 export default class CSAPIQueryBuilder {
   /**
    * The set of CSAPI resource types available on this collection,
-   * discovered from the collection's link relations via
-   * {@link scanCsapiLinks}.
+   * discovered by scanning the collection's link relations.
    *
    * This reflects link scanning results, **not** actual server capability.
    * Resources may exist at standard well-known paths even if they are not
    * listed here. Consumers who supply `resourceUrls` to the constructor
    * will also see those keys appear in this set.
    *
-   * @see {@link scanCsapiLinks} for the recognized link conventions
+   * @see `scanCsapiLinks` for the internal link-scanning implementation
    */
   public readonly availableResources: ReadonlySet<CSAPIResourceType>;
 
@@ -218,11 +216,12 @@ export default class CSAPIQueryBuilder {
    *
    * @remarks
    * Resource availability (`availableResources`) is populated by scanning
-   * link relations in the collection document via {@link scanCsapiLinks},
+   * link relations in the collection document via the internal
+   * `scanCsapiLinks` helper,
    * **not** by probing the server with HTTP requests. Some servers
    * (e.g., 52North CSA) do not advertise CSAPI resources via standard link
    * relations, which results in an empty `availableResources` set and
-   * causes {@link assertResourceAvailable} to throw for every resource type.
+   * causes the internal availability check to throw for every resource type.
    *
    * The `resourceUrls` parameter is the recommended workaround for such
    * servers: when provided, its keys are merged into `availableResources`,
@@ -235,8 +234,8 @@ export default class CSAPIQueryBuilder {
    * );
    * const builder = new CSAPIQueryBuilder(collection, resourceUrls);
    *
-   * @see {@link scanCsapiLinks} for the link conventions recognized during discovery
-   * @see {@link assertResourceAvailable} for the validation that guards every query method
+   * @see `scanCsapiLinks` for the internal link-scanning implementation
+   * @see `assertResourceAvailable` for the internal validation that guards every query method
    * @see https://docs.ogc.org/is/23-001/23-001.html
    */
   constructor(
@@ -453,7 +452,7 @@ export default class CSAPIQueryBuilder {
    *
    * @see The constructor's `resourceUrls` parameter for a workaround when
    *   a resource type exists on the server but was not discovered via links.
-   * @see {@link scanCsapiLinks} for the link conventions used during discovery
+   * @see `scanCsapiLinks` for the internal link-scanning implementation
    */
   private assertResourceAvailable(resourceType: string): void {
     // Widen the `has` lookup to accept arbitrary string inputs from internal

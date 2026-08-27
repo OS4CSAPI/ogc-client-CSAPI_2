@@ -17,7 +17,7 @@
  *
  * ## Making a request — the 5-step pattern
  *
- * 1. Construct an {@link OgcApiEndpoint} for the API root.
+ * 1. Construct an `OgcApiEndpoint` for the API root.
  * 2. Build a {@link CSAPIQueryBuilder} for the target collection.
  * 3. Call a `get*()` method to obtain a URL string.
  * 4. Issue the request yourself (`fetch`, `axios`, your wrapper of choice).
