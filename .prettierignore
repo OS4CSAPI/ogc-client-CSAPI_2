@@ -1,6 +1,8 @@
 fixtures/**/*.xml
 fixtures/**/notjson.json
 docs/research/standards/*.yaml
+docs/
+.tmp/
 dist
 node_modules
 app/.vitepress/dist
