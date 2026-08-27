@@ -1,7 +1,7 @@
 # Phase 10: Upstream Synchronization and Documentation Maintenance — Contribution Goal and Definition
 
-- **Version:** 0.1
-- **Status:** Draft for project-owner review
+- **Version:** 1.0
+- **Status:** Approved
 - **Date:** August 27, 2026
 - **Upstream baseline observed during preflight:** `camptocamp/ogc-client@305e3da2cf86cfda5c3254a0be419db70cce54b0`
 - **Workbench branch:** `OS4CSAPI/ogc-client-CSAPI_2:phase-10`
@@ -220,15 +220,8 @@ Phase 10 is complete only when:
 
 At that point, the upstream maintainer can review the refreshed contribution without first resolving new design questions introduced by Phase 10.
 
-## 11. Draft Approval Gate
+## 11. Approval Record
 
-This version is intentionally marked **Draft for project-owner review**. Pushing the draft makes it durable and reviewable; it does not settle it automatically.
+The project owner approved this Contribution Goal and Definition on August 27, 2026. Version 1.0 is the authoritative Phase 10 scope contract from which the Implementation Guide must be derived.
 
-Before the Implementation Guide may be drafted:
-
-1. the project owner reviews this document;
-2. requested corrections are incorporated;
-3. internal contradictions and coverage gaps are resolved;
-4. the status changes to **Approved** and the version advances to `1.0` in a dedicated commit.
-
-Until then, this draft authorizes no upstream merge, source change, formatter migration, Implementation Guide, Roadmap, GitHub issue, delivery-branch modification, or PR update.
+Approval authorizes drafting the Implementation Guide only. It does not authorize an upstream merge, source change, formatter migration, Roadmap, GitHub issue, delivery-branch modification, or PR update.
