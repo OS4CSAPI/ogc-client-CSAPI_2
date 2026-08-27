@@ -54,7 +54,7 @@ import type { CSAPICollectionRef } from './model.js';
  */
 export function createCSAPIBuilder(
   collection: CSAPICollectionRef,
-  resourceUrls: ReadonlyMap<string, string>
+  resourceUrls: ReadonlyMap<string, string>,
 ): CSAPIQueryBuilder {
   return new CSAPIQueryBuilder(collection, new Map(resourceUrls));
 }

@@ -332,7 +332,7 @@ ${e.message}`);
    */
   get hasConnectedSystems(): Promise<boolean> {
     return Promise.all([this.conformanceClasses]).then(
-      checkHasConnectedSystems
+      checkHasConnectedSystems,
     );
   }
 
@@ -387,7 +387,7 @@ ${e.message}`);
       throw new EndpointError(
         `Failed to initialize CSAPI builder for collection '${collectionId}': ${
           e instanceof Error ? e.message : String(e)
-        }`
+        }`,
       );
     }
     // Shape the raw collection document into a value-typed

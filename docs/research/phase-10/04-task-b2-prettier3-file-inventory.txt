@@ -1,0 +1,61 @@
+# Phase 10 Task B2 — machine-generated Prettier 3 migration inventory
+# Generated: 2026-08-27
+# Baseline: 4d549902ed8f68291350b530bbe55c1873427e22
+# Runtime: Node.js 24.20.0
+# Formatter: Prettier 3.9.6
+# Command: prettier --list-different --end-of-line auto .
+# Accepted explicit paths: 52
+# Historical docs, .tmp, dependencies, and generated output: excluded
+
+src/ogc-api/csapi/command-routing.spec.ts
+src/ogc-api/csapi/command-routing.ts
+src/ogc-api/csapi/factory.spec.ts
+src/ogc-api/csapi/factory.ts
+src/ogc-api/csapi/formats/classification.spec.ts
+src/ogc-api/csapi/formats/classification.ts
+src/ogc-api/csapi/formats/constants.spec.ts
+src/ogc-api/csapi/formats/geojson.spec.ts
+src/ogc-api/csapi/formats/geojson.ts
+src/ogc-api/csapi/formats/index.spec.ts
+src/ogc-api/csapi/formats/part2.spec.ts
+src/ogc-api/csapi/formats/part2.ts
+src/ogc-api/csapi/formats/property.spec.ts
+src/ogc-api/csapi/formats/response.spec.ts
+src/ogc-api/csapi/formats/response.ts
+src/ogc-api/csapi/formats/schema-response.spec.ts
+src/ogc-api/csapi/formats/schema-response.ts
+src/ogc-api/csapi/formats/sensorml/_helpers.ts
+src/ogc-api/csapi/formats/sensorml/aggregate-process.spec.ts
+src/ogc-api/csapi/formats/sensorml/aggregate-process.ts
+src/ogc-api/csapi/formats/sensorml/parser.spec.ts
+src/ogc-api/csapi/formats/sensorml/parser.ts
+src/ogc-api/csapi/formats/sensorml/physical-system.spec.ts
+src/ogc-api/csapi/formats/sensorml/physical-system.ts
+src/ogc-api/csapi/formats/sensorml/simple-process.spec.ts
+src/ogc-api/csapi/formats/sensorml/simple-process.ts
+src/ogc-api/csapi/formats/sensorml/types.ts
+src/ogc-api/csapi/formats/swecommon/_helpers.ts
+src/ogc-api/csapi/formats/swecommon/components.spec.ts
+src/ogc-api/csapi/formats/swecommon/components.ts
+src/ogc-api/csapi/formats/swecommon/data-array.spec.ts
+src/ogc-api/csapi/formats/swecommon/data-array.ts
+src/ogc-api/csapi/formats/swecommon/data-record.spec.ts
+src/ogc-api/csapi/formats/swecommon/data-record.ts
+src/ogc-api/csapi/formats/swecommon/parser.spec.ts
+src/ogc-api/csapi/formats/swecommon/parser.ts
+src/ogc-api/csapi/formats/swecommon/types.ts
+src/ogc-api/csapi/helpers.spec.ts
+src/ogc-api/csapi/helpers.ts
+src/ogc-api/csapi/integration/_fixtures.ts
+src/ogc-api/csapi/integration/command.spec.ts
+src/ogc-api/csapi/integration/discovery.spec.ts
+src/ogc-api/csapi/integration/navigation.spec.ts
+src/ogc-api/csapi/integration/observation.spec.ts
+src/ogc-api/csapi/integration/pipeline.spec.ts
+src/ogc-api/csapi/model.spec.ts
+src/ogc-api/csapi/url_builder.spec.ts
+src/ogc-api/csapi/url_builder.ts
+src/ogc-api/endpoint.spec.ts
+src/ogc-api/endpoint.ts
+src/ogc-api/info.spec.ts
+src/ogc-api/info.ts

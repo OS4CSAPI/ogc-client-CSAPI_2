@@ -242,7 +242,7 @@ export default class CSAPIQueryBuilder {
    */
   constructor(
     private collection_: CSAPICollectionRef,
-    resourceUrls?: Map<string, string>
+    resourceUrls?: Map<string, string>,
   ) {
     this.resourceUrls_ = resourceUrls ?? new Map();
     this.baseUrl = this.extractBaseUrl();
@@ -264,7 +264,7 @@ export default class CSAPIQueryBuilder {
     }
 
     const selfLink = links.find(
-      (l: { rel?: string; href?: string }) => l.rel === 'self'
+      (l: { rel?: string; href?: string }) => l.rel === 'self',
     );
     if (selfLink?.href) {
       return selfLink.href.replace(/\/$/, '');
@@ -272,7 +272,7 @@ export default class CSAPIQueryBuilder {
 
     // Fall back to first link with an href
     const first = links.find(
-      (l: { href?: string }) => typeof l.href === 'string'
+      (l: { href?: string }) => typeof l.href === 'string',
     );
     return first?.href?.replace(/\/$/, '') ?? '';
   }
@@ -326,7 +326,7 @@ export default class CSAPIQueryBuilder {
     resourceType: string,
     id?: string,
     subPath?: ResourceSubPath,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): string {
     // Use the absolute resource URL when available (top-level pattern),
     // otherwise fall back to collection-scoped base URL.
@@ -362,14 +362,14 @@ export default class CSAPIQueryBuilder {
     childSegment: string,
     childId: string,
     subPath?: ResourceSubPath,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): string {
     const topLevelUrl = this.resourceUrls_.get(parentType);
     const parentBase = topLevelUrl
       ? topLevelUrl.replace(/\/+$/, '')
       : `${this.baseUrl}/${toUrlPathSegment(parentType)}`;
     let url = `${parentBase}/${encodeResourceId(
-      parentId
+      parentId,
     )}/${childSegment}/${encodeResourceId(childId)}`;
     if (subPath) url += `/${subPath}`;
     return url + this.buildQueryString(options);
@@ -464,8 +464,8 @@ export default class CSAPIQueryBuilder {
       throw new EndpointError(
         `Collection '${this.collection_.id}' does not support '${resourceType}' resource. ` +
           `Available resources: ${Array.from(this.availableResources).join(
-            ', '
-          )}`
+            ', ',
+          )}`,
       );
     }
   }
@@ -487,7 +487,7 @@ export default class CSAPIQueryBuilder {
     resourceType: string,
     id?: string,
     subPath?: ResourceSubPath,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): string {
     if (!id) {
       this.assertResourceAvailable(resourceType);
@@ -768,7 +768,7 @@ export default class CSAPIQueryBuilder {
    */
   getSystemControlStreams(
     id: string,
-    options?: ControlStreamQueryOptions
+    options?: ControlStreamQueryOptions,
   ): string {
     return this.build('systems', id, 'controlstreams', options);
   }
@@ -1034,7 +1034,7 @@ export default class CSAPIQueryBuilder {
    */
   getDeploymentSubdeployments(
     id: string,
-    options?: DeploymentQueryOptions
+    options?: DeploymentQueryOptions,
   ): string {
     return this.build('deployments', id, 'subdeployments', options);
   }
@@ -1087,7 +1087,7 @@ export default class CSAPIQueryBuilder {
     console.warn(
       'getDeploymentSystems() is deprecated: /deployments/{id}/systems is not ' +
         'a standard endpoint (OGC 23-001). Use the deployedSystemsLink property ' +
-        'on a fetched Deployment feature instead.'
+        'on a fetched Deployment feature instead.',
     );
     return this.build('deployments', id, 'systems', options);
   }
@@ -1283,7 +1283,7 @@ export default class CSAPIQueryBuilder {
    */
   getProcedureDatastreams(
     id: string,
-    options?: DatastreamQueryOptions
+    options?: DatastreamQueryOptions,
   ): string {
     return this.build('procedures', id, 'datastreams', options);
   }
@@ -1482,7 +1482,7 @@ export default class CSAPIQueryBuilder {
    */
   getSamplingFeatureObservations(
     id: string,
-    options?: ObservationQueryOptions
+    options?: ObservationQueryOptions,
   ): string {
     return this.build('samplingFeatures', id, 'observations', options);
   }
@@ -1658,7 +1658,7 @@ export default class CSAPIQueryBuilder {
    */
   getPropertyControlStreams(
     id: string,
-    options?: ControlStreamQueryOptions
+    options?: ControlStreamQueryOptions,
   ): string {
     return this.build('properties', id, 'controlstreams', options);
   }
@@ -1869,7 +1869,7 @@ export default class CSAPIQueryBuilder {
    */
   getDatastreamObservations(
     id: string,
-    options?: ObservationQueryOptions
+    options?: ObservationQueryOptions,
   ): string {
     return this.build('datastreams', id, 'observations', options);
   }
@@ -2034,7 +2034,7 @@ export default class CSAPIQueryBuilder {
   getObservation(
     id: string,
     options?: QueryOptions,
-    datastreamId?: string
+    datastreamId?: string,
   ): string {
     if (datastreamId) {
       return this.buildNestedResourceUrl(
@@ -2043,7 +2043,7 @@ export default class CSAPIQueryBuilder {
         'observations',
         id,
         undefined,
-        options
+        options,
       );
     }
     return this.build('observations', id, undefined, options);
@@ -2080,7 +2080,7 @@ export default class CSAPIQueryBuilder {
         'datastreams',
         datastreamId,
         'observations',
-        id
+        id,
       );
     }
     return this.build('observations', id);
@@ -2108,7 +2108,7 @@ export default class CSAPIQueryBuilder {
         'datastreams',
         datastreamId,
         'observations',
-        id
+        id,
       );
     }
     return this.build('observations', id);
@@ -2140,7 +2140,7 @@ export default class CSAPIQueryBuilder {
         datastreamId,
         'observations',
         id,
-        'datastream'
+        'datastream',
       );
     }
     return this.build('observations', id, 'datastream');
@@ -2169,7 +2169,7 @@ export default class CSAPIQueryBuilder {
   getObservationSamplingFeature(
     id: string,
     options?: QueryOptions,
-    datastreamId?: string
+    datastreamId?: string,
   ): string {
     if (datastreamId) {
       return this.buildNestedResourceUrl(
@@ -2178,7 +2178,7 @@ export default class CSAPIQueryBuilder {
         'observations',
         id,
         'samplingFeature',
-        options
+        options,
       );
     }
     return this.build('observations', id, 'samplingFeature', options);
@@ -2207,7 +2207,7 @@ export default class CSAPIQueryBuilder {
   getObservationSystem(
     id: string,
     options?: QueryOptions,
-    datastreamId?: string
+    datastreamId?: string,
   ): string {
     if (datastreamId) {
       return this.buildNestedResourceUrl(
@@ -2216,7 +2216,7 @@ export default class CSAPIQueryBuilder {
         'observations',
         id,
         'system',
-        options
+        options,
       );
     }
     return this.build('observations', id, 'system', options);
@@ -2248,7 +2248,7 @@ export default class CSAPIQueryBuilder {
   getObservationHistory(
     id: string,
     options?: QueryOptions,
-    datastreamId?: string
+    datastreamId?: string,
   ): string {
     if (datastreamId) {
       return this.buildNestedResourceUrl(
@@ -2257,7 +2257,7 @@ export default class CSAPIQueryBuilder {
         'observations',
         id,
         'history',
-        options
+        options,
       );
     }
     return this.build('observations', id, 'history', options);
@@ -2525,7 +2525,7 @@ export default class CSAPIQueryBuilder {
    */
   getControlStreamProcedures(
     id: string,
-    options?: ProcedureQueryOptions
+    options?: ProcedureQueryOptions,
   ): string {
     return this.build('controlStreams', id, 'procedures', options);
   }
@@ -2615,7 +2615,7 @@ export default class CSAPIQueryBuilder {
   getCommand(
     id: string,
     options?: QueryOptions,
-    controlStreamId?: string
+    controlStreamId?: string,
   ): string {
     if (controlStreamId) {
       return this.buildNestedResourceUrl(
@@ -2624,7 +2624,7 @@ export default class CSAPIQueryBuilder {
         'commands',
         id,
         undefined,
-        options
+        options,
       );
     }
     return this.build('commands', id, undefined, options);
@@ -2753,7 +2753,7 @@ export default class CSAPIQueryBuilder {
         'controlStreams',
         controlStreamId,
         'commands',
-        id
+        id,
       );
     }
     return this.build('commands', id);
@@ -2781,7 +2781,7 @@ export default class CSAPIQueryBuilder {
         'controlStreams',
         controlStreamId,
         'commands',
-        id
+        id,
       );
     }
     return this.build('commands', id);
@@ -2820,7 +2820,7 @@ export default class CSAPIQueryBuilder {
   getCommandStatus(
     id: string,
     options?: CommandStatusQueryOptions,
-    controlStreamId?: string
+    controlStreamId?: string,
   ): string {
     if (controlStreamId) {
       return this.buildNestedResourceUrl(
@@ -2829,7 +2829,7 @@ export default class CSAPIQueryBuilder {
         'commands',
         id,
         'status',
-        options
+        options,
       );
     }
     return this.build('commands', id, 'status', options);
@@ -2870,7 +2870,7 @@ export default class CSAPIQueryBuilder {
         controlStreamId,
         'commands',
         id,
-        'status'
+        'status',
       );
     }
     return this.build('commands', id, 'status');
@@ -2902,7 +2902,7 @@ export default class CSAPIQueryBuilder {
         controlStreamId,
         'commands',
         id,
-        'result'
+        'result',
       );
     }
     return this.build('commands', id, 'result');
@@ -2935,7 +2935,7 @@ export default class CSAPIQueryBuilder {
         controlStreamId,
         'commands',
         id,
-        'cancel'
+        'cancel',
       );
     }
     return this.build('commands', id, 'cancel');
