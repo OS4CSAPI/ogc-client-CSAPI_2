@@ -402,7 +402,7 @@ export function parseAbstractPhysicalProcessProperties(
  *
  * @example
  * ```typescript
- * import { parseSensorML30 } from '@camptocamp/ogc-client/csapi/formats/sensorml';
+ * import { parseSensorML30 } from '@camptocamp/ogc-client/csapi';
  *
  * const result = parseSensorML30(jsonFromServer);
  * switch (result.type) {

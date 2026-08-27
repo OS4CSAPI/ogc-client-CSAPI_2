@@ -122,8 +122,8 @@ type ResourceSubPath =
  * const url = `${baseUrl}/collections/${collectionId}/systems?limit=50&bbox=-180,-90,180,90`;
  *
  * // After (using CSAPIQueryBuilder):
- * const endpoint = await new OgcApiEndpoint(baseUrl);
- * const builder = await createCSAPIBuilder(endpoint, collectionId);
+ * const endpoint = new OgcApiEndpoint(baseUrl);
+ * const builder = await endpoint.csapi(collectionId);
  * const url = builder.getSystems({ limit: 50, bbox: [-180, -90, 180, 90] });
  * ```
  *
@@ -134,10 +134,9 @@ type ResourceSubPath =
  * @example Complete workflow — list, filter, and navigate CSAPI resources:
  * ```ts
  * import { OgcApiEndpoint } from '@camptocamp/ogc-client';
- * import { createCSAPIBuilder } from '@camptocamp/ogc-client/csapi';
  *
- * const endpoint = await new OgcApiEndpoint('https://api.example.com');
- * const builder = await createCSAPIBuilder(endpoint, 'weather-stations');
+ * const endpoint = new OgcApiEndpoint('https://api.example.com');
+ * const builder = await endpoint.csapi('weather-stations');
  *
  * // List systems with spatial and text filters
  * const systemsUrl = builder.getSystems({

@@ -225,7 +225,7 @@ ${e.message}`);
    *
    * @example
    * ```ts
-   * const endpoint = await new OgcApiEndpoint('https://api.example.com');
+   * const endpoint = new OgcApiEndpoint('https://api.example.com');
    * const collections = await endpoint.csapiCollections;
    * // => ['weather-stations', 'river-gauges']
    * ```
@@ -319,14 +319,14 @@ ${e.message}`);
    *
    * @example
    * ```ts
-   * const endpoint = await new OgcApiEndpoint('https://api.example.com');
+   * const endpoint = new OgcApiEndpoint('https://api.example.com');
    * if (await endpoint.hasConnectedSystems) {
-   *   const builder = await createCSAPIBuilder(endpoint, 'weather-stations');
+   *   const builder = await endpoint.csapi('weather-stations');
    *   // ... build CSAPI queries
    * }
    * ```
    *
-   * @see Use createCSAPIBuilder via '@camptocamp/ogc-client/csapi'
+   * @see {@link csapi} for the preferred CSAPI builder entry point
    * @see {@link csapiCollections} to list available collections
    * @see https://docs.ogc.org/is/23-001/23-001.html
    */
