@@ -64,6 +64,8 @@ These facts establish that upstream synchronization is substantial enough to req
 
 Git fetch and authenticated push are operational. The GitHub CLI (`gh`) is not installed in the preflight environment. This does not block branch or source work, but the issue-creation mechanism must be verified before the issue-generation stage. No issue work is authorized during preflight.
 
+The workstation currently reports Node.js `v26.8.0-alpha.0.0.0` and npm `11.19.0`. npm warns that this alpha Node.js version is outside its supported runtime range. The isolated Prettier 2.8.8 validation still completed successfully, but Phase 10's Implementation Guide should establish a project-supported Node.js runtime before full dependency installation or QA. This environment observation is not evidence of a repository defect.
+
 ## 4. Planning Authority Chain
 
 Phase 10 should use the following derived authority chain:
