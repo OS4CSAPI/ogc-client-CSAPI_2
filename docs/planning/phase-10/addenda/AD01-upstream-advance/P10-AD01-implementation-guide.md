@@ -12,9 +12,9 @@
 
 ## 1. Purpose and Authority
 
-This guide translates the approved AD01 scope into the technical procedure for advancing the completed Phase 10 contribution to upstream commit `00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d`. It governs baseline validation, workbench integration, conflict resolution, preservation auditing, verification, and preparation for resuming existing delivery issue #200.
+This guide translates the approved AD01 scope into the technical procedure for advancing the completed Phase 10 contribution to the project-owner-approved amended upstream commit `a623911201218bc1e814a9f83c64f3a027031990`. It governs baseline validation, workbench integration, conflict resolution, preservation auditing, verification, and preparation for resuming existing delivery issue #200.
 
-The approved original Phase 10 Implementation Guide remains in force. This addendum supplies only the changed procedure required by upstream PR #171. Where the two guides differ for this later integration, this addendum controls. It does not authorize implementation until an approved Roadmap Addendum has been converted into GitHub issues.
+The approved original Phase 10 Implementation Guide remains in force. This addendum supplies only the changed procedure required by the approved upstream range through `a623911201218bc1e814a9f83c64f3a027031990`, including PR #171 and the later four-commit advance. Where the two guides differ for this later integration, this addendum controls. It does not authorize implementation until an approved Roadmap Addendum has been converted into GitHub issues.
 
 The authority chain is:
 
@@ -42,11 +42,11 @@ Approval of this guide will authorize drafting the Roadmap Addendum only. It wil
 
 AD01 will use the existing two-repository workflow and normal Git history:
 
-1. Revalidate and lock exactly `camptocamp/ogc-client@00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d`.
+1. Revalidate and lock exactly `camptocamp/ogc-client@a623911201218bc1e814a9f83c64f3a027031990`.
 2. Merge that commit normally into workbench `phase-10` without rebasing or force-pushing.
-3. Resolve the three forecast content conflicts by combining the already-delivered CSAPI behavior with upstream PR #171's new API and documentation behavior.
+3. Resolve the three forecast content conflicts by combining the already-delivered CSAPI behavior with the approved upstream range's new API and documentation behavior.
 4. Inspect the automatic `src/index.ts` merge and make the one required semantic type adaptation in `src/ogc-api/model.ts` so upstream's new `OgcApiCollectionCapabilities` interface can represent the existing CSAPI capability flag.
-5. Prove preservation across all 29 upstream PR #171 paths, the CSAPI public surface, documentation, package entry points, tests, builds, and packed-consumer imports.
+5. Prove preservation across all 32 approved upstream paths, the CSAPI public surface, documentation, package entry points, tests, builds, and packed-consumer imports.
 6. Prepare a local delivery merge that takes its conflict-resolution files directly from the accepted workbench commit, prove workbench/delivery parity, and stop before publication.
 7. Resume existing issue #200 for the normal push to `clean-pr`, PR mergeability verification, and available GitHub checks.
 
@@ -57,11 +57,11 @@ No new CSAPI behavior, facade redesign, live-server test, or maintainer design q
 | Input | Locked value |
 | --- | --- |
 | Prior approved upstream baseline and merge base | `305e3da2cf86cfda5c3254a0be419db70cce54b0` |
-| AD01 upstream baseline | `00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d` |
-| Upstream change source | PR #171: seven content commits plus one merge commit |
+| AD01 amended upstream baseline | `a623911201218bc1e814a9f83c64f3a027031990` |
+| Upstream change source | 12 commits: PR #171, PR #172, and the library-description correction |
 | Delivered PR head before AD01 | `5f7cbd166143be76b60ea54593d6f313c75c3624` |
-| Upstream-only distance at preflight | 8 commits |
-| Upstream PR #171 changed paths | 29: 20 modified, 5 added, 4 deleted |
+| Upstream-only distance at amended AD1 lock | 12 commits |
+| Approved upstream changed paths | 32: 23 modified, 5 added, 4 deleted |
 | Forecast content conflicts | `app/api.data.js`, `src/ogc-api/endpoint.ts`, `src/ogc-api/info.ts` |
 | Mandatory automatic-merge inspection | `src/index.ts` |
 | Required semantic companion path | `src/ogc-api/model.ts` |
@@ -84,17 +84,17 @@ git merge-base phase-10 upstream/main
 git rev-list --left-right --count phase-10...upstream/main
 git diff --name-status \
   305e3da2cf86cfda5c3254a0be419db70cce54b0 \
-  00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d
+  a623911201218bc1e814a9f83c64f3a027031990
 git merge-tree --write-tree --messages \
   phase-10 \
-  00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d
+  a623911201218bc1e814a9f83c64f3a027031990
 ```
 
 The execution unit may proceed only when:
 
 - `HEAD` equals `origin/phase-10` and the worktree is clean;
 - the locked commit exists and remains the reviewed target;
-- the 29-path inventory matches the preflight record;
+- the 32-path inventory matches the amended AD1 record;
 - the forecast reports exactly the three reviewed content conflicts; and
 - `src/index.ts` remains the only forecast automatic merge among the four contribution-overlap paths.
 
@@ -107,7 +107,7 @@ If `upstream/main` has advanced beyond the locked commit, do not silently change
 Merge only the locked upstream commit:
 
 ```bash
-git merge --no-ff 00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d
+git merge --no-ff a623911201218bc1e814a9f83c64f3a027031990
 ```
 
 Do not use `ours` or `theirs` across an entire conflicted file. Each conflict contains independent approved behavior from both sides.
@@ -130,7 +130,7 @@ The resolved loader must support the upstream component expectation for `staticM
 
 ### 5.3 Resolve `src/ogc-api/endpoint.ts`
 
-Preserve all upstream PR #171 endpoint changes:
+Preserve all approved-upstream endpoint changes:
 
 - use `OgcApiCollectionCapabilities[]` for `allCollections`;
 - use `OgcApiGetCollectionItemsUrlOptions` for item URL options;
@@ -218,9 +218,9 @@ Use automated source assertions to confirm:
 
 After the workbench merge, generate a preservation record rather than relying only on tests.
 
-### 7.1 Upstream PR #171 inventory
+### 7.1 Approved upstream-range inventory
 
-Compare each of the 29 recorded upstream paths between the locked upstream commit and the merged workbench. Every difference must be classified as one of:
+Compare each of the 32 recorded upstream paths between the locked upstream commit and the merged workbench. Every difference must be classified as one of:
 
 - an already-delivered CSAPI/Phase 10 overlay;
 - one of the three reviewed conflict resolutions;
@@ -299,7 +299,7 @@ git fetch https://github.com/OS4CSAPI/ogc-client-CSAPI_2.git \
 Merge the same locked upstream commit normally:
 
 ```bash
-git merge --no-ff 00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d
+git merge --no-ff a623911201218bc1e814a9f83c64f3a027031990
 ```
 
 For the three expected conflicts, restore the exact accepted workbench blobs rather than independently re-authoring the resolutions:
@@ -331,7 +331,7 @@ Commit the resulting local normal merge. Do not push it during the delivery-prep
 
 Generate the contribution-bearing manifest from the previously delivered tree and the accepted workbench tree. Exclude workbench-only planning, research, governance, issue-template, branch-trigger, ignore-rule, and temporary paths.
 
-For every manifest path, compare the prepared delivery tree with the accepted workbench tree. Require zero differences. Additionally verify that every upstream PR #171 path not intentionally overlaid matches either the accepted workbench or the locked upstream blob as classified by the preservation audit.
+For every manifest path, compare the prepared delivery tree with the accepted workbench tree. Require zero differences. Additionally verify that every approved upstream-range path not intentionally overlaid matches either the accepted workbench or the locked upstream blob as classified by the preservation audit.
 
 Run the full applicable QA, documentation, build, packed-artifact, and clean-consumer gates in the prepared delivery tree. Record the local merge SHA, tree SHA, manifest, exact commands, results, and deviations or `none` for issue #200.
 
@@ -369,7 +369,7 @@ Stop the active execution unit and report to the project owner if:
 
 - canonical upstream advances in a way that makes the locked baseline stale before delivery;
 - the actual conflict set differs from the three reviewed conflicts;
-- preserving CSAPI requires reversing unrelated PR #171 behavior;
+- preserving CSAPI requires reversing unrelated behavior in the approved upstream range;
 - an existing CSAPI public export or tested behavior must be removed;
 - `app/api.data.js` cannot support upstream static methods and per-entry-point imports together;
 - upstream's capability model cannot represent `hasConnectedSystems` with the single optional field authorized here;

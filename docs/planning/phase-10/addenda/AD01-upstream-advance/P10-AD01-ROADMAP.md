@@ -25,8 +25,8 @@ Every task must:
 1. review `docs/governance/AI_OPERATIONAL_CONSTRAINTS.md` at entry;
 2. restate its single objective and verify that all dependencies are complete;
 3. begin from the exact clean and synchronized repository state named by the task;
-4. use only upstream commit `00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d` unless planning is explicitly amended;
-5. preserve upstream PR #171, the approved CSAPI behavior, the dynamic-import facade, and the separate `./csapi` entry point;
+4. use only the project-owner-approved amended upstream commit `a623911201218bc1e814a9f83c64f3a027031990` unless planning is explicitly amended again;
+5. preserve the complete approved upstream range, the approved CSAPI behavior, the dynamic-import facade, and the separate `./csapi` entry point;
 6. avoid new features, live-server calls, unrelated fixes, dependency remediation, refactoring, force-pushing, and new maintainer questions;
 7. run the task's exact acceptance gates and review the actual changed-file list;
 8. commit and push workbench changes before closing the issue, except that Task AD5 intentionally leaves delivery `clean-pr` unpushed;
@@ -40,7 +40,7 @@ Tasks remain separate even if one session has spare capacity.
 ```text
 AD1 Lock the advanced upstream baseline
         ↓
-AD2 Integrate PR #171 and resolve coexistence
+AD2 Integrate advanced upstream and resolve coexistence
         ↓
 AD3 Audit upstream and CSAPI preservation
         ↓
@@ -56,16 +56,16 @@ Push clean-pr and verify PR #136/checks
 ## 4. Task AD1 — Revalidate and Lock the Advanced Upstream Baseline
 
 - **GitHub issue:** [#201](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/201).
-- **Objective:** Establish the exact immutable Git input, 29-path inventory, and three-conflict forecast that AD2 is permitted to merge.
+- **Objective:** Establish the exact immutable Git input, 32-path inventory, and three-conflict forecast that AD2 is permitted to merge.
 - **Acceptance criteria advanced:** P10-AD01-A1, P10-AD01-A2, P10-AD01-A3.
 - **Dependencies:** None.
 - **Complexity/risk:** Low; read-only Git analysis.
-- **Locked decisions:** Analyze canonical upstream but authorize only `00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d`; do not merge or edit source.
+- **Locked decisions:** Analyze canonical upstream but authorize only `a623911201218bc1e814a9f83c64f3a027031990`; do not merge or edit source.
 - **Expected work:**
   - fetch workbench `origin` and canonical `upstream`;
   - confirm clean `phase-10`, equality with `origin/phase-10`, and no active Git operation;
   - record workbench start, delivery head, locked upstream, current `upstream/main`, merge base, ancestry, and left/right counts;
-  - regenerate the exact PR #171 changed-path inventory from `305e3da2` to `00a8931c`;
+  - regenerate the exact approved upstream changed-path inventory from `305e3da2` to `a6239112`;
   - run the read-only `git merge-tree --write-tree --messages` forecast against the workbench tip;
   - confirm the three expected content conflicts and automatic `src/index.ts` overlap;
   - record `src/ogc-api/model.ts` as the required semantic companion path; and
@@ -74,7 +74,7 @@ Push clean-pr and verify PR #136/checks
 - **Explicit exclusions:** Merge, rebase, cherry-pick, conflict resolution, source edit, formatter write, package install, delivery mutation, PR change.
 - **Automated acceptance gate:**
   - all fetch and inspection commands complete successfully;
-  - the inventory contains exactly 29 paths with 20 modified, 5 added, and 4 deleted;
+  - the inventory contains exactly 32 paths with 23 modified, 5 added, and 4 deleted;
   - the forecast contains exactly the reviewed conflicts in `app/api.data.js`, `src/ogc-api/endpoint.ts`, and `src/ogc-api/info.ts`;
   - `src/index.ts` is recorded as the automatic contribution overlap;
   - worktree remains clean except for the new evidence files; and
@@ -82,17 +82,17 @@ Push clean-pr and verify PR #136/checks
 - **Deliverable:** One committed and pushed AD01 baseline evidence note plus its exact changed-path inventory.
 - **Closing evidence:** Workbench commit, all recorded SHAs/counts, inventory path and totals, forecast output, canonical-upstream disposition, changed files, deviations or `none`.
 
-## 5. Task AD2 — Integrate PR #171 and Resolve Coexistence
+## 5. Task AD2 — Integrate Advanced Upstream and Resolve Coexistence
 
 - **GitHub issue:** [#202](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/202).
-- **Objective:** Merge the AD1-locked upstream commit into workbench `phase-10` and produce one coherent result that preserves upstream PR #171 and the already-approved CSAPI contribution.
+- **Objective:** Merge the amended AD1-locked upstream commit into workbench `phase-10` and produce one coherent result that preserves the complete approved upstream range and the already-approved CSAPI contribution.
 - **Acceptance criteria advanced:** P10-AD01-A1, P10-AD01-A2, P10-AD01-A3, P10-AD01-B1, P10-AD01-B2, P10-AD01-B3, P10-AD01-B4, P10-AD01-B5.
 - **Dependencies:** AD1 completed without a stop condition.
 - **Complexity/risk:** High; foundational workbench merge and three authored conflict resolutions.
 - **Locked decisions:** Normal `--no-ff` merge; exact AD1 SHA; no whole-file `ours`/`theirs`; add only `hasConnectedSystems?: boolean` to upstream's capability interface; preserve dynamic imports and subpath boundary.
 - **Expected work:**
   - verify the clean workbench state and the AD1 evidence immediately before mutation;
-  - merge exactly `00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d`;
+  - merge exactly `a623911201218bc1e814a9f83c64f3a027031990`;
   - resolve `app/api.data.js` by combining upstream property/static-method/constructor handling with Phase 10 per-entry-point import mapping and combined TypeDoc modules;
   - resolve `src/ogc-api/endpoint.ts` by combining upstream capability/options types and documentation with the CSAPI getters, facade, errors, and dynamic imports;
   - resolve `src/ogc-api/info.ts` using upstream's `OgcApiCollectionCapabilities` while retaining CSAPI conformance and collection-link detection;
@@ -101,7 +101,7 @@ Push clean-pr and verify PR #136/checks
   - run focused type, endpoint/info test, documentation-generation/build, source-assertion, formatting, and diff checks;
   - commit the merge and push `phase-10` normally.
 - **Affected areas:** Repository merge result, with authored resolution/adaptation limited to `app/api.data.js`, `src/ogc-api/endpoint.ts`, `src/ogc-api/info.ts`, and `src/ogc-api/model.ts`; mandatory inspection of `src/index.ts`.
-- **Explicit exclusions:** New API behavior, facade redesign, static CSAPI runtime imports, new exports beyond the one capability field, unrelated PR #171 changes, broad formatting, live testing, delivery changes.
+- **Explicit exclusions:** New API behavior, facade redesign, static CSAPI runtime imports, new exports beyond the one capability field, unrelated changes to the approved upstream range, broad formatting, live testing, delivery changes.
 - **Automated acceptance gate:**
   - ancestry check for the locked upstream SHA exits 0;
   - no unmerged paths remain and actual conflicts equal the AD1 forecast;
@@ -118,13 +118,13 @@ Push clean-pr and verify PR #136/checks
 ## 6. Task AD3 — Audit Upstream and CSAPI Preservation
 
 - **GitHub issue:** [#203](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/203).
-- **Objective:** Prove mechanically that AD2 preserved all PR #171 changes and the completed Phase 10 CSAPI contribution before broad final verification.
+- **Objective:** Prove mechanically that AD2 preserved all changes in the approved upstream range and the completed Phase 10 CSAPI contribution before broad final verification.
 - **Acceptance criteria advanced:** P10-AD01-A2, P10-AD01-A3, P10-AD01-B1, P10-AD01-B2, P10-AD01-B3, P10-AD01-B4, P10-AD01-B5.
 - **Dependencies:** AD2.
 - **Complexity/risk:** Medium; evidence generation and semantic comparison with no planned source edits.
 - **Locked decisions:** Tests alone are insufficient; classify every difference; an unexplained reversion or public-surface removal is a stop, not authority to repair broadly.
 - **Expected work:**
-  - compare all 29 PR #171 paths between locked upstream and the merged workbench;
+  - compare all 32 approved upstream paths between locked upstream and the merged workbench;
   - classify every difference as an existing Phase 10 overlay, reviewed conflict resolution, `src/ogc-api/model.ts` adaptation, or `src/index.ts` coexistence result;
   - generate normalized pre/post-AD01 CSAPI public-export inventories;
   - verify the root and `./csapi` package metadata and actual boundary;
@@ -184,7 +184,7 @@ Push clean-pr and verify PR #136/checks
 - **Expected work:**
   - record clean delivery branch, remote head, remotes, ancestry, and PR base/head metadata;
   - fetch origin, upstream, and the exact accepted workbench tip into a namespaced local ref;
-  - merge exactly `00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d` into local `clean-pr`;
+  - merge exactly `a623911201218bc1e814a9f83c64f3a027031990` into local `clean-pr`;
   - confirm the conflict set matches AD1/AD2;
   - restore the three accepted workbench conflict-resolution blobs and the accepted `src/ogc-api/model.ts` blob, then inspect automatic `src/index.ts`;
   - commit the local normal merge without pushing;

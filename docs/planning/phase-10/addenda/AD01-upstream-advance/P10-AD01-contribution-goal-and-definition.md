@@ -6,7 +6,7 @@
 - **Original Phase 10 definition:** [P10 Contribution Goal and Definition](../../P10-contribution-goal-and-definition.md)
 - **Preflight evidence:** [Post-Delivery Upstream Advance Preflight](../../../../research/phase-10/05-post-delivery-upstream-advance-preflight.md)
 - **Prior approved upstream baseline:** `camptocamp/ogc-client@305e3da2cf86cfda5c3254a0be419db70cce54b0`
-- **Proposed addendum baseline:** `camptocamp/ogc-client@00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d`
+- **Approved amended addendum baseline:** `camptocamp/ogc-client@a623911201218bc1e814a9f83c64f3a027031990`
 - **Current delivered PR head:** `OS4CSAPI/ogc-client:clean-pr@5f7cbd166143be76b60ea54593d6f313c75c3624`
 - **Workbench branch:** `OS4CSAPI/ogc-client-CSAPI_2:phase-10`
 - **Upstream contribution:** [camptocamp/ogc-client#136](https://github.com/camptocamp/ogc-client/pull/136)
@@ -25,7 +25,9 @@ Where this addendum addresses the later upstream advance, it supplements the ori
 
 Phase 10 delivery commit `5f7cbd166143be76b60ea54593d6f313c75c3624` was pushed to `clean-pr` on August 28, 2026 at 01:27 UTC. Upstream PR [#171](https://github.com/camptocamp/ogc-client/pull/171) merged approximately nine hours later at 10:48:59 UTC and advanced `camptocamp/ogc-client:main` to `00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d`.
 
-The new upstream history contains seven content commits plus its merge commit. It primarily changes WMS dimensions, ncWMS handling, shared time models, API exports, and API documentation. It changes 29 paths, four of which overlap the delivered CSAPI contribution:
+Before implementation began, canonical upstream advanced again to `a623911201218bc1e814a9f83c64f3a027031990`. The additional four commits comprise upstream PR #172's API-v2 adjustments and a library-description correction. The project owner approved advancing the existing AD01 baseline rather than creating another planning trio or issue set.
+
+The amended upstream range contains 12 commits and changes 32 paths. It primarily changes WMS dimensions, ncWMS handling, shared time models, API exports, API documentation, query-parameter utilities, type-only imports, and the library description. Four paths overlap the delivered CSAPI contribution:
 
 - `app/api.data.js`;
 - `src/index.ts`;
@@ -36,7 +38,7 @@ A read-only merge forecast reports content conflicts in three of those paths. `s
 
 ## 3. Addendum Contribution Goal
 
-Advance the completed Phase 10 contribution from the prior approved upstream baseline to `00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d`, preserve both upstream PR #171 behavior and the already-approved CSAPI contribution through the four known overlap paths, repeat the necessary preservation and quality verification, and return the accepted result to the existing Phase 10 delivery workflow so PR #136 is again current and technically mergeable—without adding CSAPI functionality, redesigning settled architecture, or creating new questions for the upstream maintainer.
+Advance the completed Phase 10 contribution from the prior approved upstream baseline to `a623911201218bc1e814a9f83c64f3a027031990`, preserve both the complete approved upstream range and the already-approved CSAPI contribution through the four known overlap paths, repeat the necessary preservation and quality verification, and return the accepted result to the existing Phase 10 delivery workflow so PR #136 is again current and technically mergeable—without adding CSAPI functionality, redesigning settled architecture, or creating new questions for the upstream maintainer.
 
 ## 4. Addendum Acceptance Criteria
 
@@ -46,8 +48,8 @@ Each criterion must map to a later Roadmap Addendum execution unit and an object
 
 | ID | Criterion | Required evidence |
 | --- | --- | --- |
-| P10-AD01-A1 | The accepted workbench result contains upstream commit `00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d`. | An ancestry check confirms the addendum baseline is integrated. |
-| P10-AD01-A2 | All changes introduced by upstream PR #171 remain present except where a documented conflict resolution is necessary to preserve the approved CSAPI contribution. | A before/after upstream-path inventory contains no unexplained reversion or omission across the 29 affected paths. |
+| P10-AD01-A1 | The accepted workbench result contains upstream commit `a623911201218bc1e814a9f83c64f3a027031990`. | An ancestry check confirms the amended addendum baseline is integrated. |
+| P10-AD01-A2 | All changes in the approved upstream range through `a623911201218bc1e814a9f83c64f3a027031990` remain present except where a documented conflict resolution is necessary to preserve the approved CSAPI contribution. | A before/after upstream-path inventory contains no unexplained reversion or omission across the 32 affected paths. |
 | P10-AD01-A3 | The integration introduces no unrelated upstream or CSAPI changes. | The addendum changed-file inventory is limited to merge results, necessary conflict resolutions, and verification records. |
 
 ### B. Overlap resolution and CSAPI preservation
@@ -79,7 +81,7 @@ Lock the new upstream baseline, integrate it into the workbench, record the actu
 
 ### Workstream 2 — Resolve and preserve
 
-Resolve only the actual overlaps created by upstream PR #171. Preserve upstream behavior in WMS, ncWMS, shared time models, API exports, and documentation while retaining the established CSAPI endpoint facade, conformance discovery, root/subpath boundary, and documentation mapping.
+Resolve only the actual overlaps created by the approved upstream range. Preserve upstream behavior in WMS, ncWMS, shared time models, API exports, query utilities, type-only imports, the library description, and documentation while retaining the established CSAPI endpoint facade, conformance discovery, root/subpath boundary, and documentation mapping.
 
 Automatic merge results are not accepted without inspection. Conflict resolution does not authorize redesign, refactoring, renaming, or new convenience APIs.
 
@@ -94,9 +96,9 @@ The following decisions apply throughout this addendum:
 | Decision | Addendum rule |
 | --- | --- |
 | **Original Phase 10 remains valid** | Completed work and its evidence are preserved. This addendum records only the necessary response to later upstream activity. |
-| **Baseline advances to one identified commit** | The proposed target is `00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d`; silent movement to a later upstream commit is prohibited. |
+| **Baseline advances to one identified commit** | The project-owner-approved amended target is `a623911201218bc1e814a9f83c64f3a027031990`; silent movement to a later upstream commit is prohibited. |
 | **No new CSAPI scope** | The work is integration and preservation only. No feature, API, server, or interoperability work is added. |
-| **Preserve upstream PR #171** | WMS, ncWMS, shared-time, export, and documentation changes remain intact unless a minimal documented resolution is required for coexistence with CSAPI. |
+| **Preserve the approved upstream range** | PR #171, PR #172, the library-description correction, and all included WMS, ncWMS, shared-time, export, query-utility, type-only-import, and documentation changes remain intact unless a minimal documented resolution is required for coexistence with CSAPI. |
 | **Dynamic-import facade remains settled** | `OgcApiEndpoint.csapi()` keeps its established dynamic boundary and behavior; the addendum does not redesign it or ask the maintainer to decide its future. |
 | **CSAPI remains a subpath API** | CSAPI-specific public symbols remain under `@camptocamp/ogc-client/csapi`; root bulk export is prohibited. |
 | **Existing two-repository workflow remains** | Work occurs and is evidenced in workbench `phase-10`; only curated contribution-bearing content reaches delivery `clean-pr`. |
@@ -109,8 +111,8 @@ The following decisions apply throughout this addendum:
 
 ### In scope
 
-- Advancing the approved Phase 10 baseline from `305e3da2cf86cfda5c3254a0be419db70cce54b0` to `00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d`.
-- Integrating the seven upstream PR #171 content commits and their merge commit.
+- Advancing the approved Phase 10 baseline from `305e3da2cf86cfda5c3254a0be419db70cce54b0` to `a623911201218bc1e814a9f83c64f3a027031990`.
+- Integrating the 12-commit approved upstream range, including PR #171, PR #172, and the library-description correction.
 - Resolving and reviewing the four identified overlap paths and any additional conflict exposed by the real workbench integration.
 - Repeating the original preservation, documentation, QA, build, package, parity, and PR-state gates affected by the new baseline.
 - Preparing a new curated delivery result and resuming issue #200 for final publication.
@@ -120,7 +122,7 @@ The following decisions apply throughout this addendum:
 
 - Any new CSAPI feature, API redesign, refactor, naming change, or consumer convenience.
 - Redesign or removal of the dynamic-import facade.
-- Changes to upstream PR #171 behavior beyond minimal coexistence resolution.
+- Changes to behavior in the approved upstream range beyond minimal coexistence resolution.
 - New live-server testing or work on OpenSensorHub or any other independent server.
 - Unrelated dependency upgrades, formatting churn, documentation redesign, or defect correction.
 - Retrospective editing of the approved Phase 10 planning documents or completed issue records.
@@ -141,8 +143,8 @@ The following decisions apply throughout this addendum:
 
 Addendum AD01 is complete only when:
 
-- the accepted workbench and delivered PR head contain upstream commit `00a8931c679fb9c5cd7c5e0f0f04a4b87a307b2d`;
-- upstream PR #171 behavior and the approved CSAPI contribution coexist without unexplained omission or reversion;
+- the accepted workbench and delivered PR head contain upstream commit `a623911201218bc1e814a9f83c64f3a027031990`;
+- the complete approved upstream range and the approved CSAPI contribution coexist without unexplained omission or reversion;
 - the four overlap paths satisfy their preservation requirements;
 - the original Phase 10 quality, documentation, build, package, and delivery-parity gates pass against the advanced baseline;
 - `clean-pr` is updated by a normal push with no workbench-only artifacts;

@@ -1,6 +1,7 @@
 M	app/.vitepress/theme/custom.css
 M	app/api-utils.js
 M	app/api.data.js
+M	app/index.md
 M	app/src/components/apidoc/ClassCard.vue
 M	app/src/components/apidoc/FunctionCard.vue
 M	examples/ncwms.js
@@ -17,6 +18,8 @@ M	src/shared/errors.ts
 M	src/shared/models.ts
 A	src/shared/time.spec.ts
 A	src/shared/time.ts
+M	src/shared/url-utils.ts
+M	src/stac/model.ts
 M	src/wms/capabilities.spec.ts
 M	src/wms/capabilities.ts
 D	src/wms/dimension.spec.ts
