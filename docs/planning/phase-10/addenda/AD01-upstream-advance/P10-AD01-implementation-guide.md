@@ -1,7 +1,7 @@
 # Phase 10 Addendum AD01: Post-Delivery Upstream Advance — Implementation Guide
 
-- **Version:** 0.1
-- **Status:** Draft — awaiting project-owner approval
+- **Version:** 1.0
+- **Status:** Approved
 - **Date:** August 28, 2026
 - **Branch:** `phase-10`
 - **Authority:** Derived from the approved [AD01 Contribution Goal and Definition](./P10-AD01-contribution-goal-and-definition.md)
@@ -399,6 +399,6 @@ After this guide is approved, the Roadmap Addendum must:
 
 ## 14. Approval Record
 
-This version is a draft and has not yet been approved.
+The project owner approved this Implementation Guide Addendum on August 28, 2026. Version 1.0 is the authoritative AD01 technical plan from which the Roadmap Addendum must be derived.
 
-Project-owner approval will authorize drafting the Roadmap Addendum only. It will not authorize upstream integration, conflict resolution, source changes, GitHub issue creation, delivery-branch modification, force-pushing, or PR updates.
+Approval authorizes drafting the Roadmap Addendum only. It does not authorize upstream integration, conflict resolution, source changes, GitHub issue creation, delivery-branch modification, force-pushing, or PR updates.
