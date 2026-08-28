@@ -134,7 +134,7 @@ Push clean-pr and verify PR #136/checks
 - **Affected areas:** New evidence under `docs/research/phase-10/`; no planned source or delivery changes.
 - **Explicit exclusions:** Source correction, new test behavior, formatting migration, documentation rewriting, package redesign, delivery mutation.
 - **Automated acceptance gate:**
-  - all 29 upstream paths receive exactly one explained classification;
+  - all 32 upstream paths receive exactly one explained classification;
   - upstream comparison contains no unexplained omission or reversion;
   - normalized CSAPI export comparison contains no unexplained removal;
   - root and `./csapi` package boundaries parse and match their approved targets;

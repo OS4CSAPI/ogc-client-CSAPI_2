@@ -1,0 +1,16 @@
+# Phase 10 AD01 Task AD3 — normalized CSAPI public-export comparison
+# Source: src/ogc-api/csapi/index.ts
+# Inventory columns are defined by 03-task-a3-csapi-exports-after.txt
+
+before_revision	28ef8846c87c084a51be13c6e733997855765c06
+after_revision	4acedf4cb5a3e38fd3cb45195cbba0ec5fe40406
+before_source_sha256	6675f2fea741339ccb88160cb00442b6d9e5c261a89e87f4962890518442f86e
+after_source_sha256	6675f2fea741339ccb88160cb00442b6d9e5c261a89e87f4962890518442f86e
+source_exact	true
+before_export_rows	173
+after_export_rows	173
+normalized_inventory_sha256	9fc18bdd4abea333393bd5be73c135ca3a243c0a81389c46c0f4218b0ade2e3c
+normalized_exact	true
+matches_phase10_canonical_inventory	true
+additions	0
+removals	0
