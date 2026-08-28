@@ -1,7 +1,7 @@
 # Phase 10 Addendum AD01: Post-Delivery Upstream Advance — Contribution Goal and Definition
 
-- **Version:** 0.1
-- **Status:** Draft — awaiting project-owner approval
+- **Version:** 1.0
+- **Status:** Approved
 - **Date:** August 28, 2026
 - **Original Phase 10 definition:** [P10 Contribution Goal and Definition](../../P10-contribution-goal-and-definition.md)
 - **Preflight evidence:** [Post-Delivery Upstream Advance Preflight](../../../../research/phase-10/05-post-delivery-upstream-advance-preflight.md)
@@ -151,6 +151,6 @@ Addendum AD01 is complete only when:
 
 ## 10. Approval Record
 
-This version is a draft and has not yet been approved.
+The project owner approved this Contribution Goal and Definition Addendum on August 28, 2026. Version 1.0 is the authoritative AD01 scope contract from which the Implementation Guide Addendum must be derived.
 
-Project-owner approval will authorize drafting the Implementation Guide Addendum only. It will not authorize source integration, conflict resolution, Roadmap creation, GitHub issue creation, delivery-branch modification, force-pushing, or PR updates.
+Approval authorizes drafting the Implementation Guide Addendum only. It does not authorize source integration, conflict resolution, Roadmap creation, GitHub issue creation, delivery-branch modification, force-pushing, or PR updates.
