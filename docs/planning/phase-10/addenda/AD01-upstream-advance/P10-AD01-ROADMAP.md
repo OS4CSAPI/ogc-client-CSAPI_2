@@ -1,7 +1,7 @@
 # Phase 10 Addendum AD01: Post-Delivery Upstream Advance — Roadmap
 
-- **Version:** 0.1
-- **Status:** Draft — awaiting project-owner approval
+- **Version:** 1.0
+- **Status:** Approved
 - **Date:** August 28, 2026
 - **Branch:** `phase-10`
 - **Scope authority:** [AD01 Contribution Goal and Definition](./P10-AD01-contribution-goal-and-definition.md)
@@ -55,7 +55,7 @@ Push clean-pr and verify PR #136/checks
 
 ## 4. Task AD1 — Revalidate and Lock the Advanced Upstream Baseline
 
-- **GitHub issue:** To be created after Roadmap approval.
+- **GitHub issue:** [#201](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/201).
 - **Objective:** Establish the exact immutable Git input, 29-path inventory, and three-conflict forecast that AD2 is permitted to merge.
 - **Acceptance criteria advanced:** P10-AD01-A1, P10-AD01-A2, P10-AD01-A3.
 - **Dependencies:** None.
@@ -84,7 +84,7 @@ Push clean-pr and verify PR #136/checks
 
 ## 5. Task AD2 — Integrate PR #171 and Resolve Coexistence
 
-- **GitHub issue:** To be created after Roadmap approval.
+- **GitHub issue:** [#202](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/202).
 - **Objective:** Merge the AD1-locked upstream commit into workbench `phase-10` and produce one coherent result that preserves upstream PR #171 and the already-approved CSAPI contribution.
 - **Acceptance criteria advanced:** P10-AD01-A1, P10-AD01-A2, P10-AD01-A3, P10-AD01-B1, P10-AD01-B2, P10-AD01-B3, P10-AD01-B4, P10-AD01-B5.
 - **Dependencies:** AD1 completed without a stop condition.
@@ -117,7 +117,7 @@ Push clean-pr and verify PR #136/checks
 
 ## 6. Task AD3 — Audit Upstream and CSAPI Preservation
 
-- **GitHub issue:** To be created after Roadmap approval.
+- **GitHub issue:** [#203](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/203).
 - **Objective:** Prove mechanically that AD2 preserved all PR #171 changes and the completed Phase 10 CSAPI contribution before broad final verification.
 - **Acceptance criteria advanced:** P10-AD01-A2, P10-AD01-A3, P10-AD01-B1, P10-AD01-B2, P10-AD01-B3, P10-AD01-B4, P10-AD01-B5.
 - **Dependencies:** AD2.
@@ -146,7 +146,7 @@ Push clean-pr and verify PR #136/checks
 
 ## 7. Task AD4 — Run Full Workbench and Package Verification
 
-- **GitHub issue:** To be created after Roadmap approval.
+- **GitHub issue:** [#204](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/204).
 - **Objective:** Demonstrate that the accepted AD01 workbench tree passes the complete original Phase 10 repository, documentation, build, packed-artifact, and clean-consumer gates.
 - **Acceptance criteria advanced:** P10-AD01-B5, P10-AD01-C1.
 - **Dependencies:** AD3.
@@ -175,7 +175,7 @@ Push clean-pr and verify PR #136/checks
 
 ## 8. Task AD5 — Prepare and Verify `clean-pr` Locally
 
-- **GitHub issue:** To be created after Roadmap approval.
+- **GitHub issue:** [#205](https://github.com/OS4CSAPI/ogc-client-CSAPI_2/issues/205).
 - **Objective:** Construct the AD01 delivery as one local normal merge, prove it matches the accepted workbench, and hand a fully verified unpushed commit to existing issue #200.
 - **Acceptance criteria advanced:** P10-AD01-A1, P10-AD01-A2, P10-AD01-A3, P10-AD01-B5, P10-AD01-C2, P10-AD01-C4.
 - **Dependencies:** AD4.
@@ -284,8 +284,6 @@ After Roadmap approval:
 
 ## 14. Approval Record
 
-This version is a draft and has not yet been approved.
+The project owner approved this Roadmap Addendum on August 28, 2026. Version 1.0 is the authoritative AD01 execution sequence and authorizes creation of exactly five new GitHub issues corresponding to AD1 through AD5, the issue-link documentation commit, and the dependency note on existing issue #200.
 
-Project-owner approval will authorize creation of exactly five new GitHub issues corresponding to AD1 through AD5, the issue-link documentation commit, and the dependency note on existing issue #200.
-
-Approval will not authorize implementation, source integration, conflict resolution, delivery-branch modification, force-pushing, or PR updates. Each implementation action becomes authorized only through its dependency-ready GitHub issue.
+Approval does not authorize source integration, conflict resolution, delivery-branch modification, force-pushing, or PR updates outside the dependency-ready issue governing that action.
