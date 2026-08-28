@@ -74,7 +74,7 @@ Push clean-pr and verify PR #136/checks
 - **Explicit exclusions:** Merge, rebase, cherry-pick, conflict resolution, source edit, formatter write, package install, delivery mutation, PR change.
 - **Automated acceptance gate:**
   - all fetch and inspection commands complete successfully;
-  - the inventory contains exactly 29 paths with 23 modified, 3 added, and 3 deleted;
+  - the inventory contains exactly 29 paths with 20 modified, 5 added, and 4 deleted;
   - the forecast contains exactly the reviewed conflicts in `app/api.data.js`, `src/ogc-api/endpoint.ts`, and `src/ogc-api/info.ts`;
   - `src/index.ts` is recorded as the automatic contribution overlap;
   - worktree remains clean except for the new evidence files; and

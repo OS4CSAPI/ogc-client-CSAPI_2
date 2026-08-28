@@ -61,7 +61,7 @@ No new CSAPI behavior, facade redesign, live-server test, or maintainer design q
 | Upstream change source | PR #171: seven content commits plus one merge commit |
 | Delivered PR head before AD01 | `5f7cbd166143be76b60ea54593d6f313c75c3624` |
 | Upstream-only distance at preflight | 8 commits |
-| Upstream PR #171 changed paths | 29: 23 modified, 3 added, 3 deleted |
+| Upstream PR #171 changed paths | 29: 20 modified, 5 added, 4 deleted |
 | Forecast content conflicts | `app/api.data.js`, `src/ogc-api/endpoint.ts`, `src/ogc-api/info.ts` |
 | Mandatory automatic-merge inspection | `src/index.ts` |
 | Required semantic companion path | `src/ogc-api/model.ts` |

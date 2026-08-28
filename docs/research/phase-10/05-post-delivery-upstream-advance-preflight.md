@@ -53,7 +53,7 @@ The seven content commits and their merge commit explain GitHub's eight-commit-b
 
 ## 5. Upstream Changed-Path Population
 
-PR #171 changes 29 paths: 23 modified, 3 added, and 3 deleted.
+PR #171 changes 29 paths: 20 modified, 5 added, and 4 deleted.
 
 ```text
 M  app/.vitepress/theme/custom.css
